@@ -1,0 +1,42 @@
+[
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iexternal",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-o",
+            "build/main.o",
+            "src/main.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/main.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iexternal",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-o",
+            "build/app.o",
+            "src/app.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/app.cpp"
+    }
+]
