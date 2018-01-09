@@ -1,8 +1,15 @@
-#ifndef SP_MALLOC_STATIC_TREE_H
-#define SP_MALLOC_STATIC_TREE_H
+#ifndef SP_UTIL_TREE_STATIC_TREE_H
+#define SP_UTIL_TREE_STATIC_TREE_H
+
+#include <util/typed.h>
+#include <cstdint>
+#include <cassert>
 
 namespace sp {
+  /*sp*/
 namespace impl {
+  /*sp::impl*/
+enum class Direction : std::uint8_t { LEFT, RIGHT };
 
 template <std::size_t level>
 struct static_breadth {
@@ -77,102 +84,10 @@ static_assert(static_level<255>::value == 8, "");
 static_assert(static_level<511>::value == 9, "");
 static_assert(static_level<1023>::value == 10, "");
 
-#define SIZE_TYPEX(NAME)                                                       \
-  struct NAME {                                                                \
-    std::size_t data;                                                          \
-    explicit constexpr NAME(std::size_t d) noexcept                            \
-        : data(d) {                                                            \
-    }                                                                          \
-    constexpr NAME() noexcept                                                  \
-        : NAME(std::size_t(0)) {                                               \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator==(std::size_t o) const noexcept {                                 \
-      return data == o;                                                        \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator==(const NAME &o) const noexcept {                                 \
-      return this->operator==(o.data);                                         \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator!=(std::size_t o) const noexcept {                                 \
-      return !operator==(o);                                                   \
-    }                                                                          \
-    constexpr NAME &                                                           \
-    operator=(std::size_t o) noexcept {                                        \
-      data = o;                                                                \
-      return *this;                                                            \
-    }                                                                          \
-    constexpr NAME                                                             \
-    operator+(std::size_t o) const noexcept {                                  \
-      return NAME{data + o};                                                   \
-    }                                                                          \
-    constexpr NAME                                                             \
-    operator+(const NAME &o) const noexcept {                                  \
-      return operator+(o.data);                                                \
-    }                                                                          \
-    constexpr NAME                                                             \
-    operator-(std::size_t o) const noexcept {                                  \
-      return NAME{data - o};                                                   \
-    }                                                                          \
-    constexpr NAME                                                             \
-    operator-(NAME o) const noexcept {                                         \
-      return operator-(o.data);                                                \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator>(std::size_t o) const noexcept {                                  \
-      return data > o;                                                         \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator>(const NAME &o) const noexcept {                                  \
-      return operator>(o.data);                                                \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator>=(std::size_t o) const noexcept {                                 \
-      return data >= o;                                                        \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator>=(const NAME &o) const noexcept {                                 \
-      return operator>=(o.data);                                               \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator<(std::size_t o) const noexcept {                                  \
-      return data < o;                                                         \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator<(const NAME &o) const noexcept {                                  \
-      return operator<(o.data);                                                \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator<=(std::size_t o) const noexcept {                                 \
-      return data <= o;                                                        \
-    }                                                                          \
-    constexpr bool                                                             \
-    operator<=(const NAME &o) const noexcept {                                 \
-      return operator<=(o.data);                                               \
-    }                                                                          \
-    constexpr NAME                                                             \
-    operator/(std::size_t o) const noexcept {                                  \
-      return NAME{data / o};                                                   \
-    }                                                                          \
-    constexpr NAME                                                             \
-    operator%(std::size_t o) const noexcept {                                  \
-      return NAME{data % o};                                                   \
-    }                                                                          \
-    constexpr NAME operator*(std::size_t o) const noexcept {                   \
-      return NAME{data * o};                                                   \
-    }                                                                          \
-    constexpr explicit operator std::size_t() const noexcept {                 \
-      return data;                                                             \
-    }                                                                          \
-  };                                                                           \
-  static_assert(sizeof(NAME) == sizeof(std::size_t), "");                      \
-  static_assert(alignof(NAME) == alignof(std::size_t), "")
-
-SIZE_TYPEX(relative_idx);
-SIZE_TYPEX(absolute_idx);
-
-enum class Direction : uint8_t { LEFT, RIGHT };
+/*class sp::relative_idx*/
+SIZE_TYPE(relative_idx);
+/*class sp::absolute_idx*/
+SIZE_TYPE(absolute_idx);
 
 template <typename T, std::size_t t_levels = 9>
 struct static_tree {
@@ -249,10 +164,10 @@ base(std::size_t l, sp::relative_idx old_idx) noexcept {
 
 template <std::size_t CHILDREN = 2>
 static sp::relative_idx
-lookup_relative(sp::relative_idx old_idx, Direction dir) noexcept {
+lookup_relative(sp::relative_idx old_idx, impl::Direction dir) noexcept {
 
   sp::relative_idx idx = old_idx * CHILDREN;
-  if (dir == Direction::RIGHT) {
+  if (dir == impl::Direction::RIGHT) {
     idx = idx + 1;
   }
   // printf("lookup_relative(old_idx[%zu], %s): %zu\n", //
@@ -272,11 +187,11 @@ static sp::relative_idx
 parent_relative(sp::relative_idx idx) noexcept {
   sp::relative_idx i(std::size_t(idx) / 2);
 
-  if (lookup_relative(i, Direction::RIGHT) == idx) {
+  if (lookup_relative(i, impl::Direction::RIGHT) == idx) {
     return i;
   }
 
-  if (lookup_relative(i, Direction::LEFT) == idx) {
+  if (lookup_relative(i, impl::Direction::LEFT) == idx) {
     return i;
   }
   assert(false);
@@ -321,7 +236,7 @@ Lstart:
       }
 
       level++;
-      Direction dir = c == -1 ? Direction::LEFT : Direction::RIGHT;
+      impl::Direction dir = c == -1 ? impl::Direction::LEFT : impl::Direction::RIGHT;
       idx = impl::lookup_relative(idx, dir);
 
       goto Lstart;
@@ -347,7 +262,7 @@ Lstart:
       //        current.data, data.data);
 
       level++;
-      Direction dir = c == -1 ? Direction::LEFT : Direction::RIGHT;
+      impl::Direction dir = c == -1 ? impl::Direction::LEFT : impl::Direction::RIGHT;
       // const std::size_t b_idx = idx;
       idx = impl::lookup_relative(idx, dir);
       // printf("%zu = lookup(level[%zu], idx[%zu], %s)\n", //
@@ -372,14 +287,14 @@ insert(static_tree<SortedNode<T>, levels> &tree, const T &ins) {
 
   auto rebalance = [&tree, &parents](std::size_t level, sp::relative_idx c) {
     auto dir = [](sp::relative_idx pa, sp::relative_idx child) {
-      if (impl::lookup_relative(pa, Direction::LEFT) == child) {
-        return Direction::LEFT;
+      if (impl::lookup_relative(pa, impl::Direction::LEFT) == child) {
+        return impl::Direction::LEFT;
       }
-      if (impl::lookup_relative(pa, Direction::RIGHT) == child) {
-        return Direction::RIGHT;
+      if (impl::lookup_relative(pa, impl::Direction::RIGHT) == child) {
+        return impl::Direction::RIGHT;
       }
       assert(false);
-      return Direction::LEFT;
+      return impl::Direction::LEFT;
     };
 
     auto balance_right = [](std::size_t level, sp::relative_idx idx) { //
@@ -402,8 +317,8 @@ insert(static_tree<SortedNode<T>, levels> &tree, const T &ins) {
       const sp::absolute_idx pabs_idx = impl::translate(pl, pidx);
       auto &parent = tree[pabs_idx];
 
-      Direction d = dir(pidx, c);
-      if (d == Direction::LEFT) {
+      impl::Direction d = dir(pidx, c);
+      if (d == impl::Direction::LEFT) {
         parent.balance--;
       } else {
         parent.balance++;
@@ -439,10 +354,10 @@ Lstart:
         return false;
       } else if (c > 0) {
         level++;
-        idx = impl::lookup_relative(idx, Direction::RIGHT);
+        idx = impl::lookup_relative(idx, impl::Direction::RIGHT);
       } else /*c < 0*/ {
         level++;
-        idx = impl::lookup_relative(idx, Direction::LEFT);
+        idx = impl::lookup_relative(idx, impl::Direction::LEFT);
       }
       goto Lstart;
     } else {
@@ -477,10 +392,10 @@ void
 in_order_for_each(static_tree<T, levels> &tree, F f) {
   enum class Traversal : uint8_t { UP, DOWN };
 
-  Direction d[levels + 1]{Direction::LEFT};
+  impl::Direction d[levels + 1]{impl::Direction::LEFT};
   Traversal t = Traversal::UP;
 
-  auto set_direction = [&d](std::size_t lvl, Direction dir) {
+  auto set_direction = [&d](std::size_t lvl, impl::Direction dir) {
     if (lvl <= levels) {
       d[lvl] = dir;
     }
@@ -491,24 +406,24 @@ in_order_for_each(static_tree<T, levels> &tree, F f) {
 Lstart:
   if (level <= levels) {
     if (t == Traversal::UP) {
-      if (d[level] == Direction::LEFT) {
+      if (d[level] == impl::Direction::LEFT) {
         level++;
-        set_direction(level, Direction::LEFT);
-        idx = impl::lookup_relative(idx, Direction::LEFT);
+        set_direction(level, impl::Direction::LEFT);
+        idx = impl::lookup_relative(idx, impl::Direction::LEFT);
         // printf("up_left[idx[%zu], level[%zu]]\n", std::size_t(idx), level);
       } else {
         level++;
-        set_direction(level, Direction::LEFT);
-        idx = impl::lookup_relative(idx, Direction::RIGHT);
+        set_direction(level, impl::Direction::LEFT);
+        idx = impl::lookup_relative(idx, impl::Direction::RIGHT);
         // printf("up_right[idx[%zu], level[%zu]]\n", std::size_t(idx), level);
       }
       goto Lstart;
     } else /*t == DOWN*/ {
-      if (d[level] == Direction::LEFT) {
+      if (d[level] == impl::Direction::LEFT) {
         // We returned to this level after traversed left, now traverse right
 
         // Indicate that we have consumed right when returning to this level[0]
-        d[level] = Direction::RIGHT;
+        d[level] = impl::Direction::RIGHT;
 
         //
         f(tree[impl::translate(level, idx)]);
@@ -516,8 +431,8 @@ Lstart:
         //
         t = Traversal::UP;
         ++level;
-        set_direction(level, Direction::LEFT);
-        idx = impl::lookup_relative(idx, Direction::RIGHT);
+        set_direction(level, impl::Direction::LEFT);
+        idx = impl::lookup_relative(idx, impl::Direction::RIGHT);
         // printf("down_right[idx[%zu], level[%zu]]\n", std::size_t(idx),
         // level);
         goto Lstart;
@@ -538,7 +453,7 @@ Lstart:
     level--;
     // we now point to the leaf node
 
-    if (d[level] == Direction::LEFT) {
+    if (d[level] == impl::Direction::LEFT) {
       // since we are in a leaf node
       // f(tree[impl::translate(level, idx)]);
     }

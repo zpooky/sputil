@@ -1,11 +1,16 @@
 #ifndef SP_UTIL_UTIL_TYPED_H
 #define SP_UTIL_UTIL_TYPED_H
 
+#include <cstddef>
+
 #define SIZE_TYPE(NAME)                                                        \
   struct NAME {                                                                \
     std::size_t data;                                                          \
     explicit constexpr NAME(std::size_t d) noexcept                            \
         : data(d) {                                                            \
+    }                                                                          \
+    constexpr NAME() noexcept                            \
+        : NAME(std::size_t(0)) {                                                            \
     }                                                                          \
     constexpr bool                                                             \
     operator==(std::size_t o) const noexcept {                                 \

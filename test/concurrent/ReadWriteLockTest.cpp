@@ -1,6 +1,8 @@
-#include "Barrier.h"
-#include "ReadWriteLock.h"
+#include <concurrent/Barrier.h>
+#include <concurrent/ReadWriteLock.h>
+
 #include "gtest/gtest.h"
+
 #include <list>
 #include <pthread.h>
 

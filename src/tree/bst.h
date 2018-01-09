@@ -2,6 +2,7 @@
 #define SP_MALLOC_BINARY_SEARCH_TREE_H
 
 #include "tree.h"
+#include <tuple>
 
 namespace bst {
 template <typename T>
