@@ -2,22 +2,26 @@
 #http://www.puxan.com/web/howto-write-generic-makefiles/
 # Declaration of variables
 CXX = g++
-HEADER_DIRS = -Iexternal
-# ovrrides makes it possible to externaly append extra flags
+
+SOURCE_DIR = src
+BUILD_DIR = build
+
+HEADER_DIRS = -I$(SOURCE_DIR)
+# overrides makes it possible to externally append extra flags
 override CXXFLAGS += $(HEADER_DIRS) -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow
 CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
 LDFLAGS =
 LDLIBS =
 PREFIX = /usr/local
 
-SOURCE_DIR = src
-BUILD_DIR = build
-
 # File names
-EXEC = main
+EXEC = sputil
 LIB = lib$(EXEC)
-SOURCES = $(wildcard $(SOURCE_DIR)/*.cpp)
+# Recursively search for cpp files
+SOURCES = $(shell find $(SOURCE_DIR) -iname *.cpp | xargs)
+# Translate cpp file names to there corresponding build location
 OBJECTS = $(patsubst $(SOURCE_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
+# Translate the object file names to depend file names
 DEPENDS = $(OBJECTS:.o=.d)
 
 #TODO dynamic link lib
@@ -28,7 +32,7 @@ DEPENDS = $(OBJECTS:.o=.d)
 .PHONY: test all clean install uninstall bear
 
 # all {{{
-# The "all" target. runs by default since it the first target
+# The "all" target. Runs by default since it the first target
 all: ${EXEC}
 # }}}
 
@@ -43,10 +47,9 @@ $(EXEC): $(OBJECTS)
 #include the raw object file dependencies from its *.d file
 -include $(DEPENDS)
 
-# The "object" file target
-# An implicit conversion from a cpp file to a object file?
+# The "object" file target depends on the corresponding source file
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp
-	mkdir -p $(BUILD_DIR)
+	mkdir -p $(dir $(@))
 # -c means to create an intermediary object file, rather than an executable
 # -MMD means to create *object*.d depend file with its depending cpp & h files
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -MMD -c $< -o $@

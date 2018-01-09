@@ -19,7 +19,7 @@ BUILD_DIR = build
 
 # File names
 EXEC = thetest
-SOURCES = $(wildcard *.cpp)
+SOURCES = $(shell find $(SOURCE_DIR) -iname *.cpp | xargs)
 OBJECTS = $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 DEPENDS = $(OBJECTS:.o=.d)
 
@@ -38,7 +38,7 @@ $(EXEC): gtest $(OBJECTS)
 -include $(DEPENDS)
 
 $(BUILD_DIR)/%.o: %.cpp
-	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(dir $(@))
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -MMD -c $< -o $@
 # }}}
 
