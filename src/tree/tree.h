@@ -21,9 +21,10 @@ struct Tree {
 
   T *root;
 
-  Tree()
+  Tree() noexcept
       : root(nullptr) {
   }
+
   Tree(const Tree<T> &) = delete;
   Tree(const Tree<T> &&) = delete;
 
@@ -43,7 +44,10 @@ struct Tree {
 
 //===================================================
 namespace impl {
+  /*impl*/
 namespace tree {
+  /*impl::tree*/
+
 /*
  * Recursively search down in the left branch to find the minimum
  * node in the tree.

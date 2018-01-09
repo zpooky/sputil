@@ -8,6 +8,7 @@
 namespace sp {
   /*sp*/
 namespace impl {
+namespace static_tree {
   /*sp::impl*/
 enum class Direction : std::uint8_t { LEFT, RIGHT };
 
@@ -48,16 +49,17 @@ template <>
 struct static_level<0, 0> { //
 };
 
+} // namespace static_tree
 } // namespace impl
 
 template <std::size_t size>
 struct static_level {
-  static constexpr std::size_t value = impl::static_level<size>::value;
+  static constexpr std::size_t value = impl::static_tree::static_level<size>::value;
 };
 
 template <std::size_t levels>
 struct static_size {
-  static constexpr std::size_t value = impl::static_size<levels>::value;
+  static constexpr std::size_t value = impl::static_tree::static_size<levels>::value;
 };
 // level -> size
 static_assert(static_size<0>::value == 1, "");
@@ -116,15 +118,18 @@ struct static_tree {
   // TODO number_of_bits(std::size_t)
   static_assert(levels < 64, "");
 };
+// TODO dynamic_tree<T>(T* storage,std::size_t)
 
 template <typename T>
 struct SortedNode {
   T value;
   std::int8_t balance;
 };
-// TODO dynamic_tree<T>(T* storage,std::size_t)
 
 namespace impl {
+  /*sp::impl*/
+namespace static_tree {
+  /*sp::impl::static_tree*/
 /* Calculate level start offset
  * TODO does not support N
  * level|offset
@@ -164,10 +169,10 @@ base(std::size_t l, sp::relative_idx old_idx) noexcept {
 
 template <std::size_t CHILDREN = 2>
 static sp::relative_idx
-lookup_relative(sp::relative_idx old_idx, impl::Direction dir) noexcept {
+lookup_relative(sp::relative_idx old_idx, impl::static_tree::Direction dir) noexcept {
 
   sp::relative_idx idx = old_idx * CHILDREN;
-  if (dir == impl::Direction::RIGHT) {
+  if (dir == impl::static_tree::Direction::RIGHT) {
     idx = idx + 1;
   }
   // printf("lookup_relative(old_idx[%zu], %s): %zu\n", //
@@ -185,13 +190,14 @@ translate(std::size_t l, sp::relative_idx idx) {
 
 static sp::relative_idx
 parent_relative(sp::relative_idx idx) noexcept {
+  using namespace impl::static_tree;
   sp::relative_idx i(std::size_t(idx) / 2);
 
-  if (lookup_relative(i, impl::Direction::RIGHT) == idx) {
+  if (lookup_relative(i, Direction::RIGHT) == idx) {
     return i;
   }
 
-  if (lookup_relative(i, impl::Direction::LEFT) == idx) {
+  if (lookup_relative(i, Direction::LEFT) == idx) {
     return i;
   }
   assert(false);
@@ -217,27 +223,29 @@ cmp(const int &data, const int &o) noexcept {
   return 1;
 }
 
+} //namespace static_tree
 } // namespace impl
 
 template <typename T, std::size_t levels, typename Key>
 T *
-search(static_tree<T, levels> &tree, const Key &needle) noexcept {
+find(static_tree<T, levels> &tree, const Key &needle) noexcept {
+  using namespace impl::static_tree;
   std::size_t level = 0;
   sp::relative_idx idx(0);
   constexpr std::size_t capacity = static_tree<T, levels>::capacity;
 Lstart:
-  const sp::absolute_idx abs_idx = impl::translate(level, idx);
+  const sp::absolute_idx abs_idx = translate(level, idx);
   if (abs_idx < capacity) {
     T &current = tree[abs_idx];
     if (bool(current)) {
-      int c = impl::cmp(current, needle);
+      int c = cmp(current, needle);
       if (c == 0) {
         return &current;
       }
 
       level++;
-      impl::Direction dir = c == -1 ? impl::Direction::LEFT : impl::Direction::RIGHT;
-      idx = impl::lookup_relative(idx, dir);
+      Direction dir = c == -1 ? Direction::LEFT : Direction::RIGHT;
+      idx = lookup_relative(idx, dir);
 
       goto Lstart;
     }
@@ -248,23 +256,24 @@ Lstart:
 template <typename T, std::size_t levels>
 bool
 insert(static_tree<T, levels> &tree, const T &data) noexcept {
+  using namespace impl::static_tree;
   // printf("insert(%d)\n", data.data);
   std::size_t level = 0;
   sp::relative_idx idx(0);
   constexpr std::size_t capacity = static_tree<T, levels>::capacity;
 Lstart:
-  const sp::absolute_idx abs_idx = impl::translate(level, idx);
+  const sp::absolute_idx abs_idx = translate(level, idx);
   if (abs_idx < capacity) {
     T &current = tree[abs_idx];
     if (bool(current)) {
-      int c = impl::cmp(current, data);
+      int c = cmp(current, data);
       // printf("%s = cmp(current[%d], data[%d])\n", c == 1 ? "gt" : "lt",
       //        current.data, data.data);
 
       level++;
-      impl::Direction dir = c == -1 ? impl::Direction::LEFT : impl::Direction::RIGHT;
+      Direction dir = c == -1 ? Direction::LEFT : Direction::RIGHT;
       // const std::size_t b_idx = idx;
-      idx = impl::lookup_relative(idx, dir);
+      idx = lookup_relative(idx, dir);
       // printf("%zu = lookup(level[%zu], idx[%zu], %s)\n", //
       //        std::size_t(idx), level, b_idx,
       //        dir == Direction::LEFT ? "lt" : "gt");
@@ -280,6 +289,7 @@ Lstart:
   return false;
 }
 
+#if 0
 template <typename T, std::size_t levels>
 bool
 insert(static_tree<SortedNode<T>, levels> &tree, const T &ins) {
@@ -371,6 +381,7 @@ Lstart:
 
   return false;
 }
+#endif
 
 /*       7
  *       /\
@@ -390,12 +401,13 @@ Lstart:
 template <typename T, std::size_t levels, typename F>
 void
 in_order_for_each(static_tree<T, levels> &tree, F f) {
+  using namespace impl::static_tree;
   enum class Traversal : uint8_t { UP, DOWN };
 
-  impl::Direction d[levels + 1]{impl::Direction::LEFT};
+  Direction d[levels + 1]{Direction::LEFT};
   Traversal t = Traversal::UP;
 
-  auto set_direction = [&d](std::size_t lvl, impl::Direction dir) {
+  auto set_direction = [&d](std::size_t lvl, Direction dir) {
     if (lvl <= levels) {
       d[lvl] = dir;
     }
@@ -406,39 +418,39 @@ in_order_for_each(static_tree<T, levels> &tree, F f) {
 Lstart:
   if (level <= levels) {
     if (t == Traversal::UP) {
-      if (d[level] == impl::Direction::LEFT) {
+      if (d[level] == Direction::LEFT) {
         level++;
-        set_direction(level, impl::Direction::LEFT);
-        idx = impl::lookup_relative(idx, impl::Direction::LEFT);
+        set_direction(level, Direction::LEFT);
+        idx = lookup_relative(idx, Direction::LEFT);
         // printf("up_left[idx[%zu], level[%zu]]\n", std::size_t(idx), level);
       } else {
         level++;
-        set_direction(level, impl::Direction::LEFT);
-        idx = impl::lookup_relative(idx, impl::Direction::RIGHT);
+        set_direction(level, Direction::LEFT);
+        idx = lookup_relative(idx, Direction::RIGHT);
         // printf("up_right[idx[%zu], level[%zu]]\n", std::size_t(idx), level);
       }
       goto Lstart;
     } else /*t == DOWN*/ {
-      if (d[level] == impl::Direction::LEFT) {
+      if (d[level] == Direction::LEFT) {
         // We returned to this level after traversed left, now traverse right
 
         // Indicate that we have consumed right when returning to this level[0]
-        d[level] = impl::Direction::RIGHT;
+        d[level] = Direction::RIGHT;
 
         //
-        f(tree[impl::translate(level, idx)]);
+        f(tree[translate(level, idx)]);
 
         //
         t = Traversal::UP;
         ++level;
-        set_direction(level, impl::Direction::LEFT);
-        idx = impl::lookup_relative(idx, impl::Direction::RIGHT);
+        set_direction(level, Direction::LEFT);
+        idx = lookup_relative(idx, Direction::RIGHT);
         // printf("down_right[idx[%zu], level[%zu]]\n", std::size_t(idx),
         // level);
         goto Lstart;
       } else { //[0]
         if (level > 0) {
-          idx = impl::parent_relative(idx);
+          idx = parent_relative(idx);
           level--;
           // printf("down[idx[%zu], level[%zu]]\n", std::size_t(idx), level);
           goto Lstart;
@@ -449,11 +461,11 @@ Lstart:
     assert(t == Traversal::UP);
     // level and index now point to an out of bound node
     // printf("end[idx[%zu], level[%zu]]\n", std::size_t(idx), level);
-    idx = impl::parent_relative(idx);
+    idx = parent_relative(idx);
     level--;
     // we now point to the leaf node
 
-    if (d[level] == impl::Direction::LEFT) {
+    if (d[level] == Direction::LEFT) {
       // since we are in a leaf node
       // f(tree[impl::translate(level, idx)]);
     }

@@ -1,7 +1,10 @@
 #ifndef SP_UTIL_UTIL_MAYBE_H
 #define SP_UTIL_UTIL_MAYBE_H
 
-namespace {
+#include <utility>
+#include <type_traits>
+
+namespace sp {
 
 template <typename T>
 class maybe {
@@ -63,7 +66,7 @@ public:
 
   const T &
   get() const &noexcept {
-    T *ptr = reinterpret_cast<T *>(&data);
+    const T *ptr = reinterpret_cast<const T *>(&data);
     return *ptr;
   }
 
@@ -106,6 +109,33 @@ public:
     return def;
   }
 };
+
+template<typename T, typename F>
+auto map(maybe<T>&in,F f) -> maybe<decltype(f(in.get()))> {
+  using Result = maybe<decltype(f(in.get()))>;
+  if(bool(in)){
+    return Result{f(in.get())};
+  }
+  return Result{};
+}
+
+template<typename T, typename F>
+auto map(maybe<T>&&in,F f) -> maybe<decltype(f(std::move(in).get()))> {
+  using Result = maybe<decltype(f(std::move(in).get()))>;
+  if(bool(in)){
+    return Result{f(std::move(in).get())};
+  }
+  return Result{};
+}
+
+template<typename T, typename F>
+auto map(const maybe<T>&in,F f) -> maybe<decltype(f(in.get()))> {
+  using Result = maybe<decltype(f(in.get()))>;
+  if(bool(in)){
+    return Result{f(in.get())};
+  }
+  return Result{};
+}
 
 }
 

@@ -4,9 +4,10 @@
 CXX = g++
 
 SOURCE_DIR = src
+INCLUDE_DIR = include
 BUILD_DIR = build
 
-HEADER_DIRS = -I$(SOURCE_DIR)
+HEADER_DIRS = -I$(INCLUDE_DIR)
 # overrides makes it possible to externally append extra flags
 override CXXFLAGS += $(HEADER_DIRS) -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow
 CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb

@@ -13,6 +13,8 @@
 // TODO noexcept operator
 
 namespace avl {
+  /*avl*/
+
 template <typename T>
 struct Node {
   using value_type = T;
@@ -86,9 +88,14 @@ template <typename T>
 bool
 verify(Tree<T> &tree) noexcept;
 
+template <typename T,typename K>
+T* find(const Tree<T>&,const K&) noexcept;
+
 
 namespace impl {
+  /*avl::impl*/
 namespace avl {
+  /*avl::impl::avl*/
 // BalanceFactor(N) := Height(RightSubtree(N)) - Height(LeftSubtree(N))
 // BalanceFactor(N) = {–1, 0, +1}
 //
@@ -112,7 +119,7 @@ direction(const Node<T> *const child) noexcept {
 
   assert(parent->right == child);
   return Direction::RIGHT;
-}
+}// avl::impl::avl::direction()
 
 template <typename T>
 void
@@ -124,13 +131,13 @@ Lstart:
     goto Lstart;
   }
   return sp::impl::tree::dump(root, prefix);
-}
+}// avl::impl::avl::dump_root()
 
 template <typename T>
 static std::int8_t
 balance(const Node<T> *const node) noexcept {
   return node ? node->balance : 0;
-}
+}// avl::impl::avl::balance()
 
 template <typename T>
 static Node<T> *
@@ -182,7 +189,7 @@ rotate_left(Node<T> *const A) noexcept {
   }
 
   return B ? B : A;
-}
+}// avl::impl::avl::rotate_light()
 
 template <typename T>
 static Node<T> *
@@ -234,7 +241,7 @@ rotate_right(Node<T> *const C) noexcept {
   }
 
   return B;
-}
+}// avl::impl::avl::rotate_right()
 
 template <typename T>
 static Node<T> *&
@@ -253,7 +260,7 @@ set(Node<T> *&child) noexcept {
 
   assert(parent->right == child);
   return parent->right;
-}
+}// avl::impl::avl::set()
 
 template <typename T>
 bool
@@ -313,7 +320,7 @@ verify(const Node<T> *parent, const Node<T> *tree,
     result += std::max(left, right);
   }
   return true;
-} // avl::impl::verify
+} // avl::impl::avl::verify()
 
 template <typename T>
 void
@@ -342,7 +349,7 @@ exchange(Node<T> *node, Node<T> *n) noexcept {
       n->right->parent = n;
     }
   }
-} // avl::impl::exchange()
+} // avl::impl::avl::exchange()
 
 template <typename T>
 static bool
@@ -353,7 +360,7 @@ verify(Node<T> *const tree) {
 
   std::uint32_t balance = 0;
   return verify(tree->parent, tree, balance);
-}
+}//avl::impl::avl::verify()
 
 template <typename T>
 static bool
@@ -367,23 +374,29 @@ Lstart:
 
   std::uint32_t balance = 0;
   return verify((Node<T> *)nullptr, root, balance);
-}
+}//avl::impl::avl::verify_root()
 
-} // namespace avl
 } // namespace impl
+} // namespace avl
 
 template <typename T>
 void
 dump(Tree<T> &tree, std::string prefix) noexcept {
   return sp::impl::tree::dump(tree.root, prefix);
-}
+}//avl::dump()
 
 template <typename T>
 bool
 verify(Tree<T> &tree) noexcept {
   std::uint32_t balance = 0;
   return impl::avl::verify((Node<T> *)nullptr, tree.root, balance);
-}
+}//avl::verify()
+
+template <typename T,typename K>
+T* find(const Tree<T>&tree,const K&key) noexcept {
+  return sp::find(tree,key);
+}//av::find()
+
 
 
 } // namespace avl

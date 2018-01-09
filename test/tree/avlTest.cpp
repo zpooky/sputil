@@ -91,21 +91,21 @@ TEST(avlTest, rotate_left) {
   c->balance = 0;
 
   auto reb = avl::impl::avl::rotate_left(a);
-  assert(reb->value == b->value);
-  assert(reb->parent == nullptr);
-  assert(reb->balance == 0);
+  ASSERT_TRUE(reb->value == b->value);
+  ASSERT_TRUE(reb->parent == nullptr);
+  ASSERT_TRUE(reb->balance == 0);
 
-  assert(reb->left->value == a->value);
-  assert(reb->left->parent == b);
-  assert(reb->left->left == nullptr);
-  assert(reb->left->right == nullptr);
-  assert(reb->left->balance == 0);
+  ASSERT_TRUE(reb->left->value == a->value);
+  ASSERT_TRUE(reb->left->parent == b);
+  ASSERT_TRUE(reb->left->left == nullptr);
+  ASSERT_TRUE(reb->left->right == nullptr);
+  ASSERT_TRUE(reb->left->balance == 0);
 
-  assert(reb->right->value == c->value);
-  assert(reb->right->parent == b);
-  assert(reb->right->left == nullptr);
-  assert(reb->right->right == nullptr);
-  assert(reb->right->balance == 0);
+  ASSERT_TRUE(reb->right->value == c->value);
+  ASSERT_TRUE(reb->right->parent == b);
+  ASSERT_TRUE(reb->right->left == nullptr);
+  ASSERT_TRUE(reb->right->right == nullptr);
+  ASSERT_TRUE(reb->right->balance == 0);
 }
 
 TEST(avlTest, rotate_right) {
@@ -117,21 +117,21 @@ TEST(avlTest, rotate_right) {
   a->balance = 0;
 
   auto reb = avl::impl::avl::rotate_right(c);
-  assert(reb->value == b->value);
-  assert(reb->parent == nullptr);
-  assert(reb->balance == 0);
+  ASSERT_TRUE(reb->value == b->value);
+  ASSERT_TRUE(reb->parent == nullptr);
+  ASSERT_TRUE(reb->balance == 0);
 
-  assert(reb->left->value == a->value);
-  assert(reb->left->parent == b);
-  assert(reb->left->left == nullptr);
-  assert(reb->left->right == nullptr);
-  assert(reb->left->balance == 0);
+  ASSERT_TRUE(reb->left->value == a->value);
+  ASSERT_TRUE(reb->left->parent == b);
+  ASSERT_TRUE(reb->left->left == nullptr);
+  ASSERT_TRUE(reb->left->right == nullptr);
+  ASSERT_TRUE(reb->left->balance == 0);
 
-  assert(reb->right->value == c->value);
-  assert(reb->right->parent == b);
-  assert(reb->right->left == nullptr);
-  assert(reb->right->right == nullptr);
-  assert(reb->right->balance == 0);
+  ASSERT_TRUE(reb->right->value == c->value);
+  ASSERT_TRUE(reb->right->parent == b);
+  ASSERT_TRUE(reb->right->left == nullptr);
+  ASSERT_TRUE(reb->right->right == nullptr);
+  ASSERT_TRUE(reb->right->balance == 0);
 }
 
 TEST(avlTest, double_rotate_left) {
@@ -144,23 +144,23 @@ TEST(avlTest, double_rotate_left) {
 
   c->left = avl::impl::avl::rotate_left(c->left);
   auto reb = avl::impl::avl::rotate_right(c);
-  assert(reb->value == 2);
-  assert(reb->parent == nullptr);
-  assert(reb->balance == 0);
+  ASSERT_TRUE(reb->value == 2);
+  ASSERT_TRUE(reb->parent == nullptr);
+  ASSERT_TRUE(reb->balance == 0);
 
-  assert(reb->left->value == 1);
-  assert(reb->left->parent);
-  assert(reb->left->parent == a);
-  assert(reb->left->left == nullptr);
-  assert(reb->left->right == nullptr);
-  assert(reb->left->balance == 0);
+  ASSERT_TRUE(reb->left->value == 1);
+  ASSERT_TRUE(reb->left->parent);
+  ASSERT_TRUE(reb->left->parent == a);
+  ASSERT_TRUE(reb->left->left == nullptr);
+  ASSERT_TRUE(reb->left->right == nullptr);
+  ASSERT_TRUE(reb->left->balance == 0);
 
-  assert(reb->right->value == 3);
-  assert(reb->right->parent);
-  assert(reb->right->parent == a);
-  assert(reb->right->left == nullptr);
-  assert(reb->right->right == nullptr);
-  assert(reb->right->balance == 0);
+  ASSERT_TRUE(reb->right->value == 3);
+  ASSERT_TRUE(reb->right->parent);
+  ASSERT_TRUE(reb->right->parent == a);
+  ASSERT_TRUE(reb->right->left == nullptr);
+  ASSERT_TRUE(reb->right->right == nullptr);
+  ASSERT_TRUE(reb->right->balance == 0);
 }
 
 TEST(avlTest, double_rotate_right) {
@@ -173,23 +173,23 @@ TEST(avlTest, double_rotate_right) {
 
   c->right = avl::impl::avl::rotate_right(c->right);
   auto reb = avl::impl::avl::rotate_left(c);
-  assert(reb->value == 2);
-  assert(reb->parent == nullptr);
-  assert(reb->balance == 0);
+  ASSERT_TRUE(reb->value == 2);
+  ASSERT_TRUE(reb->parent == nullptr);
+  ASSERT_TRUE(reb->balance == 0);
 
-  assert(reb->left->value == 1);
-  assert(reb->left->parent);
-  assert(reb->left->parent == a);
-  assert(reb->left->left == nullptr);
-  assert(reb->left->right == nullptr);
-  assert(reb->left->balance == 0);
+  ASSERT_TRUE(reb->left->value == 1);
+  ASSERT_TRUE(reb->left->parent);
+  ASSERT_TRUE(reb->left->parent == a);
+  ASSERT_TRUE(reb->left->left == nullptr);
+  ASSERT_TRUE(reb->left->right == nullptr);
+  ASSERT_TRUE(reb->left->balance == 0);
 
-  assert(reb->right->value == 3);
-  assert(reb->right->parent);
-  assert(reb->right->parent == a);
-  assert(reb->right->left == nullptr);
-  assert(reb->right->right == nullptr);
-  assert(reb->right->balance == 0);
+  ASSERT_TRUE(reb->right->value == 3);
+  ASSERT_TRUE(reb->right->parent);
+  ASSERT_TRUE(reb->right->parent == a);
+  ASSERT_TRUE(reb->right->left == nullptr);
+  ASSERT_TRUE(reb->right->right == nullptr);
+  ASSERT_TRUE(reb->right->balance == 0);
 }
 
 TEST(avlTest, test1) {
@@ -205,23 +205,23 @@ TEST(avlTest, test1) {
   a->balance = 0;
   auto reb = avl::impl::avl::rotate_left(c);
 
-  assert(reb->value == 3);
-  assert(reb->parent == nullptr);
-  assert(reb->balance == 0);
+  ASSERT_TRUE(reb->value == 3);
+  ASSERT_TRUE(reb->parent == nullptr);
+  ASSERT_TRUE(reb->balance == 0);
 
-  assert(reb->left->value == 2);
-  assert(reb->left->parent);
-  assert(reb->left->parent == b);
-  assert(reb->left->left == nullptr);
-  assert(reb->left->right == nullptr);
-  assert(reb->left->balance == 0);
+  ASSERT_TRUE(reb->left->value == 2);
+  ASSERT_TRUE(reb->left->parent);
+  ASSERT_TRUE(reb->left->parent == b);
+  ASSERT_TRUE(reb->left->left == nullptr);
+  ASSERT_TRUE(reb->left->right == nullptr);
+  ASSERT_TRUE(reb->left->balance == 0);
 
-  assert(reb->right->value == 4);
-  assert(reb->right->parent);
-  assert(reb->right->parent == b);
-  assert(reb->right->left == nullptr);
-  assert(reb->right->right == nullptr);
-  assert(reb->right->balance == 0);
+  ASSERT_TRUE(reb->right->value == 4);
+  ASSERT_TRUE(reb->right->parent);
+  ASSERT_TRUE(reb->right->parent == b);
+  ASSERT_TRUE(reb->right->left == nullptr);
+  ASSERT_TRUE(reb->right->right == nullptr);
+  ASSERT_TRUE(reb->right->balance == 0);
 }
 
 TEST(avlTest, test_increasing_order) 
@@ -232,11 +232,11 @@ TEST(avlTest, test_increasing_order)
     printf(".%d <- ", i);
     Data ins(i);
     auto res = avl::insert(tree, ins);
-    assert(std::get<1>(res));
-    assert(std::get<0>(res) != nullptr);
+    ASSERT_TRUE(std::get<1>(res));
+    ASSERT_TRUE(std::get<0>(res) != nullptr);
     if (!avl::verify(tree)) {
       dump(tree);
-      assert(false);
+      ASSERT_TRUE(false);
     }
     printf("\n--------------\n");
   }
@@ -248,48 +248,48 @@ TEST(avlTest, test_1a)
   {
     avl::insert(tree, 20);
     auto root = tree.root;
-    assert(root);
-    assert(root->value == 20);
-    assert(root->balance == 0);
+    ASSERT_TRUE(root);
+    ASSERT_TRUE(root->value == 20);
+    ASSERT_TRUE(root->balance == 0);
 
-    assert(root->right == nullptr);
-    assert(root->left == nullptr);
+    ASSERT_TRUE(root->right == nullptr);
+    ASSERT_TRUE(root->left == nullptr);
   }
 
   {
     avl::insert(tree, 4);
     auto root = tree.root;
-    assert(root);
-    assert(root->value == 20);
-    assert(root->balance == -1);
+    ASSERT_TRUE(root);
+    ASSERT_TRUE(root->value == 20);
+    ASSERT_TRUE(root->balance == -1);
 
-    assert(root->right == nullptr);
+    ASSERT_TRUE(root->right == nullptr);
 
-    assert(root->left);
-    assert(root->left->value == 4);
-    assert(root->left->balance == 0);
-    assert(root->left->left == nullptr);
-    assert(root->left->right == nullptr);
+    ASSERT_TRUE(root->left);
+    ASSERT_TRUE(root->left->value == 4);
+    ASSERT_TRUE(root->left->balance == 0);
+    ASSERT_TRUE(root->left->left == nullptr);
+    ASSERT_TRUE(root->left->right == nullptr);
   }
 
   {
     avl::insert(tree, 15);
     auto root = tree.root;
-    assert(root);
-    assert(root->value == 15);
-    assert(root->balance == 0);
+    ASSERT_TRUE(root);
+    ASSERT_TRUE(root->value == 15);
+    ASSERT_TRUE(root->balance == 0);
 
-    assert(root->right);
-    assert(root->right->value == 20);
-    assert(root->right->balance == 0);
-    assert(root->right->left == nullptr);
-    assert(root->right->right == nullptr);
+    ASSERT_TRUE(root->right);
+    ASSERT_TRUE(root->right->value == 20);
+    ASSERT_TRUE(root->right->balance == 0);
+    ASSERT_TRUE(root->right->left == nullptr);
+    ASSERT_TRUE(root->right->right == nullptr);
 
-    assert(root->left);
-    assert(root->left->value == 4);
-    assert(root->left->balance == 0);
-    assert(root->left->left == nullptr);
-    assert(root->left->right == nullptr);
+    ASSERT_TRUE(root->left);
+    ASSERT_TRUE(root->left->value == 4);
+    ASSERT_TRUE(root->left->balance == 0);
+    ASSERT_TRUE(root->left->left == nullptr);
+    ASSERT_TRUE(root->left->right == nullptr);
   }
 }
 
@@ -299,41 +299,40 @@ TEST(avlTest, test_1b) {
   {
     avl::insert(tree, 8);
     auto root = tree.root;
-    assert(root);
-    assert(root->value == 20);
-    assert(root->balance == -1);
+    ASSERT_TRUE(root);
+    ASSERT_TRUE(root->value == 20);
+    ASSERT_TRUE(root->balance == -1);
 
-    assert(root->right == nullptr);
+    ASSERT_TRUE(root->right == nullptr);
 
-    assert(root->left);
-    assert(root->left->value == 8);
-    assert(root->left->balance == 0);
-    assert(root->left->left == nullptr);
-    assert(root->left->right == nullptr);
+    ASSERT_TRUE(root->left);
+    ASSERT_TRUE(root->left->value == 8);
+    ASSERT_TRUE(root->left->balance == 0);
+    ASSERT_TRUE(root->left->left == nullptr);
+    ASSERT_TRUE(root->left->right == nullptr);
   }
   {
     avl::insert(tree, 4);
     auto root = tree.root;
-    assert(root);
-    assert(root->value == 8);
-    assert(root->balance == 0);
+    ASSERT_TRUE(root);
+    ASSERT_TRUE(root->value == 8);
+    ASSERT_TRUE(root->balance == 0);
 
-    assert(root->right);
-    assert(root->right->value == 20);
-    assert(root->right->balance == 0);
-    assert(root->right->left == nullptr);
-    assert(root->right->right == nullptr);
+    ASSERT_TRUE(root->right);
+    ASSERT_TRUE(root->right->value == 20);
+    ASSERT_TRUE(root->right->balance == 0);
+    ASSERT_TRUE(root->right->left == nullptr);
+    ASSERT_TRUE(root->right->right == nullptr);
 
-    assert(root->left);
-    assert(root->left->value == 4);
-    assert(root->left->balance == 0);
-    assert(root->left->left == nullptr);
-    assert(root->left->right == nullptr);
+    ASSERT_TRUE(root->left);
+    ASSERT_TRUE(root->left->value == 4);
+    ASSERT_TRUE(root->left->balance == 0);
+    ASSERT_TRUE(root->left->left == nullptr);
+    ASSERT_TRUE(root->left->right == nullptr);
   }
 }
 
-#define IGNORE
-#ifndef IGNORE
+#if 0
 // TODO
 TEST(avlTest, test_inc_insert_dec_remove)
 {
@@ -342,8 +341,8 @@ TEST(avlTest, test_inc_insert_dec_remove)
   for (; i < 10; ++i) {
     printf(".%d <- \n", i);
     auto res = avl::insert(tree, i);
-    assert(std::get<1>(res));
-    assert(std::get<0>(res) != nullptr);
+    ASSERT_TRUE(std::get<1>(res));
+    ASSERT_TRUE(std::get<0>(res) != nullptr);
     dump(tree);
     avl::verify(tree);
     printf("\n--------------\n");
@@ -353,7 +352,7 @@ TEST(avlTest, test_inc_insert_dec_remove)
     printf(".%d -> \n", i);
     auto res = avl::remove(tree, i);
     printf("%d = av::remove(tree, %d)\n", res, i);
-    assert(res);
+    ASSERT_TRUE(res);
     dump(tree);
     avl::verify(tree);
     printf("\n--------------\n");
@@ -369,12 +368,12 @@ TEST(avlTest, test_remove_all)
       auto res = avl::insert(tree, d);
       /*assert*/ {
         int *const iptr = std::get<0>(res);
-        assert(std::get<1>(res) == true);
-        assert(iptr);
-        assert(*iptr == d);
+        ASSERT_TRUE(std::get<1>(res) == true);
+        ASSERT_TRUE(iptr);
+        ASSERT_TRUE(*iptr == d);
         if (!avl::verify(tree)) {
           avl::dump(tree, "\033[92minsert\033[0m|");
-          assert(false);
+          ASSERT_TRUE(false);
         }
       }
     }
@@ -383,15 +382,16 @@ TEST(avlTest, test_remove_all)
     for (int d = 0; d <= i; ++d) {
       auto res = avl::remove(tree, d);
       /*assert*/ {
-        assert(res);
+        ASSERT_TRUE(res);
         if (!avl::verify(tree)) {
           avl::dump(tree, "\033[91mremove\033[0m|");
-          assert(false);
+          ASSERT_TRUE(false);
         }
-        assert(sp::find(tree, d) == nullptr);
+const int* fr = avl::find(tree, d)
+        ASSERT_EQ(fr , nullptr);
       }
     }
-    assert(tree.root == nullptr);
+    ASSERT_EQ(tree.root , nullptr);
     printf("------\n\n");
   }
 }
@@ -416,25 +416,25 @@ TEST(avlTest, test_random)
     std::shuffle(in, in + in_size, g);
     for (int i = 0; i < in_size; ++i) {
       for (int k = 0; k < i; ++k) {
-        auto f = sp::find(tree, in[k]);
-        assert(f);
-        assert(*f == in[k]);
+        const int* f = avl::find(tree, in[k]);
+        ASSERT_TRUE(f);
+        ASSERT_TRUE(*f == in[k]);
       }
       // printf(".%d <- ", i);
       auto res = avl::insert(tree, in[i]);
       int *const iptr = std::get<0>(res);
-      assert(std::get<1>(res) == true);
-      assert(iptr);
-      assert(*iptr == in[i]);
+      ASSERT_TRUE(std::get<1>(res) == true);
+      ASSERT_TRUE(iptr);
+      ASSERT_TRUE(*iptr == in[i]);
 
-      int *const fptr = sp::find(tree, in[i]);
-      assert(fptr);
-      assert(fptr == iptr);
-      assert(*fptr == *iptr);
+      const int *const fptr = avl::find(tree, in[i]);
+      ASSERT_TRUE(fptr);
+      ASSERT_TRUE(fptr == iptr);
+      ASSERT_TRUE(*fptr == *iptr);
 
       if (!avl::verify(tree)) {
         avl::dump(tree, "after|");
-        assert(false);
+        ASSERT_TRUE(false);
       }
     }
 

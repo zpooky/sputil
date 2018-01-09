@@ -77,9 +77,9 @@ struct Data {
     }
 };
 
-TEST(static_treeTest, insert_search) {
+TEST(static_treeTest, find) {
   // TODO the size calculations gives level+1 capacity which is wrong
-  /*insert & search*/ 
+  /*insert & find*/ 
   constexpr std::size_t levels = 10;
   using Type = sp::static_tree<Data, levels>;
   static_assert(Type::levels == levels, "");
@@ -88,15 +88,15 @@ TEST(static_treeTest, insert_search) {
     Type tree;
     for (int key = 0; key < int(levels) + 1; ++key) {
       for (int i = 0; i < key; ++i) {
-        Data *res = sp::search(tree, Data(i));
+        Data *res = sp::find(tree, Data(i));
         assert(res);
         assert(res->data == i);
       }
       Data d(key);
-      assert(sp::search(tree, d) == nullptr);
+      assert(sp::find(tree, d) == nullptr);
       assert(sp::insert(tree, d));
       printf("============\n");
-      assert(sp::search(tree, d) != nullptr);
+      assert(sp::find(tree, d) != nullptr);
     }
     printf("done insert\n");
   }
@@ -104,31 +104,32 @@ TEST(static_treeTest, insert_search) {
     Type tree;
     for (int key = levels + 1; key > 0; --key) {
       Data d(key);
-      assert(sp::search(tree, d) == nullptr);
+      assert(sp::find(tree, d) == nullptr);
       assert(sp::insert(tree, d));
-      assert(sp::search(tree, d) != nullptr);
+      assert(sp::find(tree, d) != nullptr);
     }
     printf("done reverse insert\n");
   }
 }
 
 TEST(static_treeTest, lookup_relative) {
-  const sp::impl::Direction left = sp::impl::Direction::LEFT;
-  const sp::impl::Direction right = sp::impl::Direction::RIGHT;
+  using namespace sp::impl::static_tree;
+  const Direction left = Direction::LEFT;
+  const Direction right = Direction::RIGHT;
   {
     sp::relative_idx parent_idx(0);
     for (std::size_t level = 0; level < 63; ++level) {
       {
-        sp::relative_idx idx = sp::impl::lookup_relative(parent_idx, left);
-        auto a_id = sp::impl::parent_relative(idx);
+        sp::relative_idx idx = lookup_relative(parent_idx, left);
+        auto a_id = parent_relative(idx);
         assert(a_id == parent_idx);
       }
       {
-        sp::relative_idx idx = sp::impl::lookup_relative(parent_idx, right);
+        sp::relative_idx idx = lookup_relative(parent_idx, right);
         // printf("lookup :: parent[%zu] -> %s -> r_idx[%zu]\n", //
         //        std::size_t(parent_idx), "right", std::size_t(idx));
 
-        auto a_id = sp::impl::parent_relative(idx);
+        auto a_id = parent_relative(idx);
         // printf("parent :: level[%zu] -> r_idx[%zu] -> parent[%zu]\n", //
         //        level + 1, std::size_t(idx), std::size_t(a_id));
         assert(a_id == parent_idx);
@@ -141,16 +142,16 @@ TEST(static_treeTest, lookup_relative) {
     sp::relative_idx parent_idx(0);
     for (std::size_t level = 0; level < 63; ++level) {
       {
-        sp::relative_idx idx = sp::impl::lookup_relative(parent_idx, right);
-        auto a_id = sp::impl::parent_relative(idx);
+        sp::relative_idx idx = lookup_relative(parent_idx, right);
+        auto a_id = parent_relative(idx);
         assert(a_id == parent_idx);
       }
       {
-        sp::relative_idx idx = sp::impl::lookup_relative(parent_idx, left);
+        sp::relative_idx idx = lookup_relative(parent_idx, left);
         // printf("lookup :: parent[%zu] -> %s -> r_idx[%zu]\n", //
         //        std::size_t(parent_idx), "left", std::size_t(idx));
 
-        auto a_id = sp::impl::parent_relative(idx);
+        auto a_id = parent_relative(idx);
         // printf("parent :: level[%zu] -> r_idx[%zu] -> parent[%zu]\n", //
         //        level + 1, std::size_t(idx), std::size_t(a_id));
         assert(a_id == parent_idx);
@@ -184,7 +185,7 @@ TEST(static_treeTest, insert_in_order_comare) {
     }
     printf("\n");
     for (std::size_t i = 0; i < Type::capacity; ++i) {
-      assert(sp::search(tree, i));
+      assert(sp::find(tree, i));
     }
   }
   {
@@ -208,7 +209,7 @@ TEST(static_treeTest, insert_in_order_comare) {
     }
     printf("\n");
     for (std::size_t i = 0; i < Type::capacity; ++i) {
-      assert(sp::search(tree, i));
+      assert(sp::find(tree, i));
     }
   }
   printf("--------\n");
@@ -222,7 +223,7 @@ TEST(static_treeTest, in_order_for_each) {
   Type tree;
   for (std::size_t i = 0; i < Type::capacity; ++i) {
     Data d((int)i);
-    assert(sp::search(tree, d) == nullptr);
+    assert(sp::find(tree, d) == nullptr);
   }
   {
     int i = 0;
@@ -246,14 +247,14 @@ TEST(static_treeTest, in_order_for_each) {
   }
   for (std::size_t i = 0; i < Type::capacity; ++i) {
     Data d((int)i);
-    assert(sp::search(tree, d) != nullptr);
+    assert(sp::find(tree, d) != nullptr);
   }
-  printf("search ok!\n");
+  printf("find ok!\n");
 }
 
 TEST(static_treeTest, junk) {
   constexpr std::size_t levels = 9;
-  using Type = sp::static_tree<sp::SortedNode<Data>, levels>;
+  using Type = sp::static_tree<Data, levels>;
   Type tree;
   Data d(1);
   insert(tree, d);
@@ -284,7 +285,7 @@ TEST(static_treeTest, junk) {
       printf("\n");
     }
     for (int k = 0; k < int(Type::capacity); ++k) {
-      auto *r = sp::search(tree, k);
+      auto *r = sp::find(tree, k);
       printf("k[%d] < i[%d]\n", k, i);
       assert(r);
       if (r) {

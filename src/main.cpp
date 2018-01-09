@@ -6,4 +6,5 @@ int main() {
   sp::Barrier b(1);
   sp::static_tree<int,2> st;
   bst::Tree<int> s;
+
 }
