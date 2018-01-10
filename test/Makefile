@@ -47,9 +47,7 @@ clean:
 # clean test binaries
 	rm -f $(EXEC) $(OBJECTS) $(DEPENDS)
 # Clean sut binaries
-	rm -f $(PROJECT_ROOT)/$(SUT_DIR)/*.a
-	rm -f $(PROJECT_ROOT)/$(SUT_DIR)/*.d
-	rm -f $(PROJECT_ROOT)/$(SUT_DIR)/*.o
+	$(MAKE) BUILD_DIR=$(SUT_DIR) -C $(PROJECT_ROOT) dumb_clean
 # }}}
 
 # gtest {{{

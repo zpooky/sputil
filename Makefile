@@ -57,11 +57,13 @@ $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp
 # }}}
 
 # clean {{{
-clean:
+clean: dumb_clean
+	$(MAKE) -C test clean
+
+dumb_clean:
 	rm -f $(OBJECTS)
 	rm -f $(DEPENDS)
-	rm -f $(EXEC) $(BUILD_DIR)/$(LIB).a $(BUILD_DIR)/$(LIB).so
-	$(MAKE) -C test clean
+	rm -f $(EXEC) $(BUILD_DIR)/*.a $(BUILD_DIR)/*.so
 # }}}
 
 # test {{{
