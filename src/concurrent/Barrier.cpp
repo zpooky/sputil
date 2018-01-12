@@ -31,8 +31,8 @@ void Barrier::await() noexcept {
     size_t remaining = m_remaining.load(std::memory_order_acquire);
     if (remaining != size_t(0)) {
       m_condition.wait(guard, [this] { //
-        size_t remaining = this->m_remaining.load(std::memory_order_acquire);
-        return remaining == size_t(0);
+        size_t rem = this->m_remaining.load(std::memory_order_acquire);
+        return rem == size_t(0);
       });
     }
   }

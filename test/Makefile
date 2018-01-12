@@ -10,6 +10,7 @@ GTEST_ROOT = $(PROJECT_ROOT)/external/googletest/googletest
 
 HEADER_DIRS = -I$(GTEST_ROOT)/include -I$(SRC_ROOT)
 override CXXFLAGS += $(HEADER_DIRS) -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST
+CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
 LDLIBS = -L$(GTEST_ROOT)/make -lgtest_main -lpthread -L$(PROJECT_ROOT)/$(SUT_DIR) -lsut
 BUILD_DIR = build
 
@@ -39,7 +40,7 @@ $(EXEC): gtest $(OBJECTS)
 
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $(@))
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -MMD -c $< -o $@
+	$(CXX) $(CXXFLAGS_DEBUG) $(LDFLAGS) -MMD -c $< -o $@
 # }}}
 
 # clean {{{

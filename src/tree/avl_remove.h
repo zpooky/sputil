@@ -44,12 +44,34 @@ nop(Node<T> *node) noexcept {
   node->right = nullptr;
 } // avl::impl::nop()
 
+  //test
+template <typename T>
+static ssize_t height(const Node<T>*current){
+  if(!current){
+    return -1;
+  }
+  return 1+ std::max(height(current->right),height(current->left));
+}
+
+template <typename T>
+static std::uint8_t calc_balance(const Node<T>*current){
+  auto r =height(current->right) ;
+  auto l  =height(current->left);
+  if(r==-1)
+    r = 0;
+  if(l==-1)
+    l=0;
+
+  return r-l;
+}
+
 template <typename T>
 static std::size_t
 remove_parent_balance(Node<T> *const child) noexcept {
   Node<T> *parent = child->parent;
   Direction d = direction(child);
 
+  auto par_bal = calc_balance(parent);
   if (d == Direction::LEFT) {
     if (parent->right)
       parent->balance++;
@@ -57,6 +79,10 @@ remove_parent_balance(Node<T> *const child) noexcept {
     if (parent->left)
       parent->balance--;
   }
+if(parent->balance != par_bal){
+  printf("parent->balance[%d]\npar_bal[%d]\n",parent->balance,par_bal);
+  assert(parent->balance == par_bal);
+}
 
   return parent->balance;
 } // avl::impl::remove_parent_balance()

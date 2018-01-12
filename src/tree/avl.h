@@ -1,5 +1,5 @@
-#ifndef SP_MALLOC_AVL_TREE_H
-#define SP_MALLOC_AVL_TREE_H
+#ifndef SP_UTIL_TREE_AVL_TREE_H
+#define SP_UTIL_TREE_AVL_TREE_H
 
 #include "tree.h"
 #include <cassert>
@@ -89,7 +89,7 @@ bool
 verify(Tree<T> &tree) noexcept;
 
 template <typename T,typename K>
-T* find(const Tree<T>&,const K&) noexcept;
+const T* find(const Tree<T>&,const K&) noexcept;
 
 
 namespace impl {
@@ -159,7 +159,7 @@ rotate_left(Node<T> *const A) noexcept {
    */
   Node<T> *const A_parent = A->parent;
   Node<T> *const B = A->right;
-  Node<T> *const B_left = B ? B->left : nullptr; // nullptr
+  Node<T> *const B_left = B ? B->left : nullptr;
 
   //#Rotate
   A->parent = B;
@@ -393,7 +393,7 @@ verify(Tree<T> &tree) noexcept {
 }//avl::verify()
 
 template <typename T,typename K>
-T* find(const Tree<T>&tree,const K&key) noexcept {
+const T* find(const Tree<T>&tree,const K&key) noexcept {
   return sp::find(tree,key);
 }//av::find()
 

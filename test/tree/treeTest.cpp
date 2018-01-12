@@ -1,5 +1,6 @@
 #include <tree/bst.h>
 #include <tree/avl.h>
+#include <tree/red-black.h>
 #include <tree/avl_insert.h>
 #include <tree/avl_remove.h>
 
@@ -26,13 +27,13 @@ find_stuff(Tree_t &tree, std::size_t deleted, T (&in)[in_size]) {
 
 template <template <typename> class Tree_t>
 static void
-test_tree() {
+test_tree(std::size_t goal) {
   std::size_t counter = 0;
   // std::random_device rd;
   // std::mt19937 g(rd());
   std::mt19937 g(0);
 
-  while (true) {
+  while (counter < goal) {
     if (counter % 10 == 0) {
       printf("cnt: %zu\n", counter);
     }
@@ -98,10 +99,14 @@ test_tree() {
 }
 
 TEST(treeTest, test_bst) {
-  // test_tree<bst::Tree>();
+  // test_tree<bst::Tree>(10000);
 }
 
 TEST(treeTest, test_avl) {
   // TODO
-  // test_tree<avl::Tree>();
+  // test_tree<avl::Tree>(1000);
+}
+
+TEST(treeTest, test_red_black) {
+  test_tree<rb::Tree>(1000);
 }
