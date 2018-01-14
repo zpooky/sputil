@@ -87,6 +87,18 @@ pop_front(CircularBuffer<T> &b, T &out) noexcept {
   return true;
 }
 
+template <typename T>
+bool
+pop_back(CircularBuffer<T> &b, T &out) noexcept {
+  if (is_empty(b)) {
+    return false;
+  }
+
+  std::size_t idx = impl::CircularBuffer::index(--b.write, b.capacity);
+  out = std::move(b.buffer[idx]);
+  return true;
+}
+
 } // namespace sp
 
 #endif

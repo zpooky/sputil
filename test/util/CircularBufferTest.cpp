@@ -27,8 +27,49 @@ TEST(CircularBufferTest, test) {
   ASSERT_TRUE(is_empty(buffer));
   ASSERT_FALSE(is_full(buffer));
   ASSERT_EQ(0, length(buffer));
+}
 
-  for (int i = 0; i < 1000; ++i) {
+TEST(CircularBufferTest, wrap) {
+  constexpr int cap = 16;
+  int b[cap];
+  CircularBuffer<int> buffer(b);
+
+  constexpr int wrap_cnt = 1000;
+  for (int i = 0; i < wrap_cnt; ++i) {
     ASSERT_EQ(push_back(buffer, i), i);
   }
+  ASSERT_TRUE(is_full(buffer));
+  ASSERT_TRUE(!is_empty(buffer));
+
+  for (int i = wrap_cnt - cap; i < wrap_cnt; ++i) {
+
+    int res = 999999;
+    ASSERT_TRUE(pop_front(buffer, res));
+    ASSERT_EQ(res, i);
+  }
+
+  ASSERT_TRUE(!is_full(buffer));
+  ASSERT_TRUE(is_empty(buffer));
+}
+
+TEST(CircularBufferTest, pop_back) {
+  constexpr int cap = 16;
+  int b[cap];
+  CircularBuffer<int> buffer(b);
+
+  for (int i = 0; i < cap; ++i) {
+    ASSERT_EQ(push_back(buffer, i), i);
+  }
+  ASSERT_TRUE(is_full(buffer));
+  ASSERT_TRUE(!is_empty(buffer));
+
+  for (int i = cap-1; i >= 0; --i) {
+    int res = 99999;
+    ASSERT_TRUE(pop_back(buffer, res));
+    printf("%d\n", res);
+    ASSERT_EQ(res, i);
+  }
+
+  ASSERT_TRUE(!is_full(buffer));
+  ASSERT_TRUE(is_empty(buffer));
 }
