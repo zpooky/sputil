@@ -10,8 +10,6 @@
 // https://www.lammertbies.nl/comm/info/crc-calculation.html
 // http://crccalc.com/
 
-namespace sp {
-
 using byte = unsigned char;
 using crc32_t = std::uint32_t;
 
@@ -92,16 +90,21 @@ crc(const void *b, std::size_t length, std::uint32_t polynomial) noexcept {
   return ~crc;
 }
 
+namespace crc32c {
 std::uint32_t
-crc32c(const void *b, std::size_t len) noexcept {
+encode(const void *b, std::size_t len) noexcept {
   // return crc_reversed<crc32_t>(b, len, crc32_t(0x1EDC6F41));
   return crc<crc32_t>(b, len, crc32_t(0x82F63B78));
 }
 
+}
+
+namespace crc32 {
+
 std::uint32_t
-crc32(const void *b, std::size_t len) noexcept {
+encode(const void *b, std::size_t len) noexcept {
   // return crc_reversed<crc32_t>(b, len, crc32_t(0x04C11DB7));
   return crc<crc32_t>(b, len, crc32_t(0xEDB88320));
 }
 
-} // namespace sp
+}

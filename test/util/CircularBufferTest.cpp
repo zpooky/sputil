@@ -13,10 +13,10 @@ TEST(CircularBufferTest, test) {
     ASSERT_EQ(push_back(buffer, i), i);
     ASSERT_FALSE(is_empty(buffer));
   }
-  printf("read: %zu\nwrite: %zu\nsize: %zu\n",
-         sp::impl::CircularBuffer::index(buffer.read, buffer.capacity),
-         sp::impl::CircularBuffer::index(buffer.write, buffer.capacity),
-         length(buffer));
+  // printf("read: %zu\nwrite: %zu\nsize: %zu\n",
+  //        sp::impl::CircularBuffer::index(buffer.read, buffer.capacity),
+  //        sp::impl::CircularBuffer::index(buffer.write, buffer.capacity),
+         // length(buffer));
   ASSERT_TRUE(is_full(buffer));
 
   for (int i = 0; i < cap; ++i) {
@@ -57,19 +57,27 @@ TEST(CircularBufferTest, pop_back) {
   int b[cap];
   CircularBuffer<int> buffer(b);
 
-  for (int i = 0; i < cap; ++i) {
-    ASSERT_EQ(push_back(buffer, i), i);
-  }
-  ASSERT_TRUE(is_full(buffer));
-  ASSERT_TRUE(!is_empty(buffer));
+  for(int a =0;a<cap;++a){
+    for(int b =0;b<cap;++b){
+      ASSERT_EQ(push_back(buffer, 999), 999);
+    }
 
-  for (int i = cap-1; i >= 0; --i) {
-    int res = 99999;
-    ASSERT_TRUE(pop_back(buffer, res));
-    printf("%d\n", res);
-    ASSERT_EQ(res, i);
-  }
+    {
+      for (int i = 0; i < cap; ++i) {
+        ASSERT_EQ(push_back(buffer, i), i);
+      }
+      ASSERT_TRUE(is_full(buffer));
+      ASSERT_TRUE(!is_empty(buffer));
 
-  ASSERT_TRUE(!is_full(buffer));
-  ASSERT_TRUE(is_empty(buffer));
+      for (int i = cap-1; i >= 0; --i) {
+        int res = 99999;
+        ASSERT_TRUE(pop_back(buffer, res));
+        // printf("%d\n", res);
+        ASSERT_EQ(res, i);
+      }
+
+      ASSERT_TRUE(!is_full(buffer));
+      ASSERT_TRUE(is_empty(buffer));
+    }
+  }
 }

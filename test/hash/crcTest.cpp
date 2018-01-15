@@ -2,8 +2,6 @@
 #include "gtest/gtest.h"
 #include <cstring>
 
-using namespace sp;
-
 // static void
 // dht_instance(std::uint8_t *ip, int num_octets, std::uint8_t (&node_id)[20]) {
 //   std::uint8_t v4_mask[] = {0x03, 0x0f, 0x3f, 0xff};
@@ -88,7 +86,7 @@ using namespace sp;
 TEST(crcTest, crc32c) {
   {
     const char in[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    std::uint32_t res = crc32c(in, sizeof(in));
+    std::uint32_t res = crc32c::encode(in, sizeof(in));
     std::uint32_t cmp = 0xe3069283;
     assert(res == cmp);
   }
@@ -96,7 +94,7 @@ TEST(crcTest, crc32c) {
     char in[32];
     std::memset(in, 0, sizeof(in));
 
-    std::uint32_t res = crc32c(in, sizeof(in));
+    std::uint32_t res = crc32c::encode(in, sizeof(in));
     std::uint32_t cmp = 0x8A9136AA;
     assert(res == cmp);
   }
@@ -104,7 +102,7 @@ TEST(crcTest, crc32c) {
     unsigned char in[32];
     std::memset(in, 0xff, sizeof(in));
 
-    std::uint32_t res = crc32c(in, sizeof(in));
+    std::uint32_t res = crc32c::encode(in, sizeof(in));
     std::uint32_t cmp = 0x62A8AB43;
     assert(res == cmp);
   }
@@ -148,13 +146,13 @@ TEST(crcTest, crc32c) {
 TEST(crcTest, crc32) {
   {
     const char in[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    std::uint32_t res = crc32(in, sizeof(in));
+    std::uint32_t res = crc32::encode(in, sizeof(in));
     std::uint32_t cmp = 0xCBF43926;
     assert(res == cmp);
   }
   {
     const char in[] = "The quick brown fox jumps over the lazy dog";
-    std::uint32_t res = crc32(in, sizeof(in) - 1);
+    std::uint32_t res = crc32::encode(in, sizeof(in) - 1);
     std::uint32_t cmp = 0x414fa339;
     assert(res == cmp);
   }

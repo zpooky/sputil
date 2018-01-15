@@ -1,15 +1,19 @@
-#ifndef SP_MALLOC_CRC_H
-#define SP_MALLOC_CRC_H
+#ifndef SP_UTIL_HASH_CRC_H
+#define SP_UTIL_HASH_CRC_H
 
 #include <cstdint>
 
-namespace sp {
+namespace crc32c {
 
 std::uint32_t
-crc32c(const void *, std::size_t) noexcept;
+encode(const void *buffer, std::size_t length) noexcept;
+
+}
+
+namespace crc32 {
 
 std::uint32_t
-crc32(const void *, std::size_t) noexcept;
+encode(const void *buffer, std::size_t length) noexcept;
 }
 
 #endif
