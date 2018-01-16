@@ -188,6 +188,12 @@ rotate_left(Node<T> *const A) noexcept {
     }
   }
 
+  assert(sp::impl::tree::doubly_linked(A));
+  assert(sp::impl::tree::doubly_linked(B));
+
+  // assert(sp::impl::tree::doubly_linked(A_parent));
+  assert(sp::impl::tree::doubly_linked(B_left));
+
   return B ? B : A;
 }// avl::impl::avl::rotate_light()
 
@@ -239,6 +245,12 @@ rotate_right(Node<T> *const C) noexcept {
       B->balance += C->balance;
     }
   }
+
+  assert(sp::impl::tree::doubly_linked(B));
+  assert(sp::impl::tree::doubly_linked(C));
+
+  assert(sp::impl::tree::doubly_linked(B_right));
+  // assert(sp::impl::tree::doubly_linked(C_parent));
 
   return B;
 }// avl::impl::avl::rotate_right()

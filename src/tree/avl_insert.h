@@ -95,7 +95,7 @@ insert(Tree<T> &tree, K &&ins) noexcept {
 
   if (!tree.root) {
     /*Insert into empty tree*/
-    tree.root = new (std::nothrow) Node<T>(std::forward<T>(ins));
+    tree.root = new (std::nothrow) Node<T>(std::forward<K>(ins));
     if (tree.root) {
       return std::make_tuple(&tree.root->value, true);
     }
@@ -143,7 +143,7 @@ Lstart:
   }
 
   return std::make_tuple(nullptr, false);
-}
-}
+}//avl::insert()
+}//namespace avl
 
 #endif

@@ -477,7 +477,7 @@ TEST(fnvTest, test_fnv64a) {
   int tstnum;
   for (t = fnv_test_str, tstnum = 1; t->buf != NULL; ++t, ++tstnum) {
     auto hval = fnv_1a::encode(t->buf, t->len);
-    printf("%lu\n",hval);
+    // printf("%lu\n",hval);
     ASSERT_EQ(hval, fnv1a_64_vector[tstnum-1].fnv1a_64);
   }
 }
