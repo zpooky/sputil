@@ -147,6 +147,9 @@ static void rotate_left(Node<T>*const A) noexcept {
   Node<T> *const B = A->right;
   Node<T> *const B_left = B ? B->left : nullptr;
 
+  Colour A_colour = A->colour;
+  Colour B_colour = B ? B->colour : Colour::BLACK;
+
   //#Rotate
   A->parent = B;
   A->right = B_left;
@@ -165,12 +168,13 @@ static void rotate_left(Node<T>*const A) noexcept {
 
   assert(sp::impl::tree::doubly_linked(B_left));
 
+  Node<T>*new_root= B?B:A;
   if(A_parent){
     assert(A_parent->left == A || A_parent->right == A);
     if(A_parent->left == A ){
-      A_parent->left = B ? B : A;
+      A_parent->left = new_root;
     }else {
-      A_parent->right = B ? B : A;
+      A_parent->right = new_root;
     }
   }
   assert(sp::impl::tree::doubly_linked(A));
@@ -178,6 +182,9 @@ static void rotate_left(Node<T>*const A) noexcept {
 
   assert(sp::impl::tree::doubly_linked(B_left));
   assert(sp::impl::tree::doubly_linked(A_parent));
+
+  new_root->colour = A_colour;
+  A->colour = Colour::RED;
 }
 
 template<typename T>
@@ -198,6 +205,10 @@ static void rotate_right(Node<T>*C) noexcept {
   Node<T> *const C_parent = C->parent;
   Node<T> *const B = C->left;
   Node<T> *const B_right = B ? B->right : nullptr;
+
+  Colour C_colour = C->colour;
+  // Colour B_colour = B ? B->colour : Colour::BLACK;
+  // Colour A_colour = A->colour;
 
   //#Rotate
   C->parent = B;
@@ -231,6 +242,10 @@ static void rotate_right(Node<T>*C) noexcept {
 
   assert(sp::impl::tree::doubly_linked(B_right));
   assert(sp::impl::tree::doubly_linked(C_parent));
+
+  B->colour = C_colour;
+  C->colour = Colour::RED;
+  // A->color = B->colour;
 }
 
 template<typename T>
@@ -262,15 +277,15 @@ static Node<T>*rebalance(Node<T>*n) {
         Node<T> * g = grandparent(n);
         if(g){
           Node<T> *p = parent(n);
-          assert(g->left);
-          if(n == g->left->right){
+          // assert(g->left);
+          if(g->left && n == g->left->right){
             assert(p);
 
             rotate_left(p);
             n = n->left;
           }else {
-            assert(g->right);
-            if (n == g->right->left){
+            // assert(g->right);
+            if (g->right && n == g->right->left){
               assert(p);
 
               rotate_right(p);

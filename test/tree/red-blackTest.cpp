@@ -85,10 +85,12 @@ TEST(red_blackTest, test) {
     assert_BLACK(tree.root->right->right,18);
     assert_RED(tree.root->right->right->right,25);
     ASSERT_TRUE(verify(tree));
+    dump(tree);
   }
   printf("7. ");
   {
     assert_insert(tree,40);
+    dump(tree);
     assert_BLACK(tree.root,8);
     assert_BLACK(tree.root->left,5);
 
@@ -104,6 +106,7 @@ TEST(red_blackTest, test) {
   printf("8. ");
   {
     assert_insert(tree,80);
+    dump(tree);
     assert_BLACK(tree.root,17);
     assert_RED(tree.root->left,10);
     assert_BLACK(tree.root->left->left,5);
