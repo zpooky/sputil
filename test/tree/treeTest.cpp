@@ -147,15 +147,15 @@ random_insert(std::size_t goal) {
 
 
 TEST(treeTest, test_insert_delete_bst) {
-  random_insert_delete<bst::Tree>(10000);
+  random_insert_delete<bst::Tree>(10);
 }
 
 TEST(treeTest, test_insert_bst) {
-  random_insert<bst::Tree>(50);
+  random_insert<bst::Tree>(10);
 }
 
 TEST(treeTest, test_insert_avl) {
-  random_insert<avl::Tree>(50);
+  random_insert<avl::Tree>(10);
 }
 
 TEST(treeTest, test_inser_remove_avl) {
@@ -168,5 +168,5 @@ TEST(treeTest, test_insert_remove_red_black) {
 }
 
 TEST(treeTest, test_insert_red_black) {
-  random_insert<rb::Tree>(10000);
+  random_insert<rb::Tree>(10);
 }
