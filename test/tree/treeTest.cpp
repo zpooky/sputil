@@ -1,6 +1,6 @@
 #include <tree/bst.h>
 #include <tree/avl.h>
-// #include <tree/red-black.h>
+#include <tree/red-black.h>
 #include <tree/avl_insert.h>
 #include <tree/avl_remove.h>
 
@@ -27,18 +27,18 @@ find_stuff(Tree_t &tree, std::size_t deleted, T (&in)[in_size]) {
 
 template <template <typename> class Tree_t>
 static void
-test_tree(std::size_t goal) {
+random_insert_delete(std::size_t goal) {
   std::size_t counter = 0;
   // std::random_device rd;
   // std::mt19937 g(rd());
   std::mt19937 g(0);
 
   while (counter < goal) {
-    if (counter % 10 == 0) {
+    if (counter > 0 && counter % 10 == 0) {
       printf("cnt: %zu\n", counter);
     }
     Tree_t<int> tree;
-    constexpr int in_size = 10;
+    constexpr int in_size = 1000;
     int in[in_size];
     for (int i = 0; i < in_size; ++i) {
       in[i] = i;
@@ -74,18 +74,18 @@ test_tree(std::size_t goal) {
     for (int i = 0; i < in_size; ++i) {
       find_stuff(tree, i, in);
 
-      dump(tree, "before|");
-      printf("--\n");
-      printf("remove(tree,%d)\n", in[i]);
+      // dump(tree, "before|");
+      // printf("--\n");
+      // printf("remove(tree,%d)\n", in[i]);
       bool rb = remove(tree, in[i]);
-      printf(" = %s\n", rb ? "true" : "false");
+      // printf(" = %s\n", rb ? "true" : "false");
       assert(rb);
       if (!verify(tree)) {
         printf("\n");
         dump(tree, "rem|");
         assert(false);
       } else {
-        dump(tree, "rem|");
+        // dump(tree, "rem|");
       }
 
       find_stuff(tree, i + 1, in);
@@ -98,15 +98,75 @@ test_tree(std::size_t goal) {
   printf("done\n");
 }
 
-TEST(treeTest, test_bst) {
-  // test_tree<bst::Tree>(10000);
+template <template <typename> class Tree_t>
+static void
+random_insert(std::size_t goal) {
+  std::random_device rd;
+  std::mt19937 g(rd());
+  std::size_t counter = 0;
+  while (counter < goal) {
+    if (counter > 0 && counter % 100 == 0) {
+      printf("cnt: %zu\n", counter);
+    }
+    Tree_t<int> tree;
+    constexpr int in_size = 1000;
+    int in[in_size];
+    for (int i = 0; i < in_size; ++i) {
+      in[i] = i;
+    }
+
+    std::shuffle(in, in + in_size, g);
+    for (int i = 0; i < in_size; ++i) {
+      for (int k = 0; k < i; ++k) {
+        const int* f = find(tree, in[k]);
+        ASSERT_TRUE(f);
+        ASSERT_TRUE(*f == in[k]);
+      }
+      // printf(".%d <- ", i);
+      auto res = insert(tree, in[i]);
+      int *const iptr = std::get<0>(res);
+      ASSERT_TRUE(std::get<1>(res) == true);
+      ASSERT_TRUE(iptr);
+      ASSERT_TRUE(*iptr == in[i]);
+
+      const int *const fptr = find(tree, in[i]);
+      ASSERT_TRUE(fptr);
+      ASSERT_TRUE(fptr == iptr);
+      ASSERT_TRUE(*fptr == *iptr);
+
+      if (!verify(tree)) {
+        dump(tree, "after|");
+        ASSERT_TRUE(false);
+      }
+    }
+
+    counter++;
+  }
+  // printf("done\n");
 }
 
-TEST(treeTest, test_avl) {
+
+TEST(treeTest, test_insert_delete_bst) {
+  random_insert_delete<bst::Tree>(10000);
+}
+
+TEST(treeTest, test_insert_bst) {
+  random_insert<bst::Tree>(50);
+}
+
+TEST(treeTest, test_insert_avl) {
+  random_insert<avl::Tree>(50);
+}
+
+TEST(treeTest, test_inser_remove_avl) {
   // TODO
-  // test_tree<avl::Tree>(1000);
+  // random_insert_delete<avl::Tree>(1000);
 }
 
-TEST(treeTest, test_red_black) {
-  // test_tree<rb::Tree>(1000);
+TEST(treeTest, test_insert_remove_red_black) {
+  // random_insert_delete<rb::Tree>(1000);
+}
+
+TEST(treeTest, test_insert_red_black) {
+  random_insert<rb::Tree>(10000);
 }

@@ -91,18 +91,18 @@ Lstart:
 }
 //===================================================
 
+// TODO
 // bfs_search
 // inorder_search
-template <typename T, typename F>
-typename Tree<T>::const_pointer
-search(const Tree<T> &tree, F predicate) {
-  // TODO
-  return nullptr;
-}
+// template <typename T, typename F>
+// typename Tree<T>::const_pointer
+// search(const Tree<T> &tree, F predicate) {
+//   return nullptr;
+// }
 
 template <typename T, typename S>
 typename Tree<T>::const_pointer
-find(const Tree<T> &tree, const S &search) {
+find(const Tree<T> &tree, const S &search) noexcept {
   auto *root = tree.root;
 Lstart:
   if (root) {
@@ -119,6 +119,14 @@ Lstart:
   }
   return nullptr;
 }
+
+template <typename T, typename S>
+typename Tree<T>::pointer
+find(Tree<T> &tree, const S &search) noexcept {
+const Tree<T>& ctree = tree;
+  return (typename Tree<T>::pointer)find<T,S>(ctree,search);
+}
+
 
 namespace impl {
 namespace tree {

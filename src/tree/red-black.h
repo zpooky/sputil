@@ -76,7 +76,10 @@ template <typename T>
 using Tree = sp::Tree<rb::Node<T>>;
 
 template <typename T,typename K>
-const T* find(const Tree<T>&,const K&) noexcept;//TODO
+const T* find(const Tree<T>&,const K&) noexcept;
+
+template <typename T,typename K>
+const T* find(Tree<T>&,const K&) noexcept;
 
 template <typename T, typename K>
 std::tuple<T *, bool>
@@ -125,11 +128,9 @@ static Node<T>*uncle(Node<T>*n){
   return g->right;
 }
 
-//TODO rotate the value not the node. Meaning the node colour should be
-//kept
 template<typename T>
 static void rotate_left(Node<T>*const A) noexcept {
-  printf("rotate_left(%d)\n",A->value);
+  // printf("rotate_left(%d)\n",A->value);
   /*
    *  <_
    *    \
@@ -150,7 +151,6 @@ static void rotate_left(Node<T>*const A) noexcept {
   std::size_t c_before = sp::impl::tree::child_count(A_parent);
 
   Colour A_colour = A->colour;
-  Colour B_colour = B ? B->colour : Colour::BLACK;
 
   //#Rotate
   A->parent = B;
@@ -193,7 +193,7 @@ static void rotate_left(Node<T>*const A) noexcept {
 
 template<typename T>
 static void rotate_right(Node<T>*C) noexcept {
-  printf("rotate_right(%d)\n",C->value);
+  // printf("rotate_right(%d)\n",C->value);
   /*
    * B_.
    *    \
@@ -258,7 +258,7 @@ static void rotate_right(Node<T>*C) noexcept {
 
 template<typename T>
 static Node<T>*rebalance(Node<T>*n) {
-  printf("rebalance(%d)\n",n->value);
+  // printf("rebalance(%d)\n",n->value);
   assert(n->colour == Colour::RED);
 
   Node<T>*p = parent(n);
@@ -325,8 +325,9 @@ static Node<T>*rebalance(Node<T>*n) {
 }//rb::impl::rb::rebalance()
 
 template<typename T>
-static bool verify(Node<T>*parent,Node<T>*current){
+static bool verify(Node<T>*parent,Node<T>*current,std::size_t &min,std::size_t &max){
   if(parent){
+    // The children of a RED coloured node must be coloured BLACK
     if(parent->colour == Colour::RED){
       if(current->colour!=Colour::BLACK){
         return false;
@@ -337,42 +338,66 @@ static bool verify(Node<T>*parent,Node<T>*current){
       return false;
     }
   }else {
+    // The ROOT node must coloured BLACK
     if(current->colour != Colour::BLACK){
       return false;
     }
   }
 
+  std::size_t l_min,l_max;
+  std::size_t r_min,r_max;
+  l_min = l_max = 0;
+  r_min = r_max = 0;
+
   if(current->left){
     if(!(current->left->value < current->value )){
       return false;
     }
-    if(!verify(current,current->left)){
+    if(!verify(current,current->left,l_min,l_max)){
       return false;
     }
-  }
-
+  } 
   if(current->right){
     if(!(current->right->value > current->value)){
       return false;
     }
-    if(!verify(current,current->right)){
+    if(!verify(current,current->right,r_min,r_max)){
       return false;
     }
   }
-  return true;
+
+  min = std::min(l_min, r_min) + 1;
+  max = std::max(l_max, r_max) + 1;
+
+  // See if this node is balanced
+  if (max <= 2*min){
+    return true;
+  }
+
+  return false;
 }//rb::impl::rb::verify()
 
 }//namespace rb
 }//namespace impl
 
 //==================
+
+template <typename T,typename K>
+const T* find(const Tree<T>&tree,const K&key) noexcept {
+  return sp::find(tree,key);
+}
+
+template <typename T,typename K>
+const T* find(Tree<T>&tree,const K&key) noexcept {
+  return sp::find(tree,key);
+}
+
 template <typename T, typename K>
 std::tuple<T *, bool>
 insert(Tree<T> &tree, K &&ins) noexcept {
   auto set_root = [&tree](Node<T> *root) {
     if (root) {
       if(!root->parent){
-        printf("set_root(%d)\n",root->value);
         tree.root = root;
       }
     }
@@ -433,7 +458,9 @@ verify(Tree<T> &tree) noexcept {
   Node<T> * root = tree.root;
   if(root){
     Node<T>*p = nullptr;
-    return impl::rb::verify(p,root);
+    std::size_t min=0;
+    std::size_t max=0;
+    return impl::rb::verify(p,root,min,max);
   }
   return true;
 }//rb::insert()
