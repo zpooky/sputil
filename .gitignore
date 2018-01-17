@@ -43,3 +43,4 @@ main
 test/thetest
 *.stackdump
 sputil
+Session.vim

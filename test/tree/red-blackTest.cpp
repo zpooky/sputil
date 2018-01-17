@@ -14,6 +14,7 @@
 
 template<typename T>
 static void assert_insert(rb::Tree<T>&tree,const T&v) {
+  printf("insert(tree,%d)\n",v);
   auto res = insert(tree,v);
   ASSERT_TRUE(std::get<0>(res));
   ASSERT_TRUE(std::get<1>(res));
@@ -22,14 +23,14 @@ static void assert_insert(rb::Tree<T>&tree,const T&v) {
 
 TEST(red_blackTest, test) {
   rb::Tree<int> tree;
-  printf("1. \n");
+  printf("1. ");
   {
     int val=8;
     assert_insert(tree,val);
     assert_BLACK(tree.root,val);
     ASSERT_TRUE(verify(tree));
   }
-  printf("2. \n");
+  printf("2. ");
   {
     int val=18;
     assert_insert(tree,val);
@@ -37,7 +38,7 @@ TEST(red_blackTest, test) {
     assert_RED(tree.root->right,val);
     ASSERT_TRUE(verify(tree));
   }
-  printf("3. \n");
+  printf("3. ");
   {
     int val=5;
     assert_insert(tree,val);
@@ -46,7 +47,7 @@ TEST(red_blackTest, test) {
     assert_RED(tree.root->left,val);
     ASSERT_TRUE(verify(tree));
   }
-  printf("4. \n");
+  printf("4. ");
   {
     int val=15;
     assert_insert(tree,val);
@@ -57,18 +58,22 @@ TEST(red_blackTest, test) {
     assert_RED(tree.root->right->left,val);
     ASSERT_TRUE(verify(tree));
   }
-  printf("5. \n");
+  printf("5. ");
   {
     assert_insert(tree,17);
+    dump(tree);
     assert_BLACK(tree.root,8);
     assert_BLACK(tree.root->left,5);
 
     assert_BLACK(tree.root->right,17);
     assert_RED(tree.root->right->left,15);
     assert_RED(tree.root->right->right,18);
-    ASSERT_TRUE(verify(tree));
+    if(!verify(tree)) {
+      dump(tree);
+      ASSERT_FALSE(true);
+    }
   }
-  printf("6. \n");
+  printf("6. ");
   {
     assert_insert(tree,25);
     assert_BLACK(tree.root,8);
@@ -81,7 +86,7 @@ TEST(red_blackTest, test) {
     assert_RED(tree.root->right->right->right,25);
     ASSERT_TRUE(verify(tree));
   }
-  printf("7. \n");
+  printf("7. ");
   {
     assert_insert(tree,40);
     assert_BLACK(tree.root,8);
@@ -96,7 +101,7 @@ TEST(red_blackTest, test) {
     ASSERT_TRUE(verify(tree));
   }
 
-  printf("8. \n");
+  printf("8. ");
   {
     assert_insert(tree,80);
     assert_BLACK(tree.root,17);

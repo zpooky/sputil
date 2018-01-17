@@ -147,7 +147,7 @@ rotate_left(Node<T> *const A) noexcept {
   /*
    * <_
    *   \
-   * __/
+   *B__/
    *
    * C:3, B:2, A:1
    *
@@ -157,6 +157,7 @@ rotate_left(Node<T> *const A) noexcept {
    *  / \                       \
    * x1  C                       x1
    */
+  // B is optional therefore it can be null
   Node<T> *const A_parent = A->parent;
   Node<T> *const B = A->right;
   Node<T> *const B_left = B ? B->left : nullptr;
@@ -194,6 +195,8 @@ rotate_left(Node<T> *const A) noexcept {
   // assert(sp::impl::tree::doubly_linked(A_parent));
   assert(sp::impl::tree::doubly_linked(B_left));
 
+  //since B can be null when B is null C is as well therefore in that case A
+  //will be the root node.
   return B ? B : A;
 }// avl::impl::avl::rotate_light()
 
@@ -203,18 +206,19 @@ rotate_right(Node<T> *const C) noexcept {
   // printf("\trotate_right(%s)\n", std::string(*C).c_str());
   // dump_root(C, "\t");
   /*
-  * _.
-  *   \
-  * <-´
-  *
-  * C:3, B:2, A:1
-  *
-  *     C                         B
-  *    /           R(3)          / \
-  *   B            ---->        A   C
-  *  / \                           /
-  * A   x1                        x1
-  */
+   *B_.
+   *   \
+   * <-´
+   *
+   * C:3, B:2, A:1
+   *
+   *     C                         B
+   *    /           R(3)          / \
+   *   B            ---->        A   C
+   *  / \                           /
+   * A   x1                        x1
+   */
+  // B is optional therefore it can be null
   Node<T> *const C_parent = C->parent;
   Node<T> *const B = C->left;
   Node<T> *const B_right = B ? B->right : nullptr;

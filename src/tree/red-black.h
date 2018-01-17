@@ -88,11 +88,11 @@ remove(Tree<T> &, const K &) noexcept;//TODO
 
 template <typename T>
 void
-dump(Tree<T> &tree, std::string prefix = "") noexcept;//TODO
+dump(Tree<T> &tree, const std::string &prefix = "") noexcept;
 
 template <typename T>
 bool
-verify(Tree<T> &tree) noexcept;//TODO
+verify(Tree<T> &tree) noexcept;
 
 //==================
 namespace impl {
@@ -125,8 +125,76 @@ static Node<T>*uncle(Node<T>*n){
   return g->right;
 }
 
+//TODO rotate the value not the node. Meaning the node colour should be
+//kept
 template<typename T>
-static Node<T>* rotate_right(Node<T>*C) noexcept {
+static void rotate_left(Node<T>*const A) noexcept {
+  /*
+   *  <_
+   *    \
+   * B__/
+   *
+   * C:3, B:2, A:1
+   *
+   * A                           B
+   *  \           L(1)          / \
+   *   B          ---->        A   C
+   *  / \                       \
+   * x1  C                       x1
+   */
+  // B is optional therefore it can be null
+  Node<T> *const A_parent = A->parent;
+  Node<T> *const B = A->right;
+  Node<T> *const B_left = B ? B->left : nullptr;
+
+  //#Rotate
+  A->parent = B;
+  A->right = B_left;
+
+  if (B_left) {
+    B_left->parent = A;
+  }
+
+  if (B) {
+    B->parent = A_parent;
+    B->left = A;
+  }
+
+  assert(sp::impl::tree::doubly_linked(A));
+  assert(sp::impl::tree::doubly_linked(B));
+
+  assert(sp::impl::tree::doubly_linked(B_left));
+
+  if(A_parent){
+    assert(A_parent->left == A || A_parent->right == A);
+    if(A_parent->left == A ){
+      A_parent->left = B ? B : A;
+    }else {
+      A_parent->right = B ? B : A;
+    }
+  }
+  assert(sp::impl::tree::doubly_linked(A));
+  assert(sp::impl::tree::doubly_linked(B));
+
+  assert(sp::impl::tree::doubly_linked(B_left));
+  assert(sp::impl::tree::doubly_linked(A_parent));
+}
+
+template<typename T>
+static void rotate_right(Node<T>*C) noexcept {
+  /*
+   * B_.
+   *    \
+   *  <-´
+   *
+   * C:3, B:2, A:1
+   *
+   *     C                         B
+   *    /           R(3)          / \
+   *   B            ---->        A   C
+   *  / \                           /
+   * A   x1                        x1
+   */
   Node<T> *const C_parent = C->parent;
   Node<T> *const B = C->left;
   Node<T> *const B_right = B ? B->right : nullptr;
@@ -158,42 +226,11 @@ static Node<T>* rotate_right(Node<T>*C) noexcept {
       C_parent->right = B;
     }
   }
-  return nullptr;
-}
-
-template<typename T>
-static Node<T>* rotate_left(Node<T>*const A) noexcept {
-  Node<T> *const A_parent = A->parent;
-  Node<T> *const B = A->right;
-  Node<T> *const B_left = B ? B->left : nullptr;
-
-  //#Rotate
-  A->parent = B;
-  A->right = B_left;
-
-  if (B_left) {
-    B_left->parent = A;
-  }
-
-  if (B) {
-    B->parent = A_parent;
-    B->left = A;
-  }
-
-  assert(sp::impl::tree::doubly_linked(A));
   assert(sp::impl::tree::doubly_linked(B));
+  assert(sp::impl::tree::doubly_linked(C));
 
-  assert(sp::impl::tree::doubly_linked(B_left));
-
-  if(A_parent){
-    assert(A_parent->left == A || A_parent->right == A);
-    if(A_parent->left == A ){
-      A_parent->left = B ? B : A;
-    }else {
-      A_parent->right = B ? B : A;
-    }
-  }
-  return nullptr;
+  assert(sp::impl::tree::doubly_linked(B_right));
+  assert(sp::impl::tree::doubly_linked(C_parent));
 }
 
 template<typename T>
@@ -223,17 +260,23 @@ static Node<T>*rebalance(Node<T>*n) {
     }else {
       {
         Node<T> * g = grandparent(n);
-        Node<T> *p = parent(n);
-        if(g && n == g->left->right){
-          assert(p);
+        if(g){
+          Node<T> *p = parent(n);
+          assert(g->left);
+          if(n == g->left->right){
+            assert(p);
 
-          rotate_left(p);
-          n = n->left;
-        }else if (g && n == g->right->left){
-          assert(p);
+            rotate_left(p);
+            n = n->left;
+          }else {
+            assert(g->right);
+            if (n == g->right->left){
+              assert(p);
 
-          rotate_right(p);
-          n = n->right;
+              rotate_right(p);
+              n = n->right;
+            }
+          }
         }
       }
 
@@ -254,8 +297,10 @@ static Node<T>*rebalance(Node<T>*n) {
         assert(p);
 
         p->colour = Colour::BLACK;
-        if(g)
+        if(g){
           g->colour = Colour::RED;
+          return rebalance(g);//sp
+        }
       }
       return nullptr;
     }
@@ -325,10 +370,9 @@ insert(Tree<T> &tree, K &&ins) noexcept {
     return std::make_tuple(nullptr, false);
   }
 
-  // TODO share with bst
   Node<T> *it = tree.root;
-
 Lstart:
+  // XXX share with bst
   /*Ordinary Binary Insert*/
   if (ins < it->value) {
     if (it->left) {
@@ -374,6 +418,13 @@ verify(Tree<T> &tree) noexcept {
   }
   return true;
 }//rb::insert()
+
+template <typename T>
+void
+dump(Tree<T> &tree, const std::string& prefix) noexcept {
+  return sp::impl::tree::dump(tree.root,prefix);
+}
+
 
 }//namespace rb
 
