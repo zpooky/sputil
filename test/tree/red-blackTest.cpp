@@ -108,7 +108,7 @@ TEST(red_blackTest, test) {
     assert_insert(tree,80);
     dump(tree);
     assert_BLACK(tree.root,17);
-    assert_RED(tree.root->left,10);
+    assert_RED(tree.root->left,8);
     assert_BLACK(tree.root->left->left,5);
     assert_BLACK(tree.root->left->right,15);
 

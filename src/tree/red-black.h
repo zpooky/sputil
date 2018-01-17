@@ -129,6 +129,7 @@ static Node<T>*uncle(Node<T>*n){
 //kept
 template<typename T>
 static void rotate_left(Node<T>*const A) noexcept {
+  printf("rotate_left(%d)\n",A->value);
   /*
    *  <_
    *    \
@@ -146,6 +147,7 @@ static void rotate_left(Node<T>*const A) noexcept {
   Node<T> *const A_parent = A->parent;
   Node<T> *const B = A->right;
   Node<T> *const B_left = B ? B->left : nullptr;
+  std::size_t c_before = sp::impl::tree::child_count(A_parent);
 
   Colour A_colour = A->colour;
   Colour B_colour = B ? B->colour : Colour::BLACK;
@@ -185,10 +187,13 @@ static void rotate_left(Node<T>*const A) noexcept {
 
   new_root->colour = A_colour;
   A->colour = Colour::RED;
+
+  assert(c_before == sp::impl::tree::child_count(A_parent));
 }
 
 template<typename T>
 static void rotate_right(Node<T>*C) noexcept {
+  printf("rotate_right(%d)\n",C->value);
   /*
    * B_.
    *    \
@@ -205,6 +210,7 @@ static void rotate_right(Node<T>*C) noexcept {
   Node<T> *const C_parent = C->parent;
   Node<T> *const B = C->left;
   Node<T> *const B_right = B ? B->right : nullptr;
+  std::size_t c_before = sp::impl::tree::child_count(C_parent);
 
   Colour C_colour = C->colour;
   // Colour B_colour = B ? B->colour : Colour::BLACK;
@@ -246,10 +252,13 @@ static void rotate_right(Node<T>*C) noexcept {
   B->colour = C_colour;
   C->colour = Colour::RED;
   // A->color = B->colour;
+
+  assert(c_before == sp::impl::tree::child_count(C_parent));
 }
 
 template<typename T>
 static Node<T>*rebalance(Node<T>*n) {
+  printf("rebalance(%d)\n",n->value);
   assert(n->colour == Colour::RED);
 
   Node<T>*p = parent(n);
@@ -258,8 +267,8 @@ static Node<T>*rebalance(Node<T>*n) {
     return n;
   }
 
-  if(p->colour == Colour::BLACK){
-    return nullptr;
+  if(p->colour == Colour::BLACK) {
+    return p;
   } else if(p->colour == Colour::RED) {
     Node<T> *u = uncle(n);
 
@@ -295,29 +304,21 @@ static Node<T>*rebalance(Node<T>*n) {
         }
       }
 
-      {
-        Node<T>*p=parent(n);
-        assert(p);
-        if(n == p->left){
-          rotate_right(grandparent(n));
-        }else {
-          rotate_left(grandparent(n));
-        }
+      Node<T>*p=parent(n);
+      Node<T> *g=grandparent(n);
+      assert(p);
+      if(n == p->left){
+        rotate_right(g);
+      }else {
+        rotate_left(g);
       }
 
-      {
-        Node<T> *g = grandparent(n);
-        Node<T> *p = parent(n);
-        // assert(g);
-        assert(p);
-
-        p->colour = Colour::BLACK;
-        if(g){
-          g->colour = Colour::RED;
-          return rebalance(g);//sp
-        }
+      p->colour = Colour::BLACK;
+      if(g){
+        g->colour = Colour::RED;
+        return rebalance(g);//sp
       }
-      return nullptr;
+      return p;
     }
   }
   assert(false);
@@ -370,7 +371,10 @@ std::tuple<T *, bool>
 insert(Tree<T> &tree, K &&ins) noexcept {
   auto set_root = [&tree](Node<T> *root) {
     if (root) {
-      tree.root = root;
+      if(!root->parent){
+        printf("set_root(%d)\n",root->value);
+        tree.root = root;
+      }
     }
   };
 

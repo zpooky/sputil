@@ -160,6 +160,17 @@ dump(T *tree, std::string prefix = "", bool isTail = true,
   }
 }
 
+template<typename T>
+std::size_t child_count(T*tree)noexcept {
+  std::size_t result=0;
+  if(tree){
+    ++result;
+    result+=child_count(tree->left);
+    result+=child_count(tree->right);
+  }
+  return result;
+}
+
 } // namespace tree
 } // namesapce impl
 }
