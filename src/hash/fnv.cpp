@@ -138,20 +138,20 @@ namespace fnv_1a {
 * arg on the first call to either fnv_64a_buf() or fnv_64a_str().
 *
 */
-std::uint64_t
-encode(const void *buf, std::size_t len, std::uint64_t hash) noexcept
-{
-  constexpr std::uint64_t prime{0x100000001b3ULL};
 
+template<typename T>
+static T
+encode(const void *buf, std::size_t length, T prime, T hash) noexcept
+{
   const unsigned char *it = (const unsigned char*)buf;
-  const unsigned char *end = it + len;
+  const unsigned char *end = it + length;
   /*
    * fnv-1a hash each octet of the buffer
    */
   for (;it != end;++it) {
 
     /* xor the bottom with the current octet */
-    hash ^= std::uint64_t(*it);
+    hash ^= T(*it);
 
     /* multiply by the 64 bit fnv magic prime mod 2^64 */
     hash *= prime;
@@ -161,9 +161,29 @@ encode(const void *buf, std::size_t len, std::uint64_t hash) noexcept
 }
 
 std::uint64_t
-encode(const void *buf, std::size_t len) noexcept {
+encode(const void *buf, std::size_t length, std::uint64_t hash) noexcept
+{
+  constexpr std::uint64_t prime{0x100000001b3ULL};
+  return encode(buf,length,prime,hash);
+}
+
+std::uint64_t
+encode64(const void *buf, std::size_t length) noexcept {
   constexpr std::uint64_t offset_basis{0xcbf29ce484222325ULL};
-  return encode(buf,len,offset_basis);
+  return encode(buf,length,offset_basis);
+}
+
+
+std::uint32_t
+encode(const void *buf, std::size_t length, std::uint32_t hash) noexcept {
+constexpr std::uint32_t prime{0x01000193};
+  return encode(buf,length,prime,hash);
+}
+
+std::uint32_t
+encode32(const void *buf, std::size_t length) noexcept {
+  constexpr std::uint32_t offset_basis{0x811c9dc5};
+  return encode(buf,length,offset_basis);
 }
 
 }

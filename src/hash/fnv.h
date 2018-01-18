@@ -9,7 +9,13 @@ std::uint64_t
 encode(const void *buf, std::size_t length, std::uint64_t hash) noexcept;
 
 std::uint64_t
-encode(const void *buf, std::size_t length) noexcept;
+encode64(const void *buf, std::size_t length) noexcept;
+
+std::uint32_t
+encode(const void *buf, std::size_t length, std::uint32_t hash) noexcept;
+
+std::uint32_t
+encode32(const void *buf, std::size_t length) noexcept;
 }
 
 #endif
