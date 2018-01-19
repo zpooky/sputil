@@ -3,11 +3,11 @@
 
 #include "tree.h"
 #include <tuple>
-#include <utility>//forward
+#include <utility> //forward
 
 namespace rb {
 
-  enum class Colour : bool {RED,BLACK};
+enum class Colour : bool { RED, BLACK };
 
 template <typename T>
 struct Node {
@@ -36,8 +36,8 @@ struct Node {
     s.append(std::to_string(int(value)));
     s.append("|b:");
     s.append(colour == Colour::RED ? "RED" : "");
-    s.append(colour == Colour::BLACK ? "BLACK":"");
-    s.append(colour != Colour::BLACK && colour != Colour::RED? "ERROR":"");
+    s.append(colour == Colour::BLACK ? "BLACK" : "");
+    s.append(colour != Colour::BLACK && colour != Colour::RED ? "ERROR" : "");
     s.append("]");
     return s;
   }
@@ -75,11 +75,13 @@ struct Node {
 template <typename T>
 using Tree = sp::Tree<rb::Node<T>>;
 
-template <typename T,typename K>
-const T* find(const Tree<T>&,const K&) noexcept;
+template <typename T, typename K>
+const T *
+find(const Tree<T> &, const K &) noexcept;
 
-template <typename T,typename K>
-const T* find(Tree<T>&,const K&) noexcept;
+template <typename T, typename K>
+const T *
+find(Tree<T> &, const K &) noexcept;
 
 template <typename T, typename K>
 std::tuple<T *, bool>
@@ -87,7 +89,7 @@ insert(Tree<T> &, K &&) noexcept;
 
 template <typename T, typename K>
 bool
-remove(Tree<T> &, const K &) noexcept;//TODO
+remove(Tree<T> &, const K &) noexcept; // TODO
 
 template <typename T>
 void
@@ -101,25 +103,28 @@ verify(Tree<T> &tree) noexcept;
 namespace impl {
 namespace rb {
 
-template<typename T>
-static Node<T>*parent(Node<T>*n){
+template <typename T>
+static Node<T> *
+parent(Node<T> *n) {
   assert(n);
   return n->parent;
 }
 
-template<typename T>
-static Node<T>*grandparent(Node<T>*n){
-  Node<T>* p = parent(n);
-  if(!sp::impl::tree::doubly_linked(p))
+template <typename T>
+static Node<T> *
+grandparent(Node<T> *n) {
+  Node<T> *p = parent(n);
+  if (!sp::impl::tree::doubly_linked(p))
     assert(sp::impl::tree::doubly_linked(p));
   return p ? parent(p) : nullptr;
 }
 
-template<typename T>
-static Node<T>*uncle(Node<T>*n){
-  Node<T>*p = parent(n);
+template <typename T>
+static Node<T> *
+uncle(Node<T> *n) {
+  Node<T> *p = parent(n);
   Node<T> *g = grandparent(n);
-  if(g->left != p){
+  if (g->left != p) {
     assert(g->right == p);
     return g->left;
   }
@@ -128,8 +133,9 @@ static Node<T>*uncle(Node<T>*n){
   return g->right;
 }
 
-template<typename T>
-static void rotate_left(Node<T>*const A) noexcept {
+template <typename T>
+static void
+rotate_left(Node<T> *const A) noexcept {
   // printf("rotate_left(%d)\n",A->value);
   /*
    *  <_
@@ -170,12 +176,12 @@ static void rotate_left(Node<T>*const A) noexcept {
 
   assert(sp::impl::tree::doubly_linked(B_left));
 
-  Node<T>*new_root= B?B:A;
-  if(A_parent){
+  Node<T> *new_root = B ? B : A;
+  if (A_parent) {
     assert(A_parent->left == A || A_parent->right == A);
-    if(A_parent->left == A ){
+    if (A_parent->left == A) {
       A_parent->left = new_root;
-    }else {
+    } else {
       A_parent->right = new_root;
     }
   }
@@ -191,8 +197,9 @@ static void rotate_left(Node<T>*const A) noexcept {
   assert(c_before == sp::impl::tree::child_count(A_parent));
 }
 
-template<typename T>
-static void rotate_right(Node<T>*C) noexcept {
+template <typename T>
+static void
+rotate_right(Node<T> *C) noexcept {
   // printf("rotate_right(%d)\n",C->value);
   /*
    * B_.
@@ -234,12 +241,12 @@ static void rotate_right(Node<T>*C) noexcept {
 
   assert(sp::impl::tree::doubly_linked(B_right));
 
-  if(C_parent){
+  if (C_parent) {
     assert(C_parent->left == C || C_parent->right == C);
 
-    if(C_parent->left == C ){
+    if (C_parent->left == C) {
       C_parent->left = B;
-    }else {
+    } else {
       C_parent->right = B;
     }
   }
@@ -256,45 +263,46 @@ static void rotate_right(Node<T>*C) noexcept {
   assert(c_before == sp::impl::tree::child_count(C_parent));
 }
 
-template<typename T>
-static Node<T>*rebalance(Node<T>*n) {
+template <typename T>
+static Node<T> *
+rebalance(Node<T> *n) {
   // printf("rebalance(%d)\n",n->value);
   assert(n->colour == Colour::RED);
 
-  Node<T>*p = parent(n);
-  if(!p){
+  Node<T> *p = parent(n);
+  if (!p) {
     n->colour = Colour::BLACK;
     return n;
   }
 
-  if(p->colour == Colour::BLACK) {
+  if (p->colour == Colour::BLACK) {
     return p;
-  } else if(p->colour == Colour::RED) {
+  } else if (p->colour == Colour::RED) {
     Node<T> *u = uncle(n);
 
-    if(u && u->colour == Colour::RED){
-      Node<T>*g = grandparent(n);
+    if (u && u->colour == Colour::RED) {
+      Node<T> *g = grandparent(n);
       assert(g);
 
-      p->colour =Colour::BLACK;
-      u->colour =Colour::BLACK;
+      p->colour = Colour::BLACK;
+      u->colour = Colour::BLACK;
       g->colour = Colour::RED;
 
       return rebalance(g);
-    }else {
+    } else {
       {
-        Node<T> * g = grandparent(n);
-        if(g){
+        Node<T> *g = grandparent(n);
+        if (g) {
           Node<T> *p = parent(n);
           // assert(g->left);
-          if(g->left && n == g->left->right){
+          if (g->left && n == g->left->right) {
             assert(p);
 
             rotate_left(p);
             n = n->left;
-          }else {
+          } else {
             // assert(g->right);
-            if (g->right && n == g->right->left){
+            if (g->right && n == g->right->left) {
               assert(p);
 
               rotate_right(p);
@@ -304,64 +312,65 @@ static Node<T>*rebalance(Node<T>*n) {
         }
       }
 
-      Node<T>*p=parent(n);
-      Node<T> *g=grandparent(n);
+      Node<T> *p = parent(n);
+      Node<T> *g = grandparent(n);
       assert(p);
-      if(n == p->left){
+      if (n == p->left) {
         rotate_right(g);
-      }else {
+      } else {
         rotate_left(g);
       }
 
       p->colour = Colour::BLACK;
-      if(g){
+      if (g) {
         g->colour = Colour::RED;
-        return rebalance(g);//sp
+        return rebalance(g); // sp
       }
       return p;
     }
   }
   assert(false);
-}//rb::impl::rb::rebalance()
+} // rb::impl::rb::rebalance()
 
-template<typename T>
-static bool verify(Node<T>*parent,Node<T>*current,std::size_t &min,std::size_t &max){
-  if(parent){
+template <typename T>
+static bool
+verify(Node<T> *parent, Node<T> *current, std::size_t &min, std::size_t &max) {
+  if (parent) {
     // The children of a RED coloured node must be coloured BLACK
-    if(parent->colour == Colour::RED){
-      if(current->colour!=Colour::BLACK){
+    if (parent->colour == Colour::RED) {
+      if (current->colour != Colour::BLACK) {
         return false;
       }
     }
 
-    if(current->parent != parent){
+    if (current->parent != parent) {
       return false;
     }
-  }else {
+  } else {
     // The ROOT node must coloured BLACK
-    if(current->colour != Colour::BLACK){
+    if (current->colour != Colour::BLACK) {
       return false;
     }
   }
 
-  std::size_t l_min,l_max;
-  std::size_t r_min,r_max;
+  std::size_t l_min, l_max;
+  std::size_t r_min, r_max;
   l_min = l_max = 0;
   r_min = r_max = 0;
 
-  if(current->left){
-    if(!(current->left->value < current->value )){
+  if (current->left) {
+    if (!(current->left->value < current->value)) {
       return false;
     }
-    if(!verify(current,current->left,l_min,l_max)){
+    if (!verify(current, current->left, l_min, l_max)) {
       return false;
     }
-  } 
-  if(current->right){
-    if(!(current->right->value > current->value)){
+  }
+  if (current->right) {
+    if (!(current->right->value > current->value)) {
       return false;
     }
-    if(!verify(current,current->right,r_min,r_max)){
+    if (!verify(current, current->right, r_min, r_max)) {
       return false;
     }
   }
@@ -370,26 +379,28 @@ static bool verify(Node<T>*parent,Node<T>*current,std::size_t &min,std::size_t &
   max = std::max(l_max, r_max) + 1;
 
   // See if this node is balanced
-  if (max <= 2*min){
+  if (max <= 2 * min) {
     return true;
   }
 
   return false;
-}//rb::impl::rb::verify()
+} // rb::impl::rb::verify()
 
-}//namespace rb
-}//namespace impl
+} // namespace rb
+} // namespace impl
 
 //==================
 
-template <typename T,typename K>
-const T* find(const Tree<T>&tree,const K&key) noexcept {
-  return sp::find(tree,key);
+template <typename T, typename K>
+const T *
+find(const Tree<T> &tree, const K &key) noexcept {
+  return sp::find(tree, key);
 }
 
-template <typename T,typename K>
-const T* find(Tree<T>&tree,const K&key) noexcept {
-  return sp::find(tree,key);
+template <typename T, typename K>
+const T *
+find(Tree<T> &tree, const K &key) noexcept {
+  return sp::find(tree, key);
 }
 
 template <typename T, typename K>
@@ -397,7 +408,7 @@ std::tuple<T *, bool>
 insert(Tree<T> &tree, K &&ins) noexcept {
   auto set_root = [&tree](Node<T> *root) {
     if (root) {
-      if(!root->parent){
+      if (!root->parent) {
         tree.root = root;
       }
     }
@@ -450,28 +461,27 @@ Lstart:
   }
 
   return std::make_tuple(nullptr, false);
-}//rb::insert()
+} // rb::insert()
 
 template <typename T>
 bool
 verify(Tree<T> &tree) noexcept {
-  Node<T> * root = tree.root;
-  if(root){
-    Node<T>*p = nullptr;
-    std::size_t min=0;
-    std::size_t max=0;
-    return impl::rb::verify(p,root,min,max);
+  Node<T> *root = tree.root;
+  if (root) {
+    Node<T> *p = nullptr;
+    std::size_t min = 0;
+    std::size_t max = 0;
+    return impl::rb::verify(p, root, min, max);
   }
   return true;
-}//rb::insert()
+} // rb::insert()
 
 template <typename T>
 void
-dump(Tree<T> &tree, const std::string& prefix) noexcept {
-  return sp::impl::tree::dump(tree.root,prefix);
+dump(Tree<T> &tree, const std::string &prefix) noexcept {
+  return sp::impl::tree::dump(tree.root, prefix);
 }
 
-
-}//namespace rb
+} // namespace rb
 
 #endif

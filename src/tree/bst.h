@@ -209,15 +209,17 @@ remove(Node<T> *current) noexcept {
     current->left = nullptr;
     current->right = nullptr;
 
-    return successor->parent ? nullptr : successor;
+    return successor;
   } else if (!current->left && !current->right) {
     // zero children
 
-    parent_child_link(current, (Node<T> *)nullptr);
-    assert(sp::impl::tree::doubly_linked(current->parent)); // x
+    Node<T> *parent = current->parent;
+    Node<T> *unset = nullptr;
+    parent_child_link(current, unset);
+    assert(sp::impl::tree::doubly_linked(parent));
     current->parent = nullptr;
 
-    return nullptr;
+    return parent;
   } else if (current->left) {
     // one child
 
@@ -226,12 +228,12 @@ remove(Node<T> *current) noexcept {
     auto *const left = current->left;
     parent_child_link(current, left);
     left->parent = parent;
-    assert(sp::impl::tree::doubly_linked(parent)); // x
+    assert(sp::impl::tree::doubly_linked(parent));
 
     current->parent = nullptr;
     current->left = nullptr;
 
-    return left->parent ? nullptr : left;
+    return left;
   }
   assert(current->right);
   // one child
@@ -241,12 +243,12 @@ remove(Node<T> *current) noexcept {
   auto *const right = current->right;
   parent_child_link(current, right);
   right->parent = parent;
-  assert(sp::impl::tree::doubly_linked(parent)); // x
+  assert(sp::impl::tree::doubly_linked(parent));
 
   current->parent = nullptr;
   current->right = nullptr;
 
-  return right->parent ? nullptr : right;
+  return right;
 } // impl::bst::remove()
 
 } // namespace bst
@@ -316,18 +318,17 @@ bool
 remove(Tree<T> &tree, const K &k) noexcept {
   Node<T> *const node = sp::impl::tree::find_node(tree.root, k);
   if (node) {
-    Node<T> *const new_root = impl::bst::remove(node);
+    Node<T> *const nroot = impl::bst::remove(node);
 
-    if (new_root) {
-      assert(new_root != node);
-      tree.root = new_root;
-    } else {
-      if (tree.root == node) {
-        tree.root = nullptr;
+    if (nroot) {
+      if (!nroot->parent) {
+        tree.root = nroot;
       }
+    } else {
+      tree.root = nullptr;
     }
-    delete (node);
 
+    delete (node);
     return true;
   }
 
@@ -341,6 +342,6 @@ balance(Tree<T> &) noexcept {
   // TODO
   return true;
 } // bst::balance()
-}
+} // namespace bst
 
 #endif

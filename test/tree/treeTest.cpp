@@ -1,8 +1,8 @@
-#include <tree/bst.h>
 #include <tree/avl.h>
-#include <tree/red-black.h>
 #include <tree/avl_insert.h>
 #include <tree/avl_remove.h>
+#include <tree/bst.h>
+#include <tree/red-black.h>
 
 #include "gtest/gtest.h"
 #include <random>

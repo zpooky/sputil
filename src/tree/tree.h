@@ -42,11 +42,15 @@ struct Tree {
   }
 };
 
+template <typename T>
+void
+swap(Tree<T> &, Tree<T> &) noexcept;
+
 //===================================================
 namespace impl {
-  /*impl*/
+/*impl*/
 namespace tree {
-  /*impl::tree*/
+/*impl::tree*/
 
 /*
  * Recursively search down in the left branch to find the minimum
@@ -87,8 +91,8 @@ Lstart:
 
   return current;
 } // tree::impl::find_node()
-}
-}
+} // namespace tree
+} // namespace impl
 //===================================================
 
 // TODO
@@ -123,10 +127,9 @@ Lstart:
 template <typename T, typename S>
 typename Tree<T>::pointer
 find(Tree<T> &tree, const S &search) noexcept {
-const Tree<T>& ctree = tree;
-  return (typename Tree<T>::pointer)find<T,S>(ctree,search);
+  const Tree<T> &ctree = tree;
+  return (typename Tree<T>::pointer)find<T, S>(ctree, search);
 }
-
 
 namespace impl {
 namespace tree {
@@ -168,18 +171,26 @@ dump(T *tree, std::string prefix = "", bool isTail = true,
   }
 }
 
-template<typename T>
-std::size_t child_count(T*tree)noexcept {
-  std::size_t result=0;
-  if(tree){
+template <typename T>
+std::size_t
+child_count(T *tree) noexcept {
+  std::size_t result = 0;
+  if (tree) {
     ++result;
-    result+=child_count(tree->left);
-    result+=child_count(tree->right);
+    result += child_count(tree->left);
+    result += child_count(tree->right);
   }
   return result;
 }
 
 } // namespace tree
-} // namesapce impl
-}
+} // namespace impl
+
+template <typename T>
+void
+swap(Tree<T> &first, Tree<T> &second) noexcept {
+  std::swap(first.root, second.root);
+} // sp::swap()
+
+} // namespace sp
 #endif
