@@ -1,3 +1,4 @@
+#include <tree/StaticTree.h>
 #include <tree/avl.h>
 #include <tree/avl_insert.h>
 #include <tree/avl_remove.h>
@@ -25,7 +26,7 @@ find_stuff(Tree_t &tree, std::size_t deleted, T (&in)[in_size]) {
   }
 }
 
-template <template <typename> class Tree_t>
+template <class Tree_t>
 static void
 random_insert_delete(std::size_t goal) {
   std::size_t counter = 0;
@@ -37,7 +38,7 @@ random_insert_delete(std::size_t goal) {
     if (counter > 0 && counter % 10 == 0) {
       printf("cnt: %zu\n", counter);
     }
-    Tree_t<int> tree;
+    Tree_t tree;
     constexpr int in_size = 1000;
     int in[in_size];
     for (int i = 0; i < in_size; ++i) {
@@ -98,7 +99,7 @@ random_insert_delete(std::size_t goal) {
   printf("done\n");
 }
 
-template <template <typename> class Tree_t>
+template <class Tree_t>
 static void
 random_insert(std::size_t goal) {
   std::random_device rd;
@@ -108,17 +109,17 @@ random_insert(std::size_t goal) {
     if (counter > 0 && counter % 100 == 0) {
       printf("cnt: %zu\n", counter);
     }
-    Tree_t<int> tree;
+    Tree_t tree;
     constexpr int in_size = 1000;
     int in[in_size];
-    for (int i = 0; i < in_size; ++i) {
-      in[i] = i;
+    for (int i = 1; i <= in_size; ++i) {
+      in[i - 1] = i;
     }
 
     std::shuffle(in, in + in_size, g);
     for (int i = 0; i < in_size; ++i) {
       for (int k = 0; k < i; ++k) {
-        const int* f = find(tree, in[k]);
+        const int *f = find(tree, in[k]);
         ASSERT_TRUE(f);
         ASSERT_TRUE(*f == in[k]);
       }
@@ -145,17 +146,16 @@ random_insert(std::size_t goal) {
   // printf("done\n");
 }
 
-
 TEST(treeTest, test_insert_delete_bst) {
-  random_insert_delete<bst::Tree>(10);
+  random_insert_delete<bst::Tree<int>>(10);
 }
 
 TEST(treeTest, test_insert_bst) {
-  random_insert<bst::Tree>(10);
+  random_insert<bst::Tree<int>>(10);
 }
 
 TEST(treeTest, test_insert_avl) {
-  random_insert<avl::Tree>(10);
+  random_insert<avl::Tree<int>>(10);
 }
 
 TEST(treeTest, test_inser_remove_avl) {
@@ -168,5 +168,9 @@ TEST(treeTest, test_insert_remove_red_black) {
 }
 
 TEST(treeTest, test_insert_red_black) {
-  random_insert<rb::Tree>(10);
+  random_insert<rb::Tree<int>>(10);
 }
+
+// TEST(treeTest, test_insert_StaticTree) {
+//   random_insert<bst::StaticTree<int>>(10);
+// }
