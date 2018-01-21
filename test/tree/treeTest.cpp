@@ -1,4 +1,3 @@
-#include <tree/StaticTree.h>
 #include <tree/avl.h>
 #include <tree/avl_insert.h>
 #include <tree/avl_remove.h>
@@ -6,6 +5,7 @@
 #include <tree/red-black.h>
 
 #include "gtest/gtest.h"
+#include <cstring>
 #include <random>
 
 template <class Tree_t, typename T, std::size_t in_size>
@@ -174,3 +174,5 @@ TEST(treeTest, test_insert_red_black) {
 // TEST(treeTest, test_insert_StaticTree) {
 //   random_insert<bst::StaticTree<int>>(10);
 // }
+
+

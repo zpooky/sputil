@@ -11,9 +11,9 @@ struct less {
 };
 
 struct greater {
-  template <typename T>
+  template <typename T, typename K>
   constexpr bool
-  operator()(const T &lhs, const T &rhs) const {
+  operator()(const T &lhs, const K &rhs) const {
     return lhs > rhs;
   }
 };
