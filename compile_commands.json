@@ -35,6 +35,48 @@
             "-Wshadow",
             "-ggdb",
             "-o",
+            "build/hash/djb2.o",
+            "src/hash/djb2.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/hash/djb2.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/main.o",
+            "src/main.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/main.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
             "build/util/Bitset.o",
             "src/util/Bitset.cpp"
         ],
@@ -77,32 +119,11 @@
             "-Wshadow",
             "-ggdb",
             "-o",
-            "build/main.o",
-            "src/main.cpp"
+            "build/concurrent/Barrier.o",
+            "src/concurrent/Barrier.cpp"
         ],
         "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/main.cpp"
-    },
-    {
-        "arguments": [
-            "c++",
-            "-c",
-            "-Iinclude",
-            "-enable-frame-pointers",
-            "-std=c++14",
-            "-Wall",
-            "-Wextra",
-            "-Wpedantic",
-            "-Wpointer-arith",
-            "-Wconversion",
-            "-Wshadow",
-            "-ggdb",
-            "-o",
-            "build/hash/djb2.o",
-            "src/hash/djb2.cpp"
-        ],
-        "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/hash/djb2.cpp"
+        "file": "src/concurrent/Barrier.cpp"
     },
     {
         "arguments": [
@@ -124,26 +145,5 @@
         ],
         "directory": "/home/spooky/development/repos/sputil",
         "file": "src/hash/fnv.cpp"
-    },
-    {
-        "arguments": [
-            "c++",
-            "-c",
-            "-Iinclude",
-            "-enable-frame-pointers",
-            "-std=c++14",
-            "-Wall",
-            "-Wextra",
-            "-Wpedantic",
-            "-Wpointer-arith",
-            "-Wconversion",
-            "-Wshadow",
-            "-ggdb",
-            "-o",
-            "build/concurrent/Barrier.o",
-            "src/concurrent/Barrier.cpp"
-        ],
-        "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/concurrent/Barrier.cpp"
     }
 ]
