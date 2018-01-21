@@ -4,13 +4,13 @@
 #include <cstring>
 #include <random>
 
-static void
-print_arr(int *buff, std::size_t SIZE) {
-  for (std::size_t i = 0; i < SIZE; ++i) {
-    printf("%d.", buff[i]);
-  }
-  printf("\n");
-}
+// static void
+// print_arr(int *buff, std::size_t SIZE) {
+//   for (std::size_t i = 0; i < SIZE; ++i) {
+//     printf("%d.", buff[i]);
+//   }
+//   printf("\n");
+// }
 
 #define assert_insert(tree, v, present)                                        \
   do {                                                                         \
@@ -154,15 +154,15 @@ TEST(StaticTreeTest, test_for_each) {
     node = i++;
     //
   });
-  ASSERT_EQ(i, tree.capacity);
+  ASSERT_EQ(std::size_t(i), tree.capacity);
   {
     int cmp = 0;
     bst::in_order_for_each(tree, [&cmp](auto node) {
       assert(node == cmp);
       cmp++;
     });
-    assert(cmp == i);
-    assert(cmp == tree.capacity);
+    ASSERT_EQ(cmp, i);
+    ASSERT_EQ(std::size_t(cmp), tree.capacity);
     // printf("cmp: %d\n", cmp);
   }
   // {

@@ -208,8 +208,8 @@ StaticTree<T, C, P>::StaticTree(T *b, std::size_t l) noexcept
 
 template <typename T, typename C, typename P>
 template <std::size_t SIZE>
-StaticTree<T, C, P>::StaticTree(T (&buffer)[SIZE]) noexcept
-    : StaticTree(buffer, SIZE) {
+StaticTree<T, C, P>::StaticTree(T (&b)[SIZE]) noexcept
+    : StaticTree(b, SIZE) {
 }
 
 template <typename T, typename C, typename P, typename V>

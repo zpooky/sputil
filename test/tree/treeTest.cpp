@@ -11,7 +11,7 @@
 template <class Tree_t, typename T, std::size_t in_size>
 static void
 find_stuff(Tree_t &tree, std::size_t deleted, T (&in)[in_size]) {
-  for (int k = 0; k < in_size; ++k) {
+  for (std::size_t k = 0; k < in_size; ++k) {
     auto *f = sp::find(tree, in[k]);
     if (k < deleted) {
       assert(f == nullptr);

@@ -26,7 +26,7 @@ TEST(CircularBufferTest, test) {
   }
   ASSERT_TRUE(is_empty(buffer));
   ASSERT_FALSE(is_full(buffer));
-  ASSERT_EQ(0, length(buffer));
+  ASSERT_EQ(std::size_t(0), length(buffer));
 }
 
 TEST(CircularBufferTest, wrap) {
