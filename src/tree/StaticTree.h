@@ -45,17 +45,17 @@ dump(const StaticTree<int, C, P> &, const std::string & = "") noexcept;
 namespace impl {
 namespace StaticTree {
 
-static std::size_t
+static inline std::size_t
 parent(std::size_t idx) noexcept {
   return (idx - 1) / 2;
 }
 
-static std::size_t
+static inline std::size_t
 left_child(std::size_t idx) noexcept {
   return (2 * idx) + 1;
 }
 
-static std::size_t
+static inline std::size_t
 right_child(std::size_t idx) noexcept {
   return (2 * idx) + 2;
 }
