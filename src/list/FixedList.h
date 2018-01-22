@@ -2,6 +2,7 @@
 #define SP_UTIL_LIST_FIXED_LIST_H
 
 #include <utility>
+#include <new>
 
 namespace sp {
 
