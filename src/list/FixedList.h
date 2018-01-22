@@ -291,6 +291,8 @@ remove_first(FixedList<T> &list, F f) noexcept {
       list.last->next = current;
       list.last = current;
 
+      current->next = nullptr;
+
       return true;
     }
 

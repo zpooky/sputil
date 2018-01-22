@@ -1,6 +1,6 @@
 #include "ReadWriteLock.h"
 #include <cassert>
-#include <stdio.h>
+#include <cstdio>
 #include <utility>
 
 #define SP_RW_PREPARE_MASK uint64_t(0xFF00)
@@ -10,8 +10,7 @@
 // #define SP_DEBUG_RW
 #ifdef SP_DEBUG_RW
 #include <algorithm>
-#include <stdio.h>
-#include <string.h>
+#include <cstring>
 template <typename T, std::size_t SIZE>
 static void
 internal_print_state(T state, char (&hexed)[SIZE]) {
