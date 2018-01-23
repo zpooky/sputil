@@ -36,10 +36,11 @@ struct SkipListNode {
  */
 template<typename T,std::size_t levels,typename Comparator = sp::greater>
 struct SkipList {
-  impl::SkipList::SkipListNode<T,levels> *root;
-  SkipList()noexcept
-    : root{nullptr} {
-    }
+  impl::SkipList::SkipListNode<T,levels> *header[levels];
+
+  SkipList() noexcept
+  : header{nullptr} {
+  }
 };
 
 template <typename T,std::size_t l, typename C, typename V>
@@ -78,64 +79,92 @@ namespace SkipList {
 // value{std::forward<V>(v)} {
 // }
 
-template <typename T,std::size_t levels, typename Comparator, typename K>
+template <typename T,std::size_t levels, typename C>
+std::size_t
+first(const sp::SkipList<T, levels, C> &list) {
+  for(std::size_t level=levels;level-- > 0;){
+    if(list.header[level]){
+      return level;
+    }
+  }
+  return levels;
+}
+
+template <typename T,std::size_t levels, typename C, typename K>
 const SkipListNode<T,levels> *
-node_for(const sp::SkipList<T, levels, Comparator> &list, const K &needle) noexcept {
-  std::size_t level = levels-1;
-  SkipListNode<T,levels> *current = list.root;
-  SkipListNode<T,levels> *previous = current;
+find_node(const sp::SkipList<T, levels, C> &list, const K &needle) noexcept {
+  std::size_t level = first(list);
+  if(level < levels){
+    SkipListNode<T,levels> *current = list.header[level];
+    SkipListNode<T,levels> *previous = current;
 
 Lit:
-  // auto current = previous->next[level];
-  if(current){
-    constexpr Comparator cmp;
-    if(cmp(current->value, needle)){
+    if(current){
+      constexpr C cmp;
+      if(cmp(needle, current->value)){
 
-      previous = current;
-      current = current->next[level];
-      goto Lit;
-    }else if(cmp(needle, current->value)){
+        previous = current;
+        current = current->next[level];
+        goto Lit;
+      }else if(cmp(current->value, needle)){
 
-      if(level >0){
+        if(level > 0){
+          current = previous;
+          --level;
+          goto Lit;
+        }
+      } else {
+
+        return current;
+      }
+    } else {
+      if(level > 0){
         current = previous;
         --level;
         goto Lit;
       }
-    } else {
-
-      return current;
-    }
-  } else {
-    /* current level: n, we need to continue until node found or reached max level
-     * n     ... [previous] -> null
-     * n+1   ... [previous] -> [next] -> ...
-     * ...
-     */
-    if(level >0){
-      current = previous;
-      --level;
-      goto Lit;
     }
   }
-
   return nullptr;
+
+
+  // // auto current = previous->next[level];
+  // if(current){
+  // } else {
+  //   #<{(| current level: n, we need to continue until node found or reached max level
+  //    * n     ... [previous] -> null
+  //    * n+1   ... [previous] -> [next] -> ...
+  //    * ...
+  //    |)}>#
+  //   if(level >0){
+  //     current = previous;
+  //     --level;
+  //     goto Lit;
+  //   }
+  // }
+
+  // return nullptr;
 }
 
 
 template <typename T,std::size_t L, typename C>
 SkipListNode<T,L> *
-find_previous(SkipListNode<T,L>*start,std::size_t level, const T&needle) noexcept {
+previous_for(SkipListNode<T,L>*start,std::size_t level, const T&needle) noexcept {
   assert(start);
 
+  SkipListNode<T,L> *previous = nullptr;
 Lit:
   if(start){
     constexpr C cmp;
-    if(cmp(needle,start->value)){
-      return start;
-    }else {
+    if(cmp(start->value,needle)){
+      return previous;
+    } else {
+      previous = start;
       start = start->next[level];
       goto Lit;
     }
+  } else {
+    return previous;
   }
 
   return nullptr;
@@ -174,20 +203,22 @@ insert(SkipList<T,L, C> &list, V &&v) noexcept {
   auto self = new (std::nothrow) SkipListNode<T,L>{std::forward<V>(v)};
   if(self){
 
-    SkipListNode<T,L>*start = list.root;
-    if(start){
+    const std::size_t target_levels = random_level(L);
+    const std::size_t first_level = first(list);//limit it to target_level beacause tl might be greater than first_level
+    if(first_level < L){
+      auto *start = list.header[first_level];
+      assert(start);
 
-      std::size_t target_levels = random_level(L);
       for(std::size_t level=target_levels; level-- > 0;) {
 
         /*
          * We do not need to start from the beginning(when != null) since we get
-         * more precise result the further up in the list we get
+         * more precise result the further up in the list we get.
          */
-        SkipListNode<T,L>*node = find_previous<T,L,C>(start, level, self->value);
+        SkipListNode<T,L>*node = previous_for<T,L,C>(start, level, self->value);
         if(node){
           /*
-           * We update list on this level by inserting self as a link'
+           * We update list on this level by inserting self as a link
            */
           auto next = node->next[level];
           node->next[level] = self;
@@ -196,17 +227,22 @@ insert(SkipList<T,L, C> &list, V &&v) noexcept {
           start = node;
         }else {
           /*
-           * Empty level
+           * the first value on this level is greater than self
            */
-          list.root->next[level]= self;
+          auto *next =list.header[level];
+          self->next[level]=next;
+          list.header[level]= self;
         }
       }
 
       return &self->value;
     } else {
       /* empty tree */
-      list.root = self;
-      return &list.root->value;
+      for(std::size_t level=target_levels;level-- > 0;) {
+        assert(list.header[level] == nullptr);
+        list.header[level] = self;
+      }
+      return &self->value;
     }
   }
 
@@ -224,7 +260,7 @@ template <typename T,std::size_t levels, typename Comparator, typename K>
 const T *
 find(const SkipList<T, levels, Comparator> &list, const K &needle) noexcept {
   using namespace impl::SkipList;
-  auto node = node_for(list,needle);
+  auto node = find_node(list,needle);
   if(node){
     return &node->value;
   }
@@ -244,13 +280,13 @@ void swap(SkipList<T,l, C> &first,SkipList<T,l, C> &second)noexcept {
   std::swap(first.root,second.root);
 }
 
-template <std::size_t l, typename C>
+template <std::size_t L, typename C>
 void
-dump(SkipList<int,l,C> &list) noexcept {
+dump(SkipList<int,L,C> &list) noexcept {
   using namespace impl::SkipList;
 
   auto index_of = [&list](auto *node) {
-    SkipListNode<int,l>*it = list.root;
+    SkipListNode<int,L>*it = list.header[0];
     std::size_t result=0;
     while(it){
       if(node == it){
@@ -262,10 +298,10 @@ dump(SkipList<int,l,C> &list) noexcept {
     return result;
   };
   auto last_index = [&list] {
-    SkipListNode<int,l>*it = list.root;
+    SkipListNode<int,L>*it = list.header[0];
     std::size_t result=0;
 Lit:
-    if(it->next){
+    if(it){
       it = it->next[0];
       result++;
       goto Lit;
@@ -276,11 +312,12 @@ Lit:
   constexpr std::size_t b_length = 5;
   auto print_empty = [b_length](std::size_t count) {//
     // printf("count[%zu]\n",count);
-    // for(std::size_t i=0;i<count;++i){
-      for(std::size_t a=0;a<b_length+2;++a){
+    for(std::size_t i=0;i<count;++i){
+      printf("+");
+      for(std::size_t a=0;a<b_length+1;++a){
         printf("-");
       }
-    // }
+    }
   };
   auto print_node = [b_length](auto *node,bool first){
     char buffer[b_length];
@@ -295,10 +332,10 @@ Lit:
     }
   };
 
-  if(list.root){
-    for(std::size_t level=l;level-- >0;) {
+  // if(list.root){
+    for(std::size_t level=L;level-- >0;) {
       std::size_t print_index=0;
-      SkipListNode<int,l>*it = list.root;
+      SkipListNode<int,L>*it = list.header[level];
       if(level == 0){
         printf("BL |");
       }else {
@@ -309,7 +346,7 @@ Lit:
         std::size_t index = index_of(it);
         // ++print_index;//about to print
         print_empty(index-print_index);
-        print_index=index;
+        print_index=index+1;
         print_node(it,first);
         first = false;
         it = it->next[level];
@@ -319,7 +356,7 @@ Lit:
       print_empty(index-print_index);
       printf(">|\n");
     }
-  }
+  // }
 }
 
 }//namespace sp

@@ -1,28 +1,40 @@
 #include "gtest/gtest.h"
 #include <list/SkipList.h>
+#include <random>
 
 
 TEST(SkipListTest, test) {
   constexpr std::size_t levels=7;
   sp::SkipList<int,levels> list;
 
-  constexpr int length = 10;
-
+  constexpr std::size_t length = 12;
+  int in[length];
   for(int i=0;i<length;++i){
-    for(int a=0;a<i;++a){
-      const int* res = find(list, a);
+    in[i]=i;
+  }
+  std::mt19937 g(0);
+  std::shuffle(in, in + length, g);
+
+  for(std::size_t i=0;i<length;++i){
+    printf("#%zu\n",i);
+    for(std::size_t a=0;a<i;++a){
+    // printf("# should be found\n");
+      const int* res = find(list, in[a]);
+      // printf("find(list,a[%d]): %p\n",in[a],res);
       ASSERT_TRUE(res);
-      ASSERT_EQ(*res,a);
+      ASSERT_EQ(*res, in[a]);
     }
 
-    printf("%d.\n",i);
-    int* res = insert(list,i);
+    int* res = insert(list,in[i]);
+    printf("###insert(list,i[%d]): %p\n",in[i],res);
     ASSERT_TRUE(res);
-    ASSERT_EQ(*res,i);
+    ASSERT_EQ(*res,in[i]);
     dump(list);
 
-    for(int a=i+1;a<length;++a){
-      const int* res = find(list,a);
+    // printf("# should not be found\n");
+    for(std::size_t a=i+1;a<length;++a){
+      const int* res = find(list,in[a]);
+      // printf("find(list,a[%d]): %p\n",in[a],res);
       ASSERT_FALSE(res);
     }
   }
