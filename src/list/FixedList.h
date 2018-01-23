@@ -162,6 +162,7 @@ template <typename T>
 void
 swap(FixedList<T> &first, FixedList<T> &second) noexcept {
   std::swap(first.root, second.root);
+  std::swap(first.last, second.last);
   std::swap(first.length, second.length);
   std::swap(first.capacity, second.capacity);
 } // sp::swap()
