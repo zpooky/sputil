@@ -1,8 +1,8 @@
 #ifndef SP_UTIL_LIST_FIXED_LIST_H
 #define SP_UTIL_LIST_FIXED_LIST_H
 
-#include <utility>
 #include <new>
+#include <utility>
 
 namespace sp {
 
@@ -67,6 +67,14 @@ template <typename T, typename V>
 T *
 insert(FixedList<T> &, V &&) noexcept;
 
+template <typename T, typename V>
+T *
+push_back(FixedList<T> &, V &&) noexcept;
+
+// template <typename T, typename V>
+// T *
+// push_front(FixedList<T> &, V &&) noexcept;
+
 template <typename T, typename F>
 void
 for_each(const FixedList<T> &, F) noexcept;
@@ -85,6 +93,13 @@ remove_first(FixedList<T> &, F) noexcept;
 
 namespace impl {
 namespace FixedList {
+// template <typename T>
+// const FixedNode<T> *
+// take_last(sp::FixedList<T> &l) noexcept {
+//   FixedNode<T> * last = l.last;
+//   //TODO
+//   return last;
+// }
 
 template <typename T>
 const FixedNode<T> *
@@ -221,6 +236,12 @@ get(const FixedList<T> &l, std::size_t index) noexcept {
 template <typename T, typename V>
 T *
 insert(FixedList<T> &list, V &&val) noexcept {
+  return push_back(list, std::forward<V>(val));
+} // sp::insert()
+
+template <typename T, typename V>
+T *
+push_back(FixedList<T> &list, V &&val) noexcept {
   using namespace impl::FixedList;
 
   if (list.length < list.capacity) {
@@ -237,7 +258,27 @@ insert(FixedList<T> &list, V &&val) noexcept {
   }
 
   return nullptr;
-} // sp::insert()
+}
+
+// template <typename T, typename V>
+// T *
+// push_front(FixedList<T> &, V &&) noexcept {
+//   using namespace impl::FixedList;
+//
+//   if (list.length < list.capacity) {
+//     // FixedNode<T> *const node = node_for(list, list.length);
+//     if (node) {
+//       T *const value = &node->value;
+//
+//       value->~T();
+//       ::new (value) T{std::forward<V>(val)};
+//       list.length++;
+//
+//       return value;
+//     }
+//   }
+//   return nullptr;
+// }
 
 template <typename T, typename F>
 void
