@@ -8,7 +8,7 @@ namespace heap {
 // TODO emplace
 // TODO do not require default constructable
 // TODO dynamic binary
-template <typename T, typename>
+template <typename T, typename Comparator>
 struct Binary {
   T *buffer;
   const std::size_t capacity;
@@ -79,6 +79,7 @@ dump(Binary<int, Comparator> &, std::size_t idx = 0, std::string prefix = "",
      bool isTail = true, const char *ctx = "") noexcept;
 
 /*
+ * ==========================================================================
  */
 namespace impl {
 namespace heap {
