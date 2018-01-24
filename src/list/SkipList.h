@@ -258,35 +258,57 @@ insert(SkipList<T,L, C> &list, V &&v) noexcept {
   auto self = new (std::nothrow) SkipListNode<T,L>{std::forward<V>(v)};
   if(self){
 
+    /*
+     * Randomly generate what level self will be inserted into. The level also
+     * includes lower levels aswell.
+     */
     const std::size_t target_level = random_level(list.state,L);
+
+    /*
+     * Search horizontally and vertically for the predecessor to self->value
+     * limit the result to target_level inclusive.
+     */
     auto *start = find_predecessor(list,target_level,self->value);
 
     for(std::size_t level=target_level+1; level-- > 0;) {
       if(!start){
+        /*
+         * Start from the beginning of the level since there was NO higher
+         * level express-lane
+         */
         start = list.header[level];
       }
 
       /*
-       * We do not need to start from the beginning(when != null) since we get
-       * more precise result the further up in the list we get.
+       * Search this level for the predecessor to self->value
        */
-      SkipListNode<T,L>*node = find_level_predecessor<T,L,C>(start, level, self->value);
-      if(node){
+      auto*predecessor = find_level_predecessor<T,L,C>(start, level, self->value);
+      if(predecessor){
         /*
-         * We update list on this level by inserting self as a link
+         * We update chain on this level by inserting self:
+         * predecessor->self->next
          */
-        auto next = node->next[level];
-        node->next[level] = self;
+        auto next = predecessor->next[level];
+        predecessor->next[level] = self;
         self->next[level] = next;
 
-        start = node;
+        /*
+         * Start next level search from the predecessor node on this level
+         */
+        start = predecessor;
       }else {
         /*
-         * Empty level or, the first value on this level is greater than self
+         * This level is empty, or self is greater than first node in chain:
+         * thus inserting self first in level
          */
         auto *next =list.header[level];
         self->next[level]=next;
         list.header[level]= self;
+
+        /*
+         * Since we could not find a predecessor on this level we have to start
+         * from the beginning on the next level
+         */
         start = nullptr;
       }
     }//for
