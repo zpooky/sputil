@@ -19,9 +19,9 @@ TEST(SkipListTest, test) {
   for(std::size_t i=0;i<length;++i){
     printf("#%zu\n",i);
     for(std::size_t a=0;a<i;++a){
-      // printf("# should be found\n");
+      printf("# should be found\n");
       const int* res = find(list, in[a]);
-      // printf("find(list,a[%d]): %p\n",in[a],res);
+      printf("find(list,a[%d]): %p\n",in[a],res);
       ASSERT_TRUE(res);
       ASSERT_EQ(*res, in[a]);
     }

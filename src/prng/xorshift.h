@@ -11,6 +11,7 @@ struct Xorshift32 {
   Xorshift32() noexcept;
 };
 
+void swap(Xorshift32&,Xorshift32&) noexcept;
 std::uint32_t
 random(Xorshift32&) noexcept;
 
@@ -23,6 +24,8 @@ struct Xorshift128plus {
   Xorshift128plus(std::uint64_t,std::uint64_t) noexcept;
   Xorshift128plus() noexcept;
 };
+
+void swap(Xorshift128plus&,Xorshift128plus&) noexcept;
 
 std::uint64_t 
 random(Xorshift128plus&) noexcept;

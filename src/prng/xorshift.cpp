@@ -19,6 +19,10 @@ Xorshift32::Xorshift32() noexcept
     } while(state == 0);
 }
 
+void swap(Xorshift32&f,Xorshift32&s) noexcept {
+  std::swap(f.state,s.state);
+}
+
 std::uint32_t
 random(Xorshift32&state) noexcept {
   std::uint32_t &x = state.state;
@@ -45,6 +49,11 @@ Xorshift128plus::Xorshift128plus() noexcept
         state[i] = std::rand();
       } while(state[i] == 0);
     }
+}
+
+void swap(Xorshift128plus&f,Xorshift128plus&s) noexcept{
+  std::swap(f.state[0],s.state[0]);
+  std::swap(f.state[1],s.state[1]);
 }
 
 std::uint64_t 

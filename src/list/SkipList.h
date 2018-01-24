@@ -44,6 +44,9 @@ struct SkipList {
   : header{nullptr}
   , state{} {
   }
+
+  static_assert(levels > 0, "gt 0");
+  static_assert(levels < 32, "lt 32");
 };
 
 template <typename T,std::size_t l, typename C, typename V>
@@ -97,6 +100,36 @@ first_highest(const sp::SkipList<T, levels, C> &list,std::size_t limit) {
   return levels;
 }
 
+/*
+ * Randomize the depth of the about-to-inserted node
+ */
+static
+std::size_t random_level(Xorshift32&state, std::size_t max){
+  /*
+   * Generates a random number
+   * Bitwise count the amount of leading zeroes <--
+   * Limit the count to max
+   *
+   * For each level of bit compare we get a 50/50 chance that the bit is 2/0.
+   * This mirrors the requirement of the Skip List that each level contains
+   * half the amount of nodes as its preceding level.
+   *
+   * ...
+   * L2 | 25%
+   * L1 | 50%
+   * L0 | 100%
+   */
+
+  //TODO verify this is correct
+  std::uint32_t x = random(state);
+  std::size_t level = 0;
+  while (((x >>= 1) & 1) != 0){
+    ++level;
+  }
+
+  return level % max;
+}
+
 template <typename T,std::size_t levels, typename C, typename K>
 const SkipListNode<T,levels> *
 find_node(const sp::SkipList<T, levels, C> &list, const K &needle) noexcept {
@@ -142,10 +175,9 @@ Lit:
   return nullptr;
 }
 
-
 template <typename T,std::size_t L, typename C>
 SkipListNode<T,L> *
-level_predecessor(SkipListNode<T,L>*start,std::size_t level, const T&needle) noexcept {
+find_level_predecessor(SkipListNode<T,L>*start,std::size_t level, const T&needle) noexcept {
   SkipListNode<T,L> *previous = nullptr;
 Lit:
   if(start){
@@ -164,42 +196,14 @@ Lit:
   return nullptr;
 }
 
-
-static
-std::size_t random_level(Xorshift32&state, std::size_t max){
-  //ffz - find first zero AKA ctz - count trailing zeros
-
-  //TODO does this ensure that level > 0, since level 0 is an ordinary linked
-  //list an all nodes should be present there
-
-  //TODO this return the upper limit for which level the node should be
-  //included in, for example a node which gets rand_level:3 should be present
-  //on level 0,1,2,3...
-
-/**
-* Returns a random level for inserting a new node.
-* Hardwired to k=1, p=0.5, max 31 (see above and
-* Pugh's "Skip List Cookbook", sec 3.4).
-*
-*/
-  //TODO
-  std::uint32_t x = random(state);
-  std::size_t level = 0;
-  while (((x >>= 1) & 1) != 0){
-    ++level;
-  }
-
-  return level % max;
-}
-
 /*
  * Starting from the highest present node in the list header, search downwards
  * until we are on target_level, then horizontally search for needle node
  * predecessor.
  */
-template <typename T,std::size_t L, typename C>
+template <typename T,std::size_t L, typename C, typename K>
 SkipListNode<T,L> *
-find_predecessor(sp::SkipList<T,L, C> &list,std::size_t target_level,const T& needle) noexcept {
+find_predecessor(sp::SkipList<T,L, C> &list,std::size_t target_level,const K& needle) noexcept {
   /*
    * Limit first to target_level because we need to always to start from tl
    */
@@ -209,26 +213,27 @@ find_predecessor(sp::SkipList<T,L, C> &list,std::size_t target_level,const T& ne
   SkipListNode<T,L> * current = nullptr;
   std::size_t level = first_level;
 Llevel:
-  if(current == nullptr){
+  if(!current){
     current = list.header[level];
     previous = nullptr;
   }
 
-Lit:
+Lhorizontal:
   if(current){
     constexpr C cmp;
-    if(cmp(needle,current->value)) {
+    if(cmp(needle,current->value)) {// needle > it
 
       if(current->next[level]){
         previous = current;
         current = current->next[level];
-        goto Lit;
+        goto Lhorizontal;
       }
-    } else if(cmp(current->value,needle)){
+    } else if(cmp(current->value,needle)){ // needle < it
       current = previous;
       previous = nullptr;
     }
   }
+
   if(level > target_level){
     --level;
     goto Llevel;
@@ -254,51 +259,39 @@ insert(SkipList<T,L, C> &list, V &&v) noexcept {
   if(self){
 
     const std::size_t target_level = random_level(list.state,L);
-    // const std::size_t first_level = first(list, target_level);
-    // assert(first_level >= target_level);
-    // if(first_level < L){
-      auto *start = find_predecessor(list,target_level,self->value);
+    auto *start = find_predecessor(list,target_level,self->value);
 
-      for(std::size_t level=target_level+1; level-- > 0;) {
-        if(!start){
-          start = list.header[level];
-        }
-
-        /*
-         * We do not need to start from the beginning(when != null) since we get
-         * more precise result the further up in the list we get.
-         */
-        SkipListNode<T,L>*node = level_predecessor<T,L,C>(start, level, self->value);
-        if(node){
-          /*
-           * We update list on this level by inserting self as a link
-           */
-          auto next = node->next[level];
-          node->next[level] = self;
-          self->next[level] = next;
-
-          start = node;
-        }else {
-          /*
-           * Empty level or,
-           * the first value on this level is greater than self
-           */
-          auto *next =list.header[level];
-          self->next[level]=next;
-          list.header[level]= self;
-          start = nullptr;
-        }
+    for(std::size_t level=target_level+1; level-- > 0;) {
+      if(!start){
+        start = list.header[level];
       }
 
-      return &self->value;
-    // } else {
-    //   #<{(| empty tree |)}>#
-    //   for(std::size_t level=target_levels;level-- > 0;) {
-    //     assert(list.header[level] == nullptr);
-    //     list.header[level] = self;
-    //   }
-    //   return &self->value;
-    // }
+      /*
+       * We do not need to start from the beginning(when != null) since we get
+       * more precise result the further up in the list we get.
+       */
+      SkipListNode<T,L>*node = find_level_predecessor<T,L,C>(start, level, self->value);
+      if(node){
+        /*
+         * We update list on this level by inserting self as a link
+         */
+        auto next = node->next[level];
+        node->next[level] = self;
+        self->next[level] = next;
+
+        start = node;
+      }else {
+        /*
+         * Empty level or, the first value on this level is greater than self
+         */
+        auto *next =list.header[level];
+        self->next[level]=next;
+        list.header[level]= self;
+        start = nullptr;
+      }
+    }//for
+
+    return &self->value;
   }
 
   return nullptr;
@@ -333,6 +326,7 @@ remove(SkipList<T, l, C> &, const K &) noexcept {
 template <typename T,std::size_t l, typename C>
 void swap(SkipList<T,l, C> &first,SkipList<T,l, C> &second)noexcept {
   std::swap(first.root,second.root);
+  swap(first.state,second.state);
 }
 
 template <std::size_t L, typename C>
@@ -389,36 +383,34 @@ Lit:
     }
   };
 
-  // if(list.root){
-    for(std::size_t level=L;level-- >0;) {
-      std::size_t print_index=0;
-      SkipListNode<int,L>*it = list.header[level];
-      if(level == 0){
-        printf("BL |");
-      }else {
-        printf("L%zu |" ,level);
-      }
-      bool first=true;
-      std::size_t line_length =0;
-      while(it){
-        std::size_t index = index_of(it);
-        // ++print_index;//about to print
-        bool printed_empty = print_empty(index-print_index);
-        if(first){
-          first = !printed_empty;
-        }
-        print_index=index+1;
-        print_node(it,first);
-        first = false;
-        it = it->next[level];
-        ++line_length;
-      }
-
-      std::size_t index = last_index();
-      print_empty(index-print_index);
-      printf(">| %zu node(s)\n",line_length);
+  for(std::size_t level=L;level-- >0;) {
+    std::size_t print_index=0;
+    SkipListNode<int,L>*it = list.header[level];
+    if(level == 0){
+      printf("BL |");
+    }else {
+      printf("L%zu |" ,level);
     }
-  // }
+    bool first=true;
+    std::size_t line_length =0;
+    while(it){
+      std::size_t index = index_of(it);
+      // ++print_index;//about to print
+      bool printed_empty = print_empty(index-print_index);
+      if(first){
+        first = !printed_empty;
+      }
+      print_index=index+1;
+      print_node(it,first);
+      first = false;
+      it = it->next[level];
+      ++line_length;
+    }
+
+    std::size_t index = last_index();
+    print_empty(index-print_index);
+    printf(">| %zu node(s)\n",line_length);
+  }
 }
 
 }//namespace sp
