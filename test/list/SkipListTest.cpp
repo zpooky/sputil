@@ -4,10 +4,11 @@
 
 
 TEST(SkipListTest, test) {
+  srand(0);
   constexpr std::size_t levels=7;
   sp::SkipList<int,levels> list;
 
-  constexpr std::size_t length = 12;
+  constexpr std::size_t length = 112;
   int in[length];
   for(int i=0;i<length;++i){
     in[i]=i;

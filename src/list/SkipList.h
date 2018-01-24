@@ -2,6 +2,7 @@
 #define SP_UTIL_LIST_SKIP_LIST_H
 
 #include <util/comparator.h>
+#include <prng/xorshift.h>
 #include <utility>
 #include <cstring>
 
@@ -37,9 +38,11 @@ struct SkipListNode {
 template<typename T,std::size_t levels,typename Comparator = sp::greater>
 struct SkipList {
   impl::SkipList::SkipListNode<T,levels> *header[levels];
+  Xorshift32 state;
 
   SkipList() noexcept
-  : header{nullptr} {
+  : header{nullptr}
+  , state{} {
   }
 };
 
@@ -81,8 +84,12 @@ namespace SkipList {
 
 template <typename T,std::size_t levels, typename C>
 std::size_t
-first(const sp::SkipList<T, levels, C> &list) {
+first(const sp::SkipList<T, levels, C> &list,std::size_t limit) {
   for(std::size_t level=levels;level-- > 0;){
+    if(level == limit) {
+      return limit;
+    }
+
     if(list.header[level]){
       return level;
     }
@@ -93,7 +100,7 @@ first(const sp::SkipList<T, levels, C> &list) {
 template <typename T,std::size_t levels, typename C, typename K>
 const SkipListNode<T,levels> *
 find_node(const sp::SkipList<T, levels, C> &list, const K &needle) noexcept {
-  std::size_t level = first(list);
+  std::size_t level = first(list, levels);
   if(level < levels){
     SkipListNode<T,levels> *current = list.header[level];
     SkipListNode<T,levels> *previous = current;
@@ -126,32 +133,12 @@ Lit:
     }
   }
   return nullptr;
-
-
-  // // auto current = previous->next[level];
-  // if(current){
-  // } else {
-  //   #<{(| current level: n, we need to continue until node found or reached max level
-  //    * n     ... [previous] -> null
-  //    * n+1   ... [previous] -> [next] -> ...
-  //    * ...
-  //    |)}>#
-  //   if(level >0){
-  //     current = previous;
-  //     --level;
-  //     goto Lit;
-  //   }
-  // }
-
-  // return nullptr;
 }
 
 
 template <typename T,std::size_t L, typename C>
 SkipListNode<T,L> *
 previous_for(SkipListNode<T,L>*start,std::size_t level, const T&needle) noexcept {
-  assert(start);
-
   SkipListNode<T,L> *previous = nullptr;
 Lit:
   if(start){
@@ -171,8 +158,8 @@ Lit:
 }
 
 
-static 
-std::size_t random_level(std::size_t max){
+static
+std::size_t random_level(Xorshift32&state, std::size_t max){
   //ffz - find first zero AKA ctz - count trailing zeros
 
   //TODO does this ensure that level > 0, since level 0 is an ordinary linked
@@ -184,7 +171,20 @@ std::size_t random_level(std::size_t max){
 
   //TODO
   // return ffz(rand() & ((1 << max) - 1));
-  return 1;
+  // return 1;
+
+/**
+* Returns a random level for inserting a new node.
+* Hardwired to k=1, p=0.5, max 31 (see above and
+* Pugh's "Skip List Cookbook", sec 3.4).
+*
+*/
+  std::uint32_t x = random(state);
+  std::size_t level = 1;
+  while (((x >>= 1) & 1) != 0){
+    ++level;
+  }
+  return level;
 }
 
 }
@@ -203,11 +203,11 @@ insert(SkipList<T,L, C> &list, V &&v) noexcept {
   auto self = new (std::nothrow) SkipListNode<T,L>{std::forward<V>(v)};
   if(self){
 
-    const std::size_t target_levels = random_level(L);
-    const std::size_t first_level = first(list);//limit it to target_level beacause tl might be greater than first_level
-    if(first_level < L){
+    const std::size_t target_levels = random_level(list.state,L);
+    // Limit first to target_level beacause tl we need always to start from tl
+    const std::size_t first_level = first(list, target_levels-1);
+    // if(first_level < L){
       auto *start = list.header[first_level];
-      assert(start);
 
       for(std::size_t level=target_levels; level-- > 0;) {
 
@@ -227,6 +227,7 @@ insert(SkipList<T,L, C> &list, V &&v) noexcept {
           start = node;
         }else {
           /*
+           * Empty level or,
            * the first value on this level is greater than self
            */
           auto *next =list.header[level];
@@ -236,14 +237,14 @@ insert(SkipList<T,L, C> &list, V &&v) noexcept {
       }
 
       return &self->value;
-    } else {
-      /* empty tree */
-      for(std::size_t level=target_levels;level-- > 0;) {
-        assert(list.header[level] == nullptr);
-        list.header[level] = self;
-      }
-      return &self->value;
-    }
+    // } else {
+    //   #<{(| empty tree |)}>#
+    //   for(std::size_t level=target_levels;level-- > 0;) {
+    //     assert(list.header[level] == nullptr);
+    //     list.header[level] = self;
+    //   }
+    //   return &self->value;
+    // }
   }
 
   return nullptr;
@@ -314,9 +315,10 @@ Lit:
     // printf("count[%zu]\n",count);
     for(std::size_t i=0;i<count;++i){
       printf("+");
-      for(std::size_t a=0;a<b_length+1;++a){
+      for(std::size_t a=0;a<b_length;++a){
         printf("-");
       }
+      printf("-");
     }
   };
   auto print_node = [b_length](auto *node,bool first){
