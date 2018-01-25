@@ -32,7 +32,7 @@ insert(Binary<T, Comparator> &, V &&) noexcept;
 
 template <typename T, typename Comparator, typename K>
 bool
-take_head(Binary<T, Comparator> &, const K &) noexcept;
+take_head(Binary<T, Comparator> &, K &) noexcept;
 
 template <typename T, typename Comparator>
 T *

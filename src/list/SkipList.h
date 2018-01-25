@@ -49,6 +49,9 @@ struct SkipList {
   static_assert(levels < 32, "lt 32");
 };
 
+//TODO take
+//TODO SkipListSet
+
 template <typename T,std::size_t l, typename C, typename V>
 T *
 insert(SkipList<T,l, C> &, V &&) noexcept;
@@ -62,7 +65,7 @@ const T *
 find(const SkipList<T, l, C> &, const K &) noexcept;
 
 template <typename T,std::size_t l, typename C, typename K>
-T *
+bool
 remove(SkipList<T, l, C> &, const K &) noexcept;
 
 template <typename T,std::size_t l, typename C>
@@ -70,7 +73,7 @@ void swap(SkipList<T,l, C> &,SkipList<T,l, C> &)noexcept;
 
 template <std::size_t l, typename C>
 void
-dump(SkipList<int,l,C> &) noexcept;
+dump(const SkipList<int,l,C> &) noexcept;
 
 /*
  * ==========================================================================
@@ -159,7 +162,7 @@ Lit:
 
           goto Lit;
         }
-      } else {
+      } else { // needle == it
 
         return current;
       }
@@ -175,19 +178,21 @@ Lit:
   return nullptr;
 }
 
-template <typename T,std::size_t L, typename C>
+template <typename T,std::size_t L, typename C,typename K>
 SkipListNode<T,L> *
-find_level_predecessor(SkipListNode<T,L>*start,std::size_t level, const T&needle) noexcept {
+find_level_predecessor(SkipListNode<T,L>*start,std::size_t level, const K&needle) noexcept {
   SkipListNode<T,L> *previous = nullptr;
 Lit:
   if(start){
     constexpr C cmp;
-    if(cmp(start->value,needle)){
+    if(cmp(start->value,needle)){ //it > needle = return priv
       return previous;
-    } else {
+    } else if(cmp(needle,start->value)){// it < needle = continue
       previous = start;
       start = start->next[level];
       goto Lit;
+    } else {//exact match
+      return previous;
     }
   } else {
     return previous;
@@ -240,6 +245,19 @@ Lhorizontal:
   }
 
   return current;
+}
+
+template <typename T,std::size_t L, typename C, typename K>
+static bool 
+is_equal(const SkipListNode<T,L>*node,const K&needle) {
+  if(node){
+    constexpr C cmp;
+    if(!cmp(needle,node->value) && !cmp(node->value,needle)){
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }
@@ -338,11 +356,43 @@ find(const SkipList<T, levels, Comparator> &list, const K &needle) noexcept {
   return nullptr;
 }//sp::find()
 
-template <typename T,std::size_t l, typename C, typename K>
-T *
-remove(SkipList<T, l, C> &, const K &) noexcept {
-  //find on all level previous and redirect them to -> next
-  return nullptr;
+template <typename T,std::size_t L, typename C, typename K>
+bool
+remove(SkipList<T, L, C> &list, const K &needle) noexcept {
+  using namespace impl::SkipList;
+
+  SkipListNode<T,L>* result = nullptr;
+  SkipListNode<T,L>* current = nullptr;
+  for(std::size_t level = L;level-- > 0;){
+    if(!current){
+      current = list.header[level];
+      if(is_equal<T,L,C,K>(current,needle)){
+        result = current;
+        list.header[level] = current->next[level];
+        //TODO goto next level
+      }
+    }
+
+    /*
+     * Search this level for the closest predecessor to needle
+     */
+    current = find_level_predecessor<T,L,C,K>(current,level,needle);
+    if(current){
+      auto *next = current->next[level];
+      if(is_equal<T,L,C,K>(next, needle)){
+        result = next;
+
+        //unlink result
+        current->next[level] = next->next[level];
+      }
+    }
+  }
+
+  if(result){
+    delete result;
+  }
+
+  return result != nullptr;
 }//sp::remove()
 
 template <typename T,std::size_t l, typename C>
@@ -353,11 +403,15 @@ void swap(SkipList<T,l, C> &first,SkipList<T,l, C> &second)noexcept {
 
 template <std::size_t L, typename C>
 void
-dump(SkipList<int,L,C> &list) noexcept {
+dump(const SkipList<int,L,C> &list) noexcept {
   using namespace impl::SkipList;
 
-  auto index_of = [&list](auto *node) {
-    SkipListNode<int,L>*it = list.header[0];
+  if(list.header[0] == nullptr){
+    return;
+  }
+
+  auto index_of = [&list](const auto *node) {
+    const SkipListNode<int,L>*it = list.header[0];
     std::size_t result=0;
     while(it){
       if(node == it){
@@ -369,7 +423,7 @@ dump(SkipList<int,L,C> &list) noexcept {
     return result;
   };
   auto last_index = [&list] {
-    SkipListNode<int,L>*it = list.header[0];
+    const SkipListNode<int,L>*it = list.header[0];
     std::size_t result=0;
 Lit:
     if(it){
@@ -407,7 +461,7 @@ Lit:
 
   for(std::size_t level=L;level-- >0;) {
     std::size_t print_index=0;
-    SkipListNode<int,L>*it = list.header[level];
+    const SkipListNode<int,L>*it = list.header[level];
     if(level == 0){
       printf("BL |");
     }else {
