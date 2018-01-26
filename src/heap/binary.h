@@ -217,9 +217,9 @@ template <typename T, typename Comparator>
 T *
 peek_head(Binary<T, Comparator> &heap) noexcept {
   if (heap.length > 0) {
-
     return &heap.buffer[0];
   }
+
   return nullptr;
 }
 
