@@ -2,16 +2,19 @@
 #define SP_UTIL_HEAP_BINARY_H
 
 #include <util/comparator.h>
+#include <stack/Stack.h>
 
 namespace heap {
 
-// TODO emplace
-// TODO do not require default constructable
-// TODO dynamic binary
+/*
+ * TODO emplace
+ * TODO do not require default constructable
+ * TODO dynamic binary
+ */
 template <typename T, typename Comparator>
 struct Binary {
   T *buffer;
-  const std::size_t capacity;
+  std::size_t capacity;
   std::size_t length;
 
   Binary(T *, std::size_t) noexcept;
@@ -44,7 +47,7 @@ find(Binary<T, Comparator> &, const K &) noexcept; // TODO
 
 template <typename T, typename Comparator>
 void
-swap(Binary<T, Comparator> &, Binary<T, Comparator> &) noexcept; // TODO
+swap(Binary<T, Comparator> &, Binary<T, Comparator> &) noexcept;
 
 // create a heap out of given array of elements
 template <typename T, typename Comparator>
@@ -225,15 +228,35 @@ peek_head(Binary<T, Comparator> &heap) noexcept {
 
 template <typename T, typename Comparator, typename K>
 T *
-find(Binary<T, Comparator> &, const K &) noexcept {
+find(Binary<T, Comparator> &heap, const K &needle) noexcept {
+  using namespace impl::heap;
+
+  sp::Stack<std::size_t> stack;
+  push(stack, 0);
+  std::size_t index;
+  while(pop(stack,index)) {
+
+    if (index < heap.length) {
+      constexpr Comparator cmp;
+      const bool greater = cmp(heap.buffer[index],needle);
+      const bool lesser = cmp(needle,heap.buffer[index]);
+
+      if(!greater && !lesser){//==
+        return &heap.buffer[index];
+      } else if (lesser){
+        push(stack, left_child(index));
+        push(stack, right_child(index));
+      }
+    }
+  }
   return nullptr; // TODO
 }
 
 template <typename T, typename Comparator>
 void
 swap(Binary<T, Comparator> &first, Binary<T, Comparator> &second) noexcept {
-  std::swap(first.length, second.length);
   std::swap(first.buffer, second.buffer);
+  std::swap(first.length, second.length);
   std::swap(first.capacity, second.capacity);
 }
 

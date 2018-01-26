@@ -6,6 +6,11 @@
 #include <utility>
 #include <cstring>
 
+/*
+ * TODO refactor to use SkipListNode as a header this will reduce the amount of
+ * special cases.
+ */
+
 /*Sorted container*/
 namespace sp {
 namespace impl {
