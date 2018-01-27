@@ -87,6 +87,9 @@ template <typename T, typename F>
 bool
 remove_first(FixedList<T> &, F) noexcept;
 
+// template <typename Random, typename T>
+// void
+// shuffle(Random &, sp::FixedList<T> &) noexcept;
 /*
  * =======================================================
  */
@@ -345,6 +348,33 @@ remove_first(FixedList<T> &list, F f) noexcept {
 
   return false;
 } // sp::remove_first()
+
+// template <typename Random, typename T>
+// void
+// shuffle(Random &rand, FixedList<T> &list) noexcept {
+//   using namespace impl::FixedList;
+//
+//   auto swap = [](std::size_t first, std::size_t second) {
+//   };
+//
+// FixedNode<T> *priv = nullptr;
+//   FixedNode<T> *it = list.root;
+//
+//   for (std::size_t idx = 0; idx < list.length; ++idx) {
+//     std::size_t replace = uniform_dist(rand, 0, list.length);
+//     if(replace != idx){
+//       find_priv
+//       if(idx == 0){
+//
+//         swap(idx, replace);
+//       } else {
+//
+//       }
+//     }
+//     priv = it;
+//     it = it->next;
+//   }
+// }
 
 } // namespace sp
 

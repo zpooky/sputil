@@ -35,74 +35,11 @@
             "-Wshadow",
             "-ggdb",
             "-o",
-            "build/hash/fnv.o",
-            "src/hash/fnv.cpp"
-        ],
-        "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/hash/fnv.cpp"
-    },
-    {
-        "arguments": [
-            "c++",
-            "-c",
-            "-Iinclude",
-            "-enable-frame-pointers",
-            "-std=c++14",
-            "-Wall",
-            "-Wextra",
-            "-Wpedantic",
-            "-Wpointer-arith",
-            "-Wconversion",
-            "-Wshadow",
-            "-ggdb",
-            "-o",
             "build/hash/crc.o",
             "src/hash/crc.cpp"
         ],
         "directory": "/home/spooky/development/repos/sputil",
         "file": "src/hash/crc.cpp"
-    },
-    {
-        "arguments": [
-            "c++",
-            "-c",
-            "-Iinclude",
-            "-enable-frame-pointers",
-            "-std=c++14",
-            "-Wall",
-            "-Wextra",
-            "-Wpedantic",
-            "-Wpointer-arith",
-            "-Wconversion",
-            "-Wshadow",
-            "-ggdb",
-            "-o",
-            "build/util/Bitset.o",
-            "src/util/Bitset.cpp"
-        ],
-        "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/util/Bitset.cpp"
-    },
-    {
-        "arguments": [
-            "c++",
-            "-c",
-            "-Iinclude",
-            "-enable-frame-pointers",
-            "-std=c++14",
-            "-Wall",
-            "-Wextra",
-            "-Wpedantic",
-            "-Wpointer-arith",
-            "-Wconversion",
-            "-Wshadow",
-            "-ggdb",
-            "-o",
-            "build/concurrent/Barrier.o",
-            "src/concurrent/Barrier.cpp"
-        ],
-        "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/concurrent/Barrier.cpp"
     },
     {
         "arguments": [
@@ -140,10 +77,94 @@
             "-Wshadow",
             "-ggdb",
             "-o",
+            "build/prng/xorshift.o",
+            "src/prng/xorshift.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/prng/xorshift.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/concurrent/Barrier.o",
+            "src/concurrent/Barrier.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/concurrent/Barrier.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
             "build/concurrent/ReadWriteLock.o",
             "src/concurrent/ReadWriteLock.cpp"
         ],
         "directory": "/home/spooky/development/repos/sputil",
         "file": "src/concurrent/ReadWriteLock.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/hash/fnv.o",
+            "src/hash/fnv.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/hash/fnv.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/util/Bitset.o",
+            "src/util/Bitset.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/util/Bitset.cpp"
     }
 ]

@@ -1,12 +1,6 @@
 #include "gtest/gtest.h"
 #include <stack/Stack.h>
 
-template<>
-void swap(int&o,int&t) noexcept {
-  o = 1;
-  t = 2;
-}
-
 TEST(StackTest, test_empty) {
   sp::Stack<int> stack;
   ASSERT_TRUE(sp::push(stack,1) == nullptr);
