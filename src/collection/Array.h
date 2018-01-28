@@ -48,6 +48,14 @@ template <typename T>
 void
 swap(Array<T> &, Array<T> &) noexcept;
 
+template <typename T, typename F>
+void
+for_each(Array<T> &, F) noexcept;
+
+template <typename T, typename F>
+bool
+for_each(Array<T> &, F) noexcept;
+
 /*
  * =======================================================
  */
@@ -150,6 +158,24 @@ swap(Array<T> &f, Array<T> &s) noexcept {
   swap(f.buffer, s.buffer);
   swap(f.length, s.length);
   swap(f.capacity, s.capacity);
+}
+
+template <typename T, typename F>
+void
+for_each(Array<T> &a, F f) noexcept {
+  for (std::size_t i = 0; i < a.length; ++i) {
+    f(a.buffer[i]);
+  }
+}
+
+template <typename T, typename F>
+bool
+for_each(Array<T> &a, F f) noexcept {
+  bool result = true;
+  for (std::size_t i = 0; i < a.length && result; ++i) {
+    result = f(a.buffer[i]);
+  }
+  return result;
 }
 
 } // namespace sp
