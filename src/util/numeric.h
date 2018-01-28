@@ -3,37 +3,84 @@
 
 #include <util/swap.h>
 
+namespace sp {
+namespace impl {
+namespace swap {
+template <typename T>
 void
-swap(char &, char &) noexcept;
+internal_swap(T &f, T &s) noexcept {
+  T tmp(std::move(f));
+  f = std::move(s);
+  s = std::move(tmp);
+}
+} // namespace swap
+} // namespace impl
 
-// void
-// swap(signed char &, signed char &) noexcept;
-//
-// void
-// swap(unsigned char &, unsigned char &) noexcept;
-
-void
-swap(short &, short &) noexcept;
-
-// void
-// swap(signed short &, signed short &) noexcept;
-//
-// void
-// swap(unsigned short &, unsigned short &) noexcept;
-
-void
-swap(int &f, int &s) noexcept {
-  int tmp = f;
-  f = s;
-  s = tmp;
+inline void
+swap(char &f, char &s) noexcept {
+  impl::swap::internal_swap(f, s);
 }
 
-// void
-// swap(signed int &, signed int &) noexcept;
-//
-// void
-// swap(unsigned int &, unsigned int &) noexcept;
+inline void
+swap(signed char &f, signed char &s) noexcept {
+  impl::swap::internal_swap(f, s);
+}
+
+inline void
+swap(unsigned char &f, unsigned char &s) noexcept {
+  impl::swap::internal_swap(f, s);
+}
+
+// inline void
+// swap(short &f, short &s) noexcept {
+//   impl::swap::internal_swap(f, s);
+// }
+
+inline void
+swap(signed short &f, signed short &s) noexcept {
+  impl::swap::internal_swap(f, s);
+}
+
+inline void
+swap(unsigned short &f, unsigned short &s) noexcept {
+  impl::swap::internal_swap(f, s);
+}
+
+// template<>
+inline void
+swap(int &f, int &s) noexcept {
+  impl::swap::internal_swap(f, s);
+}
+
+// inline void
+// swap(signed int &f, signed int &s) noexcept {
+//   impl::swap::internal_swap(f, s);
+// }
+
+inline void
+swap(unsigned int &f, unsigned int &s) noexcept {
+  impl::swap::internal_swap(f, s);
+}
+
+// template<>
+inline void
+swap(long &f, long &s) noexcept {
+  impl::swap::internal_swap(f, s);
+}
+
+// inline void
+// swap(signed int &f, signed int &s) noexcept {
+//   impl::swap::internal_swap(f, s);
+// }
+
+inline void
+swap(unsigned long &f, unsigned long &s) noexcept {
+  impl::swap::internal_swap(f, s);
+}
+
+
 
 // TODO add swaps
+} // namespace sp
 
 #endif

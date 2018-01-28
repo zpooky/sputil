@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <prng/xorshift.h>
+// #include <util/swap.h>
 #include <util/comparator.h>
 #include <utility>
 
@@ -485,7 +486,9 @@ take(SkipList<T, l, C> &list, const K &needle, T &out) noexcept {
 
   auto *result = remove_node(list, needle);
   if (result) {
-    std::swap(result->value, out); // TODO not std
+    using sp::swap;
+    using std::swap;
+    swap(result->value, out);
 
     delete result;
     return true;
