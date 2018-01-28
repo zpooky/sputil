@@ -54,7 +54,7 @@ for_each(Array<T> &, F) noexcept;
 
 template <typename T, typename F>
 bool
-for_each(Array<T> &, F) noexcept;
+for_all(Array<T> &, F) noexcept;
 
 /*
  * =======================================================
@@ -170,7 +170,7 @@ for_each(Array<T> &a, F f) noexcept {
 
 template <typename T, typename F>
 bool
-for_each(Array<T> &a, F f) noexcept {
+for_all(Array<T> &a, F f) noexcept {
   bool result = true;
   for (std::size_t i = 0; i < a.length && result; ++i) {
     result = f(a.buffer[i]);
