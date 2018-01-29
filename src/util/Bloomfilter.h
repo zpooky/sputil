@@ -4,6 +4,7 @@
 #include <util/Bitset.h>
 
 namespace sp {
+  //TODO move to hash/??
   template<typename T>
   using Hasher = std::size_t (*)(const T&);
 

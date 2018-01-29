@@ -3,7 +3,7 @@
 #include <random>
 
 TEST(BitsetTest, test_random) {
-  constexpr std::size_t len = 128;
+  constexpr std::size_t len = 68;
   constexpr std::size_t bits=len*sizeof(std::uint64_t)*8;
 
   std::uint64_t raw[len]={0};
@@ -20,8 +20,11 @@ TEST(BitsetTest, test_random) {
   std::shuffle(in, in + bits, g);
 
   for(std::size_t i=0;i<bits;++i){
-    std::size_t testIdx = in[i];
+    for(std::size_t a=i;a<bits;++a){
+      ASSERT_FALSE(test(b,in[a]));
+    }
 
+    std::size_t testIdx = in[i];
     {
       ASSERT_FALSE(test(b,testIdx));
       bool old = set(b,testIdx, true);
@@ -37,6 +40,10 @@ TEST(BitsetTest, test_random) {
       bool newv = toggle(b,testIdx);
       ASSERT_TRUE(newv);
       ASSERT_TRUE(test(b,testIdx));
+    }
+
+    for(std::size_t a=0;a<=i;++a){
+      ASSERT_TRUE(test(b,in[a]));
     }
   }
 
