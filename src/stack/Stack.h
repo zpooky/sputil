@@ -74,7 +74,8 @@ namespace sp {
   template<typename T>
   const T* peek(const Stack<T>&stack) noexcept {
     if(stack.length > 0){
-      return stack.buffer+(stack.length-1);
+      std::size_t idx = stack.length-1;
+      return stack.buffer+idx;
     }
     return nullptr;
   }

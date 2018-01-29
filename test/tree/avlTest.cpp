@@ -6,15 +6,15 @@
 
 #include <random>
 
-struct Data {
+struct AVLData {
   using T = int;
   bool present;
   T data;
-  Data()
+  AVLData()
       : present(false)
       , data(0) {
   }
-  explicit Data(T d)
+  explicit AVLData(T d)
       : present(true)
       , data(d) {
   }
@@ -23,7 +23,7 @@ struct Data {
     return present;
   }
 
-  Data &
+  AVLData &
   operator=(const T &o) noexcept {
     present = true;
     data = o;
@@ -40,7 +40,7 @@ struct Data {
   }
 
   bool
-  operator==(const Data &o) const noexcept {
+  operator==(const AVLData &o) const noexcept {
     return operator==(o.data);
   }
 
@@ -50,7 +50,7 @@ struct Data {
   }
 
   bool
-  operator>(const Data &o) const noexcept {
+  operator>(const AVLData &o) const noexcept {
     return operator>(o.data);
   }
 
@@ -60,7 +60,7 @@ struct Data {
   }
 
   bool
-  operator<(const Data &o) const noexcept {
+  operator<(const AVLData &o) const noexcept {
     return operator<(o.data);
   }
 
@@ -77,17 +77,17 @@ struct Data {
   }
 
   int
-  cmp(const Data &o) const noexcept {
+  cmp(const AVLData &o) const noexcept {
     return cmp(o.data);
   }
 };
 
 TEST(avlTest, rotate_left) {
-  auto a = new avl::Node<Data>(Data(1));
+  auto a = new avl::Node<AVLData>(AVLData(1));
   a->balance = 2;
-  auto b = a->right = new avl::Node<Data>(Data(2), a);
+  auto b = a->right = new avl::Node<AVLData>(AVLData(2), a);
   b->balance = 1;
-  auto c = b->right = new avl::Node<Data>(Data(3), b);
+  auto c = b->right = new avl::Node<AVLData>(AVLData(3), b);
   c->balance = 0;
 
   auto reb = avl::impl::avl::rotate_left(a);
@@ -109,11 +109,11 @@ TEST(avlTest, rotate_left) {
 }
 
 TEST(avlTest, rotate_right) {
-  auto c = new avl::Node<Data>(Data(3));
+  auto c = new avl::Node<AVLData>(AVLData(3));
   c->balance = -2;
-  auto b = c->left = new avl::Node<Data>(Data(2), c);
+  auto b = c->left = new avl::Node<AVLData>(AVLData(2), c);
   b->balance = -1;
-  auto a = b->left = new avl::Node<Data>(Data(1), b);
+  auto a = b->left = new avl::Node<AVLData>(AVLData(1), b);
   a->balance = 0;
 
   auto reb = avl::impl::avl::rotate_right(c);
@@ -135,11 +135,11 @@ TEST(avlTest, rotate_right) {
 }
 
 TEST(avlTest, double_rotate_left) {
-  auto c = new avl::Node<Data>(Data(3));
+  auto c = new avl::Node<AVLData>(AVLData(3));
   c->balance = -2;
-  auto b = c->left = new avl::Node<Data>(Data(1), c);
+  auto b = c->left = new avl::Node<AVLData>(AVLData(1), c);
   b->balance = 1;
-  auto a = b->right = new avl::Node<Data>(Data(2), b);
+  auto a = b->right = new avl::Node<AVLData>(AVLData(2), b);
   a->balance = 0;
 
   c->left = avl::impl::avl::rotate_left(c->left);
@@ -164,11 +164,11 @@ TEST(avlTest, double_rotate_left) {
 }
 
 TEST(avlTest, double_rotate_right) {
-  auto c = new avl::Node<Data>(Data(1));
+  auto c = new avl::Node<AVLData>(AVLData(1));
   c->balance = 2;
-  auto b = c->right = new avl::Node<Data>(Data(3), c);
+  auto b = c->right = new avl::Node<AVLData>(AVLData(3), c);
   b->balance = -1;
-  auto a = b->left = new avl::Node<Data>(Data(2), b);
+  auto a = b->left = new avl::Node<AVLData>(AVLData(2), b);
   a->balance = 0;
 
   c->right = avl::impl::avl::rotate_right(c->right);
@@ -197,11 +197,11 @@ TEST(avlTest, test1) {
   // │   └── gt:[v:3|b:1]
   // │       └── gt:[v:4|b:0]
 
-  auto c = new avl::Node<Data>(Data(2));
+  auto c = new avl::Node<AVLData>(AVLData(2));
   c->balance = 2;
-  auto b = c->right = new avl::Node<Data>(Data(3), c);
+  auto b = c->right = new avl::Node<AVLData>(AVLData(3), c);
   b->balance = 1;
-  auto a = b->right = new avl::Node<Data>(Data(4), b);
+  auto a = b->right = new avl::Node<AVLData>(AVLData(4), b);
   a->balance = 0;
   auto reb = avl::impl::avl::rotate_left(c);
 
@@ -226,11 +226,11 @@ TEST(avlTest, test1) {
 
 TEST(avlTest, test_increasing_order) 
 {
-  avl::Tree<Data> tree;
+  avl::Tree<AVLData> tree;
   int i = 0;
   for (; i < 10; ++i) {
     printf(".%d <- ", i);
-    Data ins(i);
+    AVLData ins(i);
     auto res = avl::insert(tree, ins);
     ASSERT_TRUE(std::get<1>(res));
     ASSERT_TRUE(std::get<0>(res) != nullptr);
