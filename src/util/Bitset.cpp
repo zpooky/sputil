@@ -80,4 +80,8 @@ bool toggle(Bitset&b, std::size_t idx) noexcept {
   return v;
 }
 
+std::size_t bits(const Bitset&b) noexcept {
+  return sizeof(Bitset_buffer::type)*8*b.capacity;
+}
+
 }

@@ -31,6 +31,11 @@ bool set(Bitset&, std::size_t, bool) noexcept;
  */
 bool toggle(Bitset&, std::size_t) noexcept;
 
+/*
+ * return the bit capacity of the Bitset
+ */
+std::size_t bits(const Bitset&) noexcept;
+
 
 /*
  * ==========================================================================
