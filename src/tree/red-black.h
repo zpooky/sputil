@@ -13,9 +13,7 @@ template <typename T>
 struct Node {
   using value_type = T;
 
-  // TODO lesser
   Node<T> *left;
-  // TODO greater
   Node<T> *right;
   Node<T> *parent;
   T value;
@@ -72,6 +70,7 @@ struct Node {
     }
   }
 };
+
 template <typename T>
 using Tree = sp::Tree<rb::Node<T>>;
 
@@ -99,7 +98,9 @@ template <typename T>
 bool
 verify(Tree<T> &tree) noexcept;
 
-//==================
+/*
+ * ==========================================================================
+ */
 namespace impl {
 namespace rb {
 
@@ -462,6 +463,13 @@ Lstart:
 
   return std::make_tuple(nullptr, false);
 } // rb::insert()
+
+template <typename T, typename K>
+bool
+remove(Tree<T> &, const K &) noexcept {
+  //TODO
+  return nullptr;
+}//rb::remove()
 
 template <typename T>
 bool

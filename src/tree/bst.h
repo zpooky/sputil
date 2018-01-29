@@ -90,7 +90,9 @@ template <typename T>
 bool
 reverse(Tree<T> &) noexcept;
 
-//===================================================
+/*
+ * ==========================================================================
+ */
 namespace impl {
 namespace bst {
 
@@ -169,37 +171,56 @@ template <typename T>
 Node<T> *
 remove(Node<T> *current) noexcept {
   assert(current);
-  auto parent_child_link = [](Node<T> *subject, Node<T> *nev) {
+  using namespace sp::impl::tree;
+
+  auto update_ParentToChild = [](Node<T> *subject, Node<T> *replacement) {
     // update parent -> child
     Node<T> *const parent = subject->parent;
     if (parent) {
       if (parent->left == subject) {
-        parent->left = nev;
+        parent->left = replacement;
       } else {
         assert(parent->right == subject);
-        parent->right = nev;
+        parent->right = replacement;
       }
     }
   };
 
   assert(sp::impl::tree::doubly_linked(current));
 
-  if (current->left && current->right) {
-    // two children
-
-    // Replace current with the smallest right child
-    Node<T> *const successor = sp::impl::tree::find_min(current->right);
+  if /*two children*/(current->left && current->right) {
+    /*
+     * Replace $current with the minimum child found in $current right branch($successor).
+     * The $successor is the natural replacement for $current since all BST properties will still hold after the remove:
+     * - $successor will be greater than any node in the left branch since $successor was taken from the right branch.
+     * - $successor will be less than the node on the right since $successor was the smallest node in the right branch.
+     */
+    Node<T> *const successor = find_min(current->right);
     {
+      /*
+       * Unlinks $successor.
+       */
       remove(successor);
 
-      parent_child_link(current, successor);
-      successor->parent = current->parent;
-      successor->left = current->left;
-      successor->left->parent = successor;
+      /*
+       * Update [parent -> child] Link. now [parent -> successor]
+       */
+      update_ParentToChild(current, successor);
+      {
+        /*
+         * Update $successor relation pointers the be the same as $current had before.
+         */
+        successor->parent = current->parent;
+        successor->left = current->left;
+        successor->left->parent = successor;
 
-      if (current->right) {
-        successor->right = current->right;
-        successor->right->parent = successor;
+        if (current->right) {
+          /*
+           * If the immediate right was not picked as the successor(not null).
+           */
+          successor->right = current->right;
+          successor->right->parent = successor;
+        }
       }
 
       assert(sp::impl::tree::doubly_linked(successor));
@@ -209,25 +230,32 @@ remove(Node<T> *current) noexcept {
     current->left = nullptr;
     current->right = nullptr;
 
+    /*
+     * Returns the new root of the sub-Tree
+     */
     return successor;
-  } else if (!current->left && !current->right) {
-    // zero children
-
+  } else if /*zero children*/(!current->left && !current->right) {
+    /*
+     * Unset $current from [parent -> child] and replace it with null
+     */
     Node<T> *parent = current->parent;
     Node<T> *unset = nullptr;
-    parent_child_link(current, unset);
+    update_ParentToChild(current, unset);
+
     assert(sp::impl::tree::doubly_linked(parent));
+
     current->parent = nullptr;
 
     return parent;
-  } else if (current->left) {
-    // one child
-
+  } else if /*left child*/(current->left) {
+    /*
+     * Unset $current from [parent -> child] and replace it with $current only child
+     */
     Node<T> *const parent = current->parent;
-
     auto *const left = current->left;
-    parent_child_link(current, left);
+    update_ParentToChild(current, left);
     left->parent = parent;
+
     assert(sp::impl::tree::doubly_linked(parent));
 
     current->parent = nullptr;
@@ -236,13 +264,16 @@ remove(Node<T> *current) noexcept {
     return left;
   }
   assert(current->right);
-  // one child
+  /* right child */
 
+  /*
+   * Unset $current from [parent -> child] and replace it with $current only child
+   */
   Node<T> *const parent = current->parent;
-
   auto *const right = current->right;
-  parent_child_link(current, right);
+  update_ParentToChild(current, right);
   right->parent = parent;
+
   assert(sp::impl::tree::doubly_linked(parent));
 
   current->parent = nullptr;
@@ -318,10 +349,10 @@ bool
 remove(Tree<T> &tree, const K &k) noexcept {
   Node<T> *const node = sp::impl::tree::find_node(tree.root, k);
   if (node) {
-    Node<T> *const nroot = impl::bst::remove(node);
 
+    Node<T> *const nroot = impl::bst::remove(node);
     if (nroot) {
-      if (!nroot->parent) {
+      if (nroot->parent == nullptr) {
         tree.root = nroot;
       }
     } else {

@@ -46,7 +46,17 @@ template <typename T>
 void
 swap(Tree<T> &, Tree<T> &) noexcept;
 
-//===================================================
+template <typename T, typename S>
+typename Tree<T>::const_pointer
+find(const Tree<T> &tree, const S &search) noexcept;
+
+template <typename T, typename S>
+typename Tree<T>::pointer
+find(Tree<T> &tree, const S &search) noexcept;
+
+/*
+ * ==========================================================================
+ */
 namespace impl {
 /*impl*/
 namespace tree {
@@ -189,7 +199,8 @@ child_count(T *tree) noexcept {
 template <typename T>
 void
 swap(Tree<T> &first, Tree<T> &second) noexcept {
-  std::swap(first.root, second.root);
+  using std::swap;
+  swap(first.root, second.root);
 } // sp::swap()
 
 } // namespace sp

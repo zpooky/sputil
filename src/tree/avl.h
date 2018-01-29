@@ -91,6 +91,12 @@ verify(Tree<T> &tree) noexcept;
 template <typename T,typename K>
 const T* find(const Tree<T>&,const K&) noexcept;
 
+template <typename T,typename K>
+T* find(Tree<T>&,const K&) noexcept;
+
+/*
+ * ==========================================================================
+ */
 
 namespace impl {
   /*avl::impl*/
@@ -410,6 +416,11 @@ verify(Tree<T> &tree) noexcept {
 
 template <typename T,typename K>
 const T* find(const Tree<T>&tree,const K&key) noexcept {
+  return sp::find(tree,key);
+}//av::find()
+
+template <typename T,typename K>
+T* find(Tree<T>&tree,const K&key) noexcept {
   return sp::find(tree,key);
 }//av::find()
 

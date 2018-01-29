@@ -54,7 +54,7 @@ Lstart:
        * If there is _no_ parent then current is root.
        * If there is a parent then we have not altered the root node.
        */
-      return current->parent ? nullptr : current;
+      return current;
     }
     /* Right Heavy */
     else if (balance(current) == 2) {
@@ -64,12 +64,12 @@ Lstart:
 
       set(current) = rotate_left(current);
 
-      return current->parent ? nullptr : current;
+      return current;
     }
 
     if (current->parent) {
       if (update_parent_balance(current) == 0) {
-        return nullptr;
+        return current;
       }
     }
 
@@ -79,6 +79,7 @@ Lstart:
 
   return current;
 } // avl::impl::retrace()
+
 } // namespace ins
 } // namespace avl
 } // namespace impl
@@ -86,9 +87,8 @@ Lstart:
 template <typename T, typename K>
 std::tuple<T *, bool>
 insert(Tree<T> &tree, K &&ins) noexcept {
-  /*Ordinary Binary Insert*/
   auto set_root = [&tree](Node<T> *new_root) {
-    if (new_root) {
+    if(new_root->parent == nullptr){
       tree.root = new_root;
     }
   };
@@ -103,9 +103,10 @@ insert(Tree<T> &tree, K &&ins) noexcept {
     return std::make_tuple(nullptr, false);
   }
 
-  // TODO share with bst
+  // XXX share with bst
   Node<T> *it = tree.root;
 
+  /*Ordinary Binary Insert*/
 Lstart:
   if (ins < it->value) {
     if (it->left) {
