@@ -228,36 +228,89 @@ peek_head(Binary<T, Comparator> &heap) noexcept {
 
 template <typename T, typename Comparator, typename K>
 T *
-find(Binary<T, Comparator> &heap, const K &needle) noexcept {
+find_heap(Binary<T, Comparator> &heap, const K &needle) noexcept {
   using namespace impl::heap;
 
-  sp::Stack<std::size_t> stack;
+  // std::size_t raw[1024] = {0};
+  auto raw = new std::size_t[1024];
+  sp::Stack<std::size_t> stack{raw,1024};
   push(stack, 0);
   std::size_t index;
   while(pop(stack,index)) {
 
+Lit:
     if (index < heap.length) {
       constexpr Comparator cmp;
       const bool greater = cmp(heap.buffer[index],needle);
       const bool lesser = cmp(needle,heap.buffer[index]);
 
       if(!greater && !lesser){//==
+        delete raw;
         return &heap.buffer[index];
-      } else if (lesser){
-        push(stack, left_child(index));
-        push(stack, right_child(index));
+      } else if (greater){
+        std::size_t left =left_child(index) ;
+        if(left < heap.length){
+          if(!push(stack, left)){
+            delete raw;
+            assert(false);
+            return nullptr;
+          }
+        }
+
+        // We directly handle right child, so we do not need to keep track of
+        // it on the stack.
+        std::size_t right = right_child(index);
+        index = right;
+        goto Lit;
       }
     }
   }
+
+  delete raw;
   return nullptr; // TODO
+}
+
+template <typename T, typename Comparator, typename K>
+T *
+find_stack(Binary<T, Comparator> &heap, const K &needle,std::size_t index) noexcept {
+  using namespace impl::heap;
+
+  if (index < heap.length) {
+    constexpr Comparator cmp;
+    const bool greater = cmp(heap.buffer[index],needle);
+    const bool lesser = cmp(needle,heap.buffer[index]);
+
+    if(!greater && !lesser){//==
+      return &heap.buffer[index];
+    } else if (greater){
+      T* l = find_stack(heap,needle, left_child(index));
+      if(l != nullptr){
+        return l;
+      }
+      T* r = find_stack(heap,needle, right_child(index));
+      if(r != nullptr){
+        return r;
+      }
+    }
+  }
+
+  return nullptr; // TODO
+}
+
+template <typename T, typename Comparator, typename K>
+T *
+find(Binary<T, Comparator> &heap, const K &needle) noexcept {
+  // return find_stack(heap,needle,0);
+  return find_heap(heap,needle);
 }
 
 template <typename T, typename Comparator>
 void
 swap(Binary<T, Comparator> &first, Binary<T, Comparator> &second) noexcept {
-  std::swap(first.buffer, second.buffer);
-  std::swap(first.length, second.length);
-  std::swap(first.capacity, second.capacity);
+  using std::swap;
+  swap(first.buffer, second.buffer);
+  swap(first.length, second.length);
+  swap(first.capacity, second.capacity);
 }
 
 template <typename Comparator>

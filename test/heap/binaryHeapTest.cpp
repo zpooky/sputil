@@ -17,12 +17,15 @@ static void random_fill(heap::Binary<int,C> &heap,std::priority_queue<int,Col,Co
 //TODO take test
 
 TEST(BinaryHeapTest, MinHeap) {
-  constexpr int size = 1024;
+  constexpr int size = 256;
   int buffer[size]={0};
   heap::MinBinary<int> heap(buffer,size);
 
   {
     for(int i=0;i<size;++i){
+      for(int a=i;a<size;++a){
+        ASSERT_FALSE(find(heap,a));
+      }
       ASSERT_EQ(std::size_t(heap.length),std::size_t(i));
 
       int* res = heap::insert(heap, i);
@@ -32,6 +35,11 @@ TEST(BinaryHeapTest, MinHeap) {
       int *pres = heap::peek_head(heap);
       ASSERT_FALSE(pres ==nullptr);
       ASSERT_EQ(*pres,0);
+      for(int a=0;a<= i;++a){
+        int* fres = find(heap,a);
+        ASSERT_TRUE(fres);
+        ASSERT_EQ(*fres,a);
+      }
     }
 
     {
@@ -58,6 +66,10 @@ TEST(BinaryHeapTest, MinHeap) {
   //
   {
     for(int i=size;i-->0;){
+      for(int a=i;a-->0;){
+        ASSERT_FALSE(find(heap,a));
+      }
+
       int* res = heap::insert(heap, i);
       ASSERT_FALSE(res ==nullptr);
       ASSERT_EQ(*res,i);
@@ -67,6 +79,12 @@ TEST(BinaryHeapTest, MinHeap) {
       int *pres = heap::peek_head(heap);
       ASSERT_FALSE(pres ==nullptr);
       ASSERT_EQ(*pres,i);
+
+      for(int a=size;a-- > i;){
+        int* fres = find(heap,a);
+        ASSERT_TRUE(fres);
+        ASSERT_EQ(*fres,a);
+      }
     }
 
     {
@@ -101,6 +119,12 @@ TEST(BinaryHeapTest, MinHeap_random_insert) {
   random_fill(heap,ref);
   ASSERT_EQ(heap.capacity,heap.length);
   ASSERT_EQ(ref.size(),heap.length);
+  for(std::size_t i=0;i<size;++i){
+    int search = buffer[i];
+    int *res = find(heap, search);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res,search);
+  }
   // heap::dump(heap);
 
   int priv = ref.top();
@@ -129,6 +153,12 @@ TEST(BinaryHeapTest, MaxHeap_random_insert) {
   random_fill(heap,ref);
   ASSERT_EQ(heap.capacity,heap.length);
   ASSERT_EQ(ref.size(),heap.length);
+  for(std::size_t i=0;i<size;++i){
+    int search = buffer[i];
+    int *res = find(heap, search);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res,search);
+  }
   // heap::dump(heap);
 
   int priv = ref.top();
@@ -149,12 +179,16 @@ TEST(BinaryHeapTest, MaxHeap_random_insert) {
 }
 
 TEST(BinaryHeapTest, MaxHeap) {
-  constexpr int size = 1024;
+  constexpr int size = 256;
   int buffer[size]={0};
   heap::MaxBinary<int> heap(buffer,size);
 
   {
     for(int i=0;i<size;++i){
+      for(int a=i;a<size;++a){
+        ASSERT_FALSE(find(heap,a));
+      }
+
       ASSERT_EQ(std::size_t(heap.length),std::size_t(i));
 
       int* res = heap::insert(heap, i);
@@ -164,6 +198,12 @@ TEST(BinaryHeapTest, MaxHeap) {
       int *pres = heap::peek_head(heap);
       ASSERT_FALSE(pres ==nullptr);
       ASSERT_EQ(*pres,i);
+
+      for(int a=0;a<= i;++a){
+        int* fres = find(heap,a);
+        ASSERT_TRUE(fres);
+        ASSERT_EQ(*fres,a);
+      }
     }
 
     {
@@ -190,6 +230,10 @@ TEST(BinaryHeapTest, MaxHeap) {
   //
   {
     for(int i=size;i-->0;){
+      for(int a=i;a-->0;){
+        ASSERT_FALSE(find(heap,a));
+      }
+
       int* res = heap::insert(heap, i);
       ASSERT_FALSE(res ==nullptr);
       ASSERT_EQ(*res,i);
@@ -199,6 +243,12 @@ TEST(BinaryHeapTest, MaxHeap) {
       int *pres = heap::peek_head(heap);
       ASSERT_FALSE(pres ==nullptr);
       ASSERT_EQ(*pres,size-1);
+
+      for(int a=size;a-- > i;){
+        int* fres = find(heap,a);
+        ASSERT_TRUE(fres);
+        ASSERT_EQ(*fres,a);
+      }
     }
 
     {

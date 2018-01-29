@@ -55,7 +55,8 @@ namespace sp {
   template<typename T,typename V>
   T* push(Stack<T>&stack, V&&val) noexcept {
     if(stack.length < stack.capacity){
-      T *const raw = stack.buffer+stack.length++;
+      std::size_t idx = stack.length++;
+      T *const raw = stack.buffer+idx;
       raw->~T();
       new (raw) T(std::forward<V>(val));
 
@@ -82,7 +83,9 @@ namespace sp {
   template<typename T>
   bool pop(Stack<T>&stack, T&out) noexcept {
     if(stack.length > 0){
-      T& instack = stack.buffer[--stack.length];
+      std::size_t idx = --stack.length;
+      T& instack = stack.buffer[idx];
+      using sp::swap;
       swap(instack,out);
       return true;
     }
