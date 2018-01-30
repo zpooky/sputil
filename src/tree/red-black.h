@@ -40,24 +40,6 @@ struct Node {
     return s;
   }
 
-  template <typename O>
-  bool
-  operator<(const O &o) const noexcept {
-    return value < o;
-  }
-
-  template <typename O>
-  bool
-  operator>(const O &o) const noexcept {
-    return value > o;
-  }
-
-  template <typename O>
-  bool
-  operator==(const O &o) const noexcept {
-    return value == o;
-  }
-
   ~Node() noexcept {
     // TODO this is recursive
     if (left) {
@@ -71,32 +53,32 @@ struct Node {
   }
 };
 
-template <typename T>
-using Tree = sp::Tree<rb::Node<T>>;
+template <typename T,typename Comparator = sp::greater>
+using Tree = sp::Tree<rb::Node<T>, Comparator>;
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 const T *
-find(const Tree<T> &, const K &) noexcept;
+find(const Tree<T,C> &, const K &) noexcept;
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 const T *
-find(Tree<T> &, const K &) noexcept;
+find(Tree<T,C> &, const K &) noexcept;
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T> &, K &&) noexcept;
+insert(Tree<T,C> &, K &&) noexcept;
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 bool
-remove(Tree<T> &, const K &) noexcept; // TODO
+remove(Tree<T,C> &, const K &) noexcept; // TODO
 
-template <typename T>
+template <typename T,typename C>
 void
-dump(Tree<T> &tree, const std::string &prefix = "") noexcept;
+dump(Tree<T,C> &tree, const std::string &prefix = "") noexcept;
 
-template <typename T>
+template <typename T,typename C>
 bool
-verify(Tree<T> &tree) noexcept;
+verify(Tree<T, C> &tree) noexcept;
 
 /*
  * ==========================================================================
@@ -392,21 +374,21 @@ verify(Node<T> *parent, Node<T> *current, std::size_t &min, std::size_t &max) {
 
 //==================
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 const T *
-find(const Tree<T> &tree, const K &key) noexcept {
+find(const Tree<T,C> &tree, const K &key) noexcept {
   return sp::find(tree, key);
 }
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 const T *
-find(Tree<T> &tree, const K &key) noexcept {
+find(Tree<T,C> &tree, const K &key) noexcept {
   return sp::find(tree, key);
 }
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T> &tree, K &&ins) noexcept {
+insert(Tree<T,C> &tree, K &&ins) noexcept {
   auto set_root = [&tree](Node<T> *root) {
     if (root) {
       if (!root->parent) {
@@ -464,16 +446,16 @@ Lstart:
   return std::make_tuple(nullptr, false);
 } // rb::insert()
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 bool
-remove(Tree<T> &, const K &) noexcept {
+remove(Tree<T,C> &, const K &) noexcept {
   //TODO
   return nullptr;
 }//rb::remove()
 
-template <typename T>
+template <typename T,typename C>
 bool
-verify(Tree<T> &tree) noexcept {
+verify(Tree<T,C> &tree) noexcept {
   Node<T> *root = tree.root;
   if (root) {
     Node<T> *p = nullptr;
@@ -484,9 +466,9 @@ verify(Tree<T> &tree) noexcept {
   return true;
 } // rb::insert()
 
-template <typename T>
+template <typename T,typename C>
 void
-dump(Tree<T> &tree, const std::string &prefix) noexcept {
+dump(Tree<T,C> &tree, const std::string &prefix) noexcept {
   return sp::impl::tree::dump(tree.root, prefix);
 }
 

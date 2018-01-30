@@ -129,6 +129,9 @@ random_insert(std::size_t goal) {
       ASSERT_TRUE(*iptr == in[i]);
 
       const int *const fptr = find(tree, in[i]);
+      if(!fptr){
+        dump(tree);
+      }
       ASSERT_TRUE(fptr);
       ASSERT_TRUE(fptr == iptr);
       ASSERT_TRUE(*fptr == *iptr);

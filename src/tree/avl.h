@@ -44,24 +44,6 @@ struct Node {
     return s;
   }
 
-  template <typename O>
-  bool
-  operator<(const O &o) const noexcept {
-    return value < o;
-  }
-
-  template <typename O>
-  bool
-  operator>(const O &o) const noexcept {
-    return value > o;
-  }
-
-  template <typename O>
-  bool
-  operator==(const O &o) const noexcept {
-    return value == o;
-  }
-
   ~Node() noexcept {
     // TODO this is recursive
     if (left) {
@@ -75,30 +57,30 @@ struct Node {
   }
 };
 
-template <typename T>
-using Tree = sp::Tree<avl::Node<T>>;
+template <typename T,typename Comparator = sp::greater>
+using Tree = sp::Tree<avl::Node<T>, Comparator>;
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T> &, K &&) noexcept;
+insert(Tree<T,C> &, K &&) noexcept;
 
-template <typename T,typename K>
-const T* find(const Tree<T>&,const K&) noexcept;
+template <typename T,typename C,typename K>
+const T* find(const Tree<T,C>&,const K&) noexcept;
 
-template <typename T,typename K>
-T* find(Tree<T>&,const K&) noexcept;
+template <typename T,typename C,typename K>
+T* find(Tree<T,C>&,const K&) noexcept;
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 bool
-remove(Tree<T> &, const K &) noexcept;
+remove(Tree<T,C> &, const K &) noexcept;
 
-template <typename T>
+template <typename T,typename C>
 void
-dump(Tree<T> &tree, std::string prefix = "") noexcept;
+dump(Tree<T,C> &tree, std::string prefix = "") noexcept;
 
-template <typename T>
+template <typename T,typename C>
 bool
-verify(Tree<T> &tree) noexcept;
+verify(Tree<T,C> &tree) noexcept;
 
 /*
  * ==========================================================================
@@ -713,9 +695,9 @@ remove(Node<T> *const current) noexcept {
 } // namespace impl
 } // namespace avl
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T> &tree, K &&ins) noexcept {
+insert(Tree<T,C> &tree, K &&ins) noexcept {
   using namespace impl::avl::insert;
 
   auto set_root = [&tree](Node<T> *new_root) {
@@ -777,20 +759,20 @@ Lstart:
   return std::make_tuple(nullptr, false);
 }//avl::insert()
 
-template <typename T,typename K>
-const T* find(const Tree<T>&tree,const K&key) noexcept {
+template <typename T,typename C,typename K>
+const T* find(const Tree<T,C>&tree,const K&key) noexcept {
   return sp::find(tree,key);
 }//av::find()
 
-template <typename T,typename K>
-T* find(Tree<T>&tree,const K&key) noexcept {
+template <typename T,typename C,typename K>
+T* find(Tree<T,C>&tree,const K&key) noexcept {
   return sp::find(tree,key);
 }//av::find()
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 bool
-remove(Tree<T> &tree, const K &k) noexcept {
-  Node<T> *const node = sp::impl::tree::find_node(tree.root, k);
+remove(Tree<T,C> &tree, const K &k) noexcept {
+  Node<T> *const node = sp::impl::tree::find_node<T,C,K>(tree.root, k);
 
   if (node) {
     Node<T> *const new_root = avl::impl::avl::remove::remove(node);
@@ -809,15 +791,15 @@ remove(Tree<T> &tree, const K &k) noexcept {
   return false;
 } // avl::remove()
 
-template <typename T>
+template <typename T,typename C>
 void
-dump(Tree<T> &tree, std::string prefix) noexcept {
+dump(Tree<T,C> &tree, std::string prefix) noexcept {
   return sp::impl::tree::dump(tree.root, prefix);
 }//avl::dump()
 
-template <typename T>
+template <typename T,typename C>
 bool
-verify(Tree<T> &tree) noexcept {
+verify(Tree<T,C> &tree) noexcept {
   std::uint32_t balance = 0;
   return impl::avl::verify((Node<T> *)nullptr, tree.root, balance);
 }//avl::verify()

@@ -41,54 +41,36 @@ struct Node {
       right = nullptr;
     }
   }
-
-  template <typename O>
-  bool
-  operator<(const O &o) const noexcept {
-    return value < o;
-  }
-
-  template <typename O>
-  bool
-  operator>(const O &o) const noexcept {
-    return value > o;
-  }
-
-  template <typename O>
-  bool
-  operator==(const O &o) const noexcept {
-    return value == o;
-  }
 };
 
-template <typename T>
-using Tree = sp::Tree<Node<T>>;
+template <typename T, typename Comparator = sp::greater>
+using Tree = sp::Tree<Node<T>, Comparator>;
 
-template <typename T>
-void
-dump(Tree<T> &tree, std::string prefix = "") noexcept;
-
-template <typename T>
-bool
-verify(Tree<T> &tree) noexcept;
-
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T> &, K &&) noexcept;
+insert(Tree<T,C> &, K &&) noexcept;
 
-template <typename T, typename K>
+template <typename T,typename C , typename K>
 bool
-remove(Tree<T> &, const K &) noexcept;
+remove(Tree<T,C> &, const K &) noexcept;
+
+template <typename T,typename C>
+void
+dump(Tree<T,C> &tree, std::string prefix = "") noexcept;
+
+template <typename T,typename C>
+bool
+verify(Tree<T,C> &tree) noexcept;
 
 // Unbalanced Tree -> Balanced Tree
-template <typename T>
+template <typename T,typename C>
 bool
-balance(Tree<T> &) noexcept;
+balance(Tree<T,C> &) noexcept;
 
 //??
-template <typename T>
+template <typename T,typename C>
 bool
-reverse(Tree<T> &) noexcept;
+reverse(Tree<T, C> &) noexcept;
 
 /*
  * ==========================================================================
@@ -286,21 +268,9 @@ remove(Node<T> *current) noexcept {
 } // namespace impl
 //===================================================
 
-template <typename T>
-void
-dump(Tree<T> &tree, std::string prefix) noexcept {
-  return sp::impl::tree::dump(tree.root, prefix);
-} // bst::dump()
-
-template <typename T>
-bool
-verify(Tree<T> &tree) noexcept {
-  return impl::bst::verify((Node<T> *)nullptr, tree.root);
-} // bst::verify()
-
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T> &tree, K &&ins) noexcept {
+insert(Tree<T, C> &tree, K &&ins) noexcept {
   if (!tree.root) {
     // insert into empty tree
     tree.root = new (std::nothrow) Node<T>(std::forward<K>(ins));
@@ -344,10 +314,10 @@ Lstart:
   return std::make_tuple(nullptr, false);
 } // bst::insert()
 
-template <typename T, typename K>
+template <typename T,typename C, typename K>
 bool
-remove(Tree<T> &tree, const K &k) noexcept {
-  Node<T> *const node = sp::impl::tree::find_node(tree.root, k);
+remove(Tree<T,C> &tree, const K &k) noexcept {
+  Node<T> *const node = sp::impl::tree::find_node<Node<T>,C,K>(tree.root, k);
   if (node) {
 
     Node<T> *const nroot = impl::bst::remove(node);
@@ -366,10 +336,22 @@ remove(Tree<T> &tree, const K &k) noexcept {
   return false;
 } // bst::remove()
 
-// Unbalanced Tree -> Balanced Tree
-template <typename T>
+template <typename T,typename C>
+void
+dump(Tree<T,C> &tree, std::string prefix) noexcept {
+  return sp::impl::tree::dump(tree.root, prefix);
+} // bst::dump()
+
+template <typename T,typename C>
 bool
-balance(Tree<T> &) noexcept {
+verify(Tree<T,C> &tree) noexcept {
+  return impl::bst::verify((Node<T> *)nullptr, tree.root);
+} // bst::verify()
+
+// Unbalanced Tree -> Balanced Tree
+template <typename T,typename C>
+bool
+balance(Tree<T,C> &) noexcept {
   // TODO
   return true;
 } // bst::balance()

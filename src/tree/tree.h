@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <string>
+#include <util/comparator.h>
 
 namespace sp {
 // template<
@@ -11,7 +12,7 @@ namespace sp {
 //     class Compare = std::less<Key>,
 //     class Allocator = std::allocator<Key>
 // >
-template <typename T>
+template <typename T, typename Comparator>
 struct Tree {
   using value_type = typename T::value_type;
   using reference = value_type &;
@@ -25,13 +26,13 @@ struct Tree {
       : root(nullptr) {
   }
 
-  Tree(const Tree<T> &) = delete;
-  Tree(const Tree<T> &&) = delete;
+  Tree(const Tree<T,Comparator> &) = delete;
+  Tree(const Tree<T,Comparator> &&) = delete;
 
   Tree &
-  operator=(const Tree<T> &) = delete;
+  operator=(const Tree<T,Comparator> &) = delete;
   Tree &
-  operator=(const Tree<T> &&) = delete;
+  operator=(const Tree<T,Comparator> &&) = delete;
 
   ~Tree() {
     if (root) {
@@ -42,17 +43,17 @@ struct Tree {
   }
 };
 
-template <typename T>
+template <typename T,typename C, typename S>
+typename Tree<T,C>::const_pointer
+find(const Tree<T,C> &tree, const S &search) noexcept;
+
+template <typename T,typename C, typename S>
+typename Tree<T,C>::pointer
+find(Tree<T,C> &tree, const S &search) noexcept;
+
+template <typename T,typename C>
 void
-swap(Tree<T> &, Tree<T> &) noexcept;
-
-template <typename T, typename S>
-typename Tree<T>::const_pointer
-find(const Tree<T> &tree, const S &search) noexcept;
-
-template <typename T, typename S>
-typename Tree<T>::pointer
-find(Tree<T> &tree, const S &search) noexcept;
+swap(Tree<T,C> &, Tree<T,C> &) noexcept;
 
 /*
  * ==========================================================================
@@ -82,21 +83,21 @@ Lstart:
 /*
  * Recursivly search in tree until matching node is found
  */
-template <typename T, typename K>
+template <typename T, typename C, typename K>
 T *
-find_node(T *current, const K &k) noexcept {
+find_node(T *current, const K &search) noexcept {
 Lstart:
   if (current) {
-    if (*current > k) {
+    constexpr C cmp;
+    if /*current > search*/(cmp(current->value, search)) {
 
       current = current->left;
       goto Lstart;
-    } else if (*current < k) {
+    } else if /*current < search*/(cmp(search, current->value)) {
 
       current = current->right;
       goto Lstart;
     }
-    assert(*current == k);
   }
 
   return current;
@@ -113,33 +114,6 @@ Lstart:
 // search(const Tree<T> &tree, F predicate) {
 //   return nullptr;
 // }
-
-template <typename T, typename S>
-typename Tree<T>::const_pointer
-find(const Tree<T> &tree, const S &search) noexcept {
-  auto *root = tree.root;
-Lstart:
-  if (root) {
-    if (*root < search) {
-      root = root->right;
-      goto Lstart;
-    } else if (*root > search) {
-      root = root->left;
-      goto Lstart;
-    } else {
-      assert(*root == search);
-      return &root->value;
-    }
-  }
-  return nullptr;
-}
-
-template <typename T, typename S>
-typename Tree<T>::pointer
-find(Tree<T> &tree, const S &search) noexcept {
-  const Tree<T> &ctree = tree;
-  return (typename Tree<T>::pointer)find<T, S>(ctree, search);
-}
 
 namespace impl {
 namespace tree {
@@ -196,9 +170,27 @@ child_count(T *tree) noexcept {
 } // namespace tree
 } // namespace impl
 
-template <typename T>
+template <typename T,typename C, typename K>
+typename Tree<T,C>::const_pointer
+find(const Tree<T,C> &tree, const K &search) noexcept {
+  auto *root = tree.root;
+  auto *result = impl::tree::find_node<T,C,K>(root,search);
+  if (result) {
+    return &result->value;
+  }
+  return nullptr;
+}
+
+template <typename T,typename C, typename K>
+typename Tree<T,C>::pointer
+find(Tree<T,C> &tree, const K &search) noexcept {
+  const Tree<T,C> &ctree = tree;
+  return (typename Tree<T,C>::pointer)find<T,C, K>(ctree, search);
+}
+
+template <typename T,typename C>
 void
-swap(Tree<T> &first, Tree<T> &second) noexcept {
+swap(Tree<T,C> &first, Tree<T,C> &second) noexcept {
   using std::swap;
   swap(first.root, second.root);
 } // sp::swap()
