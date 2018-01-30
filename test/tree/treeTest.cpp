@@ -10,12 +10,12 @@ template <class Tree_t, typename T, std::size_t in_size>
 static void
 find_stuff(Tree_t &tree, std::size_t deleted, T (&in)[in_size]) {
   for (std::size_t k = 0; k < in_size; ++k) {
-    auto *f = sp::find(tree, in[k]);
+    auto *f = find(tree, in[k]);
     if (k < deleted) {
       assert(f == nullptr);
     } else {
       if (!f) {
-        printf("%p = sp::find(tree, %d)\n", f, in[k]);
+        printf("%p = find(tree, %d)\n", f, in[k]);
         dump(tree, "find|");
       }
       assert(f);
@@ -46,7 +46,7 @@ random_insert_delete(std::size_t goal) {
     std::shuffle(in, in + in_size, g);
     for (int i = 0; i < in_size; ++i) {
       for (int k = 0; k < i; ++k) {
-        auto f = sp::find(tree, in[k]);
+        auto f = find(tree, in[k]);
         assert(f);
         assert(*f == in[k]);
       }
@@ -57,7 +57,7 @@ random_insert_delete(std::size_t goal) {
       assert(iptr);
       assert(*iptr == in[i]);
       {
-        int *const fptr = sp::find(tree, in[i]);
+        int *const fptr = find(tree, in[i]);
         assert(fptr);
         assert(fptr == iptr);
         assert(*fptr == *iptr);
@@ -148,11 +148,11 @@ random_insert(std::size_t goal) {
 }
 
 TEST(treeTest, test_insert_delete_bst) {
-  random_insert_delete<bst::Tree<int>>(10);
+  random_insert_delete<binary::Tree<int>>(10);
 }
 
 TEST(treeTest, test_insert_bst) {
-  random_insert<bst::Tree<int>>(10);
+  random_insert<binary::Tree<int>>(10);
 }
 
 TEST(treeTest, test_insert_avl) {

@@ -1,4 +1,4 @@
-#ifndef SP_UTIL_TREE_AVL_TREE_H
+#ifndef P_UTIL_TREE_AVL_TREE_H
 #define SP_UTIL_TREE_AVL_TREE_H
 
 #include "tree.h"
@@ -58,7 +58,7 @@ struct Node {
 };
 
 template <typename T,typename Comparator = sp::greater>
-using Tree = sp::Tree<avl::Node<T>, Comparator>;
+using Tree = bst::Tree<avl::Node<T>, Comparator>;
 
 template <typename T,typename C, typename K>
 std::tuple<T *, bool>
@@ -124,7 +124,7 @@ Lstart:
     root = root->parent;
     goto Lstart;
   }
-  return sp::impl::tree::dump(root, prefix);
+  return bst::impl::tree::dump(root, prefix);
 }// avl::impl::avl::dump_root()
 
 template <typename T>
@@ -183,11 +183,11 @@ rotate_left(Node<T> *const A) noexcept {
     }
   }
 
-  assert(sp::impl::tree::doubly_linked(A));
-  assert(sp::impl::tree::doubly_linked(B));
+  assert(bst::impl::tree::doubly_linked(A));
+  assert(bst::impl::tree::doubly_linked(B));
 
-  // assert(sp::impl::tree::doubly_linked(A_parent));
-  assert(sp::impl::tree::doubly_linked(B_left));
+  // assert(bst::impl::tree::doubly_linked(A_parent));
+  assert(bst::impl::tree::doubly_linked(B_left));
 
   //since B can be null when B is null C is as well therefore in that case A
   //will be the root node.
@@ -244,11 +244,11 @@ rotate_right(Node<T> *const C) noexcept {
     }
   }
 
-  assert(sp::impl::tree::doubly_linked(B));
-  assert(sp::impl::tree::doubly_linked(C));
+  assert(bst::impl::tree::doubly_linked(B));
+  assert(bst::impl::tree::doubly_linked(C));
 
-  assert(sp::impl::tree::doubly_linked(B_right));
-  // assert(sp::impl::tree::doubly_linked(C_parent));
+  assert(bst::impl::tree::doubly_linked(B_right));
+  // assert(bst::impl::tree::doubly_linked(C_parent));
 
   return B;
 }// avl::impl::avl::rotate_right()
@@ -551,7 +551,7 @@ remove(Node<T> *const current) noexcept {
   // current balance since we only replace without changing balance)
 
   printf("remove(%d)", current->value);
-  assert(sp::impl::tree::doubly_linked(current));
+  assert(bst::impl::tree::doubly_linked(current));
   if /*two children*/(current->left && current->right) {
     // two children
     printf(":2->");
@@ -569,8 +569,8 @@ remove(Node<T> *const current) noexcept {
      * tree, but beacuse we only swap out current with the removed node we do
      * not change the balance of the second step.
      */
-    Node<T> *const successor = sp::impl::tree::find_min(current->right);
-    assert(sp::impl::tree::doubly_linked(successor));
+    Node<T> *const successor = bst::impl::bst::find_min(current->right);
+    assert(bst::impl::tree::doubly_linked(successor));
     Node<T> *const new_root = remove(successor);
     dump_root(current, "lr");
     // assert(verify_root(current));
@@ -592,9 +592,9 @@ remove(Node<T> *const current) noexcept {
       }
       successor->balance = current->balance;
 
-      assert(sp::impl::tree::doubly_linked(successor));
-      assert(sp::impl::tree::doubly_linked(successor->left));
-      assert(sp::impl::tree::doubly_linked(successor->right));
+      assert(bst::impl::tree::doubly_linked(successor));
+      assert(bst::impl::tree::doubly_linked(successor->left));
+      assert(bst::impl::tree::doubly_linked(successor->right));
     }
     unset(current);
     return new_root;
@@ -629,7 +629,7 @@ remove(Node<T> *const current) noexcept {
     Direction d = parent_direction(current);
     {
       update_ParentToChild(current, (Node<T> *)nullptr);
-      assert(sp::impl::tree::doubly_linked(current->parent));
+      assert(bst::impl::tree::doubly_linked(current->parent));
     }
 
     if (parent) {
@@ -663,7 +663,7 @@ remove(Node<T> *const current) noexcept {
       Node<T> *const parent = current->parent;
       left->parent = parent;
 
-      assert(sp::impl::tree::doubly_linked(parent));
+      assert(bst::impl::tree::doubly_linked(parent));
     }
 
     unset(current);
@@ -681,7 +681,7 @@ remove(Node<T> *const current) noexcept {
     Node<T> *const parent = current->parent;
     right->parent = parent;
 
-    assert(sp::impl::tree::doubly_linked(parent));
+    assert(bst::impl::tree::doubly_linked(parent));
   }
 
   unset(current);
@@ -761,18 +761,18 @@ Lstart:
 
 template <typename T,typename C,typename K>
 const T* find(const Tree<T,C>&tree,const K&key) noexcept {
-  return sp::find(tree,key);
+  return bst::find(tree,key);
 }//av::find()
 
 template <typename T,typename C,typename K>
 T* find(Tree<T,C>&tree,const K&key) noexcept {
-  return sp::find(tree,key);
+  return bst::find(tree,key);
 }//av::find()
 
 template <typename T,typename C, typename K>
 bool
 remove(Tree<T,C> &tree, const K &k) noexcept {
-  Node<T> *const node = sp::impl::tree::find_node<T,C,K>(tree.root, k);
+  Node<T> *const node = bst::impl::bst::find_node<T,C,K>(tree.root, k);
 
   if (node) {
     Node<T> *const new_root = avl::impl::avl::remove::remove(node);
@@ -794,7 +794,7 @@ remove(Tree<T,C> &tree, const K &k) noexcept {
 template <typename T,typename C>
 void
 dump(Tree<T,C> &tree, std::string prefix) noexcept {
-  return sp::impl::tree::dump(tree.root, prefix);
+  return bst::impl::tree::dump(tree.root, prefix);
 }//avl::dump()
 
 template <typename T,typename C>

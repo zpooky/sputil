@@ -1,17 +1,12 @@
-#ifndef SP_MALLOC_TREE_H
-#define SP_MALLOC_TREE_H
+#ifndef SP_TREE_BST_TREE_H
+#define SP_TREE_BST_TREE_H
 
 #include <cassert>
 #include <string>
 #include <util/comparator.h>
 
-namespace sp {
-// template<
-//
-//     class Key,
-//     class Compare = std::less<Key>,
-//     class Allocator = std::allocator<Key>
-// >
+namespace bst {
+//typename Allocator = std::allocator<Key>
 template <typename T, typename Comparator>
 struct Tree {
   using value_type = typename T::value_type;
@@ -55,12 +50,16 @@ template <typename T,typename C>
 void
 swap(Tree<T,C> &, Tree<T,C> &) noexcept;
 
+// TODO
+// bfs_search
+// inorder_search
+
 /*
  * ==========================================================================
  */
 namespace impl {
 /*impl*/
-namespace tree {
+namespace bst {
 /*impl::tree*/
 
 /*
@@ -102,18 +101,16 @@ Lstart:
 
   return current;
 } // tree::impl::find_node()
-} // namespace tree
+
+template<typename T, typename C, typename K>
+std::tuple<T *, bool>
+insert(Tree<T,C> &, K &&) noexcept {
+
+}
+
+} // namespace bst
 } // namespace impl
 //===================================================
-
-// TODO
-// bfs_search
-// inorder_search
-// template <typename T, typename F>
-// typename Tree<T>::const_pointer
-// search(const Tree<T> &tree, F predicate) {
-//   return nullptr;
-// }
 
 namespace impl {
 namespace tree {
@@ -174,26 +171,26 @@ template <typename T,typename C, typename K>
 typename Tree<T,C>::const_pointer
 find(const Tree<T,C> &tree, const K &search) noexcept {
   auto *root = tree.root;
-  auto *result = impl::tree::find_node<T,C,K>(root,search);
+  auto *result = impl::bst::find_node<T,C,K>(root,search);
   if (result) {
     return &result->value;
   }
   return nullptr;
-}
+}//bst::find()
 
 template <typename T,typename C, typename K>
 typename Tree<T,C>::pointer
 find(Tree<T,C> &tree, const K &search) noexcept {
   const Tree<T,C> &ctree = tree;
   return (typename Tree<T,C>::pointer)find<T,C, K>(ctree, search);
-}
+}//bst::find()
 
 template <typename T,typename C>
 void
 swap(Tree<T,C> &first, Tree<T,C> &second) noexcept {
   using std::swap;
   swap(first.root, second.root);
-} // sp::swap()
+} // bst::swap()
 
-} // namespace sp
+} // namespace bst
 #endif

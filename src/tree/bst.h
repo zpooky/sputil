@@ -4,7 +4,7 @@
 #include "tree.h"
 #include <tuple>
 
-namespace bst {
+namespace binary {
 template <typename T>
 struct Node {
   using value_type = T;
@@ -44,7 +44,7 @@ struct Node {
 };
 
 template <typename T, typename Comparator = sp::greater>
-using Tree = sp::Tree<Node<T>, Comparator>;
+using Tree = bst::Tree<Node<T>, Comparator>;
 
 template <typename T,typename C, typename K>
 std::tuple<T *, bool>
@@ -76,7 +76,7 @@ reverse(Tree<T, C> &) noexcept;
  * ==========================================================================
  */
 namespace impl {
-namespace bst {
+namespace binary {
 
 template <typename T>
 bool
@@ -112,7 +112,7 @@ verify(Node<T> *parent, Node<T> *tree) noexcept {
     }
   }
   return true;
-} // impl::bst::verify()
+} // impl::binary::verify()
 
 /*
  * Unlinks from and replaces it with to
@@ -147,13 +147,13 @@ verify(Node<T> *parent, Node<T> *tree) noexcept {
 //     if (to->right)
 //       to->right->parent = to;
 //   }
-// } // impl::bst::replace()
+// } // impl::binary::replace()
 
 template <typename T>
 Node<T> *
 remove(Node<T> *current) noexcept {
   assert(current);
-  using namespace sp::impl::tree;
+  using namespace bst::impl::bst;
 
   auto update_ParentToChild = [](Node<T> *subject, Node<T> *replacement) {
     // update parent -> child
@@ -168,7 +168,7 @@ remove(Node<T> *current) noexcept {
     }
   };
 
-  assert(sp::impl::tree::doubly_linked(current));
+  assert(bst::impl::tree::doubly_linked(current));
 
   if /*two children*/(current->left && current->right) {
     /*
@@ -205,7 +205,7 @@ remove(Node<T> *current) noexcept {
         }
       }
 
-      assert(sp::impl::tree::doubly_linked(successor));
+      assert(bst::impl::tree::doubly_linked(successor));
     }
 
     current->parent = nullptr;
@@ -224,7 +224,7 @@ remove(Node<T> *current) noexcept {
     Node<T> *unset = nullptr;
     update_ParentToChild(current, unset);
 
-    assert(sp::impl::tree::doubly_linked(parent));
+    assert(bst::impl::tree::doubly_linked(parent));
 
     current->parent = nullptr;
 
@@ -238,7 +238,7 @@ remove(Node<T> *current) noexcept {
     update_ParentToChild(current, left);
     left->parent = parent;
 
-    assert(sp::impl::tree::doubly_linked(parent));
+    assert(bst::impl::tree::doubly_linked(parent));
 
     current->parent = nullptr;
     current->left = nullptr;
@@ -256,15 +256,15 @@ remove(Node<T> *current) noexcept {
   update_ParentToChild(current, right);
   right->parent = parent;
 
-  assert(sp::impl::tree::doubly_linked(parent));
+  assert(bst::impl::tree::doubly_linked(parent));
 
   current->parent = nullptr;
   current->right = nullptr;
 
   return right;
-} // impl::bst::remove()
+} // impl::binary::remove()
 
-} // namespace bst
+} // namespace binary
 } // namespace impl
 //===================================================
 
@@ -312,15 +312,15 @@ Lstart:
   }
 
   return std::make_tuple(nullptr, false);
-} // bst::insert()
+} // binary::insert()
 
 template <typename T,typename C, typename K>
 bool
 remove(Tree<T,C> &tree, const K &k) noexcept {
-  Node<T> *const node = sp::impl::tree::find_node<Node<T>,C,K>(tree.root, k);
+  Node<T> *const node = bst::impl::bst::find_node<Node<T>,C,K>(tree.root, k);
   if (node) {
 
-    Node<T> *const nroot = impl::bst::remove(node);
+    Node<T> *const nroot = impl::binary::remove(node);
     if (nroot) {
       if (nroot->parent == nullptr) {
         tree.root = nroot;
@@ -334,19 +334,19 @@ remove(Tree<T,C> &tree, const K &k) noexcept {
   }
 
   return false;
-} // bst::remove()
+} // binary::remove()
 
 template <typename T,typename C>
 void
 dump(Tree<T,C> &tree, std::string prefix) noexcept {
-  return sp::impl::tree::dump(tree.root, prefix);
-} // bst::dump()
+  return bst::impl::tree::dump(tree.root, prefix);
+} // binary::dump()
 
 template <typename T,typename C>
 bool
 verify(Tree<T,C> &tree) noexcept {
-  return impl::bst::verify((Node<T> *)nullptr, tree.root);
-} // bst::verify()
+  return impl::binary::verify((Node<T> *)nullptr, tree.root);
+} // binary::verify()
 
 // Unbalanced Tree -> Balanced Tree
 template <typename T,typename C>
@@ -354,7 +354,8 @@ bool
 balance(Tree<T,C> &) noexcept {
   // TODO
   return true;
-} // bst::balance()
+} // binary::balance()
+
 } // namespace bst
 
 #endif

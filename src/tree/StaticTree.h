@@ -5,7 +5,7 @@
 #include <tuple>
 #include <util/comparator.h>
 
-namespace bst {
+namespace binary {
 template <typename T, typename Comparator = sp::greater,
           typename Present = sp::present>
 struct StaticTree {
@@ -71,7 +71,7 @@ make(T *buffer, std::size_t idx, V &&val) noexcept {
 
 template <typename T, typename C, typename P>
 static bool
-is_present(const bst::StaticTree<T, C, P> &tree, std::size_t idx) noexcept {
+is_present(const binary::StaticTree<T, C, P> &tree, std::size_t idx) noexcept {
   if (idx < tree.capacity) {
     constexpr P present;
     return present(tree.buffer[idx]);
@@ -81,7 +81,7 @@ is_present(const bst::StaticTree<T, C, P> &tree, std::size_t idx) noexcept {
 
 template <typename T, typename C, typename P>
 std::size_t
-find_min(bst::StaticTree<T, C, P> &tree, std::size_t index) noexcept {
+find_min(binary::StaticTree<T, C, P> &tree, std::size_t index) noexcept {
   std::size_t result = index;
 Lit:
   if (index < tree.capacity) {
@@ -96,7 +96,7 @@ Lit:
 
 template <typename T, typename C, typename P>
 void
-reset(bst::StaticTree<T, C, P> &tree, std::size_t index) noexcept {
+reset(binary::StaticTree<T, C, P> &tree, std::size_t index) noexcept {
   T *ptr = tree.buffer + index;
   ptr->~T();
   new (ptr) T(-1);
@@ -104,13 +104,13 @@ reset(bst::StaticTree<T, C, P> &tree, std::size_t index) noexcept {
 
 template <typename T, typename C, typename P>
 void
-swap(bst::StaticTree<T, C, P> &tree, std::size_t f, std::size_t s) noexcept {
+swap(binary::StaticTree<T, C, P> &tree, std::size_t f, std::size_t s) noexcept {
   std::swap(tree.buffer[f], tree.buffer[s]);
 }
 
 template <typename T, typename C, typename P>
 std::size_t
-remove(bst::StaticTree<T, C, P> &tree, std::size_t index,
+remove(binary::StaticTree<T, C, P> &tree, std::size_t index,
        bool should_reset) noexcept {
   std::size_t left = left_child(index);
   std::size_t right = right_child(index);
@@ -145,11 +145,11 @@ remove(bst::StaticTree<T, C, P> &tree, std::size_t index,
     swap(tree, index, right);
     return remove(tree, right, false);
   }
-} // impl::bst::remove()
+} // impl::binary::remove()
 
 template <typename T, typename C, typename P, typename K>
 std::size_t
-find_index(const bst::StaticTree<T, C, P> &tree, const K &search) noexcept {
+find_index(const binary::StaticTree<T, C, P> &tree, const K &search) noexcept {
   std::size_t idx = 0;
 
 Lit:
@@ -173,7 +173,7 @@ Lit:
 
 template <typename C, typename P>
 void
-dump(const bst::StaticTree<int, C, P> &tree, std::size_t idx,
+dump(const binary::StaticTree<int, C, P> &tree, std::size_t idx,
      std::string prefix, bool isTail = true, const char *ctx = "") noexcept {
   if (is_present(tree, idx)) {
     char name[256] = {0};
@@ -239,7 +239,7 @@ Lit:
   }
 
   return std::make_tuple(nullptr, false);
-} // bst::insert()
+} // binary::insert()
 
 template <typename T, typename C, typename P, typename K>
 const T *
@@ -353,6 +353,6 @@ dump(const StaticTree<int, C, P> &tree, const std::string &prefix) noexcept {
   dump(tree, 0, prefix);
 }
 
-} // namespace bst
+} // namespace binary
 
 #endif

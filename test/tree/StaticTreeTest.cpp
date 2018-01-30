@@ -49,7 +49,7 @@ TEST(StaticTreeTest, test_static_tree_swap) {
 //     printf("=============================\n");
 //     int buffer[in_size];
 //     std::memset(buffer, -1, sizeof(buffer));
-//     bst::StaticTree<int, sp::greater, IntPresent> tree(buffer);
+//     binary::StaticTree<int, sp::greater, IntPresent> tree(buffer);
 //
 //     int in[] = {4, 2, 3, 1, 6, 5, 7};
 //     for (std::size_t i = 0; i < in_size; ++i) {
@@ -72,7 +72,7 @@ TEST(StaticTreeTest, test_insert_optimal_StaticTree) {
   int buffer[size];
   std::memset(buffer, -1, sizeof(buffer));
 
-  bst::StaticTree<int, sp::greater, IntPresent> tree(buffer);
+  binary::StaticTree<int, sp::greater, IntPresent> tree(buffer);
 
   assert_insert(tree, 4, true);
 
@@ -87,15 +87,15 @@ TEST(StaticTreeTest, test_insert_optimal_StaticTree) {
   for (std::size_t i = 0; i < size; ++i) {
     ASSERT_FALSE(buffer[i] == -1);
 
-    const int *r = bst::find(tree, buffer[i]);
+    const int *r = find(tree, buffer[i]);
     ASSERT_TRUE(r != nullptr);
     ASSERT_EQ(*r, buffer[i]);
   }
 
-  ASSERT_FALSE(bst::find(tree, -1));
-  ASSERT_FALSE(bst::find(tree, 0));
-  ASSERT_FALSE(bst::find(tree, 8));
-  ASSERT_FALSE(bst::find(tree, 9));
+  ASSERT_FALSE(find(tree, -1));
+  ASSERT_FALSE(find(tree, 0));
+  ASSERT_FALSE(find(tree, 8));
+  ASSERT_FALSE(find(tree, 9));
 
   for (int i = size + 1; i < 1024; ++i) {
     assert_insert(tree, i, false);
@@ -103,7 +103,7 @@ TEST(StaticTreeTest, test_insert_optimal_StaticTree) {
 
   // for (int i = 1; i <= size; ++i) {
   //   for (int k = i; k <= size; ++k) {
-  //     const int *r = bst::find(tree, k);
+  //     const int *r = find(tree, k);
   //     printf("find(%d): %d\n", k, r != nullptr);
   //     ASSERT_TRUE(r != nullptr);
   //     ASSERT_EQ(*r, k);
@@ -115,13 +115,13 @@ TEST(StaticTreeTest, test_insert_optimal_StaticTree) {
   //   ASSERT_FALSE(remove(tree, i));
   //   print_arr(tree.buffer, tree.capacity);
   //   for (int k = 1; k <= i; ++k) {
-  //     const int *r = bst::find(tree, k);
+  //     const int *r = find(tree, k);
   //     printf("find(%d): %d \n", k, r != nullptr);
   //     ASSERT_TRUE(r == nullptr);
   //   }
   //
   //   for (int k = i + 1; k <= size; ++k) {
-  //     const int *r = bst::find(tree, k);
+  //     const int *r = find(tree, k);
   //     printf("find(%d): %d\n", k, r != nullptr);
   //     ASSERT_TRUE(r != nullptr);
   //     ASSERT_EQ(*r, k);
@@ -132,7 +132,7 @@ TEST(StaticTreeTest, test_insert_optimal_StaticTree) {
   //     for (std::size_t a = 0; a < size; ++a) {
   //
   //       if (buffer[a] != -1) {
-  //         const int *r = bst::find(tree, buffer[a]);
+  //         const int *r = find(tree, buffer[a]);
   //         ASSERT_TRUE(r != nullptr);
   //         ASSERT_EQ(*r, buffer[a]);
   //       }
@@ -146,10 +146,10 @@ TEST(StaticTreeTest, test_for_each) {
   int buffer[size];
   std::memset(buffer, -1, sizeof(buffer));
 
-  bst::StaticTree<int, sp::greater, IntPresent> tree(buffer);
+  binary::StaticTree<int, sp::greater, IntPresent> tree(buffer);
   int i = 0;
 
-  bst::in_order_for_each(tree, [&i](auto &node) {
+  in_order_for_each(tree, [&i](auto &node) {
     ASSERT_EQ(node, -1);
     node = i++;
     //
@@ -157,7 +157,7 @@ TEST(StaticTreeTest, test_for_each) {
   ASSERT_EQ(std::size_t(i), tree.capacity);
   {
     int cmp = 0;
-    bst::in_order_for_each(tree, [&cmp](auto node) {
+    in_order_for_each(tree, [&cmp](auto node) {
       assert(node == cmp);
       cmp++;
     });
