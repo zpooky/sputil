@@ -19,9 +19,7 @@ template <typename T>
 struct Node {
   using value_type = T;
 
-  // TODO lesser
   Node<T> *left;
-  // TODO greater
   Node<T> *right;
   Node<T> *parent;
   T value;
@@ -80,6 +78,20 @@ struct Node {
 template <typename T>
 using Tree = sp::Tree<avl::Node<T>>;
 
+template <typename T, typename K>
+std::tuple<T *, bool>
+insert(Tree<T> &, K &&) noexcept;
+
+template <typename T,typename K>
+const T* find(const Tree<T>&,const K&) noexcept;
+
+template <typename T,typename K>
+T* find(Tree<T>&,const K&) noexcept;
+
+template <typename T, typename K>
+bool
+remove(Tree<T> &, const K &) noexcept;
+
 template <typename T>
 void
 dump(Tree<T> &tree, std::string prefix = "") noexcept;
@@ -87,12 +99,6 @@ dump(Tree<T> &tree, std::string prefix = "") noexcept;
 template <typename T>
 bool
 verify(Tree<T> &tree) noexcept;
-
-template <typename T,typename K>
-const T* find(const Tree<T>&,const K&) noexcept;
-
-template <typename T,typename K>
-T* find(Tree<T>&,const K&) noexcept;
 
 /*
  * ==========================================================================
@@ -398,8 +404,410 @@ Lstart:
   return verify((Node<T> *)nullptr, root, balance);
 }//avl::impl::avl::verify_root()
 
+namespace insert {
+/*av::impl::avl::insert*/
+
+template <typename T>
+static std::size_t
+insert_parent_balance(Node<T> *const child) noexcept {
+  Node<T> *parent = child->parent;
+  Direction d = direction(child);
+
+  if (d == Direction::LEFT) {
+    parent->balance--;
+  } else {
+    parent->balance++;
+  }
+  return parent->balance;
+}
+
+// - The retracing can stop if the balance factor becomes 0 implying that the
+//   height of that subtree remains unchanged.
+// - If balance factor becomes -1 or +1 continue retraceing
+// - If balance factor becomes -2 or +2 we need to repair.
+//   After which the subtree has the same height as before
+template <typename T, typename F>
+static Node<T> *
+retrace(Node<T> *it, F update_parent_balance) noexcept {
+  Node<T> *current = nullptr;
+Lstart:
+  if (it) {
+    current = it;
+
+    /* Left Heavy */
+    if (balance(current) == -2) {
+      if (balance(current->left) == 1) {
+        current->left = rotate_left(current->left);
+      }
+
+      // update parent with new child
+      set(current) = rotate_right(current);
+
+      /*
+       * If there is _no_ parent then current is root.
+       * If there is a parent then we have not altered the root node.
+       */
+      return current;
+    }
+    /* Right Heavy */
+    else if (balance(current) == 2) {
+      if (balance(current->right) == -1) {
+        current->right = rotate_right(current->right);
+      }
+
+      set(current) = rotate_left(current);
+
+      return current;
+    }
+
+    if (current->parent) {
+      if (update_parent_balance(current) == 0) {
+        return current;
+      }
+    }
+
+    it = current->parent;
+    goto Lstart;
+  }
+
+  return current;
+} // avl::impl::retrace()
+
+}//namespace insert
+
+namespace remove {
+/*avl::impl::avl::remove*/
+template <typename T, typename F>
+static Node<T> *
+retrace(Node<T> *it, F update_parent_balance) noexcept {
+  // return impl::avl::ins::retrace(it, update_parent_balance);
+  //   Node<T> *current = nullptr;
+  // Lstart:
+  //   if (it) {
+  //     current = it;
+  //     {
+  //       printf("---%s\n", std::string(*it).c_str());
+  //       dump_root(it, "retrace|");
+  //     }
+  //     // https://www.geeksforgeeks.org/avl-tree-set-2-deletion/
+  //
+  //     it = current->parent;
+  //     goto Lstart;
+  //   }
+  //   // TODO
+  //   return current;
+  return nullptr;
+} // avl::impl::retrace()
+
+  //test
+template <typename T>
+static ssize_t height(const Node<T>*current){
+  if(!current){
+    return -1;
+  }
+  return 1+ std::max(height(current->right),height(current->left));
+}
+
+template <typename T>
+static std::uint8_t calc_balance(const Node<T>*current){
+  auto r =height(current->right) ;
+  auto l  =height(current->left);
+  if(r==-1)
+    r = 0;
+  if(l==-1)
+    l=0;
+
+  return r-l;
+}
+
+template <typename T>
+static std::size_t
+remove_parent_balance(Node<T> *const child) noexcept {
+  Node<T> *parent = child->parent;
+  Direction d = direction(child);
+
+  auto par_bal = calc_balance(parent);
+  if (d == Direction::LEFT) {
+    if (parent->right)
+      parent->balance++;
+  } else {
+    if (parent->left)
+      parent->balance--;
+  }
+  if(parent->balance != par_bal){
+    printf("parent->balance[%d]\npar_bal[%d]\n",parent->balance,par_bal);
+    assert(parent->balance == par_bal);
+  }
+
+  return parent->balance;
+} // avl::impl::avl::remove::remove_parent_balance()
+
+template <typename T>
+/*new root*/ Node<T> *
+remove(Node<T> *const current) noexcept {
+  assert(current);
+
+  auto update_ParentToChild = [](Node<T> *subject, Node<T> *nev) {
+    // update parent -> child
+    Node<T> *const parent = subject->parent;
+    if (parent) {
+      if (parent->left == subject) {
+        parent->left = nev;
+      } else {
+        assert(parent->right == subject);
+        parent->right = nev;
+      }
+    }
+  };
+  auto unset = [](Node<T>*subject){
+    subject->parent = nullptr;
+    subject->left = nullptr;
+    subject->right = nullptr;
+  };
+
+  // TODO update balance factor when replaceing current(the new should have the
+  // current balance since we only replace without changing balance)
+
+  printf("remove(%d)", current->value);
+  assert(sp::impl::tree::doubly_linked(current));
+  if /*two children*/(current->left && current->right) {
+    // two children
+    printf(":2->");
+
+    /*     X
+     *    / \
+     * min   max
+     *      /
+     *     min in the max branch
+     */
+    /*
+     * find the smallest value in the _right_ (greater) branch which will be
+     * removed and inserted in the current position.
+     * Since we removed a node from the right branch we have to rebalance the
+     * tree, but beacuse we only swap out current with the removed node we do
+     * not change the balance of the second step.
+     */
+    Node<T> *const successor = sp::impl::tree::find_min(current->right);
+    assert(sp::impl::tree::doubly_linked(successor));
+    Node<T> *const new_root = remove(successor);
+    dump_root(current, "lr");
+    // assert(verify_root(current));
+    {
+      /*
+       * remove might run a retrace meaning that we can not assume that current
+       * have left and right pointers
+       */
+      update_ParentToChild(current, successor);
+      successor->parent = current->parent;
+      if (current->left) {
+        successor->left = current->left;
+        successor->left->parent = successor;
+      }
+
+      if (current->right) {
+        successor->right = current->right;
+        successor->right->parent = successor;
+      }
+      successor->balance = current->balance;
+
+      assert(sp::impl::tree::doubly_linked(successor));
+      assert(sp::impl::tree::doubly_linked(successor->left));
+      assert(sp::impl::tree::doubly_linked(successor->right));
+    }
+    unset(current);
+    return new_root;
+  } else if (!current->left && !current->right) {
+    printf(":0\n");
+    // zero children
+    auto parent_direction = [](Node<T> *n) {
+      if (n->parent) {
+        return direction(n);
+      }
+      return Direction::RIGHT;
+    };
+
+    auto has_sibling = [](Node<T> *n) {
+      Node<T> *parent = n->parent;
+      if (parent) {
+        assert(parent->left == n || parent->right == n);
+        std::size_t children = 0;
+        if (parent->left)
+          children++;
+        if (parent->right)
+          children++;
+        return children == 2;
+      }
+      return false;
+    };
+
+    Node<T> *const parent = current->parent;
+    assert(verify(parent));
+    bool sibling = has_sibling(current);
+
+    Direction d = parent_direction(current);
+    {
+      update_ParentToChild(current, (Node<T> *)nullptr);
+      assert(sp::impl::tree::doubly_linked(current->parent));
+    }
+
+    if (parent) {
+      /*
+       * Since we remove a leaf we change the balance of the parent node
+       */
+      if (sibling) {
+        if (d == Direction::RIGHT) {
+          parent->balance--;
+        } else {
+          parent->balance++;
+        }
+      }
+
+      return retrace(parent, [](Node<T> *child) { //
+        return remove_parent_balance(child);
+      });
+    }
+
+    unset(current);
+
+    // We just removed the last node in the tree
+    return nullptr;
+  } else if (current->left) {
+    printf(":left\n");
+    // one child
+
+    auto *const left = current->left;
+    {
+      update_ParentToChild(current, left);
+      Node<T> *const parent = current->parent;
+      left->parent = parent;
+
+      assert(sp::impl::tree::doubly_linked(parent));
+    }
+
+    unset(current);
+    return retrace(left, [](Node<T> *child) { //
+      return remove_parent_balance(child);
+    });
+  }
+  assert(current->right);
+  printf(":right\n");
+  // one child
+
+  auto *const right = current->right;
+  {
+    update_ParentToChild(current, right);
+    Node<T> *const parent = current->parent;
+    right->parent = parent;
+
+    assert(sp::impl::tree::doubly_linked(parent));
+  }
+
+  unset(current);
+  return retrace(right, [](Node<T> *child) { //
+    return remove_parent_balance(child);
+  });
+} // avl::impl::avl::remove::remove()
+
+}//namespace remove
+
 } // namespace impl
 } // namespace avl
+
+template <typename T, typename K>
+std::tuple<T *, bool>
+insert(Tree<T> &tree, K &&ins) noexcept {
+  using namespace impl::avl::insert;
+
+  auto set_root = [&tree](Node<T> *new_root) {
+    if(new_root->parent == nullptr){
+      tree.root = new_root;
+    }
+  };
+
+  if (!tree.root) {
+    /*Insert into empty tree*/
+    tree.root = new (std::nothrow) Node<T>(std::forward<K>(ins));
+    if (tree.root) {
+      return std::make_tuple(&tree.root->value, true);
+    }
+
+    return std::make_tuple(nullptr, false);
+  }
+
+  // XXX share with bst
+  Node<T> *it = tree.root;
+
+  /*Ordinary Binary Insert*/
+Lstart:
+  if (ins < it->value) {
+    if (it->left) {
+      it = it->left;
+
+      goto Lstart;
+    }
+
+    auto res = it->left = new (std::nothrow) Node<T>(std::forward<K>(ins), it);
+    if (it->left) {
+      set_root(retrace(it->left, [](Node<T> *child) {
+        return insert_parent_balance(child);
+      }));
+
+      return std::make_tuple(&res->value, true);
+    }
+  } else if (ins > it->value) {
+    if (it->right) {
+      it = it->right;
+
+      goto Lstart;
+    }
+
+    auto res = it->right = new (std::nothrow) Node<T>(std::forward<K>(ins), it);
+    if (it->right) {
+      set_root(retrace(it->right, [](Node<T> *child) {
+        return insert_parent_balance(child);
+      }));
+
+      return std::make_tuple(&res->value, true);
+    }
+  } else {
+
+    return std::make_tuple(&it->value, false);
+  }
+
+  return std::make_tuple(nullptr, false);
+}//avl::insert()
+
+template <typename T,typename K>
+const T* find(const Tree<T>&tree,const K&key) noexcept {
+  return sp::find(tree,key);
+}//av::find()
+
+template <typename T,typename K>
+T* find(Tree<T>&tree,const K&key) noexcept {
+  return sp::find(tree,key);
+}//av::find()
+
+template <typename T, typename K>
+bool
+remove(Tree<T> &tree, const K &k) noexcept {
+  Node<T> *const node = sp::impl::tree::find_node(tree.root, k);
+
+  if (node) {
+    Node<T> *const new_root = avl::impl::avl::remove::remove(node);
+
+    if (new_root) {
+      tree.root = new_root;
+    } else {
+      if (tree.root == node) {
+        tree.root = nullptr;
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+} // avl::remove()
 
 template <typename T>
 void
@@ -413,18 +821,6 @@ verify(Tree<T> &tree) noexcept {
   std::uint32_t balance = 0;
   return impl::avl::verify((Node<T> *)nullptr, tree.root, balance);
 }//avl::verify()
-
-template <typename T,typename K>
-const T* find(const Tree<T>&tree,const K&key) noexcept {
-  return sp::find(tree,key);
-}//av::find()
-
-template <typename T,typename K>
-T* find(Tree<T>&tree,const K&key) noexcept {
-  return sp::find(tree,key);
-}//av::find()
-
-
 
 } // namespace avl
 

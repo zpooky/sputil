@@ -1,6 +1,4 @@
 #include <tree/avl.h>
-#include <tree/avl_insert.h>
-#include <tree/avl_remove.h>
 
 #include "gtest/gtest.h"
 
