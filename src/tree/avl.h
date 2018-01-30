@@ -750,7 +750,7 @@ remove(Tree<T,C> &tree, const K &k) noexcept {
     }
   };
 
-  Node<T> *const node = bst::impl::find_node<T,C,K>(tree.root, k);
+  Node<T> *const node = bst::impl::find_node(tree, k);
   if (node) {
     set_root(remove(node));
     return true;

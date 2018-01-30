@@ -14,7 +14,7 @@ struct Tree {
   using reference = value_type &;
   using const_reference = const reference;
   using pointer = value_type *;
-  using const_pointer = const pointer;
+  using const_pointer = const value_type *;
 
   T *root;
 
@@ -129,9 +129,10 @@ Lstart:
 /*
  * Recursivly search in tree until matching node is found
  */
-template <typename T, typename C, typename K>
-T *
-find_node(T *current, const K &search) noexcept {
+template <typename N,typename C, typename K>
+const N *
+find_node(const Tree<N,C>&tree, const K &search) noexcept {
+  const N* current = tree.root;
 Lstart:
   if (current) {
     constexpr C cmp;
@@ -148,6 +149,13 @@ Lstart:
 
   return current;
 } // bst::impl::find_node()
+
+template <typename N,typename C, typename K>
+N *
+find_node(Tree<N,C>&tree, const K &search) noexcept {
+  const Tree<N,C> &c_tree = tree;
+  return (N*)find_node(c_tree,search);
+}
 
 template <typename N,typename C, typename K>
 std::tuple<N *, bool>
@@ -309,11 +317,10 @@ remove(N *const current) noexcept {
 } // namespace impl
 //===================================================
 
-template <typename T,typename C, typename K>
-typename Tree<T,C>::const_pointer
-find(const Tree<T,C> &tree, const K &search) noexcept {
-  auto *root = tree.root;
-  auto *result = impl::find_node<T,C,K>(root,search);
+template <typename N,typename C, typename K>
+typename Tree<N,C>::const_pointer
+find(const Tree<N,C> &tree, const K &search) noexcept {
+  const N *const result = bst::impl::find_node(tree,search);
   if (result) {
     return &result->value;
   }
