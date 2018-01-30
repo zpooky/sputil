@@ -113,156 +113,6 @@ verify(Node<T> *parent, Node<T> *tree) noexcept {
   return true;
 } // impl::binary::verify()
 
-/*
- * Unlinks from and replaces it with to
- */
-// template <typename T>
-// void
-// replace(Node<T> *from, Node<T> *to) noexcept {
-//   auto parent_child_link = [](Node<T> *subject, Node<T> *nev) {
-//     // update parent -> child
-//     Node<T> *const parent = subject->parent;
-//     if (parent) {
-//       if (parent->left == subject) {
-//         parent->left = nev;
-//       } else {
-//         assert(parent->right == subject);
-//         parent->right = nev;
-//       }
-//     }
-//   };
-//
-//   parent_child_link(from, to);
-//
-//   if (to) {
-//     parent_child_link(#<{(|from|)}># to, #<{(|to|)}># nullptr);
-//     to->parent = from->parent;
-//
-//     to->left = from->left;
-//     if (to->left)
-//       to->left->parent = to;
-//
-//     to->right = from->right;
-//     if (to->right)
-//       to->right->parent = to;
-//   }
-// } // impl::binary::replace()
-
-template <typename T>
-Node<T> *
-remove(Node<T> *current) noexcept {
-  assert(current);
-  using namespace bst::impl;
-
-  auto update_ParentToChild = [](Node<T> *subject, Node<T> *replacement) {
-    // update parent -> child
-    Node<T> *const parent = subject->parent;
-    if (parent) {
-      if (parent->left == subject) {
-        parent->left = replacement;
-      } else {
-        assert(parent->right == subject);
-        parent->right = replacement;
-      }
-    }
-  };
-
-  assert(bst::impl::tree::doubly_linked(current));
-
-  if /*two children*/(current->left && current->right) {
-    /*
-     * Replace $current with the minimum child found in $current right branch($successor).
-     * The $successor is the natural replacement for $current since all BST properties will still hold after the remove:
-     * - $successor will be greater than any node in the left branch since $successor was taken from the right branch.
-     * - $successor will be less than the node on the right since $successor was the smallest node in the right branch.
-     */
-    Node<T> *const successor = find_min(current->right);
-    {
-      /*
-       * Unlinks $successor.
-       */
-      remove(successor);
-
-      /*
-       * Update [parent -> child] Link. now [parent -> successor]
-       */
-      update_ParentToChild(current, successor);
-      {
-        /*
-         * Update $successor relation pointers the be the same as $current had before.
-         */
-        successor->parent = current->parent;
-        successor->left = current->left;
-        successor->left->parent = successor;
-
-        if (current->right) {
-          /*
-           * If the immediate right was not picked as the successor(not null).
-           */
-          successor->right = current->right;
-          successor->right->parent = successor;
-        }
-      }
-
-      assert(bst::impl::tree::doubly_linked(successor));
-    }
-
-    current->parent = nullptr;
-    current->left = nullptr;
-    current->right = nullptr;
-
-    /*
-     * Returns the new root of the sub-Tree
-     */
-    return successor;
-  } else if /*zero children*/(!current->left && !current->right) {
-    /*
-     * Unset $current from [parent -> child] and replace it with null
-     */
-    Node<T> *parent = current->parent;
-    Node<T> *unset = nullptr;
-    update_ParentToChild(current, unset);
-
-    assert(bst::impl::tree::doubly_linked(parent));
-
-    current->parent = nullptr;
-
-    return parent;
-  } else if /*left child*/(current->left) {
-    /*
-     * Unset $current from [parent -> child] and replace it with $current only child
-     */
-    Node<T> *const parent = current->parent;
-    auto *const left = current->left;
-    update_ParentToChild(current, left);
-    left->parent = parent;
-
-    assert(bst::impl::tree::doubly_linked(parent));
-
-    current->parent = nullptr;
-    current->left = nullptr;
-
-    return left;
-  }
-  assert(current->right);
-  /* right child */
-
-  /*
-   * Unset $current from [parent -> child] and replace it with $current only child
-   */
-  Node<T> *const parent = current->parent;
-  auto *const right = current->right;
-  update_ParentToChild(current, right);
-  right->parent = parent;
-
-  assert(bst::impl::tree::doubly_linked(parent));
-
-  current->parent = nullptr;
-  current->right = nullptr;
-
-  return right;
-} // impl::binary::remove()
-
 } // namespace binary
 } // namespace impl
 //===================================================
@@ -283,17 +133,21 @@ insert(Tree<T,C> &tree, K &&value) noexcept {
 template <typename T,typename C, typename K>
 bool
 remove(Tree<T,C> &tree, const K &k) noexcept {
-  Node<T> *const node = bst::impl::find_node<Node<T>,C,K>(tree.root, k);
-  if (node) {
-
-    Node<T> *const root = impl::binary::remove(node);
+  auto set_root = [&tree](Node<T> *root) {
     if (root) {
-      if (root->parent == nullptr) {
+      if(root->parent == nullptr) {
         tree.root = root;
       }
     } else {
       tree.root = nullptr;
     }
+  };
+
+  Node<T> *const node = bst::impl::find_node<Node<T>,C,K>(tree.root, k);
+  if (node) {
+
+    Node<T> *const root = bst::impl::remove(node);
+    set_root(root);
 
     delete (node);
     return true;
@@ -305,7 +159,7 @@ remove(Tree<T,C> &tree, const K &k) noexcept {
 template <typename T,typename C>
 void
 dump(Tree<T,C> &tree, std::string prefix) noexcept {
-  return bst::impl::tree::dump(tree.root, prefix);
+  return bst::impl::dump(tree.root, prefix);
 } // binary::dump()
 
 template <typename T,typename C>

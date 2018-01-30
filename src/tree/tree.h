@@ -60,10 +60,58 @@ swap(Tree<T,C> &, Tree<T,C> &) noexcept;
  */
 namespace impl {
 /*impl*/
+template <typename T>
+static bool
+doubly_linked(T *n) noexcept {
+  if (n) {
+    bool l = n->left != nullptr ? n == n->left->parent : true;
+    bool r = n->right != nullptr ? n == n->right->parent : true;
+
+    return l && r;
+  }
+  return true;
+}
+
+template <typename T>
+void
+dump(T *tree, std::string prefix = "", bool isTail = true,
+     const char *ctx = "") noexcept {
+  if (tree) {
+    char name[256] = {0};
+    auto val = std::string(*tree);
+    sprintf(name, "%s%s", ctx, val.c_str());
+
+    printf("%s%s%s\n", prefix.c_str(), (isTail ? "└── " : "├── "), name);
+
+    const char *ls = (isTail ? "    " : "│   ");
+    if (tree->right && tree->left) {
+      dump(tree->right, prefix + ls, false, "gt:");
+      dump(tree->left, prefix + ls, true, "lt:");
+    } else {
+      if (tree->left) {
+        dump(tree->left, prefix + ls, true, "lt:");
+      } else if (tree->right) {
+        dump(tree->right, prefix + ls, true, "gt:");
+      }
+    }
+  }
+}
+
+template <typename T>
+std::size_t
+child_count(T *tree) noexcept {
+  std::size_t result = 0;
+  if (tree) {
+    ++result;
+    result += child_count(tree->left);
+    result += child_count(tree->right);
+  }
+  return result;
+}
+
 
 /*
- * Recursively search down in the left branch to find the minimum
- * node in the tree.
+ * Recursively search down in the left branch to find the smallest node in the tree.
  */
 template <typename T>
 T *
@@ -147,63 +195,119 @@ Lit:
   return std::make_tuple(nullptr, false);
 } // bst::impl::insert()
 
-} // namespace impl
-//===================================================
+template <typename N>
+N *
+remove(N *const current) noexcept {
+  assert(current);
 
-namespace impl {
-namespace tree {
-
-template <typename T>
-static bool
-doubly_linked(T *n) noexcept {
-  if (n) {
-    bool l = n->left != nullptr ? n == n->left->parent : true;
-    bool r = n->right != nullptr ? n == n->right->parent : true;
-
-    return l && r;
-  }
-  return true;
-}
-
-template <typename T>
-void
-dump(T *tree, std::string prefix = "", bool isTail = true,
-     const char *ctx = "") noexcept {
-  if (tree) {
-    char name[256] = {0};
-    auto val = std::string(*tree);
-    sprintf(name, "%s%s", ctx, val.c_str());
-
-    printf("%s%s%s\n", prefix.c_str(), (isTail ? "└── " : "├── "), name);
-
-    const char *ls = (isTail ? "    " : "│   ");
-    if (tree->right && tree->left) {
-      dump(tree->right, prefix + ls, false, "gt:");
-      dump(tree->left, prefix + ls, true, "lt:");
-    } else {
-      if (tree->left) {
-        dump(tree->left, prefix + ls, true, "lt:");
-      } else if (tree->right) {
-        dump(tree->right, prefix + ls, true, "gt:");
+  auto update_ParentToChild = [](N *subject, N *replacement) {
+    // update parent -> child
+    N *const parent = subject->parent;
+    if (parent) {
+      if (parent->left == subject) {
+        parent->left = replacement;
+      } else {
+        assert(parent->right == subject);
+        parent->right = replacement;
       }
     }
-  }
-}
+  };
 
-template <typename T>
-std::size_t
-child_count(T *tree) noexcept {
-  std::size_t result = 0;
-  if (tree) {
-    ++result;
-    result += child_count(tree->left);
-    result += child_count(tree->right);
-  }
-  return result;
-}
+  auto unset = [](N *subject){
+    subject->parent = nullptr;
+    subject->left = nullptr;
+    subject->right = nullptr;
+  };
 
-} // namespace tree
+  assert(doubly_linked(current));
+
+  if /*two children*/(current->left && current->right) {
+    /*
+     * Replace $current with the minimum child found in $current right branch($successor).
+     * The $successor is the natural replacement for $current since all BST properties will still hold after the remove:
+     * - $successor will be greater than any node in the left branch since $successor was taken from the right branch.
+     * - $successor will be less than the node on the right since $successor was the smallest node in the right branch.
+     */
+    N *const successor = find_min(current->right);
+    {
+      /*
+       * Unlinks $successor.
+       */
+      remove(successor);
+
+      /*
+       * Update: [parent -> $current] Link. now: [parent -> $successor]
+       */
+      update_ParentToChild(current, successor);
+      {
+        /*
+         * Update $successor relation pointers the be the same as $current
+         */
+        successor->parent = current->parent;
+        successor->left = current->left;
+        successor->left->parent = successor;
+
+        if (current->right) {
+          /*
+           * If the immediate right was not picked as the successor(non-null).
+           */
+          successor->right = current->right;
+          successor->right->parent = successor;
+        }
+      }
+
+      assert(doubly_linked(successor));
+    }
+
+    unset(current);
+
+    /*
+     * Returns the new root of the sub-Tree
+     */
+    return successor;
+  } else if /*zero children*/(!current->left && !current->right) {
+    /*
+     * Unset $current from [parent -> child] and replace it with null
+     */
+    N *const parent = current->parent;
+    update_ParentToChild(current, (N*)nullptr);
+    assert(doubly_linked(parent));
+    unset(current);
+
+    return parent;
+  } else if /*left child*/(current->left) {
+    /*
+     * Exchange [parent -> $current] with [$parent -> $current->left]
+     */
+    N *const parent = current->parent;
+    N *const left = current->left;
+    update_ParentToChild(current, left);
+    left->parent = parent;
+
+    assert(doubly_linked(parent));
+    unset(current);
+
+    return left;
+  }
+  assert(current->right);
+  /* right child */
+
+  /*
+   * Exchange [parent -> $current] with [$parent -> $current->right]
+   */
+  N *const parent = current->parent;
+  N *const right = current->right;
+  update_ParentToChild(current, right);
+  right->parent = parent;
+
+  assert(doubly_linked(parent));
+  unset(current);
+
+  return right;
+} // impl::remove()
+
 } // namespace impl
+//===================================================
 
 template <typename T,typename C, typename K>
 typename Tree<T,C>::const_pointer

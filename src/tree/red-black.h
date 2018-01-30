@@ -97,8 +97,8 @@ template <typename T>
 static Node<T> *
 grandparent(Node<T> *n) {
   Node<T> *p = parent(n);
-  if (!bst::impl::tree::doubly_linked(p))
-    assert(bst::impl::tree::doubly_linked(p));
+  if (!bst::impl::doubly_linked(p))
+    assert(bst::impl::doubly_linked(p));
   return p ? parent(p) : nullptr;
 }
 
@@ -137,7 +137,7 @@ rotate_left(Node<T> *const A) noexcept {
   Node<T> *const A_parent = A->parent;
   Node<T> *const B = A->right;
   Node<T> *const B_left = B ? B->left : nullptr;
-  std::size_t c_before = bst::impl::tree::child_count(A_parent);
+  std::size_t c_before = bst::impl::child_count(A_parent);
 
   Colour A_colour = A->colour;
 
@@ -154,10 +154,10 @@ rotate_left(Node<T> *const A) noexcept {
     B->left = A;
   }
 
-  assert(bst::impl::tree::doubly_linked(A));
-  assert(bst::impl::tree::doubly_linked(B));
+  assert(bst::impl::doubly_linked(A));
+  assert(bst::impl::doubly_linked(B));
 
-  assert(bst::impl::tree::doubly_linked(B_left));
+  assert(bst::impl::doubly_linked(B_left));
 
   Node<T> *new_root = B ? B : A;
   if (A_parent) {
@@ -168,16 +168,16 @@ rotate_left(Node<T> *const A) noexcept {
       A_parent->right = new_root;
     }
   }
-  assert(bst::impl::tree::doubly_linked(A));
-  assert(bst::impl::tree::doubly_linked(B));
+  assert(bst::impl::doubly_linked(A));
+  assert(bst::impl::doubly_linked(B));
 
-  assert(bst::impl::tree::doubly_linked(B_left));
-  assert(bst::impl::tree::doubly_linked(A_parent));
+  assert(bst::impl::doubly_linked(B_left));
+  assert(bst::impl::doubly_linked(A_parent));
 
   new_root->colour = A_colour;
   A->colour = Colour::RED;
 
-  assert(c_before == bst::impl::tree::child_count(A_parent));
+  assert(c_before == bst::impl::child_count(A_parent));
 }
 
 template <typename T>
@@ -200,7 +200,7 @@ rotate_right(Node<T> *C) noexcept {
   Node<T> *const C_parent = C->parent;
   Node<T> *const B = C->left;
   Node<T> *const B_right = B ? B->right : nullptr;
-  std::size_t c_before = bst::impl::tree::child_count(C_parent);
+  std::size_t c_before = bst::impl::child_count(C_parent);
 
   Colour C_colour = C->colour;
   // Colour B_colour = B ? B->colour : Colour::BLACK;
@@ -219,10 +219,10 @@ rotate_right(Node<T> *C) noexcept {
     B->right = C;
   }
 
-  assert(bst::impl::tree::doubly_linked(B));
-  assert(bst::impl::tree::doubly_linked(C));
+  assert(bst::impl::doubly_linked(B));
+  assert(bst::impl::doubly_linked(C));
 
-  assert(bst::impl::tree::doubly_linked(B_right));
+  assert(bst::impl::doubly_linked(B_right));
 
   if (C_parent) {
     assert(C_parent->left == C || C_parent->right == C);
@@ -233,17 +233,17 @@ rotate_right(Node<T> *C) noexcept {
       C_parent->right = B;
     }
   }
-  assert(bst::impl::tree::doubly_linked(B));
-  assert(bst::impl::tree::doubly_linked(C));
+  assert(bst::impl::doubly_linked(B));
+  assert(bst::impl::doubly_linked(C));
 
-  assert(bst::impl::tree::doubly_linked(B_right));
-  assert(bst::impl::tree::doubly_linked(C_parent));
+  assert(bst::impl::doubly_linked(B_right));
+  assert(bst::impl::doubly_linked(C_parent));
 
   B->colour = C_colour;
   C->colour = Colour::RED;
   // A->color = B->colour;
 
-  assert(c_before == bst::impl::tree::child_count(C_parent));
+  assert(c_before == bst::impl::child_count(C_parent));
 }
 
 template <typename T>
@@ -437,7 +437,7 @@ verify(Tree<T,C> &tree) noexcept {
 template <typename T,typename C>
 void
 dump(Tree<T,C> &tree, const std::string &prefix) noexcept {
-  return bst::impl::tree::dump(tree.root, prefix);
+  return bst::impl::dump(tree.root, prefix);
 }
 
 } // namespace rb
