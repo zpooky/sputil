@@ -4,6 +4,7 @@
 #include <cassert>
 #include <string>
 #include <util/comparator.h>
+#include <tuple>
 
 namespace bst {
 //typename Allocator = std::allocator<Key>
@@ -59,8 +60,6 @@ swap(Tree<T,C> &, Tree<T,C> &) noexcept;
  */
 namespace impl {
 /*impl*/
-namespace bst {
-/*impl::tree*/
 
 /*
  * Recursively search down in the left branch to find the minimum
@@ -77,7 +76,7 @@ Lstart:
     goto Lstart;
   }
   return node;
-} // tree::impl::find_min()
+} // bst::impl::find_min()
 
 /*
  * Recursivly search in tree until matching node is found
@@ -100,15 +99,54 @@ Lstart:
   }
 
   return current;
-} // tree::impl::find_node()
+} // bst::impl::find_node()
 
-template<typename T, typename C, typename K>
-std::tuple<T *, bool>
-insert(Tree<T,C> &, K &&) noexcept {
+template <typename N,typename C, typename K>
+std::tuple<N *, bool>
+insert(Tree<N, C> &tree, K &&ins) noexcept {
+  if (!tree.root) {
+    // insert into empty tree
+    tree.root = new (std::nothrow) N(std::forward<K>(ins));
+    if (tree.root) {
+      return std::make_tuple(tree.root, true);
+    }
 
-}
+    return std::make_tuple(nullptr, false);
+  }
 
-} // namespace bst
+  N *it = tree.root;
+Lit:
+  constexpr C cmp;
+  if /*ins < it->value*/(cmp(it->value,ins)) {
+    if (it->left) {
+      it = it->left;
+
+      goto Lit;
+    }
+
+    it->left = new (std::nothrow) N(std::forward<K>(ins), it);
+    if (it->left) {
+      return std::make_tuple(it->left, true);
+    }
+  } else if /*ins > it->value*/(cmp(ins,it->value)) {
+    if (it->right) {
+      it = it->right;
+
+      goto Lit;
+    }
+
+    it->right = new (std::nothrow) N(std::forward<K>(ins), it);
+    if (it->right) {
+      return std::make_tuple(it->right, true);
+    }
+  } else {
+
+    return std::make_tuple(it, false);
+  }
+
+  return std::make_tuple(nullptr, false);
+} // bst::impl::insert()
+
 } // namespace impl
 //===================================================
 
@@ -171,7 +209,7 @@ template <typename T,typename C, typename K>
 typename Tree<T,C>::const_pointer
 find(const Tree<T,C> &tree, const K &search) noexcept {
   auto *root = tree.root;
-  auto *result = impl::bst::find_node<T,C,K>(root,search);
+  auto *result = impl::find_node<T,C,K>(root,search);
   if (result) {
     return &result->value;
   }

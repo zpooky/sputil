@@ -388,62 +388,30 @@ find(Tree<T,C> &tree, const K &key) noexcept {
 
 template <typename T,typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T,C> &tree, K &&ins) noexcept {
+insert(Tree<T,C> &tree, K &&value) noexcept {
+  using impl::rb::rebalance;
   auto set_root = [&tree](Node<T> *root) {
-    if (root) {
-      if (!root->parent) {
-        tree.root = root;
-      }
+    if (root->parent == nullptr) {
+      tree.root = root;
     }
   };
 
-  if (!tree.root) {
-    /*Insert into empty tree*/
-    tree.root = new (std::nothrow) Node<T>(std::forward<K>(ins));
-    if (tree.root) {
-      tree.root->colour = Colour::BLACK;
-      return std::make_tuple(&tree.root->value, true);
-    }
+  auto result = bst::impl::insert(tree, std::forward<K>(value));
+  bool inserted{std::get<1>(result)};
+  Node<T>* node = std::get<0>(result);
+  if(inserted){
+    assert(node);
 
-    return std::make_tuple(nullptr, false);
+    set_root(rebalance(node));
+    tree.root->colour = Colour::BLACK;
   }
 
-  Node<T> *it = tree.root;
-Lstart:
-  // XXX share with bst
-  /*Ordinary Binary Insert*/
-  if (ins < it->value) {
-    if (it->left) {
-      it = it->left;
-
-      goto Lstart;
-    }
-
-    auto res = it->left = new (std::nothrow) Node<T>(std::forward<K>(ins), it);
-    if (it->left) {
-      set_root(impl::rb::rebalance(it->left));
-
-      return std::make_tuple(&res->value, true);
-    }
-  } else if (ins > it->value) {
-    if (it->right) {
-      it = it->right;
-
-      goto Lstart;
-    }
-
-    auto res = it->right = new (std::nothrow) Node<T>(std::forward<K>(ins), it);
-    if (it->right) {
-      set_root(impl::rb::rebalance(it->right));
-
-      return std::make_tuple(&res->value, true);
-    }
-  } else {
-
-    return std::make_tuple(&it->value, false);
+  T* insval = nullptr;
+  if(node){
+    insval = &node->value;
   }
 
-  return std::make_tuple(nullptr, false);
+  return std::make_tuple(insval, inserted);
 } // rb::insert()
 
 template <typename T,typename C, typename K>

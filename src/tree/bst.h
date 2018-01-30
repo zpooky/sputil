@@ -2,7 +2,6 @@
 #define SP_MALLOC_BINARY_SEARCH_TREE_H
 
 #include "tree.h"
-#include <tuple>
 
 namespace binary {
 template <typename T>
@@ -153,7 +152,7 @@ template <typename T>
 Node<T> *
 remove(Node<T> *current) noexcept {
   assert(current);
-  using namespace bst::impl::bst;
+  using namespace bst::impl;
 
   auto update_ParentToChild = [](Node<T> *subject, Node<T> *replacement) {
     // update parent -> child
@@ -270,60 +269,27 @@ remove(Node<T> *current) noexcept {
 
 template <typename T,typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T, C> &tree, K &&ins) noexcept {
-  if (!tree.root) {
-    // insert into empty tree
-    tree.root = new (std::nothrow) Node<T>(std::forward<K>(ins));
-    if (tree.root) {
-      return std::make_tuple(&tree.root->value, true);
-    }
-
-    return std::make_tuple(nullptr, false);
+insert(Tree<T,C> &tree, K &&value) noexcept {
+  auto result = bst::impl::insert(tree, std::forward<K>(value));
+  Node<T>* node = std::get<0>(result);
+  bool status = std::get<1>(result);
+  T* val = nullptr;
+  if(node){
+    val = &node->value;
   }
-
-  Node<T> *it = tree.root;
-
-Lstart:
-  if (ins < it->value) {
-    if (it->left) {
-      it = it->left;
-
-      goto Lstart;
-    }
-
-    it->left = new (std::nothrow) Node<T>(std::forward<K>(ins), it);
-    if (it->left) {
-      return std::make_tuple(&it->left->value, true);
-    }
-  } else if (ins > it->value) {
-    if (it->right) {
-      it = it->right;
-
-      goto Lstart;
-    }
-
-    it->right = new (std::nothrow) Node<T>(std::forward<K>(ins), it);
-    if (it->right) {
-      return std::make_tuple(&it->right->value, true);
-    }
-  } else {
-
-    return std::make_tuple(&it->value, false);
-  }
-
-  return std::make_tuple(nullptr, false);
-} // binary::insert()
+  return std::make_tuple(val, status);
+}
 
 template <typename T,typename C, typename K>
 bool
 remove(Tree<T,C> &tree, const K &k) noexcept {
-  Node<T> *const node = bst::impl::bst::find_node<Node<T>,C,K>(tree.root, k);
+  Node<T> *const node = bst::impl::find_node<Node<T>,C,K>(tree.root, k);
   if (node) {
 
-    Node<T> *const nroot = impl::binary::remove(node);
-    if (nroot) {
-      if (nroot->parent == nullptr) {
-        tree.root = nroot;
+    Node<T> *const root = impl::binary::remove(node);
+    if (root) {
+      if (root->parent == nullptr) {
+        tree.root = root;
       }
     } else {
       tree.root = nullptr;

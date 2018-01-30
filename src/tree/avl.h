@@ -569,7 +569,7 @@ remove(Node<T> *const current) noexcept {
      * tree, but beacuse we only swap out current with the removed node we do
      * not change the balance of the second step.
      */
-    Node<T> *const successor = bst::impl::bst::find_min(current->right);
+    Node<T> *const successor = bst::impl::find_min(current->right);
     assert(bst::impl::tree::doubly_linked(successor));
     Node<T> *const new_root = remove(successor);
     dump_root(current, "lr");
@@ -697,66 +697,32 @@ remove(Node<T> *const current) noexcept {
 
 template <typename T,typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T,C> &tree, K &&ins) noexcept {
+insert(Tree<T,C> &tree, K &&value) noexcept {
   using namespace impl::avl::insert;
 
-  auto set_root = [&tree](Node<T> *new_root) {
-    if(new_root->parent == nullptr){
-      tree.root = new_root;
+  auto set_root = [&tree](Node<T> *root) {
+    if(root->parent == nullptr){
+      tree.root = root;
     }
   };
 
-  if (!tree.root) {
-    /*Insert into empty tree*/
-    tree.root = new (std::nothrow) Node<T>(std::forward<K>(ins));
-    if (tree.root) {
-      return std::make_tuple(&tree.root->value, true);
-    }
+  auto result = bst::impl::insert(tree, std::forward<K>(value));
+  bool inserted{std::get<1>(result)};
+  Node<T>* node = std::get<0>(result);
+  if(inserted){
+    assert(node);
 
-    return std::make_tuple(nullptr, false);
+    set_root(retrace(node, [](Node<T> *child) {
+      return insert_parent_balance(child);
+    }));
   }
 
-  // XXX share with bst
-  Node<T> *it = tree.root;
-
-  /*Ordinary Binary Insert*/
-Lstart:
-  if (ins < it->value) {
-    if (it->left) {
-      it = it->left;
-
-      goto Lstart;
-    }
-
-    auto res = it->left = new (std::nothrow) Node<T>(std::forward<K>(ins), it);
-    if (it->left) {
-      set_root(retrace(it->left, [](Node<T> *child) {
-        return insert_parent_balance(child);
-      }));
-
-      return std::make_tuple(&res->value, true);
-    }
-  } else if (ins > it->value) {
-    if (it->right) {
-      it = it->right;
-
-      goto Lstart;
-    }
-
-    auto res = it->right = new (std::nothrow) Node<T>(std::forward<K>(ins), it);
-    if (it->right) {
-      set_root(retrace(it->right, [](Node<T> *child) {
-        return insert_parent_balance(child);
-      }));
-
-      return std::make_tuple(&res->value, true);
-    }
-  } else {
-
-    return std::make_tuple(&it->value, false);
+  T* insval = nullptr;
+  if(node){
+    insval = &node->value;
   }
 
-  return std::make_tuple(nullptr, false);
+  return std::make_tuple(insval, inserted);
 }//avl::insert()
 
 template <typename T,typename C,typename K>
@@ -772,7 +738,7 @@ T* find(Tree<T,C>&tree,const K&key) noexcept {
 template <typename T,typename C, typename K>
 bool
 remove(Tree<T,C> &tree, const K &k) noexcept {
-  Node<T> *const node = bst::impl::bst::find_node<T,C,K>(tree.root, k);
+  Node<T> *const node = bst::impl::find_node<T,C,K>(tree.root, k);
 
   if (node) {
     Node<T> *const new_root = avl::impl::avl::remove::remove(node);
