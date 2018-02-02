@@ -136,7 +136,7 @@ balance(const Node<T> *const node) noexcept {
 template <typename T>
 static Node<T> *
 rotate_left(Node<T> *const A) noexcept {
-  // printf("\trotate_left(%s)\n", std::string(*A).c_str());
+  printf("\trotate_left(%s)\n", std::string(*A).c_str());
   // dump_root(A, "\t");
   /*
    * <_
@@ -197,7 +197,7 @@ rotate_left(Node<T> *const A) noexcept {
 template <typename T>
 static Node<T> *
 rotate_right(Node<T> *const C) noexcept {
-  // printf("\trotate_right(%s)\n", std::string(*C).c_str());
+  printf("\trotate_right(%s)\n", std::string(*C).c_str());
   // dump_root(C, "\t");
   /*
    *B_.
@@ -387,7 +387,7 @@ Lstart:
 }//avl::impl::avl::verify_root()
 
 namespace insert {
-/*av::impl::avl::insert*/
+/*avl::impl::avl::insert*/
 
 template <typename T>
 static std::size_t
@@ -425,10 +425,6 @@ Lstart:
       // update parent with new child
       set(current) = rotate_right(current);
 
-      /*
-       * If there is _no_ parent then current is root.
-       * If there is a parent then we have not altered the root node.
-       */
       return current;
     }
     /* Right Heavy */
@@ -455,74 +451,182 @@ Lstart:
   return current;
 } // avl::impl::rebalance()
 
+template <typename T, typename F>
+static Node<T> *
+rebalance2(Node<T> *it, F setBalance) noexcept {
+  Node<T> *current = nullptr;
+Lstart:
+  if(it){
+    current = it;
+
+    setBalance(current);
+
+    /* Left Heavy */
+    if (balance(current) == -2) {
+      if (balance(current->left) == 1) {
+        current->left = rotate_left(current->left);
+      }
+
+      // update parent with new child
+      set(current) = rotate_right(current);
+    }
+    /* Right Heavy */
+    else if (balance(current) == 2) {
+      if (balance(current->right) == -1) {
+        current->right = rotate_right(current->right);
+      }
+
+      set(current) = rotate_left(current);
+    }
+
+    if (!current->parent) {
+      return current;
+    }
+
+    it = current->parent;
+    goto Lstart;
+  }
+
+  return current;
+} // avl::impl::rebalance()
+
 }//namespace insert
 
 namespace remove {
 /*avl::impl::avl::remove*/
-template <typename T, typename F>
+template <typename T>
 static Node<T> *
-rebalance(Node<T> *it, F update_parent_balance) noexcept {
-  // return impl::avl::ins::rebalance(it, update_parent_balance);
-  //   Node<T> *current = nullptr;
-  // Lstart:
-  //   if (it) {
-  //     current = it;
-  //     {
-  //       printf("---%s\n", std::string(*it).c_str());
-  //       dump_root(it, "rebalance|");
-  //     }
-  //     // https://www.geeksforgeeks.org/avl-tree-set-2-deletion/
-  //
-  //     it = current->parent;
-  //     goto Lstart;
-  //   }
-  //   // TODO
-  //   return current;
-  return nullptr;
-} // avl::impl::rebalance()
+remove_rebalance(Node<T> *current,Node<T>*P=nullptr) noexcept {
+  if(current) {
+  printf("rebalance current: %s\n",std::string(*current).c_str());
+  dump_root(current,"rebalance");
+  }
+  auto parent = [](Node<T>*n) {
+    return n ? n->parent : nullptr;
+  };
+  auto BalanceFactor = [](Node<T>*n)-> std::int8_t& {
+    return n->balance;
+  };
+  auto right_child = [](Node<T>*n){
+    return n->right;
+  };
+  auto left_child = [](Node<T>*n){
+    return n->left;
+  };
+  P =  P == nullptr ? parent(current) : P;
+
+
+  // Node<T>* P = parent(current);
+  for (; P != nullptr; P = parent(current)) {
+    if (current == P->left) {//$current is left child
+      printf("$current%s is left child\n",current ? std::string(*current).c_str(): "[nullptr]");
+      if (BalanceFactor(P) > 0) {
+        printf("BalanceFactor(P%s) > 0\n",std::string(*P).c_str());
+        auto sibling = right_child(P);
+        if (BalanceFactor(sibling) < 0){
+          printf("BalanceFactor(sibling%s) < 0",std::string(*sibling).c_str());
+          P->right = rotate_right(P->right); // Double rotation: Right(sibling) then Left(P)
+          assert(P->right->parent == P);
+        }
+        set(P) = rotate_left(P);
+        current = P;//sp?
+      } else {
+        if (BalanceFactor(P) == 0) {
+          BalanceFactor(P) += 1; // current’s height decrease is absorbed at P.
+          return current;
+        }
+        current = P;
+        BalanceFactor(current) = 0; // Height(current) decreases by 1
+      }
+      dump_root(current,"rebalance");
+    } else if(current == P->right){//current is right child
+      printf("$current%s is right child\n",current ? std::string(*current).c_str() :"[nullptr]");
+      if (BalanceFactor(P) < 0) { // P is left-heavy
+        printf("BalanceFactor(P%s) < 0\n",std::string(*P).c_str());
+        // ===> the temporary BalanceFactor(P) == –2
+        // ===> rebalancing is required.
+        auto sibling = left_child(P); // Sibling of current (higher by 2)
+        if (BalanceFactor(sibling) > 0) {                     // Left Right Case
+          printf("BalanceFactor(sibling%s) > 0\n",std::string(*sibling).c_str());
+          P->left = rotate_left(P->left); // Double rotation: Left(sibling) then Right(P)
+          assert(P->left->parent == P);
+        }
+        set(P) = rotate_right(P);    // Single rotation Right(P)
+        current = P;//sp?
+      } else {
+        if (BalanceFactor(P) == 0) {
+          printf("BalanceFactor(P%s) == 0\n",std::string(*P).c_str());
+          BalanceFactor(P) -= 1; // current’s height decrease is absorbed at P.
+          return current;
+        }
+        current = P;
+        BalanceFactor(current) = 0;
+      }
+      dump_root(current,"rebalance");
+    }else {
+      assert(false);
+    }
+  }
+  return current;
+} // avl::impl::avl::remove_rebalance()
 
   //test
 template <typename T>
 static ssize_t height(const Node<T>*current){
   if(!current){
-    return -1;
+    return 0;
   }
   return 1+ std::max(height(current->right),height(current->left));
 }
 
 template <typename T>
-static std::uint8_t calc_balance(const Node<T>*current){
+static std::int8_t calc_balance(const Node<T>*current){
   auto r =height(current->right) ;
   auto l  =height(current->left);
-  if(r==-1)
-    r = 0;
-  if(l==-1)
-    l=0;
+  // if(r==-1)
+  //   r = 0;
+  // if(l==-1)
+  //   l=0;
 
   return r-l;
 }
 
+// template <typename T>
+// static std::size_t
+// remove_parent_balance(Node<T> *const child) noexcept {
+//   Node<T> *parent = child->parent;
+//   Direction d = direction(child);
+//
+//   auto par_bal = calc_balance(parent);
+//   if (d == Direction::LEFT) {
+//     if (parent->right)
+//       parent->balance++;
+//   } else {
+//     if (parent->left)
+//       parent->balance--;
+//   }
+//   if(parent->balance != par_bal){
+//     printf("parent->balance[%d]\npar_bal[%d]\n",parent->balance,par_bal);
+//     assert(parent->balance == par_bal);
+//   }
+//
+//   return parent->balance;
+// } // avl::impl::avl::remove::remove_parent_balance()
+
 template <typename T>
 static std::size_t
 remove_parent_balance(Node<T> *const child) noexcept {
-  Node<T> *parent = child->parent;
-  Direction d = direction(child);
+  // Node<T> *parent = child->parent;
+  // Direction d = direction(child);
 
-  auto par_bal = calc_balance(parent);
-  if (d == Direction::LEFT) {
-    if (parent->right)
-      parent->balance++;
-  } else {
-    if (parent->left)
-      parent->balance--;
-  }
-  if(parent->balance != par_bal){
-    printf("parent->balance[%d]\npar_bal[%d]\n",parent->balance,par_bal);
-    assert(parent->balance == par_bal);
-  }
-
-  return parent->balance;
-} // avl::impl::avl::remove::remove_parent_balance()
+  // if (d == Direction::LEFT) {
+  //   parent->balance++;
+  // } else {
+  //   parent->balance--;
+  // }
+  child->balance = calc_balance(child);
+  return child->balance;
+}
 
 template <typename T>
 /*new root*/ Node<T> *
@@ -547,13 +651,9 @@ remove(Node<T> *const current) noexcept {
     subject->right = nullptr;
   };
 
-  // TODO update balance factor when replaceing current(the new should have the
-  // current balance since we only replace without changing balance)
-
   printf("remove(%d)", current->value);
   assert(bst::impl::doubly_linked(current));
   if /*two children*/(current->left && current->right) {
-    // two children
     printf(":2->");
 
     /*     X
@@ -572,11 +672,11 @@ remove(Node<T> *const current) noexcept {
     Node<T> *const successor = bst::impl::find_min(current->right);
     assert(bst::impl::doubly_linked(successor));
     Node<T> *const new_root = remove(successor);
-    dump_root(current, "lr");
+    // dump_root(current, "lr");
     // assert(verify_root(current));
     {
       /*
-       * remove might run a rebalance meaning that we can not assume that current
+       * remove($successor) might run rebalancing meaning that we cannot assume that $current
        * have left and right pointers
        */
       update_ParentToChild(current, successor);
@@ -597,62 +697,72 @@ remove(Node<T> *const current) noexcept {
       assert(bst::impl::doubly_linked(successor->right));
     }
     unset(current);
-    return new_root;
-  } else if (!current->left && !current->right) {
+    return new_root == current ? successor : new_root;
+
+    // return insert::rebalance2(successor, [](Node<T> *child) {
+    //   return remove_balance(child);
+    // });
+  } else if /*zero children*/(!current->left && !current->right) {
     printf(":0\n");
     // zero children
-    auto parent_direction = [](Node<T> *n) {
-      if (n->parent) {
-        return direction(n);
-      }
-      return Direction::RIGHT;
-    };
-
-    auto has_sibling = [](Node<T> *n) {
-      Node<T> *parent = n->parent;
-      if (parent) {
-        assert(parent->left == n || parent->right == n);
-        std::size_t children = 0;
-        if (parent->left)
-          children++;
-        if (parent->right)
-          children++;
-        return children == 2;
-      }
-      return false;
-    };
+    // auto parent_direction = [](Node<T> *n) {
+    //   if (n->parent) {
+    //     return direction(n);
+    //   }
+    //   return Direction::RIGHT;
+    // };
+    //
+    // auto has_sibling = [](Node<T> *n) {
+    //   Node<T> *parent = n->parent;
+    //   if (parent) {
+    //     assert(parent->left == n || parent->right == n);
+    //     std::size_t children = 0;
+    //     if (parent->left)
+    //       children++;
+    //     if (parent->right)
+    //       children++;
+    //     return children == 2;
+    //   }
+    //   return false;
+    // };
 
     Node<T> *const parent = current->parent;
     assert(verify(parent));
-    bool sibling = has_sibling(current);
+    // bool sibling = has_sibling(current);
 
-    Direction d = parent_direction(current);
+    // Direction d = parent_direction(current);
     {
       update_ParentToChild(current, (Node<T> *)nullptr);
       assert(bst::impl::doubly_linked(current->parent));
     }
 
-    if (parent) {
-      /*
-       * Since we remove a leaf we change the balance of the parent node
-       */
-      if (sibling) {
-        if (d == Direction::RIGHT) {
-          parent->balance--;
-        } else {
-          parent->balance++;
-        }
-      }
-
-      return rebalance(parent, [](Node<T> *child) { //
-        return remove_parent_balance(child);
-      });
-    }
-
     unset(current);
 
+    // if (parent) {
+    //   #<{(|
+    //    * Since we remove a leaf we change the balance of the parent node
+    //    |)}>#
+    //   if (sibling) {
+    //     if (d == Direction::RIGHT) {
+    //       parent->balance--;
+    //     } else {
+    //       parent->balance++;
+    //     }
+    //   }
+    // auto bl = calc_balance(parent);//sp
+    // printf("calc_balance(parent%s): %d\n",std::string(*parent).c_str(),bl);
+    // parent->balance=bl;
+
+    // return remove_rebalance((Node<T>*)nullptr,parent);
+    return insert::rebalance2(parent, [](Node<T> *child) {
+      return remove_parent_balance(child);
+    });
+    // return parent;
+    // }
+
+
     // We just removed the last node in the tree
-    return nullptr;
+    // return nullptr;
   } else if (current->left) {
     printf(":left\n");
     // one child
@@ -667,7 +777,17 @@ remove(Node<T> *const current) noexcept {
     }
 
     unset(current);
-    return rebalance(left, [](Node<T> *child) { //
+
+    // Node<T> *const parent = left->parent;
+    // if(parent){
+    //   auto bl= calc_balance(parent);//sp
+    //   printf("calc_balance(parent%s): %d\n",std::string(*parent).c_str(),bl);
+    //   parent->balance =bl;
+    // }
+    // assert(left->balance == calc_balance(left));
+
+    // return remove_rebalance(left);
+    return insert::rebalance2(left, [](Node<T> *child) {
       return remove_parent_balance(child);
     });
   }
@@ -684,10 +804,19 @@ remove(Node<T> *const current) noexcept {
     assert(bst::impl::doubly_linked(parent));
   }
 
+  // Node<T> *const parent = right->parent;
+  // if(parent){
+  //   auto bl= calc_balance(parent);//sp
+  //   printf("calc_balance(parent%s): %d\n",std::string(*parent).c_str(),bl);
+  //   right->balance =bl;
+  // }
+  // assert(right->balance == calc_balance(right));
+
   unset(current);
-  return rebalance(right, [](Node<T> *child) { //
-    return remove_parent_balance(child);
-  });
+  // return remove_rebalance(right);
+    return insert::rebalance2(right, [](Node<T> *child) {
+      return remove_parent_balance(child);
+    });
 } // avl::impl::avl::remove::remove()
 
 }//namespace remove

@@ -68,6 +68,7 @@ random_insert_delete(std::size_t goal) {
         assert(false);
       }
     }
+    dump(tree, "");
 
     std::shuffle(in, in + in_size, g);
     for (int i = 0; i < in_size; ++i) {
@@ -88,6 +89,7 @@ random_insert_delete(std::size_t goal) {
       }
 
       find_stuff(tree, i + 1, in);
+      printf("---------------\n");
     }
     counter++;
   }
@@ -161,7 +163,7 @@ TEST(treeTest, test_insert_avl) {
 
 TEST(treeTest, test_inser_remove_avl) {
   // TODO
-  // random_insert_delete<avl::Tree<int>>(1000);
+  random_insert_delete<avl::Tree<int>>(1000);
 }
 
 TEST(treeTest, test_insert_remove_red_black) {
