@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include <collection/Array.h>
 #include <prng/xorshift.h>
+#include <prng/util.h>
 
 TEST(ArrayTest, test_empty) {
   sp::Array<int> a;
@@ -25,7 +26,7 @@ TEST(ArrayTest, test) {
     int *res = get(a, 1);
     ASSERT_FALSE(res);
   }
-  sp::Xorshift32 r(1);
+  prng::Xorshift32 r(1);
   shuffle(r, a);
   {
     int *res = get(a, 0);
@@ -71,7 +72,7 @@ TEST(ArrayTest, test_data) {
     ASSERT_EQ(res->i, i);
   }
 
-  sp::Xorshift32 r(1);
+  prng::Xorshift32 r(1);
   for (int i = 0; i < int(b.length); ++i) {
     auto *c = get(b, std::size_t(i));
     ASSERT_TRUE(c);

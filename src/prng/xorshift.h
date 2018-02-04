@@ -1,10 +1,9 @@
 #ifndef SP_UTIL_PRNG_XORSHIFT_H
 #define SP_UTIL_PRNG_XORSHIFT_H
 
-#include <prng/random.h>
 #include <cstdint>
 
-namespace sp {
+namespace prng {
 struct Xorshift32 {
   std::uint32_t state;
 
@@ -18,9 +17,9 @@ swap(Xorshift32 &, Xorshift32 &) noexcept;
 std::uint32_t
 random(Xorshift32 &) noexcept;
 
-} // namespace sp
+} // namespace prng
 
-namespace sp {
+namespace prng {
 struct Xorshift128plus {
   std::uint64_t state[2];
 
@@ -33,6 +32,6 @@ swap(Xorshift128plus &, Xorshift128plus &) noexcept;
 
 std::uint64_t
 random(Xorshift128plus &) noexcept;
-} // namespace sp
+} // namespace prng
 
 #endif
