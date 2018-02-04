@@ -163,7 +163,7 @@ TEST(treeTest, test_insert_avl) {
 
 TEST(treeTest, test_inser_remove_avl) {
   // TODO
-  random_insert_delete<avl::Tree<int>>(1000);
+  random_insert_delete<avl::Tree<int>>(10);
 }
 
 TEST(treeTest, test_insert_remove_red_black) {
