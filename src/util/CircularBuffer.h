@@ -51,6 +51,28 @@ pop_front(CircularBuffer<T> &, T &) noexcept;
 template <typename T>
 bool
 pop_back(CircularBuffer<T> &, T &) noexcept;
+
+template <typename T>
+T*
+peek_front(CircularBuffer<T> &) noexcept;
+
+template <typename T>
+const T*
+peek_front(const CircularBuffer<T> &) noexcept;
+
+template <typename T>
+T*
+peek_back(CircularBuffer<T> &) noexcept;
+
+template <typename T>
+const T*
+peek_back(const CircularBuffer<T> &) noexcept;
+
+template <typename T>
+T* get(CircularBuffer<T> &, std::size_t) noexcept;
+
+template <typename T>
+const T* get(const CircularBuffer<T> &, std::size_t) noexcept;
 /*
  * ==========================================================================
  */
@@ -71,6 +93,7 @@ CircularBuffer<T>::CircularBuffer(T *b, std::size_t l) noexcept
   , read{0}
   , write{0}
   , capacity{l} {
+  assert(l > 0);
 }
 
 template<typename T>
@@ -102,11 +125,12 @@ is_full(const CircularBuffer<T> &b) noexcept {
 template <typename T, typename I>
 T &
 push_back(CircularBuffer<T> &b, I &&insert) noexcept {
+  using namespace impl::CircularBuffer;
   if (is_full(b)) {
     b.read++;
   }
 
-  std::size_t idx = impl::CircularBuffer::index(b.write++, b.capacity);
+  std::size_t idx = index(b.write++, b.capacity);
   b.buffer[idx] = std::forward<I>(insert);
   return b.buffer[idx];
 }
@@ -114,11 +138,12 @@ push_back(CircularBuffer<T> &b, I &&insert) noexcept {
 template <typename T>
 bool
 pop_front(CircularBuffer<T> &b, T &out) noexcept {
+  using namespace impl::CircularBuffer;
   if (is_empty(b)) {
     return false;
   }
 
-  std::size_t idx = impl::CircularBuffer::index(b.read++, b.capacity);
+  std::size_t idx = index(b.read++, b.capacity);
   out = std::move(b.buffer[idx]);
   return true;
 }
@@ -126,13 +151,66 @@ pop_front(CircularBuffer<T> &b, T &out) noexcept {
 template <typename T>
 bool
 pop_back(CircularBuffer<T> &b, T &out) noexcept {
+  using namespace impl::CircularBuffer;
   if (is_empty(b)) {
     return false;
   }
 
-  std::size_t idx = impl::CircularBuffer::index(--b.write, b.capacity);
+  std::size_t idx = index(--b.write, b.capacity);
   out = std::move(b.buffer[idx]);
   return true;
+}
+
+template <typename T>
+T*
+peek_front(CircularBuffer<T> &b) noexcept {
+  const auto& c_b = b;
+  return (T*)peek_front(c_b);
+}
+
+template <typename T>
+const T*
+peek_front(const CircularBuffer<T> &b) noexcept {
+  using namespace impl::CircularBuffer;
+  if(is_empty(b)){
+    return nullptr;
+  }
+  std::size_t idx = index(b.read, b.capacity);
+  return b.buffer + idx;
+}
+
+template <typename T>
+T*
+peek_back(CircularBuffer<T> &b) noexcept {
+  const auto& c_b = b;
+  return (T*)peek_back(c_b);
+}
+
+template <typename T>
+const T*
+peek_back(const CircularBuffer<T> &b) noexcept {
+  using namespace impl::CircularBuffer;
+  if(is_empty(b)){
+    return nullptr;
+  }
+  std::size_t idx = index(b.write-1, b.capacity);
+  return b.buffer+idx;
+}
+
+template <typename T>
+T* get(CircularBuffer<T> &b, std::size_t idx) noexcept {
+  const auto& c_b = b;
+  return (T*)get(c_b, idx);
+}
+
+template <typename T>
+const T* get(const CircularBuffer<T> &b, std::size_t idx) noexcept {
+  using namespace impl::CircularBuffer;
+  if(idx < length(b)){
+    std::size_t abs_idx = index(b.read, b.capacity);
+    return b.buffer + abs_idx + idx;
+  }
+  return nullptr;
 }
 
 } // namespace sp
