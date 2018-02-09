@@ -43,6 +43,9 @@ set(typename Bitset_buffer::type &word, std::size_t bit_idx, bool v) {
 
 Bitset::Bitset(std::uint64_t *b,std::size_t c)noexcept 
   : buffer{b},capacity{c} {
+    for(std::size_t i=0;i<c;++i){
+      assert(*b == 0);
+    }
 }
 
 bool test(const Bitset&b,std::size_t idx) noexcept {

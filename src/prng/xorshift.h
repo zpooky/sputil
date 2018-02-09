@@ -5,6 +5,8 @@
 
 namespace prng {
 struct Xorshift32 {
+  using Word = std::uint32_t;
+
   std::uint32_t state;
 
   explicit Xorshift32(std::uint32_t) noexcept;
@@ -21,6 +23,8 @@ random(Xorshift32 &) noexcept;
 
 namespace prng {
 struct Xorshift128plus {
+  using Word = std::uint64_t;
+
   std::uint64_t state[2];
 
   Xorshift128plus(std::uint64_t, std::uint64_t) noexcept;

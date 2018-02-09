@@ -6,6 +6,10 @@
 
 namespace sp {
 
+  // TODO Fixed List should be abstract
+  // - DynamicFixedLinkedList
+  // - StaticFixedLinkedList
+
 namespace impl {
 namespace FixedList {
 template <typename T>

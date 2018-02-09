@@ -37,7 +37,7 @@ random_insert_delete(std::size_t goal) {
       printf("cnt: %zu\n", counter);
     }
     Tree_t tree;
-    constexpr int in_size = 1000;
+    constexpr int in_size = 200;
     int in[in_size];
     for (int i = 0; i < in_size; ++i) {
       in[i] = i;
@@ -89,7 +89,7 @@ random_insert_delete(std::size_t goal) {
       }
 
       find_stuff(tree, i + 1, in);
-      printf("---------------\n");
+      // printf("---------------\n");
     }
     counter++;
   }
@@ -162,8 +162,7 @@ TEST(treeTest, test_insert_avl) {
 }
 
 TEST(treeTest, test_inser_remove_avl) {
-  // TODO
-  random_insert_delete<avl::Tree<int>>(10);
+  random_insert_delete<avl::Tree<int>>(100);
 }
 
 TEST(treeTest, test_insert_remove_red_black) {
