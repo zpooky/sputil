@@ -30,6 +30,13 @@ public:
   maybe &
   operator=(const maybe &&) = delete;
 
+  template <typename I>
+  maybe<T> &
+  operator=(I &&) noexcept;
+
+  void
+  clear() noexcept;
+
   ~maybe() noexcept;
 
   explicit operator bool() const noexcept;
@@ -122,12 +129,30 @@ maybe<T>::maybe(maybe<T> &&o) //
 }
 
 template <typename T>
-maybe<T>::~maybe() noexcept {
+void
+maybe<T>::clear() noexcept {
   if (present) {
     present = false;
     T *ptr = reinterpret_cast<T *>(&data);
     ptr->~T();
   }
+}
+
+template <typename T>
+template <typename I>
+maybe<T> &
+maybe<T>::operator=(I &&c) noexcept {
+  clear();
+
+  present = true;
+  ::new (&data) T{std::forward<I>(c)};
+
+  return *this;
+}
+
+template <typename T>
+maybe<T>::~maybe() noexcept {
+  clear();
 }
 
 template <typename T>

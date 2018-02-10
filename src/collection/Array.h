@@ -2,6 +2,7 @@
 #define SP_UTIL_COLLECTION_ARRAY_H
 
 #include <cstddef>
+#include <cstdint>
 #include <util/numeric.h>
 #include <utility>
 
@@ -18,6 +19,13 @@ struct Array {
   explicit Array(T (&)[SIZE]) noexcept;
 
   Array(T *, std::size_t) noexcept;
+};
+
+template <typename T, std::size_t cap>
+struct StaticArray : public Array<T> {
+  T raw[cap] = {};
+
+  StaticArray() noexcept;
 };
 
 template <typename T, typename V>
@@ -56,6 +64,18 @@ template <typename T, typename F>
 bool
 for_all(Array<T> &, F) noexcept;
 
+template <typename T, typename F>
+T *
+find(Array<T> &, F) noexcept;
+
+template <typename T, typename F>
+const T *
+find(const Array<T> &, F) noexcept;
+
+template <typename T, typename K, typename F>
+K *
+reduce(const Array<T> &, K *, F) noexcept;
+
 /*
  * =======================================================
  */
@@ -76,6 +96,12 @@ Array<T>::Array(T *b, std::size_t size) noexcept
     : buffer(b)
     , length(0)
     , capacity(size) {
+}
+
+template <typename T, std::size_t c>
+StaticArray<T, c>::StaticArray() noexcept
+    : Array<T>(raw)
+    , raw{} {
 }
 
 template <typename T, typename V>
@@ -176,6 +202,40 @@ for_all(Array<T> &a, F f) noexcept {
     result = f(a.buffer[i]);
   }
   return result;
+}
+
+template <typename T, typename F>
+T *
+find(Array<T> &a, F f) noexcept {
+  for (std::size_t i = 0; i < a.length; ++i) {
+    if (f(a.buffer[i])) {
+      return a.buffer + i;
+    }
+  }
+  return nullptr;
+}
+
+template <typename T, typename F>
+const T *
+find(const Array<T> &a, F f) noexcept {
+  for (std::size_t i = 0; i < a.length; ++i) {
+    const auto &current = a.buffer[i];
+    if (f(current)) {
+      return a.buffer + i;
+    }
+  }
+  return nullptr;
+}
+
+template <typename T, typename K, typename F>
+K *
+reduce(const Array<T> &a, K *k, F f) noexcept {
+  for (std::size_t i = 0; i < a.length; ++i) {
+    const T *current = a.buffer + i;
+    k = f(k, current);
+  }
+
+  return k;
 }
 
 } // namespace sp

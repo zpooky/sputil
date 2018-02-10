@@ -7,7 +7,6 @@ namespace crc32c {
 
 std::uint32_t
 encode(const void *buffer, std::size_t length) noexcept;
-
 }
 
 namespace crc32 {
