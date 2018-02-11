@@ -61,8 +61,16 @@ void
 for_each(Array<T> &, F) noexcept;
 
 template <typename T, typename F>
+void
+for_each(const Array<T> &, F) noexcept;
+
+template <typename T, typename F>
 bool
 for_all(Array<T> &, F) noexcept;
+
+template <typename T, typename F>
+bool
+for_all(const Array<T> &, F) noexcept;
 
 template <typename T, typename F>
 T *
@@ -195,11 +203,31 @@ for_each(Array<T> &a, F f) noexcept {
 }
 
 template <typename T, typename F>
+void
+for_each(const Array<T> &a, F f) noexcept {
+  for (std::size_t i = 0; i < a.length; ++i) {
+    const T &current = a.buffer[i];
+    f(current);
+  }
+}
+
+template <typename T, typename F>
 bool
 for_all(Array<T> &a, F f) noexcept {
   bool result = true;
   for (std::size_t i = 0; i < a.length && result; ++i) {
     result = f(a.buffer[i]);
+  }
+  return result;
+}
+
+template <typename T, typename F>
+bool
+for_all(const Array<T> &a, F f) noexcept {
+  bool result = true;
+  for (std::size_t i = 0; result && i < a.length; ++i) {
+    const T &current = a.buffer[i];
+    result = f(current);
   }
   return result;
 }

@@ -22,8 +22,10 @@ public:
   maybe(maybe<T> &&o) //
       noexcept(noexcept(T{std::declval<T &&>()}));
 
+  maybe(const maybe<T> &) //
+      noexcept(noexcept(T{std::declval<T &>()}));
+
   // TODO inplace construction
-  maybe(const maybe &) = delete;
 
   maybe &
   operator=(const maybe &) = delete;
@@ -125,6 +127,18 @@ maybe<T>::maybe(maybe<T> &&o) //
 
     other->~T();
     o.present = false;
+  }
+}
+
+template <typename T>
+maybe<T>::maybe(const maybe<T> &o) //
+    noexcept(noexcept(T{std::declval<T &>()}))
+    : data{}
+    , present{o.present} {
+  if (present) {
+    T *ptr = reinterpret_cast<T *>(&data);
+    const T *other = reinterpret_cast<const T *>(&o.data);
+    ::new (ptr) T{*other};
   }
 }
 
