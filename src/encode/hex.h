@@ -9,6 +9,7 @@ bool
 decode(const char *, /*OUT*/ std::uint8_t *, /*IN/OUT*/ std::size_t &) noexcept;
 
 bool
-encode(const std::uint8_t *, /*OUT*/ char *, /*IN/OUT*/ std::size_t &) noexcept;
+encode(const std::uint8_t *, std::size_t, /*OUT*/ char *,
+       /*IN/OUT*/ std::size_t &) noexcept;
 } // namespace hex
 #endif
