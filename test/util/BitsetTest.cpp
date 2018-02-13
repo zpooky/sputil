@@ -79,7 +79,7 @@
     }                                                                          \
   } while (0)
 
-static constexpr std::size_t t_len = 32;
+static constexpr std::size_t t_len = 24;
 static constexpr std::size_t t_bits = t_len * sizeof(std::uint64_t) * 8;
 TEST(BitsetTest, test_random) {
 

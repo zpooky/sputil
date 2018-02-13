@@ -3,6 +3,7 @@
 
 #include <new>
 #include <utility>
+#include <memory/Allocator.h>
 
 namespace sp {
 namespace impl {
@@ -21,7 +22,7 @@ struct Node { //
 }
 }
 
-template <typename T, template <typename> class Allocator = std::allocator>
+template <typename T, template <typename> class Allocator = sp::Allocator>
 struct LinkedList {
   using value_type = T;
   using node_type = impl::LinkedList::Node<T>;
