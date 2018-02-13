@@ -1,6 +1,8 @@
 #ifndef SP_UTIL_MEMORY_ALLOCATOR_H
 #define SP_UTIL_MEMORY_ALLOCATOR_H
 
+#include <cstdlib>
+
 namespace sp {
 template <typename T>
 struct Allocator {
