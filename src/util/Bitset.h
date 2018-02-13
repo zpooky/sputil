@@ -5,7 +5,6 @@
 #include <cstdint>
 
 namespace sp {
-// TODO SparseBitset
 struct Bitset {
   std::uint64_t *buffer;
   const std::size_t capacity;
@@ -24,10 +23,28 @@ struct StaticBitset : public Bitset {
 };
 
 /*
+ * capacity: block_size * blocks;
+ * Block are lazy allocated when required.
+ * Blocks are placed in a BST.
+ */
+struct SparseBitset {
+  const std::size_t block_size;
+  const std::size_t blocks;
+  void *tree;
+
+  SparseBitset(std::size_t, std::size_t) noexcept;
+
+  ~SparseBitset() noexcept;
+};
+
+/*
  * returns the value
  */
 bool
 test(const Bitset &, std::size_t) noexcept;
+
+bool
+test(const SparseBitset &, std::size_t) noexcept;
 
 /*
  * returns the old value
@@ -35,17 +52,26 @@ test(const Bitset &, std::size_t) noexcept;
 bool
 set(Bitset &, std::size_t, bool) noexcept;
 
+bool
+set(SparseBitset &, std::size_t, bool) noexcept;
+
 /*
  * returns the new value
  */
 bool
 toggle(Bitset &, std::size_t) noexcept;
 
+bool
+toggle(SparseBitset &, std::size_t) noexcept;
+
 /*
  * return the bit capacity of the Bitset
  */
 std::size_t
 bits(const Bitset &) noexcept;
+
+std::size_t
+bits(const SparseBitset &) noexcept;
 
 /*
  * ==========================================================================

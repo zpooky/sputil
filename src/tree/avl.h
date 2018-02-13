@@ -13,7 +13,7 @@
 // TODO noexcept operator
 
 namespace avl {
-  /*avl*/
+/*avl*/
 
 template <typename T>
 struct Node {
@@ -57,39 +57,41 @@ struct Node {
   }
 };
 
-template <typename T,typename Comparator = sp::greater>
+template <typename T, typename Comparator = sp::greater>
 using Tree = bst::Tree<avl::Node<T>, Comparator>;
 
-template <typename T,typename C, typename K>
+template <typename T, typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T,C> &, K &&) noexcept;
+insert(Tree<T, C> &, K &&) noexcept;
 
-template <typename T,typename C,typename K>
-const T* find(const Tree<T,C>&,const K&) noexcept;
+template <typename T, typename C, typename K>
+const T *
+find(const Tree<T, C> &, const K &) noexcept;
 
-template <typename T,typename C,typename K>
-T* find(Tree<T,C>&,const K&) noexcept;
+template <typename T, typename C, typename K>
+T *
+find(Tree<T, C> &, const K &) noexcept;
 
-template <typename T,typename C, typename K>
+template <typename T, typename C, typename K>
 bool
-remove(Tree<T,C> &, const K &) noexcept;
+remove(Tree<T, C> &, const K &) noexcept;
 
-template <typename T,typename C>
+template <typename T, typename C>
 void
-dump(Tree<T,C> &tree, std::string prefix = "") noexcept;
+dump(Tree<T, C> &tree, std::string prefix = "") noexcept;
 
-template <typename T,typename C>
+template <typename T, typename C>
 bool
-verify(Tree<T,C> &tree) noexcept;
+verify(Tree<T, C> &tree) noexcept;
 
 /*
  * ==========================================================================
  */
 
 namespace impl {
-  /*avl::impl*/
+/*avl::impl*/
 namespace avl {
-  /*avl::impl::avl*/
+/*avl::impl::avl*/
 // BalanceFactor(N) := Height(RightSubtree(N)) - Height(LeftSubtree(N))
 // BalanceFactor(N) = {–1, 0, +1}
 //
@@ -113,7 +115,7 @@ direction(const Node<T> *const child) noexcept {
 
   assert(parent->right == child);
   return Direction::RIGHT;
-}// avl::impl::avl::direction()
+} // avl::impl::avl::direction()
 
 template <typename T>
 void
@@ -125,18 +127,18 @@ Lstart:
     goto Lstart;
   }
   return bst::impl::dump(root, prefix);
-}// avl::impl::avl::dump_root()
+} // avl::impl::avl::dump_root()
 
 template <typename T>
 static std::int8_t
 balance(const Node<T> *const node) noexcept {
   return node ? node->balance : 0;
-}// avl::impl::avl::balance()
+} // avl::impl::avl::balance()
 
 template <typename T>
 static Node<T> *
 rotate_left(Node<T> *const A) noexcept {
-  printf("\trotate_left(%s)\n", std::string(*A).c_str());
+  // printf("\trotate_left(%s)\n", std::string(*A).c_str());
   // dump_root(A, "\t");
   /*
    * <_
@@ -189,15 +191,15 @@ rotate_left(Node<T> *const A) noexcept {
   // assert(bst::impl::doubly_linked(A_parent));
   assert(bst::impl::doubly_linked(B_left));
 
-  //since B can be null when B is null C is as well therefore in that case A
-  //will be the root node.
+  // since B can be null when B is null C is as well therefore in that case A
+  // will be the root node.
   return B ? B : A;
-}// avl::impl::avl::rotate_light()
+} // avl::impl::avl::rotate_light()
 
 template <typename T>
 static Node<T> *
 rotate_right(Node<T> *const C) noexcept {
-  printf("\trotate_right(%s)\n", std::string(*C).c_str());
+  // printf("\trotate_right(%s)\n", std::string(*C).c_str());
   // dump_root(C, "\t");
   /*
    *B_.
@@ -251,7 +253,7 @@ rotate_right(Node<T> *const C) noexcept {
   // assert(bst::impl::doubly_linked(C_parent));
 
   return B;
-}// avl::impl::avl::rotate_right()
+} // avl::impl::avl::rotate_right()
 
 template <typename T>
 static Node<T> *&
@@ -270,7 +272,7 @@ set(Node<T> *&child) noexcept {
 
   assert(parent->right == child);
   return parent->right;
-}// avl::impl::avl::set()
+} // avl::impl::avl::set()
 
 template <typename T>
 bool
@@ -370,7 +372,7 @@ verify(Node<T> *const tree) {
 
   std::uint32_t balance = 0;
   return verify(tree->parent, tree, balance);
-}//avl::impl::avl::verify()
+} // avl::impl::avl::verify()
 
 template <typename T>
 static bool
@@ -384,7 +386,7 @@ Lstart:
 
   std::uint32_t balance = 0;
   return verify((Node<T> *)nullptr, root, balance);
-}//avl::impl::avl::verify_root()
+} // avl::impl::avl::verify_root()
 
 namespace insert {
 /*avl::impl::avl::insert*/
@@ -456,7 +458,7 @@ static Node<T> *
 rebalance2(Node<T> *it, F setBalance) noexcept {
   Node<T> *current = nullptr;
 Lstart:
-  if(it){
+  if (it) {
     current = it;
 
     setBalance(current);
@@ -490,46 +492,39 @@ Lstart:
   return current;
 } // avl::impl::rebalance()
 
-}//namespace insert
+} // namespace insert
 
 namespace remove {
 /*avl::impl::avl::remove*/
 template <typename T>
 static Node<T> *
-remove_rebalance(Node<T> *current,Node<T>*P=nullptr) noexcept {
-  if(current) {
-  printf("rebalance current: %s\n",std::string(*current).c_str());
-  dump_root(current,"rebalance");
+remove_rebalance(Node<T> *current, Node<T> *P = nullptr) noexcept {
+  if (current) {
+    printf("rebalance current: %s\n", std::string(*current).c_str());
+    dump_root(current, "rebalance");
   }
-  auto parent = [](Node<T>*n) {
-    return n ? n->parent : nullptr;
-  };
-  auto BalanceFactor = [](Node<T>*n)-> std::int8_t& {
-    return n->balance;
-  };
-  auto right_child = [](Node<T>*n){
-    return n->right;
-  };
-  auto left_child = [](Node<T>*n){
-    return n->left;
-  };
-  P =  P == nullptr ? parent(current) : P;
-
+  auto parent = [](Node<T> *n) { return n ? n->parent : nullptr; };
+  auto BalanceFactor = [](Node<T> *n) -> std::int8_t & { return n->balance; };
+  auto right_child = [](Node<T> *n) { return n->right; };
+  auto left_child = [](Node<T> *n) { return n->left; };
+  P = P == nullptr ? parent(current) : P;
 
   // Node<T>* P = parent(current);
   for (; P != nullptr; P = parent(current)) {
-    if (current == P->left) {//$current is left child
-      printf("$current%s is left child\n",current ? std::string(*current).c_str(): "[nullptr]");
+    if (current == P->left) { //$current is left child
+      printf("$current%s is left child\n",
+             current ? std::string(*current).c_str() : "[nullptr]");
       if (BalanceFactor(P) > 0) {
-        printf("BalanceFactor(P%s) > 0\n",std::string(*P).c_str());
+        printf("BalanceFactor(P%s) > 0\n", std::string(*P).c_str());
         auto sibling = right_child(P);
-        if (BalanceFactor(sibling) < 0){
-          printf("BalanceFactor(sibling%s) < 0",std::string(*sibling).c_str());
-          P->right = rotate_right(P->right); // Double rotation: Right(sibling) then Left(P)
+        if (BalanceFactor(sibling) < 0) {
+          printf("BalanceFactor(sibling%s) < 0", std::string(*sibling).c_str());
+          P->right = rotate_right(
+              P->right); // Double rotation: Right(sibling) then Left(P)
           assert(P->right->parent == P);
         }
         set(P) = rotate_left(P);
-        current = P;//sp?
+        current = P; // sp?
       } else {
         if (BalanceFactor(P) == 0) {
           BalanceFactor(P) += 1; // current’s height decrease is absorbed at P.
@@ -538,57 +533,62 @@ remove_rebalance(Node<T> *current,Node<T>*P=nullptr) noexcept {
         current = P;
         BalanceFactor(current) = 0; // Height(current) decreases by 1
       }
-      dump_root(current,"rebalance");
-    } else if(current == P->right){//current is right child
-      printf("$current%s is right child\n",current ? std::string(*current).c_str() :"[nullptr]");
+      dump_root(current, "rebalance");
+    } else if (current == P->right) { // current is right child
+      printf("$current%s is right child\n",
+             current ? std::string(*current).c_str() : "[nullptr]");
       if (BalanceFactor(P) < 0) { // P is left-heavy
-        printf("BalanceFactor(P%s) < 0\n",std::string(*P).c_str());
+        printf("BalanceFactor(P%s) < 0\n", std::string(*P).c_str());
         // ===> the temporary BalanceFactor(P) == –2
         // ===> rebalancing is required.
-        auto sibling = left_child(P); // Sibling of current (higher by 2)
-        if (BalanceFactor(sibling) > 0) {                     // Left Right Case
-          printf("BalanceFactor(sibling%s) > 0\n",std::string(*sibling).c_str());
-          P->left = rotate_left(P->left); // Double rotation: Left(sibling) then Right(P)
+        auto sibling = left_child(P);     // Sibling of current (higher by 2)
+        if (BalanceFactor(sibling) > 0) { // Left Right Case
+          printf("BalanceFactor(sibling%s) > 0\n",
+                 std::string(*sibling).c_str());
+          P->left = rotate_left(
+              P->left); // Double rotation: Left(sibling) then Right(P)
           assert(P->left->parent == P);
         }
-        set(P) = rotate_right(P);    // Single rotation Right(P)
-        current = P;//sp?
+        set(P) = rotate_right(P); // Single rotation Right(P)
+        current = P;              // sp?
       } else {
         if (BalanceFactor(P) == 0) {
-          printf("BalanceFactor(P%s) == 0\n",std::string(*P).c_str());
+          printf("BalanceFactor(P%s) == 0\n", std::string(*P).c_str());
           BalanceFactor(P) -= 1; // current’s height decrease is absorbed at P.
           return current;
         }
         current = P;
         BalanceFactor(current) = 0;
       }
-      dump_root(current,"rebalance");
-    }else {
+      dump_root(current, "rebalance");
+    } else {
       assert(false);
     }
   }
   return current;
 } // avl::impl::avl::remove_rebalance()
 
-  //test
+// test
 template <typename T>
-static ssize_t height(const Node<T>*current){
-  if(!current){
+static ssize_t
+height(const Node<T> *current) {
+  if (!current) {
     return 0;
   }
-  return 1+ std::max(height(current->right),height(current->left));
+  return 1 + std::max(height(current->right), height(current->left));
 }
 
 template <typename T>
-static std::int8_t calc_balance(const Node<T>*current){
-  auto r =height(current->right) ;
-  auto l  =height(current->left);
+static std::int8_t
+calc_balance(const Node<T> *current) {
+  auto r = height(current->right);
+  auto l = height(current->left);
   // if(r==-1)
   //   r = 0;
   // if(l==-1)
   //   l=0;
 
-  return r-l;
+  return r - l;
 }
 
 // template <typename T>
@@ -645,7 +645,7 @@ remove(Node<T> *const current) noexcept {
       }
     }
   };
-  auto unset = [](Node<T>*subject){
+  auto unset = [](Node<T> *subject) {
     subject->parent = nullptr;
     subject->left = nullptr;
     subject->right = nullptr;
@@ -653,7 +653,7 @@ remove(Node<T> *const current) noexcept {
 
   printf("remove(%d)", current->value);
   assert(bst::impl::doubly_linked(current));
-  if /*two children*/(current->left && current->right) {
+  if /*two children*/ (current->left && current->right) {
     printf(":2->");
 
     /*     X
@@ -676,7 +676,8 @@ remove(Node<T> *const current) noexcept {
     // assert(verify_root(current));
     {
       /*
-       * remove($successor) might run rebalancing meaning that we cannot assume that $current
+       * remove($successor) might run rebalancing meaning that we cannot assume
+       * that $current
        * have left and right pointers
        */
       update_ParentToChild(current, successor);
@@ -702,7 +703,7 @@ remove(Node<T> *const current) noexcept {
     // return insert::rebalance2(successor, [](Node<T> *child) {
     //   return remove_balance(child);
     // });
-  } else if /*zero children*/(!current->left && !current->right) {
+  } else if /*zero children*/ (!current->left && !current->right) {
     printf(":0\n");
     // zero children
     // auto parent_direction = [](Node<T> *n) {
@@ -754,12 +755,10 @@ remove(Node<T> *const current) noexcept {
     // parent->balance=bl;
 
     // return remove_rebalance((Node<T>*)nullptr,parent);
-    return insert::rebalance2(parent, [](Node<T> *child) {
-      return remove_parent_balance(child);
-    });
+    return insert::rebalance2(
+        parent, [](Node<T> *child) { return remove_parent_balance(child); });
     // return parent;
     // }
-
 
     // We just removed the last node in the tree
     // return nullptr;
@@ -787,9 +786,8 @@ remove(Node<T> *const current) noexcept {
     // assert(left->balance == calc_balance(left));
 
     // return remove_rebalance(left);
-    return insert::rebalance2(left, [](Node<T> *child) {
-      return remove_parent_balance(child);
-    });
+    return insert::rebalance2(
+        left, [](Node<T> *child) { return remove_parent_balance(child); });
   }
   assert(current->right);
   printf(":right\n");
@@ -814,64 +812,66 @@ remove(Node<T> *const current) noexcept {
 
   unset(current);
   // return remove_rebalance(right);
-    return insert::rebalance2(right, [](Node<T> *child) {
-      return remove_parent_balance(child);
-    });
+  return insert::rebalance2(right, [](Node<T> *child) { //
+    return remove_parent_balance(child);
+  });
 } // avl::impl::avl::remove::remove()
 
-}//namespace remove
+} // namespace remove
 
 } // namespace impl
 } // namespace avl
 
-template <typename T,typename C, typename K>
+template <typename T, typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T,C> &tree, K &&value) noexcept {
+insert(Tree<T, C> &tree, K &&value) noexcept {
   using namespace impl::avl::insert;
 
   auto set_root = [&tree](Node<T> *root) {
-    if(root->parent == nullptr){
+    if (root->parent == nullptr) {
       tree.root = root;
     }
   };
 
   auto result = bst::impl::insert(tree, std::forward<K>(value));
   bool inserted{std::get<1>(result)};
-  Node<T>* node = std::get<0>(result);
-  if(inserted){
+  Node<T> *node = std::get<0>(result);
+  if (inserted) {
     assert(node);
 
-    set_root(rebalance(node, [](Node<T> *child) {
+    set_root(rebalance(node, [](Node<T> *child) { //
       return insert_parent_balance(child);
     }));
   }
 
-  T* insval = nullptr;
-  if(node){
+  T *insval = nullptr;
+  if (node) {
     insval = &node->value;
   }
 
   return std::make_tuple(insval, inserted);
-}//avl::insert()
+} // avl::insert()
 
-template <typename T,typename C,typename K>
-const T* find(const Tree<T,C>&tree,const K&key) noexcept {
-  return bst::find(tree,key);
-}//avl::find()
+template <typename T, typename C, typename K>
+const T *
+find(const Tree<T, C> &tree, const K &key) noexcept {
+  return bst::find(tree, key);
+} // avl::find()
 
-template <typename T,typename C,typename K>
-T* find(Tree<T,C>&tree,const K&key) noexcept {
-  return bst::find(tree,key);
-}//avl::find()
+template <typename T, typename C, typename K>
+T *
+find(Tree<T, C> &tree, const K &key) noexcept {
+  return bst::find(tree, key);
+} // avl::find()
 
-template <typename T,typename C, typename K>
+template <typename T, typename C, typename K>
 bool
-remove(Tree<T,C> &tree, const K &k) noexcept {
+remove(Tree<T, C> &tree, const K &k) noexcept {
   using avl::impl::avl::remove::remove;
 
   auto set_root = [&tree](Node<T> *root) {
     if (root) {
-      if(root->parent == nullptr) {
+      if (root->parent == nullptr) {
         tree.root = root;
       }
     } else {
@@ -888,18 +888,18 @@ remove(Tree<T,C> &tree, const K &k) noexcept {
   return false;
 } // avl::remove()
 
-template <typename T,typename C>
+template <typename T, typename C>
 void
-dump(Tree<T,C> &tree, std::string prefix) noexcept {
+dump(Tree<T, C> &tree, std::string prefix) noexcept {
   return bst::impl::dump(tree.root, prefix);
-}//avl::dump()
+} // avl::dump()
 
-template <typename T,typename C>
+template <typename T, typename C>
 bool
-verify(Tree<T,C> &tree) noexcept {
+verify(Tree<T, C> &tree) noexcept {
   std::uint32_t balance = 0;
   return impl::avl::verify((Node<T> *)nullptr, tree.root, balance);
-}//avl::verify()
+} // avl::verify()
 
 } // namespace avl
 

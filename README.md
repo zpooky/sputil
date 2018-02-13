@@ -38,3 +38,12 @@ class UniformStackAllocator<T>
 alloc():*T -> stack.pop()
 dealloc(T*) -> stack.push()
 ```
+
+## src/util/Either.h
+```cpp
+template<typename L, typename R>
+struct Either;
+
+Left l(failure);
+Right r(value);
+```

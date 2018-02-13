@@ -3,11 +3,11 @@
 
 #include <cassert>
 #include <string>
-#include <util/comparator.h>
 #include <tuple>
+#include <util/comparator.h>
 
 namespace bst {
-//typename Allocator = std::allocator<Key>
+// typename Allocator = std::allocator<Key>
 template <typename T, typename Comparator>
 struct Tree {
   using value_type = typename T::value_type;
@@ -18,17 +18,21 @@ struct Tree {
 
   T *root;
 
-  Tree() noexcept
-      : root(nullptr) {
+  Tree(T *r) noexcept
+      : root(r) {
   }
 
-  Tree(const Tree<T,Comparator> &) = delete;
-  Tree(const Tree<T,Comparator> &&) = delete;
+  Tree() noexcept
+      : Tree(nullptr) {
+  }
+
+  Tree(const Tree<T, Comparator> &) = delete;
+  Tree(const Tree<T, Comparator> &&) = delete;
 
   Tree &
-  operator=(const Tree<T,Comparator> &) = delete;
+  operator=(const Tree<T, Comparator> &) = delete;
   Tree &
-  operator=(const Tree<T,Comparator> &&) = delete;
+  operator=(const Tree<T, Comparator> &&) = delete;
 
   ~Tree() {
     if (root) {
@@ -39,17 +43,17 @@ struct Tree {
   }
 };
 
-template <typename T,typename C, typename S>
-typename Tree<T,C>::const_pointer
-find(const Tree<T,C> &tree, const S &search) noexcept;
+template <typename T, typename C, typename S>
+typename Tree<T, C>::const_pointer
+find(const Tree<T, C> &tree, const S &search) noexcept;
 
-template <typename T,typename C, typename S>
-typename Tree<T,C>::pointer
-find(Tree<T,C> &tree, const S &search) noexcept;
+template <typename T, typename C, typename S>
+typename Tree<T, C>::pointer
+find(Tree<T, C> &tree, const S &search) noexcept;
 
-template <typename T,typename C>
+template <typename T, typename C>
 void
-swap(Tree<T,C> &, Tree<T,C> &) noexcept;
+swap(Tree<T, C> &, Tree<T, C> &) noexcept;
 
 // TODO
 // bfs_search
@@ -109,9 +113,9 @@ child_count(T *tree) noexcept {
   return result;
 }
 
-
 /*
- * Recursively search down in the left branch to find the smallest node in the tree.
+ * Recursively search down in the left branch to find the smallest node in the
+ * tree.
  */
 template <typename T>
 T *
@@ -129,18 +133,18 @@ Lstart:
 /*
  * Recursivly search in tree until matching node is found
  */
-template <typename N,typename C, typename K>
+template <typename N, typename C, typename K>
 const N *
-find_node(const Tree<N,C>&tree, const K &search) noexcept {
-  const N* current = tree.root;
+find_node(const Tree<N, C> &tree, const K &search) noexcept {
+  const N *current = tree.root;
 Lstart:
   if (current) {
     constexpr C cmp;
-    if /*current > search*/(cmp(current->value, search)) {
+    if /*current > search*/ (cmp(current->value, search)) {
 
       current = current->left;
       goto Lstart;
-    } else if /*current < search*/(cmp(search, current->value)) {
+    } else if /*current < search*/ (cmp(search, current->value)) {
 
       current = current->right;
       goto Lstart;
@@ -150,14 +154,14 @@ Lstart:
   return current;
 } // bst::impl::find_node()
 
-template <typename N,typename C, typename K>
+template <typename N, typename C, typename K>
 N *
-find_node(Tree<N,C>&tree, const K &search) noexcept {
-  const Tree<N,C> &c_tree = tree;
-  return (N*)find_node(c_tree,search);
+find_node(Tree<N, C> &tree, const K &search) noexcept {
+  const Tree<N, C> &c_tree = tree;
+  return (N *)find_node(c_tree, search);
 }
 
-template <typename N,typename C, typename K>
+template <typename N, typename C, typename K>
 std::tuple<N *, bool>
 insert(Tree<N, C> &tree, K &&ins) noexcept {
   if (!tree.root) {
@@ -173,7 +177,7 @@ insert(Tree<N, C> &tree, K &&ins) noexcept {
   N *it = tree.root;
 Lit:
   constexpr C cmp;
-  if /*ins < it->value*/(cmp(it->value,ins)) {
+  if /*ins < it->value*/ (cmp(it->value, ins)) {
     if (it->left) {
       it = it->left;
 
@@ -184,7 +188,7 @@ Lit:
     if (it->left) {
       return std::make_tuple(it->left, true);
     }
-  } else if /*ins > it->value*/(cmp(ins,it->value)) {
+  } else if /*ins > it->value*/ (cmp(ins, it->value)) {
     if (it->right) {
       it = it->right;
 
@@ -221,7 +225,7 @@ remove(N *const current) noexcept {
     }
   };
 
-  auto unset = [](N *subject){
+  auto unset = [](N *subject) {
     subject->parent = nullptr;
     subject->left = nullptr;
     subject->right = nullptr;
@@ -229,12 +233,16 @@ remove(N *const current) noexcept {
 
   assert(doubly_linked(current));
 
-  if /*two children*/(current->left && current->right) {
+  if /*two children*/ (current->left && current->right) {
     /*
-     * Replace $current with the minimum child found in $current right branch($successor).
-     * The $successor is the natural replacement for $current since all BST properties will still hold after the remove:
-     * - $successor will be greater than any node in the left branch since $successor was taken from the right branch.
-     * - $successor will be less than the node on the right since $successor was the smallest node in the right branch.
+     * Replace $current with the minimum child found in $current right
+     * branch($successor).
+     * The $successor is the natural replacement for $current since all BST
+     * properties will still hold after the remove:
+     * - $successor will be greater than any node in the left branch since
+     * $successor was taken from the right branch.
+     * - $successor will be less than the node on the right since $successor was
+     * the smallest node in the right branch.
      */
     N *const successor = find_min(current->right);
     {
@@ -273,17 +281,17 @@ remove(N *const current) noexcept {
      * Returns the new root of the sub-Tree
      */
     return successor;
-  } else if /*zero children*/(!current->left && !current->right) {
+  } else if /*zero children*/ (!current->left && !current->right) {
     /*
      * Unset $current from [parent -> child] and replace it with null
      */
     N *const parent = current->parent;
-    update_ParentToChild(current, (N*)nullptr);
+    update_ParentToChild(current, (N *)nullptr);
     assert(doubly_linked(parent));
     unset(current);
 
     return parent;
-  } else if /*left child*/(current->left) {
+  } else if /*left child*/ (current->left) {
     /*
      * Exchange [parent -> $current] with [$parent -> $current->left]
      */
@@ -317,26 +325,26 @@ remove(N *const current) noexcept {
 } // namespace impl
 //===================================================
 
-template <typename N,typename C, typename K>
-typename Tree<N,C>::const_pointer
-find(const Tree<N,C> &tree, const K &search) noexcept {
-  const N *const result = bst::impl::find_node(tree,search);
+template <typename N, typename C, typename K>
+typename Tree<N, C>::const_pointer
+find(const Tree<N, C> &tree, const K &search) noexcept {
+  const N *const result = bst::impl::find_node(tree, search);
   if (result) {
     return &result->value;
   }
   return nullptr;
-}//bst::find()
+} // bst::find()
 
-template <typename T,typename C, typename K>
-typename Tree<T,C>::pointer
-find(Tree<T,C> &tree, const K &search) noexcept {
-  const Tree<T,C> &ctree = tree;
-  return (typename Tree<T,C>::pointer)find<T,C, K>(ctree, search);
-}//bst::find()
+template <typename T, typename C, typename K>
+typename Tree<T, C>::pointer
+find(Tree<T, C> &tree, const K &search) noexcept {
+  const Tree<T, C> &ctree = tree;
+  return (typename Tree<T, C>::pointer)find<T, C, K>(ctree, search);
+} // bst::find()
 
-template <typename T,typename C>
+template <typename T, typename C>
 void
-swap(Tree<T,C> &first, Tree<T,C> &second) noexcept {
+swap(Tree<T, C> &first, Tree<T, C> &second) noexcept {
   using std::swap;
   swap(first.root, second.root);
 } // bst::swap()
