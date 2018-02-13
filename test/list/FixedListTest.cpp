@@ -3,19 +3,19 @@
 
 TEST(FixedListTest, test_list) {
   sp::FixedList<int> list;
-  ASSERT_EQ(std::size_t(0), list.capacity);
-  ASSERT_EQ(std::size_t(0), list.length);
+  ASSERT_EQ(std::size_t(0), capacity(list));
+  ASSERT_EQ(std::size_t(0), length(list));
 
-  std::size_t length = 24;
-  ASSERT_TRUE(init(list, length));
-  ASSERT_EQ(length, list.capacity);
-  ASSERT_EQ(std::size_t(0), list.length);
+  std::size_t xlength = 24;
+  ASSERT_TRUE(init(list, xlength));
+  ASSERT_EQ(xlength, capacity(list));
+  ASSERT_EQ(std::size_t(0), length(list));
 
   clear(list);
-  ASSERT_EQ(length, list.capacity);
-  ASSERT_EQ(std::size_t(0), list.length);
+  ASSERT_EQ(xlength, capacity(list));
+  ASSERT_EQ(std::size_t(0), length(list));
 
-  for (int i = 0; i < int(length); ++i) {
+  for (int i = 0; i < int(xlength); ++i) {
     for (int a = 0; a < i; ++a) {
       int *r = get(list, a);
       ASSERT_TRUE(r);
@@ -34,7 +34,7 @@ TEST(FixedListTest, test_list) {
     ASSERT_TRUE(r);
     ASSERT_EQ(*r, i);
 
-    for (int a = i + 1; a < int(length); ++a) {
+    for (int a = i + 1; a < int(xlength); ++a) {
       ASSERT_EQ(get(list, a), nullptr);
     }
 
@@ -52,12 +52,12 @@ TEST(FixedListTest, test_list) {
 TEST(FixedListTest, test_list_remove) {
   sp::FixedList<int> list;
 
-  const std::size_t length = 1024;
-  ASSERT_TRUE(init(list, length));
-  ASSERT_EQ(std::size_t(0), list.length);
-  ASSERT_EQ(length, list.capacity);
+  const std::size_t xlength = 1024;
+  ASSERT_TRUE(init(list, xlength));
+  ASSERT_EQ(std::size_t(0), length(list));
+  ASSERT_EQ(xlength, capacity(list));
 
-  for (std::size_t i = 0; i < length; ++i) {
+  for (std::size_t i = 0; i < xlength; ++i) {
     int *res = insert(list, int(i));
 
     ASSERT_TRUE(res);
@@ -66,31 +66,31 @@ TEST(FixedListTest, test_list_remove) {
 
   ASSERT_TRUE(insert(list, 99999) == nullptr);
 
-  for (std::size_t i = 0; i < length; ++i) {
-    std::size_t c_lngth = list.length;
+  for (std::size_t i = 0; i < xlength; ++i) {
+    std::size_t c_lngth = length(list);
     for (std::size_t a = 0; a < c_lngth; ++a) {
       auto *res = get(list, a);
       ASSERT_TRUE(res);
       ASSERT_EQ(*res, int(a + i));
     }
 
-    ASSERT_EQ((length - i), list.length);
+    ASSERT_EQ((xlength - i), length(list));
     ASSERT_TRUE(remove_first(list, [&i](int c) { //
       return c == int(i);
 
     }));
-    ASSERT_EQ((length - i) - 1, list.length);
+    ASSERT_EQ((xlength - i), length(list));
   }
 
-  ASSERT_EQ(std::size_t(0), list.length);
-  ASSERT_EQ(length, list.capacity);
+  ASSERT_EQ(std::size_t(0), length(list));
+  ASSERT_EQ(xlength, capacity(list));
 
-  for (std::size_t i = 0; i < length; ++i) {
+  for (std::size_t i = 0; i < xlength; ++i) {
     int *res = insert(list, int(i));
     ASSERT_TRUE(res);
     ASSERT_EQ(*res, int(i));
   }
 
-  ASSERT_EQ(length, list.length);
-  ASSERT_EQ(length, list.capacity);
+  ASSERT_EQ(xlength, length(list));
+  ASSERT_EQ(xlength, capacity(list));
 }

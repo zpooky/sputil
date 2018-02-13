@@ -17,7 +17,7 @@ TEST(SkipListTest, test) {
   constexpr std::size_t levels = 7;
   sp::SkipList<int, levels> list;
 
-  constexpr std::size_t length = 20;
+  constexpr std::size_t length = 200;
   int in[length];
   for (int i = 0; i < int(length); ++i) {
     in[i] = i;
@@ -93,7 +93,7 @@ TEST(SkipListTest, test_insert_duplicate) {
   constexpr std::size_t levels = 7;
   sp::SkipList<int, levels> list;
 
-  constexpr std::size_t length = 20;
+  constexpr std::size_t length = 200;
   int in[length];
   for (int i = 0; i < int(length); ++i) {
     in[i] = i;
@@ -143,7 +143,7 @@ TEST(SkipListTest, test_remove) {
   constexpr std::size_t levels = 7;
   sp::SkipList<int, levels> list;
 
-  constexpr std::size_t length = 20;
+  constexpr std::size_t length = 2000;
   int in[length];
   for (int i = 0; i < int(length); ++i) {
     in[i] = i;
@@ -235,7 +235,7 @@ TEST(SkipListTest, test_unique_insert) {
   constexpr std::size_t levels = 7;
   sp::SkipList<int, levels> list;
 
-  constexpr std::size_t length = 20;
+  constexpr std::size_t length = 200;
   int in[length];
   for (int i = 0; i < int(length); ++i) {
     in[i] = i;
@@ -336,7 +336,7 @@ TEST(SkipListTest, test_unique_insert) {
 TEST(SkipListTest, test_unique_insert2) {
   constexpr std::size_t levels = 7;
   sp::SkipList<int, levels> list;
-  constexpr std::size_t length = 20;
+  constexpr std::size_t length = 200;
   int in[length];
   for (int i = 0; i < int(length); ++i) {
     in[i] = i;

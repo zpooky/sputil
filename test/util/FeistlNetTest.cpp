@@ -59,16 +59,16 @@ TEST(FeistelNetTest, test_for) {
   delete[]buffer;
 }
 
-TEST(FeistelNetTest, test_invertible) {
-  std::uint16_t max = ~std::uint16_t(0);
-  for(std::size_t i=0;i<= std::size_t(max);++i) {
-    std::uint16_t in(i);
-    std::uint16_t out = feistelNet(in);
-    std::uint16_t back = feistelNet(out);
-
-    ASSERT_EQ(in,back);
-  }
-}
+// TEST(FeistelNetTest, test_invertible) {
+//   std::uint16_t max = ~std::uint16_t(0);
+//   for(std::size_t i=0;i<= std::size_t(max);++i) {
+//     std::uint16_t in(i);
+//     std::uint16_t out = feistelNet(in);
+//     std::uint16_t back = feistelNet(out);
+//
+//     ASSERT_EQ(in,back);
+//   }
+// }
 
 // TEST(FeistelNetTest, test_while) {
 //   std::size_t cnt = 0;
