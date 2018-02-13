@@ -34,14 +34,14 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
   lookup['e' - '0'] = 0xE;
   lookup['f' - '0'] = 0xF;
 
-  while (*it) {
+  while (*it != '\0') {
     if (i > size) {
       return false;
     }
 
     std::uint8_t f = 0;
     {
-      std::size_t index = static_cast<std::size_t>(*it++);
+      std::size_t index = static_cast<std::size_t>(*it++) - '0';
       if (index >= sizeof(lookup)) {
         return false;
       }
@@ -52,9 +52,13 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
       f = std::uint8_t(f << std::uint8_t(4));
     }
 
+    if (*it == '\0') {
+      return false;
+    }
+
     std::uint8_t s = 0;
     {
-      std::size_t index = static_cast<std::size_t>(*it++);
+      std::size_t index = static_cast<std::size_t>(*it++) - '0';
       if (index >= sizeof(lookup)) {
         return false;
       }
@@ -97,10 +101,12 @@ encode(const std::uint8_t *in, std::size_t in_length, /*OUT*/ char *out,
     lookup[i++] = 'F';
   }
   for (std::size_t i = 0; i < in_length; ++i) {
-    std::size_t f = in[i] & 0xf;
-    std::size_t s = (in[i] >> 4) & 0xf;
+    std::size_t f = (in[i] >> 4) & 0xf;
     assert(f < sizeof(lookup));
+
+    std::size_t s = in[i] & 0xf;
     assert(s < sizeof(lookup));
+
     if (len >= size) {
       return false;
     }
