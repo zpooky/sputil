@@ -1,9 +1,9 @@
 #ifndef SP_UTIL_LIST_LINKED_LIST_H
 #define SP_UTIL_LIST_LINKED_LIST_H
 
+#include <memory/Allocator.h>
 #include <new>
 #include <utility>
-#include <memory/Allocator.h>
 
 namespace sp {
 namespace impl {
@@ -386,6 +386,7 @@ remove_first(LinkedList<T, A> &list, F f) noexcept {
 
   Node<T> *it = list.root;
   Node<T> *priv = nullptr;
+  auto &allocator = list.allocator;
 
 Lit:
   if (it) {
@@ -402,6 +403,7 @@ Lit:
         list.root = next;
       }
 
+      allocator.deallocate(it, 1);
       return true;
     }
 

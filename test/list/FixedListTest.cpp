@@ -65,10 +65,10 @@ TEST(FixedListTest, test_list_remove) {
   }
 
   ASSERT_TRUE(insert(list, 99999) == nullptr);
+  ASSERT_EQ(xlength, length(list));
 
   for (std::size_t i = 0; i < xlength; ++i) {
-    std::size_t c_lngth = length(list);
-    for (std::size_t a = 0; a < c_lngth; ++a) {
+    for (std::size_t a = 0; a < length(list); ++a) {
       auto *res = get(list, a);
       ASSERT_TRUE(res);
       ASSERT_EQ(*res, int(a + i));
@@ -79,7 +79,7 @@ TEST(FixedListTest, test_list_remove) {
       return c == int(i);
 
     }));
-    ASSERT_EQ((xlength - i), length(list));
+    ASSERT_EQ((xlength - i) - 1, length(list));
   }
 
   ASSERT_EQ(std::size_t(0), length(list));
@@ -92,5 +92,8 @@ TEST(FixedListTest, test_list_remove) {
   }
 
   ASSERT_EQ(xlength, length(list));
+  ASSERT_EQ(xlength, capacity(list));
+  clear(list);
+  ASSERT_EQ(std::size_t(0), length(list));
   ASSERT_EQ(xlength, capacity(list));
 }
