@@ -88,7 +88,7 @@ allocate(StackPooledAllocator<T> &a) noexcept {
     SPANode *result = to_node(a.stack);
     a.stack = result->next;
 
-    memset(result, 0, sizeof(T));
+    // memset(result, 0, sizeof(T));
     return reinterpret_cast<T *>(result);
   } else {
     // printf("allocate(%zu, sizeof[%zu], alignof[%zu])\n", n, sizeof(T),
@@ -105,7 +105,7 @@ template <typename T>
 void
 deallocate(StackPooledAllocator<T> &a, T *p) noexcept {
   using namespace impl::StackPooledAllocator;
-  memset(p, 0, sizeof(T));
+  // memset(p, 0, sizeof(T));
   a.stack = new (p) SPANode(to_node(a.stack));
 }
 }
