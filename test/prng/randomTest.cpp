@@ -53,12 +53,14 @@ TEST(randomTest, test_xorshift128plus_dist_limited) {
   test_uniform_one(r);
 }
 
-TEST(randomTest, ll) {
-  prng::Xorshift32 r(1);
-  for (std::size_t i = 0; i < 10000; ++i) {
-    printf("%u,", random(r));
-    if (i % 10 == 0) {
-      printf("\n");
-    }
-  }
-}
+/*
+ * TEST(randomTest, ll) {
+ *   prng::Xorshift32 r(1);
+ *   for (std::size_t i = 0; i < 10000; ++i) {
+ *     printf("%u,", random(r));
+ *     if (i % 10 == 0) {
+ *       printf("\n");
+ *     }
+ *   }
+ * }
+ */

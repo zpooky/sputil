@@ -9,8 +9,8 @@
     explicit constexpr NAME(std::size_t d) noexcept                            \
         : data(d) {                                                            \
     }                                                                          \
-    constexpr NAME() noexcept                            \
-        : NAME(std::size_t(0)) {                                                            \
+    constexpr NAME() noexcept                                                  \
+        : NAME(std::size_t(0)) {                                               \
     }                                                                          \
     constexpr bool                                                             \
     operator==(std::size_t o) const noexcept {                                 \
@@ -95,7 +95,7 @@
   static_assert(sizeof(NAME) == sizeof(std::size_t), "");                      \
   static_assert(alignof(NAME) == alignof(std::size_t), "")
 
-//example:
+// example:
 // SIZE_TYPE(bucket_size);
 
 #endif

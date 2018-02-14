@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+// #include <cassert>
 
 namespace sp {
 struct Bitset {
@@ -80,6 +81,9 @@ template <std::size_t SIZE>
 Bitset::Bitset(std::uint64_t (&b)[SIZE]) noexcept
     : buffer(b)
     , capacity(SIZE) {
+  // for (std::size_t i = 0; i < capacity; ++i) {
+  //   assert(buffer[i] == 0);
+  // }
 }
 
 template <std::size_t c>
