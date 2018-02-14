@@ -19,8 +19,8 @@ struct Node { //
       , value(std::forward<K>(k)) {
   }
 };
-}
-}
+} // namespace LinkedList
+} // namespace impl
 
 template <typename T, template <typename> class Allocator = sp::Allocator>
 struct LinkedList {
@@ -104,6 +104,10 @@ template <typename T, template <typename> typename A, typename F>
 bool
 remove_first(LinkedList<T, A> &, F) noexcept;
 
+template <typename T, template <typename> typename A>
+bool
+is_empty(const LinkedList<T, A> &) noexcept;
+
 // template <typename Random, typename T>
 // void
 // shuffle(Random &, sp::LinkedList<T> &) noexcept;
@@ -164,6 +168,8 @@ LinkedList<T, A>::~LinkedList() noexcept {
 Lit:
   if (root) {
     auto *next = root->next;
+
+    root->~Node();
     deallocate(allocator, root);
 
     root = next;
@@ -185,13 +191,15 @@ swap(LinkedList<T, A> &first, LinkedList<T, A> &second) noexcept {
 template <typename T, template <typename> typename A>
 void
 clear(LinkedList<T, A> &l) noexcept {
+  using namespace impl::LinkedList;
+
   auto *current = l.root;
   auto &allocator = l.allocator;
 Lit:
   if (current) {
     auto *next = current->next;
 
-    current->value.~T();
+    current->~Node<T>();
     deallocate(allocator, current);
 
     current = next;
@@ -238,11 +246,14 @@ push_back(LinkedList<T, A> &list, V &&val) noexcept {
   Node<T> *node = allocate(allocator);
   if (node) {
     ::new (node) Node<T>{std::forward<V>(val)};
-    if (!list.root)
+    if (!list.root) {
       list.root = node;
+    }
 
-    if (list.last)
+    if (list.last) {
+      assert(list.last->next == nullptr);
       list.last->next = node;
+    }
     list.last = node;
 
     return &node->value;
@@ -392,7 +403,7 @@ Lit:
   if (it) {
     T &value = it->value;
     if (f(value)) {
-      value.~T();
+      // value.~T();
 
       auto next = it->next;
       if (priv) {
@@ -403,6 +414,11 @@ Lit:
         list.root = next;
       }
 
+      if (list.last == it) {
+        list.last = priv;
+      }
+
+      it->~Node<T>();
       deallocate(allocator, it);
       return true;
     }
@@ -414,6 +430,13 @@ Lit:
 
   return false;
 } // sp::remove_first()
+
+template <typename T, template <typename> typename A>
+bool
+is_empty(const LinkedList<T, A> &l) noexcept {
+  return l.root == nullptr;
 }
+
+} // namespace sp
 
 #endif

@@ -11,7 +11,10 @@ struct Allocator {};
 template <typename T>
 T *
 allocate(Allocator<T> &, std::size_t) noexcept {
-  return (T *)malloc(sizeof(T));
+  T *result = (T *)malloc(sizeof(T));
+  // printf("alloc(%p)\n", result);
+  memset(result, 0, sizeof(T));
+  return result;
 }
 
 template <typename T>
@@ -23,6 +26,8 @@ allocate(Allocator<T> &a) noexcept {
 template <typename T>
 void
 deallocate(Allocator<T> &, T *ptr, std::size_t) noexcept {
+  // printf("dealloc(%p)\n", ptr);
+  memset(ptr, 0, sizeof(T));
   free(ptr);
 }
 template <typename T>

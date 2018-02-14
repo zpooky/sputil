@@ -30,7 +30,10 @@ T *
 allocate(FixedStackPooledAllocator<T> &a) noexcept {
   if (a.length < a.capacity) {
     a.length++;
-    return allocate(a.allocator);
+    auto result = allocate(a.allocator);
+    memset(result, 0, sizeof(T));
+    // printf("alloc(%p)\n", result);
+    return result;
   }
   return nullptr;
 }
@@ -40,8 +43,10 @@ void
 deallocate(FixedStackPooledAllocator<T> &a, T *ptr) noexcept {
   assert(a.length > 0);
   a.length--;
+
+  // printf("dealloc(%p)\n", ptr);
   return deallocate(a.allocator, ptr);
 }
-}
+} // namespace sp
 
 #endif
