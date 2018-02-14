@@ -100,7 +100,7 @@ allocate(StackPooledAllocator<T> &a) noexcept {
     }
   }
   return nullptr;
-};
+}
 
 template <typename T>
 void
