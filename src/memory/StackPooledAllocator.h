@@ -1,119 +1,113 @@
 #ifndef SP_UTIL_MEMORY_STACK_POOLED_ALLOCATOR_H
 #define SP_UTIL_MEMORY_STACK_POOLED_ALLOCATOR_H
 
-#include <cxxabi.h>
-#include <type_traits>
+#include <memory/Allocator.h>
+
+/*
+ * XXX only memset 0 in debug mode
+ */
 
 namespace sp {
 template <typename T>
 struct StackPooledAllocator {
   using value_type = T;
-  using is_always_equal = std::false_type;
-  using propagate_on_container_move_assignment = std::true_type;
 
   static_assert(sizeof(T) >= sizeof(void *), "");
-  static_assert(alignof(T) >= alignof(void *), "");
+  static_assert(alignof(T) % alignof(void *) == 0, "");
+
+  void *stack;
 
   StackPooledAllocator() noexcept;
-  ~StackPooledAllocator() noexcept {
-    int status;
-    char *demangled = abi::__cxa_demangle(typeid(*this).name(), 0, 0, &status);
-    printf("%s->~dtor(%p)\n", demangled, this);
-    free(demangled);
-  };
-  // template<typename U>
-  // StackPooledAllocator(StackPooledAllocator<U>&&) noexcept {
-  // }
-  template <typename U>
-  StackPooledAllocator(const StackPooledAllocator<U> &&) = delete;
-  template <typename U>
-  StackPooledAllocator(StackPooledAllocator<U> &o) noexcept {
-    // static_assert(std::is_same<T,U>::value,"");
-    int status;
-    char *this_demangled =
-        abi::__cxa_demangle(typeid(*this).name(), 0, 0, &status);
-    char *o_demangled = abi::__cxa_demangle(typeid(o).name(), 0, 0, &status);
-    printf("%s(%s)\n", this_demangled, o_demangled);
-    free(this_demangled);
-    free(o_demangled);
-  }
+  ~StackPooledAllocator() noexcept;
 
-  template <typename U>
+  StackPooledAllocator(const StackPooledAllocator<T> &&) = delete;
+
   StackPooledAllocator<T> &
   operator=(const StackPooledAllocator<T> &) = delete;
-  template <typename U>
   StackPooledAllocator<T> &
   operator=(const StackPooledAllocator<T> &&) = delete;
+};
 
-  T *
-  allocate(std::size_t n) noexcept {
-    printf("allocate(%zu, sizeof[%zu], alignof[%zu])\n", n, sizeof(T),
-           alignof(T));
-    void *mem = std::malloc(n * sizeof(T));
-    if (mem) {
-      return static_cast<T *>(mem);
-    }
-    return nullptr;
-  };
+template <typename T>
+T *
+allocate(StackPooledAllocator<T> &) noexcept;
 
-  void
-  deallocate(T *p, std::size_t n) noexcept {
-    printf("deallocate(%p,%zu)\n", p, n);
-    std::free(p);
-  }
+template <typename T>
+void
+deallocate(StackPooledAllocator<T> &, T *) noexcept;
 
-  // Optional
-  template <typename U, typename... Args>
-  void
-  construct(U *object, Args &&... args) {
-    printf("construct(%p)\n", object);
-    new (object) U(std::forward<Args>(args)...);
-  }
+/*
+ * ==========================================================================
+ */
 
-  // Optional
-  template <typename U>
-  void
-  destroy(U *object) {
-    printf("destroy(%p)\n", object);
-    object->~U();
+namespace impl {
+namespace StackPooledAllocator {
+struct SPANode {
+  SPANode *next;
+  explicit SPANode(SPANode *n) noexcept
+      : next(n) {
   }
 };
 
-template <typename T, typename U>
-bool
-operator==(const StackPooledAllocator<T> &,
-           const StackPooledAllocator<U> &) noexcept;
+static inline SPANode *
+to_node(void *in) noexcept {
+  if (in) {
+    assert(reinterpret_cast<uintptr_t>(in) % alignof(void *) == 0);
+  }
 
-template <typename T, typename U>
-bool
-operator!=(const StackPooledAllocator<T> &,
-           const StackPooledAllocator<U> &) noexcept;
-
-/*
- * =======================================================
- */
+  return (SPANode *)in;
+}
+}
+}
 template <typename T>
-StackPooledAllocator<T>::StackPooledAllocator() noexcept {
-
-  int status;
-  char *demangled = abi::__cxa_demangle(typeid(this).name(), 0, 0, &status);
-  printf("ctor[%s]\n", demangled);
-  free(demangled);
+StackPooledAllocator<T>::StackPooledAllocator() noexcept
+    : stack(nullptr) {
 }
 
-/*
- * template <typename T, typename U>
- * bool operator==(const StackPooledAllocator<T>&, const
- * StackPooledAllocator<U>&)noexcept {
- *   return false;
- * }
- *
- * template <typename T, typename U>
- * bool operator!=(const StackPooledAllocator<T>&, const
- * StackPooledAllocator<U>&)noexcept {
- * return true;
- * }
- */
+template <typename T>
+StackPooledAllocator<T>::~StackPooledAllocator() noexcept {
+  using namespace impl::StackPooledAllocator;
+  SPANode *it = to_node(stack);
+Lit:
+  if (it) {
+    SPANode *next = it->next;
+    std::free(it);
+
+    it = next;
+    goto Lit;
+  }
+  stack = nullptr;
+}
+
+template <typename T>
+T *
+allocate(StackPooledAllocator<T> &a) noexcept {
+  using namespace impl::StackPooledAllocator;
+
+  if (a.stack) {
+    SPANode *result = to_node(a.stack);
+    a.stack = result->next;
+
+    memset(result, 0, sizeof(T));
+    return reinterpret_cast<T *>(result);
+  } else {
+    // printf("allocate(%zu, sizeof[%zu], alignof[%zu])\n", n, sizeof(T),
+    //        alignof(T));
+    void *mem = std::malloc(sizeof(T));
+    if (mem) {
+      return static_cast<T *>(mem);
+    }
+  }
+  return nullptr;
+};
+
+template <typename T>
+void
+deallocate(StackPooledAllocator<T> &a, T *p) noexcept {
+  using namespace impl::StackPooledAllocator;
+  memset(p, 0, sizeof(T));
+  a.stack = new (p) SPANode(to_node(a.stack));
+}
 }
 
 #endif

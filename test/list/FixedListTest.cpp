@@ -52,7 +52,7 @@ TEST(FixedListTest, test_list) {
 TEST(FixedListTest, test_list_remove) {
   sp::FixedList<int> list;
 
-  const std::size_t xlength = 1024;
+  const std::size_t xlength = 512;
   ASSERT_TRUE(init(list, xlength));
   ASSERT_EQ(std::size_t(0), length(list));
   ASSERT_EQ(xlength, capacity(list));

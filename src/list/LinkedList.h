@@ -164,7 +164,7 @@ LinkedList<T, A>::~LinkedList() noexcept {
 Lit:
   if (root) {
     auto *next = root->next;
-    allocator.deallocate(root, 1);
+    deallocate(allocator, root);
 
     root = next;
     goto Lit;
@@ -179,7 +179,7 @@ void
 swap(LinkedList<T, A> &first, LinkedList<T, A> &second) noexcept {
   std::swap(first.root, second.root);
   std::swap(first.last, second.last);
-  // TODO allocator
+  std::swap(first.allocator, second.allocator);
 }
 
 template <typename T, template <typename> typename A>
@@ -192,7 +192,7 @@ Lit:
     auto *next = current->next;
 
     current->value.~T();
-    allocator.deallocate(current, 1);
+    deallocate(allocator, current);
 
     current = next;
 
@@ -235,7 +235,7 @@ push_back(LinkedList<T, A> &list, V &&val) noexcept {
   using namespace impl::LinkedList;
 
   auto &allocator = list.allocator;
-  Node<T> *node = allocator.allocate(1);
+  Node<T> *node = allocate(allocator);
   if (node) {
     ::new (node) Node<T>{std::forward<V>(val)};
     if (!list.root)
@@ -403,7 +403,7 @@ Lit:
         list.root = next;
       }
 
-      allocator.deallocate(it, 1);
+      deallocate(allocator, it);
       return true;
     }
 

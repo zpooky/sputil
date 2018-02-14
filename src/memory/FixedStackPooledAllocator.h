@@ -1,41 +1,19 @@
-#ifndef SP_UTIL_MEMORY_STACK_POOLED_ALLOCATOR_H
-#define SP_UTIL_MEMORY_STACK_POOLED_ALLOCATOR_H
+#ifndef SP_UTIL_MEMORY_FIXED_STACK_POOLED_ALLOCATOR_H
+#define SP_UTIL_MEMORY_FIXED_STACK_POOLED_ALLOCATOR_H
 
-/*
- * replace DynamicFixedLinkedList with an LinkedList using this allocator
- * template<typename T>
- * using DynamicFixedLinkedList =
- * sp::LinkedList<T,sp::FixedStackPooledAllocator>;
- *
- * template<typename T>
- * void ensure_capacity(DynamicFixedLinkedList<T>&,std::size_t);
- */
+#include <memory/StackPooledAllocator.h>
 
 namespace sp {
 template <typename T>
 struct FixedStackPooledAllocator {
+  StackPooledAllocator<T> allocator;
   std::size_t capacity;
   std::size_t length;
 
   FixedStackPooledAllocator() noexcept
-      : capacity(0)
+      : allocator()
+      , capacity(0)
       , length(0) {
-  }
-  T *
-  allocate(std::size_t) noexcept {
-    // TODO
-    if (length < capacity) {
-      length++;
-      return (T *)malloc(sizeof(T));
-    }
-    return nullptr;
-  }
-
-  void
-  deallocate(T *ptr, std::size_t) noexcept {
-    // TODO
-    length--;
-    free(ptr);
   }
 };
 
@@ -45,6 +23,24 @@ ensure(FixedStackPooledAllocator<T> &a, std::size_t cap) noexcept {
   // TODO
   a.capacity = cap;
   return true;
+}
+
+template <typename T>
+T *
+allocate(FixedStackPooledAllocator<T> &a) noexcept {
+  if (a.length < a.capacity) {
+    a.length++;
+    return allocate(a.allocator);
+  }
+  return nullptr;
+}
+
+template <typename T>
+void
+deallocate(FixedStackPooledAllocator<T> &a, T *ptr) noexcept {
+  assert(a.length > 0);
+  a.length--;
+  return deallocate(a.allocator, ptr);
 }
 }
 
