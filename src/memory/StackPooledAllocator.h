@@ -2,6 +2,7 @@
 #define SP_UTIL_MEMORY_STACK_POOLED_ALLOCATOR_H
 
 #include <memory/Allocator.h>
+#include <cstring>
 
 /*
  * XXX only memset 0 in debug mode
@@ -57,8 +58,8 @@ to_node(void *in) noexcept {
 
   return (SPANode *)in;
 }
-}
-}
+} // namespace StackPooledAllocator
+} // namespace impl
 template <typename T>
 StackPooledAllocator<T>::StackPooledAllocator() noexcept
     : stack(nullptr) {
@@ -88,7 +89,7 @@ allocate(StackPooledAllocator<T> &a) noexcept {
     SPANode *result = to_node(a.stack);
     a.stack = result->next;
 
-    // memset(result, 0, sizeof(T));
+    std::memset(result, 0, sizeof(T));
     return reinterpret_cast<T *>(result);
   } else {
     // printf("allocate(%zu, sizeof[%zu], alignof[%zu])\n", n, sizeof(T),
@@ -105,9 +106,9 @@ template <typename T>
 void
 deallocate(StackPooledAllocator<T> &a, T *p) noexcept {
   using namespace impl::StackPooledAllocator;
-  // memset(p, 0, sizeof(T));
+  std::memset(p, 0, sizeof(T));
   a.stack = new (p) SPANode(to_node(a.stack));
 }
-}
+} // namespace sp
 
 #endif

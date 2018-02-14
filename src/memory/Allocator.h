@@ -2,6 +2,7 @@
 #define SP_UTIL_MEMORY_ALLOCATOR_H
 
 #include <cstdlib>
+#include <cstring>
 
 // TODO hide malloc in impl to not require cstdlib include
 namespace sp {
@@ -13,7 +14,7 @@ T *
 allocate(Allocator<T> &, std::size_t) noexcept {
   T *result = (T *)malloc(sizeof(T));
   // printf("alloc(%p)\n", result);
-  memset(result, 0, sizeof(T));
+  std::memset(result, 0, sizeof(T));
   return result;
 }
 
@@ -27,7 +28,7 @@ template <typename T>
 void
 deallocate(Allocator<T> &, T *ptr, std::size_t) noexcept {
   // printf("dealloc(%p)\n", ptr);
-  memset(ptr, 0, sizeof(T));
+  std::memset(ptr, 0, sizeof(T));
   free(ptr);
 }
 template <typename T>

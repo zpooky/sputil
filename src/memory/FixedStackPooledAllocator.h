@@ -2,6 +2,7 @@
 #define SP_UTIL_MEMORY_FIXED_STACK_POOLED_ALLOCATOR_H
 
 #include <memory/StackPooledAllocator.h>
+#include <cstring>
 
 namespace sp {
 template <typename T>
@@ -31,7 +32,7 @@ allocate(FixedStackPooledAllocator<T> &a) noexcept {
   if (a.length < a.capacity) {
     a.length++;
     auto result = allocate(a.allocator);
-    memset(result, 0, sizeof(T));
+    std::memset(result, 0, sizeof(T));
     // printf("alloc(%p)\n", result);
     return result;
   }
