@@ -189,6 +189,7 @@ alloc_block(const SparseBitset &b, std::size_t start) noexcept {
 
 static SparseEntry *
 block_for_insert(SparseBitset &b, std::size_t index) noexcept {
+  //XXX find_or_insert(b,index,[]{});
   SparseEntry *result = block_for(b, index);
   if (!result) {
     void *mem = alloc_block(b, index);

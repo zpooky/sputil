@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include <collection/Array.h>
-#include <prng/xorshift.h>
 #include <prng/util.h>
+#include <prng/xorshift.h>
 
 TEST(ArrayTest, test_empty) {
   sp::Array<int> a;
@@ -131,4 +131,84 @@ TEST(ArrayTest, test_take) {
     ++cnt;
   }
   ASSERT_EQ(cnt, len);
+}
+
+TEST(ArrayTest, test_binary_search) {
+  constexpr std::size_t cap = 1024 * 1;
+  sp::UinStaticArray<std::size_t, cap> a;
+  for (std::size_t i = 0; i < cap; ++i) {
+    ASSERT_EQ(a.length, i);
+
+    for (std::size_t k = 0; k < cap; ++k) {
+      const auto *res = bin_search(a, k);
+      // auto *res = find(a, [&k](auto c) { return c == k; });
+      // bin_search 10x faster than find
+      if (k < i) {
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, k);
+      } else {
+        ASSERT_FALSE(res);
+      }
+    }
+
+    auto *res = insert(a, i);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, i);
+  }
+}
+
+TEST(ArrayTest, test_binary) {
+  constexpr std::size_t cap = 1024;
+  prng::Xorshift32 r(1);
+
+  sp::UinStaticArray<std::size_t, cap> a;
+  for (std::size_t it = 0; it < 1; ++it) {
+    {
+      for (std::size_t i = 0; i < cap; ++i) {
+        ASSERT_EQ(a.length, i);
+        auto *res = insert(a, i);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, i);
+      }
+      for (std::size_t i = 0; i < cap; ++i) {
+        auto *res = get(a, i);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, i);
+      }
+      shuffle(r, a);
+      ASSERT_EQ(cap, a.length);
+      ASSERT_FALSE(insert(a, 999999));
+      ASSERT_EQ(cap, a.length);
+    }
+
+    {
+      sp::UinStaticArray<std::size_t, cap> dest;
+      for (std::size_t i = 0; i < cap; ++i) {
+        for (std::size_t k = 0; k < cap; ++k) {
+          auto c = get(a, k);
+          auto *res = bin_search(dest, *c);
+          if (k < i) {
+            ASSERT_TRUE(res);
+            ASSERT_EQ(*res, *c);
+          } else {
+            if (res) {
+              printf("search(%zu) -> got(%zu)\n", *c, *res);
+            }
+            ASSERT_FALSE(res);
+          }
+        }
+        /**/
+        auto c = get(a, i);
+        ASSERT_TRUE(c);
+        auto *res = bin_insert(dest, *c);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, *c);
+      }
+    }
+    {
+      ASSERT_EQ(cap, a.length);
+      clear(a);
+      ASSERT_EQ(std::size_t(0), a.length);
+    }
+  }
 }

@@ -1,6 +1,14 @@
 # sputil
 
 # TODO
+# type safe uint8_t uint16_t ...
+u8
+u16
+...
+
+# Distinct numeric
+DISTINCT_NUMERIC(name,underlying_type)
+
 ## PRNG
 support better seeding
 https://github.com/v8/v8/blob/c877c779960dcf58eeca1534e85297062114c310/src/base/utils/random-number-generator.cc#L53-L77
@@ -30,15 +38,6 @@ seed ^= TimeTicks::HighResolutionNow().ToInternalValue() << 16;
 seed ^= TimeTicks::Now().ToInternalValue() << 8;
 SetSeed(seed);
 ```
-## src/memory/UniformStackAllocator.h
-statefull stack allocator
-- Array[T]
-```cpp
-class UniformStackAllocator<T>
-alloc():*T -> stack.pop()
-dealloc(T*) -> stack.push()
-```
-
 ## src/util/Either.h
 ```cpp
 template<typename L, typename R>
@@ -47,3 +46,19 @@ struct Either;
 Left l(failure);
 Right r(value);
 ```
+
+## assert with stacktrace support
+http://boostorg.github.io/stacktrace/stacktrace/getting_started.html
+https://github.com/boostorg/stacktrace
+
+https://github.com/bombela/backward-cpp
+
+## sort
+...
+
+## Diffie Hellman
+...
+
+## Blowfish
+### bcrypt
+### cbc,ecb ...
