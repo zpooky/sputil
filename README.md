@@ -13,6 +13,8 @@ DISTINCT_NUMERIC(name,underlying_type)
 support better seeding
 https://github.com/v8/v8/blob/c877c779960dcf58eeca1534e85297062114c310/src/base/utils/random-number-generator.cc#L53-L77
 ```cpp
+Xorshift32 r = seeded<Xorshift32>();
+
 // Gather entropy from /dev/urandom if available.
 FILE* fp = fopen("/dev/urandom", "rb");
 if (fp != nullptr) {
@@ -62,3 +64,10 @@ https://github.com/bombela/backward-cpp
 ## Blowfish
 ### bcrypt
 ### cbc,ecb ...
+
+##
+```cpp
+StaticArray[size](initializer_list<T,size>)
+```
+
+## interval 10s 5m 1h

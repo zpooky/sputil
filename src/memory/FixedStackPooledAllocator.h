@@ -1,8 +1,8 @@
 #ifndef SP_UTIL_MEMORY_FIXED_STACK_POOLED_ALLOCATOR_H
 #define SP_UTIL_MEMORY_FIXED_STACK_POOLED_ALLOCATOR_H
 
-#include <memory/StackPooledAllocator.h>
 #include <cstring>
+#include <memory/StackPooledAllocator.h>
 
 namespace sp {
 template <typename T>

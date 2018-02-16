@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include <encode/hex.h>
+#include <encode/hex.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
 
