@@ -18,13 +18,13 @@ ByteBuffer::ByteBuffer(const ByteBuffer &in) noexcept
     , pos(in.pos) {
 }
 
-// ByteBuffer::ByteBuffer(ByteBuffer &in, std::size_t strt,
-//                        std::size_t end) noexcept
-//     : raw(in.raw + strt)
-//     , capacity(end - strt)
-//     , length(end - strt)
-//     , pos(0) {
-// }
+ByteBuffer::ByteBuffer(ByteBuffer &in, std::size_t strt,
+                       std::size_t end) noexcept
+    : raw(in.raw + strt)
+    , capacity(end - strt)
+    , length(end - strt)
+    , pos(0) {
+}
 
 unsigned char &ByteBuffer::operator[](std::size_t idx) noexcept {
   assert(idx < capacity);

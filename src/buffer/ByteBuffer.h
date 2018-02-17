@@ -17,7 +17,7 @@ struct ByteBuffer {
   ByteBuffer(const ByteBuffer &) noexcept;
   ByteBuffer(const ByteBuffer &&) = delete;
 
-  // ByteBuffer(ByteBuffer &, std::size_t, std::size_t) noexcept;
+  ByteBuffer(ByteBuffer &, std::size_t, std::size_t) noexcept;
 
   template <std::size_t SIZE>
   explicit ByteBuffer(unsigned char (&buffer)[SIZE]) noexcept
