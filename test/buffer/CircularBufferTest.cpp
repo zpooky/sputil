@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include <util/CircularBuffer.h>
+#include <buffer/CircularBuffer.h>
 
 using namespace sp;
 

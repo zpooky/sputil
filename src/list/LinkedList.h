@@ -9,12 +9,12 @@ namespace sp {
 namespace impl {
 namespace LinkedList {
 template <typename T>
-struct Node { //
-  Node<T> *next;
+struct LLNode { //
+  LLNode<T> *next;
   T value;
 
   template <typename K>
-  explicit Node(K &&k) noexcept
+  explicit LLNode(K &&k) noexcept
       : next{nullptr}
       , value(std::forward<K>(k)) {
   }
@@ -25,7 +25,7 @@ struct Node { //
 template <typename T, template <typename> class Allocator = sp::Allocator>
 struct LinkedList {
   using value_type = T;
-  using node_type = impl::LinkedList::Node<T>;
+  using node_type = impl::LinkedList::LLNode<T>;
   using SelfType = LinkedList<T, Allocator>;
 
   node_type *root;
@@ -119,7 +119,7 @@ namespace impl {
 namespace LinkedList {
 
 template <typename T, template <typename> typename A>
-const Node<T> *
+const LLNode<T> *
 node_for(const sp::LinkedList<T, A> &l, std::size_t index) noexcept {
   const auto *current = l.root;
 Lit:
@@ -137,10 +137,10 @@ Lit:
 } // impl::LinkedList::node_for()
 
 template <typename T, template <typename> typename A>
-Node<T> *
+LLNode<T> *
 node_for(sp::LinkedList<T, A> &l, std::size_t index) noexcept {
   const sp::LinkedList<T, A> &c_l = l;
-  return (Node<T> *)node_for(c_l, index);
+  return (LLNode<T> *)node_for(c_l, index);
 } // impl::LinkedList::node_for()
 
 } // namespace LinkedList
@@ -169,7 +169,7 @@ Lit:
   if (root) {
     auto *next = root->next;
 
-    root->~Node();
+    root->~LLNode();
     deallocate(allocator, root);
 
     root = next;
@@ -199,7 +199,7 @@ Lit:
   if (current) {
     auto *next = current->next;
 
-    current->~Node<T>();
+    current->~LLNode<T>();
     deallocate(allocator, current);
 
     current = next;
@@ -223,7 +223,7 @@ const T *
 get(const LinkedList<T, A> &l, std::size_t index) noexcept {
   using namespace impl::LinkedList;
 
-  const Node<T> *node = node_for(l, index);
+  const LLNode<T> *node = node_for(l, index);
   if (node) {
     return &node->value;
   }
@@ -243,9 +243,9 @@ push_back(LinkedList<T, A> &list, V &&val) noexcept {
   using namespace impl::LinkedList;
 
   auto &allocator = list.allocator;
-  Node<T> *node = allocate(allocator);
+  LLNode<T> *node = allocate(allocator);
   if (node) {
-    ::new (node) Node<T>{std::forward<V>(val)};
+    ::new (node) LLNode<T>{std::forward<V>(val)};
     if (!list.root) {
       list.root = node;
     }
@@ -286,7 +286,7 @@ template <typename T, template <typename> typename A, typename F>
 void
 for_each(const LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
-  const Node<T> *it = list.root;
+  const LLNode<T> *it = list.root;
 Lit:
   if (it) {
     const T &value = it->value;
@@ -301,7 +301,7 @@ template <typename T, template <typename> typename A, typename F>
 void
 for_each(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
-  Node<T> *it = list.root;
+  LLNode<T> *it = list.root;
 Lit:
   if (it) {
     T &value = it->value;
@@ -316,7 +316,7 @@ template <typename T, template <typename> typename A, typename F>
 bool
 for_all(const LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
-  const Node<T> *it = list.root;
+  const LLNode<T> *it = list.root;
 Lit:
   if (it) {
     const T &value = it->value;
@@ -336,7 +336,7 @@ template <typename T, template <typename> typename A, typename F>
 bool
 for_all(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
-  Node<T> *it = list.root;
+  LLNode<T> *it = list.root;
 Lit:
   if (it) {
     T &value = it->value;
@@ -356,7 +356,7 @@ template <typename T, template <typename> typename A, typename F>
 T *
 find_first(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
-  Node<T> *it = list.root;
+  LLNode<T> *it = list.root;
 Lit:
   if (it) {
     T &value = it->value;
@@ -375,7 +375,7 @@ template <typename T, template <typename> typename A, typename F>
 const T *
 find_first(const LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
-  const Node<T> *it = list.root;
+  const LLNode<T> *it = list.root;
 Lit:
   if (it) {
     const T &value = it->value;
@@ -395,8 +395,8 @@ bool
 remove_first(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
 
-  Node<T> *it = list.root;
-  Node<T> *priv = nullptr;
+  LLNode<T> *it = list.root;
+  LLNode<T> *priv = nullptr;
   auto &allocator = list.allocator;
 
 Lit:
@@ -418,7 +418,7 @@ Lit:
         list.last = priv;
       }
 
-      it->~Node<T>();
+      it->~LLNode<T>();
       deallocate(allocator, it);
       return true;
     }

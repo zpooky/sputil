@@ -71,3 +71,12 @@ StaticArray[size](initializer_list<T,size>)
 ```
 
 ## interval 10s 5m 1h
+
+## Sink
+struct BufferedSink {
+  Buffer b;
+  bool (*sink)(Buffer&);
+};
+
+bool write(BufferedSink&,)
+
