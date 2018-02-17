@@ -13,10 +13,11 @@ struct ByteBuffer {
 
   ByteBuffer(unsigned char *, std::size_t) noexcept;
 
-  ByteBuffer(const ByteBuffer &) = delete;
+  // ByteBuffer(const ByteBuffer &) = delete;
+  ByteBuffer(const ByteBuffer &) noexcept;
   ByteBuffer(const ByteBuffer &&) = delete;
-  //
-  ByteBuffer(ByteBuffer &, std::size_t, std::size_t) noexcept;
+
+  // ByteBuffer(ByteBuffer &, std::size_t, std::size_t) noexcept;
 
   template <std::size_t SIZE>
   explicit ByteBuffer(unsigned char (&buffer)[SIZE]) noexcept
@@ -39,6 +40,9 @@ struct StaticByteBuffer : public ByteBuffer {
   unsigned char r[SIZE];
   StaticByteBuffer();
 };
+
+// ByteBuffer
+// copy(ByteBuffer &) noexcept;
 
 void
 flip(ByteBuffer &) noexcept;
