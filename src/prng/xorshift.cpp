@@ -2,6 +2,7 @@
 #include <cassert>
 #include <util/numeric.h>
 // #include <random>
+#include <cstdio>
 #include <ctime>
 
 // https://en.wikipedia.org/wiki/Xorshift
@@ -9,7 +10,7 @@
 // http://xoroshiro.di.unimi.it/
 
 namespace prng {
-Xorshift32::Xorshift32(std::uint32_t seed) noexcept
+Xorshift32::Xorshift32(InitType seed) noexcept
     : state(seed) {
   assert(seed != 0);
 }
@@ -48,6 +49,10 @@ Xorshift128plus::Xorshift128plus(std::uint64_t f, std::uint64_t s) noexcept
     : state{f, s} {
   assert(f != 0);
   assert(s != 0);
+}
+
+Xorshift128plus::Xorshift128plus(const InitType init) noexcept
+    : Xorshift128plus{init[0], init[1]} {
 }
 
 Xorshift128plus::Xorshift128plus() noexcept

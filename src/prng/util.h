@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <prng/URandom.h>
 #include <utility>
 
 namespace prng {
@@ -21,17 +22,36 @@ uniform_dist(Random &r, T inc, T ex) noexcept {
   return (res % (ex - inc)) + inc;
 }
 
-template <typename Random, std::size_t SIZE>
+template <typename Random>
 void
-fill(Random &r, unsigned char (&buffer)[SIZE]) noexcept {
+fill(Random &r, void *buffer, const std::size_t size) noexcept {
   std::size_t idx = 0;
-  while (idx < SIZE) {
+  unsigned char *it = (unsigned char *)buffer;
+  while (idx < size) {
     auto stuff = random(r);
-    const std::size_t len = std::min(SIZE - idx, sizeof(stuff));
-    std::memcpy(buffer + idx, &stuff, len);
-    idx += len;
+    if (stuff != 0) {
+      const std::size_t len = std::min(size - idx, sizeof(stuff));
+      std::memcpy(it + idx, &stuff, len);
+      idx += len;
+    }
   }
 }
 
-} // namespace random
+template <typename Random, std::size_t SIZE>
+void
+fill(Random &r, unsigned char (&buffer)[SIZE]) noexcept {
+  fill(r, buffer, SIZE);
+}
+
+template <typename Random>
+Random
+seed() noexcept {
+  typename Random::InitType init{};
+  URandom r;
+  fill(r, &init, sizeof(init));
+
+  return Random{init};
+}
+
+} // namespace prng
 #endif
