@@ -5,6 +5,10 @@ namespace sp {
 /*
  * TODO Dynamic Buffer with increase capacity functionality
  */
+/*
+ * https://embeddedartistry.com/blog/2017/4/6/circular-buffers-in-cc
+ * http://www.snellman.net/blog/archive/2016-12-13-ring-buffers/
+ */
 
 /*Circular Buffer overwrites while a Buffer does not*/
 template <typename T>
@@ -14,7 +18,7 @@ struct CircularBuffer {
   std::size_t write;
   const std::size_t capacity;
 
-  CircularBuffer(T *, std::size_t ) noexcept;
+  CircularBuffer(T *, std::size_t) noexcept;
 
   template <std::size_t SIZE>
   explicit CircularBuffer(T (&)[SIZE]) noexcept;
@@ -53,26 +57,28 @@ bool
 pop_back(CircularBuffer<T> &, T &) noexcept;
 
 template <typename T>
-T*
+T *
 peek_front(CircularBuffer<T> &) noexcept;
 
 template <typename T>
-const T*
+const T *
 peek_front(const CircularBuffer<T> &) noexcept;
 
 template <typename T>
-T*
+T *
 peek_back(CircularBuffer<T> &) noexcept;
 
 template <typename T>
-const T*
+const T *
 peek_back(const CircularBuffer<T> &) noexcept;
 
 template <typename T>
-T* get(CircularBuffer<T> &, std::size_t) noexcept;
+T *
+get(CircularBuffer<T> &, std::size_t) noexcept;
 
 template <typename T>
-const T* get(const CircularBuffer<T> &, std::size_t) noexcept;
+const T *
+get(const CircularBuffer<T> &, std::size_t) noexcept;
 /*
  * ==========================================================================
  */
@@ -87,22 +93,21 @@ index(std::size_t in, std::size_t capacity) noexcept {
 } // namespace CircularBuffer
 } // namespace impl
 
-template<typename T>
+template <typename T>
 CircularBuffer<T>::CircularBuffer(T *b, std::size_t l) noexcept
-  : buffer{b}
-  , read{0}
-  , write{0}
-  , capacity{l} {
+    : buffer{b}
+    , read{0}
+    , write{0}
+    , capacity{l} {
   assert(l > 0);
 }
 
-template<typename T>
+template <typename T>
 template <std::size_t SIZE>
 CircularBuffer<T>::CircularBuffer(T (&b)[SIZE]) noexcept
-  : CircularBuffer(b, SIZE) {
-static_assert((SIZE & (SIZE - 1)) == 0, "required to be power of 2");
+    : CircularBuffer(b, SIZE) {
+  static_assert((SIZE & (SIZE - 1)) == 0, "required to be power of 2");
 }
-
 
 template <typename T>
 std::size_t
@@ -162,17 +167,17 @@ pop_back(CircularBuffer<T> &b, T &out) noexcept {
 }
 
 template <typename T>
-T*
+T *
 peek_front(CircularBuffer<T> &b) noexcept {
-  const auto& c_b = b;
-  return (T*)peek_front(c_b);
+  const auto &c_b = b;
+  return (T *)peek_front(c_b);
 }
 
 template <typename T>
-const T*
+const T *
 peek_front(const CircularBuffer<T> &b) noexcept {
   using namespace impl::CircularBuffer;
-  if(is_empty(b)){
+  if (is_empty(b)) {
     return nullptr;
   }
   std::size_t idx = index(b.read, b.capacity);
@@ -180,33 +185,35 @@ peek_front(const CircularBuffer<T> &b) noexcept {
 }
 
 template <typename T>
-T*
+T *
 peek_back(CircularBuffer<T> &b) noexcept {
-  const auto& c_b = b;
-  return (T*)peek_back(c_b);
+  const auto &c_b = b;
+  return (T *)peek_back(c_b);
 }
 
 template <typename T>
-const T*
+const T *
 peek_back(const CircularBuffer<T> &b) noexcept {
   using namespace impl::CircularBuffer;
-  if(is_empty(b)){
+  if (is_empty(b)) {
     return nullptr;
   }
-  std::size_t idx = index(b.write-1, b.capacity);
-  return b.buffer+idx;
+  std::size_t idx = index(b.write - 1, b.capacity);
+  return b.buffer + idx;
 }
 
 template <typename T>
-T* get(CircularBuffer<T> &b, std::size_t idx) noexcept {
-  const auto& c_b = b;
-  return (T*)get(c_b, idx);
+T *
+get(CircularBuffer<T> &b, std::size_t idx) noexcept {
+  const auto &c_b = b;
+  return (T *)get(c_b, idx);
 }
 
 template <typename T>
-const T* get(const CircularBuffer<T> &b, std::size_t idx) noexcept {
+const T *
+get(const CircularBuffer<T> &b, std::size_t idx) noexcept {
   using namespace impl::CircularBuffer;
-  if(idx < length(b)){
+  if (idx < length(b)) {
     std::size_t abs_idx = index(b.read, b.capacity);
     return b.buffer + abs_idx + idx;
   }
