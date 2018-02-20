@@ -157,6 +157,75 @@ TEST(ArrayTest, test_binary_search) {
   }
 }
 
+TEST(ArrayTest, test_binary_insert) {
+  constexpr std::size_t cap = 1000 * 1;
+  prng::Xorshift32 r(1);
+  // while (true) {
+
+    sp::UinStaticArray<std::size_t, cap> a;
+    for (std::size_t i = 0; i < cap; ++i) {
+      ASSERT_EQ(a.length, i);
+
+      auto *res = insert(a, i);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, i);
+
+      for (std::size_t k = 0; k <= i; ++k) {
+        auto *sres = bin_search(a, k);
+        ASSERT_TRUE(sres);
+        ASSERT_EQ(*sres, k);
+      }
+    }
+
+    shuffle(r, a);
+    // printf("shuffled: ");
+    // for_each(a, [](auto it) {
+    //   #<{(||)}>#
+    //   printf("%zu,", it);
+    // });
+    // printf("\n");
+
+    {
+      sp::UinStaticArray<std::size_t, cap> next;
+      for (std::size_t i = 0; i < cap; ++i) {
+        ASSERT_EQ(next.length, i);
+
+        const auto ins = *get(a, i);
+        // printf("insert(%zu)\n", ins);
+        auto *res = bin_insert(next, ins);
+        {
+          // for_each(next, [](auto it) {
+          //   #<{(||)}>#
+          //   printf("%zu,", it);
+          // });
+          // printf("\n");
+        }
+
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, ins);
+        for (std::size_t k = 0; k <= i; ++k) {
+          auto *sres = bin_search(next, ins);
+          ASSERT_TRUE(sres);
+          ASSERT_EQ(*sres, ins);
+        }
+      }
+      // {
+      //   for_each(next, [](auto it) {
+      //     #<{(||)}>#
+      //     printf("%zu,", it);
+      //   });
+      //   printf("\n");
+      // }
+      for (std::size_t i = 0; i < cap; ++i) {
+        auto *res = get(next, i);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, i);
+      }
+      ASSERT_FALSE(get(next, cap));
+    }
+  // }
+}
+
 TEST(ArrayTest, test_binary) {
   constexpr std::size_t cap = 1024;
   prng::xorshift32 r(1);

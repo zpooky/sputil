@@ -7,6 +7,7 @@ struct fd {
   int m_fd;
 
   explicit fd(int) noexcept;
+  fd() noexcept;
 
   explicit operator bool() const noexcept;
 
@@ -21,6 +22,8 @@ struct fd {
   ~fd() noexcept;
 
   explicit operator int() noexcept;
+
+  explicit operator bool() noexcept;
 };
 
 void

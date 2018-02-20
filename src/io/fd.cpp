@@ -4,9 +4,12 @@
 
 namespace sp {
 
-/*fd*/
 fd::fd(int p_fd) noexcept
     : m_fd(p_fd) {
+}
+
+fd::fd() noexcept
+    : fd(-1) {
 }
 
 fd::operator bool() const noexcept {
@@ -19,7 +22,7 @@ fd::fd(fd &&o) noexcept
 }
 
 fd::~fd() noexcept {
-  if (m_fd > 0) {
+  if (bool(*this)) {
     ::close(m_fd);
     m_fd = -1;
   }
@@ -27,6 +30,10 @@ fd::~fd() noexcept {
 
 fd::operator int() noexcept {
   return m_fd;
+}
+
+fd::operator bool() noexcept {
+  return m_fd > 0;
 }
 
 void

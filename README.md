@@ -1,6 +1,10 @@
 # sputil
 
 # TODO
+# concurrent
+- Dekker
+- trieber stack
+
 # type safe uint8_t uint16_t ...
 u8
 u16
@@ -36,6 +40,7 @@ https://github.com/bombela/backward-cpp
 
 ##
 ```cpp
+impl iniializer list with size as a template arg
 StaticArray[size](initializer_list<T,size>)
 ```
 
@@ -48,6 +53,8 @@ struct BufferedSink {
 };
 
 bool write(BufferedSink&,)
+
+## "Sink" for reading supporting autofill the buffer
 
 
 ## CircularByteBuffer
