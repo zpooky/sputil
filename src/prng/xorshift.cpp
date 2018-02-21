@@ -10,12 +10,12 @@
 // http://xoroshiro.di.unimi.it/
 
 namespace prng {
-Xorshift32::Xorshift32(InitType seed) noexcept
+xorshift32::xorshift32(InitType seed) noexcept
     : state(seed) {
   assert(seed != 0);
 }
 
-Xorshift32::Xorshift32() noexcept
+xorshift32::xorshift32() noexcept
     : state(0) {
   state = std::uint32_t(std::time(nullptr));
 
@@ -25,12 +25,12 @@ Xorshift32::Xorshift32() noexcept
 }
 
 void
-swap(Xorshift32 &f, Xorshift32 &s) noexcept {
+swap(xorshift32 &f, xorshift32 &s) noexcept {
   sp::swap(f.state, s.state);
 }
 
 std::uint32_t
-random(Xorshift32 &state) noexcept {
+random(xorshift32 &state) noexcept {
   std::uint32_t &x = state.state;
   assert(x != 0);
 
@@ -45,17 +45,17 @@ random(Xorshift32 &state) noexcept {
 } // namespace prng
 
 namespace prng {
-Xorshift128plus::Xorshift128plus(std::uint64_t f, std::uint64_t s) noexcept
+xorshift128plus::xorshift128plus(std::uint64_t f, std::uint64_t s) noexcept
     : state{f, s} {
   assert(f != 0);
   assert(s != 0);
 }
 
-Xorshift128plus::Xorshift128plus(const InitType init) noexcept
-    : Xorshift128plus{init[0], init[1]} {
+xorshift128plus::xorshift128plus(const InitType init) noexcept
+    : xorshift128plus{init[0], init[1]} {
 }
 
-Xorshift128plus::Xorshift128plus() noexcept
+xorshift128plus::xorshift128plus() noexcept
     : state{0, 0} {
   for (std::size_t i = 0; i < 2; ++i) {
     state[i] = std::uint32_t(std::time(nullptr));
@@ -66,13 +66,13 @@ Xorshift128plus::Xorshift128plus() noexcept
 }
 
 void
-swap(Xorshift128plus &f, Xorshift128plus &s) noexcept {
+swap(xorshift128plus &f, xorshift128plus &s) noexcept {
   std::swap(f.state[0], s.state[0]);
   std::swap(f.state[1], s.state[1]);
 }
 
 std::uint64_t
-random(Xorshift128plus &state) noexcept {
+random(xorshift128plus &state) noexcept {
   assert(state.state[0] != 0);
   assert(state.state[1] != 0);
   std::uint64_t s1 = state.state[0];

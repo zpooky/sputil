@@ -26,7 +26,7 @@ TEST(ArrayTest, test) {
     int *res = get(a, 1);
     ASSERT_FALSE(res);
   }
-  prng::Xorshift32 r(1);
+  prng::xorshift32 r(1);
   shuffle(r, a);
   {
     int *res = get(a, 0);
@@ -72,7 +72,7 @@ TEST(ArrayTest, test_data) {
     ASSERT_EQ(res->i, i);
   }
 
-  prng::Xorshift32 r(1);
+  prng::xorshift32 r(1);
   for (int i = 0; i < int(b.length); ++i) {
     auto *c = get(b, std::size_t(i));
     ASSERT_TRUE(c);
@@ -159,7 +159,7 @@ TEST(ArrayTest, test_binary_search) {
 
 TEST(ArrayTest, test_binary) {
   constexpr std::size_t cap = 1024;
-  prng::Xorshift32 r(1);
+  prng::xorshift32 r(1);
 
   sp::UinStaticArray<std::size_t, cap> a;
   for (std::size_t it = 0; it < 1; ++it) {

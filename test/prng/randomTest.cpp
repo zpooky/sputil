@@ -36,37 +36,37 @@
   } while (0)
 
 TEST(randomTest, test_xorshift32) {
-  prng::Xorshift32 r(1);
+  prng::xorshift32 r(1);
   test(r);
 }
 
 TEST(randomTest, test_xorshift32_dist_limited) {
-  prng::Xorshift32 r(1);
+  prng::xorshift32 r(1);
   test_uniform_one(r);
 }
 
 TEST(randomTest, test_xorshift128plus) {
-  prng::Xorshift128plus r(1, 1);
+  prng::xorshift128plus r(1, 1);
   test(r);
 }
 
 TEST(randomTest, test_xorshift128plus_dist_limited) {
-  prng::Xorshift128plus r(1, 1);
+  prng::xorshift128plus r(1, 1);
   test_uniform_one(r);
 }
 
 TEST(randomTest, test_seeded) {
   for (std::size_t i = 0; i < 40000; ++i) {
-    auto r1 = prng::seed<prng::Xorshift32>();
+    auto r1 = prng::seed<prng::xorshift32>();
     random(r1);
-    auto r2 = prng::seed<prng::Xorshift128plus>();
+    auto r2 = prng::seed<prng::xorshift128plus>();
     random(r2);
   }
 }
 
 /*
  * TEST(randomTest, ll) {
- *   prng::Xorshift32 r(1);
+ *   prng::xorshift32 r(1);
  *   for (std::size_t i = 0; i < 10000; ++i) {
  *     printf("%u,", random(r));
  *     if (i % 10 == 0) {

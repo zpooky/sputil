@@ -44,7 +44,7 @@ struct SkipListNode {
 template <typename T, std::size_t levels, typename Comparator = sp::greater>
 struct SkipList {
   impl::SkipList::SkipListNode<T, levels> *header[levels];
-  prng::Xorshift32 state;
+  prng::xorshift32 state;
 
   SkipList() noexcept
       : header{nullptr}
@@ -138,7 +138,7 @@ first_highest(const sp::SkipList<T, levels, C> &list, std::size_t limit) {
  * Randomize the depth of the about-to-inserted node
  */
 static std::size_t
-random_level(prng::Xorshift32 &state, std::size_t max) {
+random_level(prng::xorshift32 &state, std::size_t max) {
   /*
    * Generates a random number
    * Bitwise count the amount of leading zeroes <--

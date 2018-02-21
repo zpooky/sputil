@@ -104,7 +104,7 @@
         return in == cmp;                                                      \
       }));                                                                     \
     }                                                                          \
-    prng::Xorshift32 r(1);                                                     \
+    prng::xorshift32 r(1);                                                     \
     sp::StaticArray<vt, max> in;                                               \
     ASSERT_EQ(in.capacity, std::size_t(max));                                  \
     for (int i = 0; i < max; ++i) {                                            \

@@ -10,7 +10,7 @@ TEST(CircularBufferTest, test) {
 
   ASSERT_EQ(peek_front(buffer), nullptr);
   ASSERT_EQ(peek_back(buffer), nullptr);
-  ASSERT_EQ(get(buffer,std::size_t(0)), nullptr);
+  ASSERT_EQ(get(buffer, std::size_t(0)), nullptr);
   ASSERT_TRUE(is_empty(buffer));
 
   for (int i = 0; i < cap; ++i) {
@@ -23,13 +23,13 @@ TEST(CircularBufferTest, test) {
   // printf("read: %zu\nwrite: %zu\nsize: %zu\n",
   //        sp::impl::CircularBuffer::index(buffer.read, buffer.capacity),
   //        sp::impl::CircularBuffer::index(buffer.write, buffer.capacity),
-         // length(buffer));
+  // length(buffer));
   ASSERT_TRUE(is_full(buffer));
-  for(int i=0;i<cap;++i){
+  for (int i = 0; i < cap; ++i) {
     std::size_t idx(i);
-    auto*f = get(buffer,idx);
+    auto *f = get(buffer, idx);
     ASSERT_TRUE(f);
-    ASSERT_EQ(*f,i);
+    ASSERT_EQ(*f, i);
   }
 
   for (int i = 0; i < cap; ++i) {
@@ -59,9 +59,9 @@ TEST(CircularBufferTest, wrap) {
   ASSERT_TRUE(!is_empty(buffer));
 
   for (int i = wrap_cnt - cap; i < wrap_cnt; ++i) {
-    auto*f = peek_front(buffer);
+    auto *f = peek_front(buffer);
     ASSERT_TRUE(f);
-    ASSERT_EQ(*f,i);
+    ASSERT_EQ(*f, i);
 
     int res = 999999;
     ASSERT_TRUE(pop_front(buffer, res));
@@ -77,8 +77,8 @@ TEST(CircularBufferTest, pop_back) {
   int b[cap];
   CircularBuffer<int> buffer(b);
 
-  for(int a =0;a<cap;++a){
-    for(int b =0;b<cap;++b){
+  for (int a = 0; a < cap; ++a) {
+    for (int b = 0; b < cap; ++b) {
       ASSERT_EQ(push_back(buffer, 999), 999);
     }
 
@@ -89,7 +89,7 @@ TEST(CircularBufferTest, pop_back) {
       ASSERT_TRUE(is_full(buffer));
       ASSERT_TRUE(!is_empty(buffer));
 
-      for (int i = cap-1; i >= 0; --i) {
+      for (int i = cap - 1; i >= 0; --i) {
         auto *pb = peek_back(buffer);
         ASSERT_TRUE(pb);
         ASSERT_EQ(*pb, i);

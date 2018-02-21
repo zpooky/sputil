@@ -80,6 +80,9 @@ template <typename T, std::size_t c, typename K,
 T *
 bin_search(UinStaticArray<T, c> &, const K &) noexcept;
 
+// TODO const bin_search()
+// TODO bin_remove()
+
 template <typename T>
 T *
 get(Array<T> &, std::size_t) noexcept;
@@ -269,8 +272,7 @@ template <typename T, std::size_t c, typename V,
           typename Comparator = sp::greater>
 T *
 bin_insert(UinStaticArray<T, c> &a, V &&val) noexcept {
-  auto find_successor = [&a, &val]() {
-  };
+  auto find_successor = [&a, &val]() {};
   // TODO
   return nullptr;
 }

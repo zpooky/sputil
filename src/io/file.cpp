@@ -56,7 +56,7 @@ open_read(const char *p) noexcept {
 }
 
 bool
-write(sp::fd &f, sp::ByteBuffer &b) noexcept {
+write(sp::fd &f, sp::BytesView &b) noexcept {
   assert(int(f));
 
   ssize_t written = 0;
@@ -81,7 +81,7 @@ write(sp::fd &f, sp::ByteBuffer &b) noexcept {
 
 //
 // bool
-// append(sp::fd &, sp::ByteBuffer &) noexcept {
+// append(sp::fd &, sp::BytesView &) noexcept {
 // }
 /*============*/
 // bool

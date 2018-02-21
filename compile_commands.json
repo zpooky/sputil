@@ -14,11 +14,116 @@
             "-Wshadow",
             "-ggdb",
             "-o",
-            "build/hash/djb2.o",
-            "src/hash/djb2.cpp"
+            "build/prng/URandom.o",
+            "src/prng/URandom.cpp"
         ],
         "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/hash/djb2.cpp"
+        "file": "src/prng/URandom.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/util/Bitset.o",
+            "src/util/Bitset.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/util/Bitset.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/prng/xorshift.o",
+            "src/prng/xorshift.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/prng/xorshift.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/buffer/Sink.o",
+            "src/buffer/Sink.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/buffer/Sink.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/buffer/CircularByteBuffer.o",
+            "src/buffer/CircularByteBuffer.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/buffer/CircularByteBuffer.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/hash/fnv.o",
+            "src/hash/fnv.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/hash/fnv.cpp"
     },
     {
         "arguments": [
@@ -77,11 +182,11 @@
             "-Wshadow",
             "-ggdb",
             "-o",
-            "build/prng/xorshift.o",
-            "src/prng/xorshift.cpp"
+            "build/concurrent/Barrier.o",
+            "src/concurrent/Barrier.cpp"
         ],
         "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/prng/xorshift.cpp"
+        "file": "src/concurrent/Barrier.cpp"
     },
     {
         "arguments": [
@@ -98,11 +203,74 @@
             "-Wshadow",
             "-ggdb",
             "-o",
-            "build/concurrent/Barrier.o",
-            "src/concurrent/Barrier.cpp"
+            "build/io/fd.o",
+            "src/io/fd.cpp"
         ],
         "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/concurrent/Barrier.cpp"
+        "file": "src/io/fd.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/hash/djb2.o",
+            "src/hash/djb2.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/hash/djb2.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/buffer/ByteBuffer.o",
+            "src/buffer/ByteBuffer.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/buffer/ByteBuffer.cpp"
+    },
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-Iinclude",
+            "-enable-frame-pointers",
+            "-std=c++14",
+            "-Wall",
+            "-Wextra",
+            "-Wpedantic",
+            "-Wpointer-arith",
+            "-Wconversion",
+            "-Wshadow",
+            "-ggdb",
+            "-o",
+            "build/util/numeric.o",
+            "src/util/numeric.cpp"
+        ],
+        "directory": "/home/spooky/development/repos/sputil",
+        "file": "src/util/numeric.cpp"
     },
     {
         "arguments": [
@@ -140,11 +308,11 @@
             "-Wshadow",
             "-ggdb",
             "-o",
-            "build/hash/fnv.o",
-            "src/hash/fnv.cpp"
+            "build/encode/hex.o",
+            "src/encode/hex.cpp"
         ],
         "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/hash/fnv.cpp"
+        "file": "src/encode/hex.cpp"
     },
     {
         "arguments": [
@@ -161,10 +329,10 @@
             "-Wshadow",
             "-ggdb",
             "-o",
-            "build/util/Bitset.o",
-            "src/util/Bitset.cpp"
+            "build/io/file.o",
+            "src/io/file.cpp"
         ],
         "directory": "/home/spooky/development/repos/sputil",
-        "file": "src/util/Bitset.cpp"
+        "file": "src/io/file.cpp"
     }
 ]

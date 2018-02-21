@@ -4,41 +4,41 @@
 #include <cstdint>
 
 namespace prng {
-struct Xorshift32 {
+struct xorshift32 {
   using Word = std::uint32_t;
   using InitType = std::uint32_t;
 
   std::uint32_t state;
 
-  explicit Xorshift32(InitType) noexcept;
-  Xorshift32() noexcept;
+  explicit xorshift32(InitType) noexcept;
+  xorshift32() noexcept;
 };
 
 void
-swap(Xorshift32 &, Xorshift32 &) noexcept;
+swap(xorshift32 &, xorshift32 &) noexcept;
 
 std::uint32_t
-random(Xorshift32 &) noexcept;
+random(xorshift32 &) noexcept;
 
 } // namespace prng
 
 namespace prng {
-struct Xorshift128plus {
+struct xorshift128plus {
   using Word = std::uint64_t;
   using InitType = std::uint64_t[2];
 
   std::uint64_t state[2];
 
-  Xorshift128plus(std::uint64_t, std::uint64_t) noexcept;
-  explicit Xorshift128plus(const InitType) noexcept;
-  Xorshift128plus() noexcept;
+  xorshift128plus(std::uint64_t, std::uint64_t) noexcept;
+  explicit xorshift128plus(const InitType) noexcept;
+  xorshift128plus() noexcept;
 };
 
 void
-swap(Xorshift128plus &, Xorshift128plus &) noexcept;
+swap(xorshift128plus &, xorshift128plus &) noexcept;
 
 std::uint64_t
-random(Xorshift128plus &) noexcept;
+random(xorshift128plus &) noexcept;
 } // namespace prng
 
 #endif

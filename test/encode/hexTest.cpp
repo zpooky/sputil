@@ -6,7 +6,7 @@
 
 TEST(hexTest, test) {
   unsigned char raw_in[512] = {};
-  prng::Xorshift32 r(1);
+  prng::xorshift32 r(1);
 
   for (std::size_t i = 0; i < 30000; ++i) {
     std::size_t raw_in_length =

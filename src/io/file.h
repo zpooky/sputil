@@ -1,7 +1,7 @@
 #ifndef SP_MAINLINE_DHT_FILE_H
 #define SP_MAINLINE_DHT_FILE_H
 
-#include <buffer/ByteBuffer.h>
+#include <buffer/BytesView.h>
 #include <io/fd.h>
 
 namespace file {
@@ -25,7 +25,7 @@ sp::fd
 open_read(const char *) noexcept;
 
 bool
-write(sp::fd &, sp::ByteBuffer &) noexcept;
+write(sp::fd &, sp::BytesView &) noexcept;
 
 /*============*/
 bool

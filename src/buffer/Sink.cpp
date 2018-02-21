@@ -2,7 +2,7 @@
 
 namespace sp {
 
-Sink::Sink(ByteBuffer &b) noexcept
+Sink::Sink(CircularByteBuffer &b) noexcept
     : buffer(b)
     , sink(nullptr) {
 }
