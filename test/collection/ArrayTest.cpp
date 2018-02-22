@@ -159,7 +159,7 @@ TEST(ArrayTest, test_binary_search) {
 
 TEST(ArrayTest, test_binary_insert) {
   constexpr std::size_t cap = 1000 * 1;
-  prng::Xorshift32 r(1);
+  prng::xorshift32 r(1);
   // while (true) {
 
     sp::UinStaticArray<std::size_t, cap> a;

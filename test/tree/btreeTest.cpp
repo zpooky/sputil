@@ -36,7 +36,10 @@
 #define assert_zero_children(node)                                             \
   do {                                                                         \
     ASSERT_TRUE(node);                                                         \
-    ASSERT_EQ(std::size_t(0), node->children.length);                          \
+    ASSERT_TRUE(for_all(node->children, [](const auto &n) {                    \
+      /**/                                                                     \
+      return n == nullptr;                                                     \
+    }));                                                                       \
   } while (0)
 
 #define assert_child(node, idx, init)                                          \

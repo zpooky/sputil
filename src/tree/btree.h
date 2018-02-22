@@ -101,17 +101,89 @@ Tree<T, keys, C>::~Tree() noexcept {
   // TODO
 }
 
+// namespace btree {
+// namespace impl {
+// namespace btree {
+//
+// template <typename T, std::size_t k, typename C, typename K>
+// BTNode<T, k> *
+// find_best(Tree<T, k, C> &tree, const K &needle) noexcept {
+//   const auto *node = tree.root;
+//
+// Lit:
+//   if (node) {
+//     const auto &elems = node->elements;
+//
+//     std::size_t idx = 0;
+//     for (; idx < elems.length; ++idx) {
+//       C cmp;
+//       const auto *current = get(elems, idx);
+//       if #<{(|it > needle|)}># (cmp(*current, needle)) {
+//         break;
+//       } #<{(|it < needle|)}># else if (cmp(needle, *current)) {
+//       } else {
+//         #<{(|
+//          * match !(needle <> current)
+//          |)}>#
+//         return current;
+//       }
+//     }
+//     #<{(| Check that we are not in leaf node |)}>#
+//     const auto next = get(node->children, idx);
+//     if (next) {
+//       node = *next;
+//     }
+//     goto Lit;
+//   }
+//
+//   return nullptr;
+// }
+//
+// }
+// }
+// }
+
 template <typename T, std::size_t k, typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T, k, C> &tree, K &&v) noexcept {
+insert(Tree<T, k, C> &tree, K &&val) noexcept {
   using namespace btree::impl::btree;
   if (tree.root) {
-    // TODO
+    auto current = tree.root;
+  Lit:
+    if (current) {
+      sp::UinStaticArray<T, k> &elements = current->elements;
+      T *const successor = sp::bin_find_successor<T, k, K, C>(elements, val);
+      if (successor) {
+        C cmp;
+        if (!cmp(*successor, val) && !cmp(val, *successor))
+          /* $val already present in node */
+          return std::make_tuple(successor, false);
+      } else {
+        if (is_full(elements)) {
+          // TODO got down / create new node
+        } else {
+          auto res = bin_insert(elements, std::forward<K>(val));
+          if (res) {
+            std::size_t idx = index_of(elements, res);
+            assert(idx != elements.capacity);
+            assert(insert_at(current->children, idx, nullptr) != nullptr);
+
+            // TODO check if we should split
+            return std::make_tuple(res, true);
+          }
+        }
+      }
+    }
+
   } else {
     auto node = tree.root = new BTNode<T, k>;
     if (node) {
-      auto res = bin_insert(node->elements, std::forward<K>(v));
+      auto &elements = node->elements;
+      auto res = bin_insert(elements, std::forward<K>(val));
       if (res) {
+        // std::size_t idx = index_of(elements, res);
+        // assert(idx != elements.capacity);
+        assert(insert(node->children, nullptr) != nullptr);
         return std::make_tuple(res, true);
       }
     }
@@ -143,7 +215,7 @@ Lit:
       }
     }
     /* Check that we are not in leaf node */
-    const auto next = sp::get(node->children, idx);
+    const auto next = get(node->children, idx);
     if (next) {
       node = *next;
     }
