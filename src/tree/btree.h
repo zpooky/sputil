@@ -25,8 +25,8 @@ struct BTNode {
 
   BTNode() noexcept;
 };
-}
-}
+} // namespace btree
+} // namespace impl
 
 template <typename T, std::size_t keys, typename Comparator = sp::greater>
 struct Tree {
@@ -88,8 +88,8 @@ BTNode<T, keys>::BTNode() noexcept
     , elements()
     , children() {
 }
-}
-}
+} // namespace btree
+} // namespace impl
 
 template <typename T, std::size_t keys, typename C>
 Tree<T, keys, C>::Tree() noexcept
@@ -149,7 +149,7 @@ insert(Tree<T, k, C> &tree, K &&val) noexcept {
   using namespace btree::impl::btree;
   if (tree.root) {
     auto current = tree.root;
-  Lit:
+  // Lit:
     if (current) {
       sp::UinStaticArray<T, k> &elements = current->elements;
       T *const successor = sp::bin_find_successor<T, k, K, C>(elements, val);
@@ -160,6 +160,7 @@ insert(Tree<T, k, C> &tree, K &&val) noexcept {
           return std::make_tuple(successor, false);
       } else {
         if (is_full(elements)) {
+          assert(false);
           // TODO got down / create new node
         } else {
           auto res = bin_insert(elements, std::forward<K>(val));
@@ -231,5 +232,5 @@ find(Tree<T, k, C> &tree, const K &needle) noexcept {
   const auto &c_tree = tree;
   return (T *)find(c_tree, needle);
 }
-}
+} // namespace btree
 #endif
