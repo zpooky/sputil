@@ -101,66 +101,33 @@ Tree<T, keys, C>::~Tree() noexcept {
   // TODO
 }
 
-// namespace btree {
-// namespace impl {
-// namespace btree {
-//
-// template <typename T, std::size_t k, typename C, typename K>
-// BTNode<T, k> *
-// find_best(Tree<T, k, C> &tree, const K &needle) noexcept {
-//   const auto *node = tree.root;
-//
-// Lit:
-//   if (node) {
-//     const auto &elems = node->elements;
-//
-//     std::size_t idx = 0;
-//     for (; idx < elems.length; ++idx) {
-//       C cmp;
-//       const auto *current = get(elems, idx);
-//       if #<{(|it > needle|)}># (cmp(*current, needle)) {
-//         break;
-//       } #<{(|it < needle|)}># else if (cmp(needle, *current)) {
-//       } else {
-//         #<{(|
-//          * match !(needle <> current)
-//          |)}>#
-//         return current;
-//       }
-//     }
-//     #<{(| Check that we are not in leaf node |)}>#
-//     const auto next = get(node->children, idx);
-//     if (next) {
-//       node = *next;
-//     }
-//     goto Lit;
-//   }
-//
-//   return nullptr;
-// }
-//
-// }
-// }
-// }
-
+// http://btechsmartclass.com/DS/U5_T3.html
 template <typename T, std::size_t k, typename C, typename K>
 std::tuple<T *, bool>
 insert(Tree<T, k, C> &tree, K &&val) noexcept {
   using namespace btree::impl::btree;
   if (tree.root) {
     auto current = tree.root;
-  // Lit:
+    // Lit:
     if (current) {
       sp::UinStaticArray<T, k> &elements = current->elements;
+
+      /* First value > than $val */
       T *const successor = sp::bin_find_successor<T, k, K, C>(elements, val);
       if (successor) {
         C cmp;
-        if (!cmp(*successor, val) && !cmp(val, *successor))
+        if (!cmp(*successor, val) && !cmp(val, *successor)) {
           /* $val already present in node */
           return std::make_tuple(successor, false);
+        }
+        // TODO index_of()
+
       } else {
+        //$val is greater than any value in the current node
+        // go down the last child if exist
+        // otherwise =
         if (is_full(elements)) {
-          assert(false);
+          // assert(false);
           // TODO got down / create new node
         } else {
           auto res = bin_insert(elements, std::forward<K>(val));
@@ -197,6 +164,7 @@ const T *
 find(const Tree<T, k, C> &tree, const K &needle) noexcept {
   const auto *node = tree.root;
 
+// TODO bin search
 Lit:
   if (node) {
     const auto &elems = node->elements;
@@ -205,9 +173,9 @@ Lit:
     for (; idx < elems.length; ++idx) {
       C cmp;
       const auto *current = sp::get(elems, idx);
-      if /*current > needle*/ (cmp(*current, needle)) {
+      if /*it > needle*/ (cmp(*current, needle)) {
         break;
-      } /*current < needle*/ else if (cmp(needle, *current)) {
+      } /*it < needle*/ else if (cmp(needle, *current)) {
       } else {
         /*
          * match !(needle <> current)
@@ -219,8 +187,8 @@ Lit:
     const auto next = get(node->children, idx);
     if (next) {
       node = *next;
+      goto Lit;
     }
-    goto Lit;
   }
 
   return nullptr;

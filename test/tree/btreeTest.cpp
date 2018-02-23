@@ -4,16 +4,35 @@
 
 #define assert_insert(t, v)                                                    \
   do {                                                                         \
-    {                                                                          \
-      auto r = insert(t, v);                                                   \
-      auto inserted = std::get<1>(r);                                          \
-      ASSERT_TRUE(inserted);                                                   \
-                                                                               \
-      auto *res = std::get<0>(r);                                              \
-      ASSERT_TRUE(res);                                                        \
-      ASSERT_EQ(*res, v);                                                      \
+    printf("# %d\n", v);                                                       \
+    { /*test find*/                                                            \
+      printf("1. find non\n");                                                 \
+      auto *res = find(t, v);                                                  \
+      ASSERT_FALSE(res);                                                       \
     }                                                                          \
-    {                                                                          \
+    { /*insert*/                                                               \
+      printf("2. insert\n");                                                   \
+      auto r = insert(t, v);                                                   \
+      auto *res = std::get<0>(r);                                              \
+      { /*test insert*/                                                        \
+        auto inserted = std::get<1>(r);                                        \
+        ASSERT_TRUE(inserted);                                                 \
+        ASSERT_TRUE(res);                                                      \
+        ASSERT_EQ(*res, v);                                                    \
+      }                                                                        \
+      { /*test duplicate insert*/                                              \
+        printf("3. insert dup\n");                                             \
+        auto dupr = insert(t, v);                                              \
+        auto inserted = std::get<1>(dupr);                                     \
+        ASSERT_FALSE(inserted);                                                \
+        auto *dupres = std::get<0>(dupr);                                      \
+        ASSERT_TRUE(res);                                                      \
+        ASSERT_EQ(dupres, res);                                                \
+        ASSERT_EQ(*dupres, v);                                                 \
+      }                                                                        \
+    }                                                                          \
+    { /*test find*/                                                            \
+      printf("4. find exist\n");                                               \
       auto *res = find(t, v);                                                  \
       ASSERT_TRUE(res);                                                        \
       ASSERT_EQ(*res, v);                                                      \
