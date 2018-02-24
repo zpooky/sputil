@@ -72,6 +72,37 @@ push_back(CircularByteBuffer &self, const unsigned char *write,
   //
   // }
 
+  // std::size_t written = 0;
+  // while (l > 0) {
+  //   std::size_t w = index(self.write, self.capacity);
+  //   std::size_t wlength(self.capacity - w);
+  //   std::size_t r = index(self.read, self.capacity);
+  //
+  //   if (w < r) {
+  //     wlength = r - w;
+  //   }
+  //   wlength = std::min(l, wlength);
+  //   if (wlength == 0) {
+  //     break;
+  //   }
+  //
+  //   std::memcpy(#<{(|dest|)}># self.buffer + w, #<{(|src|)}># write,
+  //   wlength); self.write += wlength; written += wlength; l -= wlength;
+  // }
+
+  // {
+  //   std::size_t w = index(self.write, self.capacity);
+  //   std::size_t r = index(self.read, self.capacity);
+  //   if (w < r) {
+  //     std::size_t wlen = r - w;
+  //     memcpy(#<{(|DEST|)}># self.buffer + w, #<{(|SRC|)}># write, wlength);
+  //     self.write += wlength;
+  //     written += wlength;
+  //   }
+  // }
+
+  // return written;
+  // TODO memcpy
   std::size_t result = 0;
   while (remaining_write(self) > 0) {
     if (result == l) {
@@ -82,7 +113,9 @@ push_back(CircularByteBuffer &self, const unsigned char *write,
   }
 
   return result;
-}
+
+  return 0;
+} // namespace sp
 
 std::size_t
 pop_front(CircularByteBuffer &self, BytesView &read) noexcept {

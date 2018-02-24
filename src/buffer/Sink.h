@@ -1,6 +1,7 @@
 #ifndef SP_UTIL_BUFFER_SINK_H
 #define SP_UTIL_BUFFER_SINK_H
 
+#include <buffer/BytesView.h>
 #include <buffer/CircularByteBuffer.h>
 // TODO impl
 
@@ -24,6 +25,9 @@ std::size_t
 write(Sink &s, const unsigned char (&buffer)[SIZE]) noexcept {
   return write(s, buffer, SIZE);
 }
+
+std::size_t
+write(Sink &, BytesView &) noexcept;
 
 bool
 flush(Sink &) noexcept;
