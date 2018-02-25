@@ -79,6 +79,12 @@ write(sp::fd &f, sp::BytesView &b) noexcept {
   return true;
 }
 
+bool
+write(sp::fd &, sp::CircularByteBuffer &) noexcept {
+  //TODO 
+  return true;
+}
+
 //
 // bool
 // append(sp::fd &, sp::BytesView &) noexcept {

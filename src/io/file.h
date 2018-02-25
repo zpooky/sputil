@@ -2,6 +2,7 @@
 #define SP_MAINLINE_DHT_FILE_H
 
 #include <buffer/BytesView.h>
+#include <buffer/CircularByteBuffer.h>
 #include <io/fd.h>
 
 namespace file {
@@ -26,6 +27,9 @@ open_read(const char *) noexcept;
 
 bool
 write(sp::fd &, sp::BytesView &) noexcept;
+
+bool
+write(sp::fd &, sp::CircularByteBuffer &) noexcept;
 
 /*============*/
 bool

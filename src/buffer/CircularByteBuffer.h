@@ -30,6 +30,9 @@ is_empty(const CircularByteBuffer &) noexcept;
 bool
 is_full(const CircularByteBuffer &) noexcept;
 
+void
+reset(CircularByteBuffer &) noexcept;
+
 std::size_t
 remaining_write(const CircularByteBuffer &) noexcept;
 

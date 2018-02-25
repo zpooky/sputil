@@ -2,13 +2,14 @@
 
 namespace sp {
 
-Sink::Sink(CircularByteBuffer &b) noexcept
-    : buffer(b)
-    , sink(nullptr) {
-}
+// Sink::Sink(CircularByteBuffer &b, void *a, SinkFlush s) noexcept
+//     : buffer(b)
+//     , sink(s)
+//     , arg(a) {
+// }
 
 std::size_t
-write(Sink &sink, const unsigned char *w, std::size_t len) noexcept {
+push_back(Sink &sink, const unsigned char *w, std::size_t len) noexcept {
   std::size_t written = 0;
 
   // TODO if buffer is empty and $len > buffer.cap then flush directly fron $w.
@@ -23,7 +24,7 @@ Lit:
 }
 
 std::size_t
-write(Sink &sink, BytesView &in) noexcept {
+push_back(Sink &sink, BytesView &in) noexcept {
   const unsigned char *w = in.raw + in.pos;
   std::size_t written = write(sink, w, in.length);
   in.pos += written;
@@ -32,8 +33,8 @@ write(Sink &sink, BytesView &in) noexcept {
 
 bool
 flush(Sink &sink) noexcept {
-  if(sink.sink){
-    return sink.sink(sink.buffer);
+  if (sink.sink) {
+    return sink.sink(sink.buffer, sink.arg);
   }
   return false;
 }

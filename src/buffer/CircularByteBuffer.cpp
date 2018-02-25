@@ -32,6 +32,12 @@ is_full(const CircularByteBuffer &b) noexcept {
   return length(b) == b.capacity;
 }
 
+void
+reset(CircularByteBuffer &b) noexcept {
+  b.read = 0;
+  b.write = 0;
+}
+
 std::size_t
 remaining_write(const CircularByteBuffer &b) noexcept {
   return b.capacity - length(b);

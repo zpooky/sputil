@@ -3,6 +3,6 @@
 
 TEST(SinkTest, test) {
   sp::StaticCircularByteBuffer<1024> b;
-  sp::Sink s(b);
+  sp::Sink s(b, nullptr, nullptr);
   flush(s);
 }
