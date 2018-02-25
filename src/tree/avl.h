@@ -819,8 +819,8 @@ remove(Node<T> *const current) noexcept {
 
 } // namespace remove
 
-} // namespace impl
 } // namespace avl
+} // namespace impl
 
 template <typename T, typename C, typename K>
 std::tuple<T *, bool>
