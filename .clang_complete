@@ -1,6 +1,6 @@
 -x
 c++
--Iexternal
+-Iinclude
 -Wall
 -Wconversion
 -Wextra

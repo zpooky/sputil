@@ -5,7 +5,7 @@ CXX = g++
 
 SOURCE_DIR = src
 INCLUDE_DIR = include
-BUILD_DIR = build
+BUILD_DIR = build/debug
 
 HEADER_DIRS = -I$(INCLUDE_DIR)
 # overrides makes it possible to externally append extra flags
@@ -100,6 +100,9 @@ uninstall:
 # Creates compilation_database.json
 bear: clean
 	bear make
+	compdb list > tmp_compile_commands.json
+	mv tmp_compile_commands.json compile_commands.json
+	make clean
 # }}}
 
 # gcc

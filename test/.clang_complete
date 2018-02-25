@@ -1,10 +1,9 @@
 -x
 c++
 -DSP_TEST
--I..
 -I../external/googletest/googletest/include
 -I../src
--Iexternal
+-Iinclude
 -Wall
 -Wconversion
 -Wextra
@@ -13,5 +12,3 @@ c++
 -Wshadow
 -std=c++14
 -std=gnu++14
--isystem
-../include

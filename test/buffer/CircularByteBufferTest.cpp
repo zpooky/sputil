@@ -125,8 +125,8 @@ TEST(CircularByteBufferTest, test_random) {
         // assert(remaining_in > 0);
         std::size_t write_max = std::min(remaining_write(b), remaining_in);
         // assert(write_max > 0);
-        auto write =
-            uniform_dist(r, std::uint32_t(0), std::uint32_t(write_max) + 1);
+        auto write = uniform_dist(r, std::uint32_t(0),
+                                  std::uint32_t(write_max) + 1); // TODO why +1
         // printf("write(%zu),rem_w(%zu),rem_r(%zu)\n", write,
         // remaining_write(b), remaining_read(b));
 

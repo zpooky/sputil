@@ -4,7 +4,7 @@ CXX = g++
 # using -std=gnu++14 because gtest uses functions only presisent in the GNU dialect of c++
 PROJECT_ROOT = ..
 SRC_ROOT = $(PROJECT_ROOT)/src
-SUT_DIR = build_test
+SUT_DIR = build/test
 
 GTEST_ROOT = $(PROJECT_ROOT)/external/googletest/googletest
 
