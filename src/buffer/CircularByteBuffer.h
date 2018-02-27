@@ -2,7 +2,10 @@
 #define SP_UTIL_BUFFER_CIRCULAR_BYTE_BUFFER_H
 
 #include "buffer/BytesView.h"
+#include <cassert>
+#include <collection/Array.h>
 #include <cstddef>
+#include <tuple>
 
 namespace sp {
 struct CircularByteBuffer {
@@ -62,6 +65,10 @@ std::size_t
 pop_front(CircularByteBuffer &self, unsigned char (&buffer)[SIZE]) noexcept {
   return pop_front(self, buffer, SIZE);
 }
+
+bool
+read_buffer(CircularByteBuffer &,
+            Array<std::tuple<unsigned char *, std::size_t>> &) noexcept;
 /*
  * ==========================================================================
  */

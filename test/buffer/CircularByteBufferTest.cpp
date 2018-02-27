@@ -105,6 +105,58 @@ TEST(CircularByteBufferTest, test_circular) {
   }
 }
 
+TEST(CircularByteBufferTest, test_pop_empty) {
+  constexpr std::size_t sz = 16;
+  {
+    sp::StaticCircularByteBuffer<sz> b;
+    unsigned char c = 99;
+    ASSERT_EQ(0, pop_front(b, &c, 1));
+    ASSERT_EQ(c, 99);
+
+    unsigned char out[] = {0, 0};
+    ASSERT_EQ(0, pop_front(b, out, sizeof(out)));
+  }
+  {
+
+    sp::StaticCircularByteBuffer<sz> b;
+    {
+      unsigned char in = 127;
+      ASSERT_EQ(1, push_back(b, &in, 1));
+
+      unsigned char c = 99;
+      ASSERT_EQ(1, pop_front(b, &c, 1));
+      ASSERT_EQ(c, 127);
+    }
+
+    unsigned char c = 99;
+    ASSERT_EQ(0, pop_front(b, &c, 1));
+    ASSERT_EQ(c, 99);
+
+    unsigned char out[] = {0, 0};
+    ASSERT_EQ(0, pop_front(b, out, sizeof(out)));
+  }
+  {
+
+    sp::StaticCircularByteBuffer<sz> b;
+    unsigned char in[] = {13, 240};
+    ASSERT_EQ(2, push_back(b, in, sizeof(in)));
+
+    {
+      unsigned char out[] = {0, 0};
+      ASSERT_EQ(2, pop_front(b, out, sizeof(out)));
+      ASSERT_EQ(out[0], 13);
+      ASSERT_EQ(out[1], 240);
+    }
+
+    unsigned char c = 99;
+    ASSERT_EQ(0, pop_front(b, &c, 1));
+    ASSERT_EQ(c, 99);
+
+    unsigned char out[] = {0, 0};
+    ASSERT_EQ(0, pop_front(b, out, sizeof(out)));
+  }
+}
+
 TEST(CircularByteBufferTest, test_random) {
   prng::xorshift32 r(1);
   std::size_t its = 0;
@@ -167,4 +219,92 @@ TEST(CircularByteBufferTest, test_random) {
     }
     // printf("asd[%zu]\n", its++);
   } // while(true)
+}
+
+TEST(CircularByteBufferTest, test_read_buffer) {
+  constexpr std::size_t sz = 8;
+  sp::StaticCircularByteBuffer<sz> b;
+  using AT = sp::StaticArray<std::tuple<unsigned char *, std::size_t>, 2>;
+
+  {
+    AT a;
+    ASSERT_EQ(a.length, 0);
+    ASSERT_TRUE(read_buffer(b, a));
+    ASSERT_EQ(a.length, 0);
+  }
+
+  {
+    for (unsigned char i = 0; i < sz; ++i) {
+      ASSERT_EQ(push_back(b, &i, 1), 1);
+      ASSERT_TRUE(!is_empty(b));
+      ASSERT_EQ(i + 1, length(b));
+
+      {
+        AT a;
+        ASSERT_TRUE(read_buffer(b, a));
+        ASSERT_EQ(a.length, 1);
+
+        auto d = get(a, 0);
+        ASSERT_TRUE(d);
+        ASSERT_EQ(b.buffer, std::get<0>(*d));
+        ASSERT_EQ(i + 1, std::get<1>(*d));
+      }
+    }
+
+    ASSERT_EQ(length(b), sz);
+    ASSERT_TRUE(is_full(b));
+  }
+
+  for (unsigned char i = 0; i < sz / 2; ++i) {
+    unsigned char c = 255;
+    ASSERT_EQ(1, pop_front(b, &c, 1));
+    ASSERT_EQ(c, i);
+    {
+      AT a;
+      ASSERT_TRUE(read_buffer(b, a));
+      ASSERT_EQ(a.length, 1);
+
+      auto d = get(a, 0);
+      ASSERT_TRUE(d);
+      ASSERT_EQ(b.buffer + i + 1, std::get<0>(*d));
+      ASSERT_EQ(length(b), std::get<1>(*d));
+    }
+  }
+
+  for (unsigned char i = 0; i < (sz / 2) - 1; ++i) {
+    ASSERT_EQ(push_back(b, &i, 1), 1);
+    {
+      AT a;
+      ASSERT_TRUE(read_buffer(b, a));
+      // ASSERT_EQ(a.length, 2);
+
+      {
+        std::size_t strt = 4;
+        auto d = get(a, 0);
+        ASSERT_TRUE(d);
+        ASSERT_EQ(b.buffer + strt, std::get<0>(*d));
+        ASSERT_EQ(i + 1 + strt, std::get<1>(*d));
+      }
+      {
+        auto d = get(a, 1);
+        ASSERT_TRUE(d);
+        ASSERT_EQ(b.buffer, std::get<0>(*d));
+        ASSERT_EQ(i + 1, std::get<1>(*d));
+      }
+    }
+  }
+
+  {
+    const unsigned char i = 255;
+    ASSERT_EQ(push_back(b, &i, 1), 1);
+
+    AT a;
+    ASSERT_TRUE(read_buffer(b, a));
+    ASSERT_EQ(a.length, 1);
+
+    auto d = get(a, 0);
+    ASSERT_TRUE(d);
+    ASSERT_EQ(b.buffer, std::get<0>(*d));
+    ASSERT_EQ(sz, std::get<1>(*d));
+  }
 }

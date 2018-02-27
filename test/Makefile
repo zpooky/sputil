@@ -66,6 +66,15 @@ sut:
 	$(MAKE) BUILD_DIR=$(SUT_DIR) LIB=libsut CXXFLAGS+=-DSP_TEST -C $(PROJECT_ROOT) staticlib
 # }}}
 
+# bear {{{
+# Creates compilation_database.json
+bear:
+	bear make BUILD_DIR=build/bear clean
+	bear make BUILD_DIR=build/bear CXXFLAGS+=-DSP_TEST
+	compdb list > tmp_compile_commands.json
+	mv tmp_compile_commands.json compile_commands.json
+# }}}
+
 # test {{{
 test: all
 	./$(EXEC)

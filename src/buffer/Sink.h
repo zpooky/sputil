@@ -23,8 +23,18 @@ struct Sink {
  * ==========================================================================
  */
 
-// TODO write -> bool
+bool
+write(Sink &, const unsigned char *, std::size_t) noexcept;
 
+template <std::size_t SIZE>
+bool
+write(Sink &s, const unsigned char (&buffer)[SIZE]) noexcept {
+  return write(s, buffer, SIZE);
+}
+
+bool
+write(Sink &, BytesView &) noexcept;
+//-------------------+---------------
 /* returns byte written*/
 std::size_t
 push_back(Sink &, const unsigned char *, std::size_t) noexcept;

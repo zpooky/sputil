@@ -8,6 +8,18 @@ namespace sp {
 //     , arg(a) {
 // }
 
+//-------------------+---------------
+bool
+write(Sink &, const unsigned char *, std::size_t) noexcept {
+  return true;
+}
+
+bool
+write(Sink &, BytesView &) noexcept {
+  return true;
+}
+//-------------------+---------------
+
 std::size_t
 push_back(Sink &sink, const unsigned char *w, std::size_t len) noexcept {
   std::size_t written = 0;
@@ -26,7 +38,7 @@ Lit:
 std::size_t
 push_back(Sink &sink, BytesView &in) noexcept {
   const unsigned char *w = in.raw + in.pos;
-  std::size_t written = write(sink, w, in.length);
+  std::size_t written = push_back(sink, w, in.length);
   in.pos += written;
   return written;
 }

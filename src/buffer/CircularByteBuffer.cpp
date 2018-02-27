@@ -159,4 +159,33 @@ pop_front(CircularByteBuffer &self, unsigned char *read,
   return result;
 }
 
+bool
+read_buffer(CircularByteBuffer &self,
+            Array<std::tuple<unsigned char *, std::size_t>> &result) noexcept {
+  /*
+   * read     write    read
+   * |xxxxxxxx|........|xxxxxxxxxx|
+   */
+  std::size_t w = self.write;
+  std::size_t r = self.read;
+Lit:
+  if (r < w) {
+    std::size_t len = w - r;
+    auto out = insert(result, std::make_tuple(self.buffer + r, len));
+    assert(out != nullptr);
+  } else if (r != w) {
+    std::size_t len = self.capacity - index(r, self.capacity);
+    auto out = insert(result, std::make_tuple(self.buffer + r, len));
+    assert(out != nullptr);
+
+
+    {
+      //TODO we are here
+      r = r + len;
+      goto Lit;
+    }
+  }
+  return true;
+}
+
 } // namespace sp

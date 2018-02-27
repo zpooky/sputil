@@ -32,6 +32,8 @@ struct CircularBuffer {
   operator=(const CircularBuffer &) = delete;
 };
 
+using Teee = CircularBuffer<int>;
+
 template <typename T>
 std::size_t
 length(const CircularBuffer<T> &) noexcept;
