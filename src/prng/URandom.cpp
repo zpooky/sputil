@@ -7,7 +7,7 @@
 namespace prng {
 URandom::URandom() noexcept
     : mfd(-1) {
-  sp::fd f = file::open_read("/dev/urandom");
+  sp::fd f = fs::open_read("/dev/urandom");
 
   using sp::swap;
   swap(mfd, f.m_fd);

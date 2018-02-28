@@ -8,7 +8,7 @@
 #include <sys/errno.h> //errno
 #include <unistd.h>
 
-namespace file {
+namespace fs {
 
 static void
 die(const char *s) {
@@ -25,12 +25,11 @@ static sp::fd
 int_open(const char *p, int flag, mode_t mode = 0) noexcept {
   // bool create = true;
   // if (create) {
-  flag |= O_CREAT;
   mode = S_IRUSR | S_IWUSR;
   // }
 
   int res = ::open(p, flag, mode);
-  if (res  == -1) {
+  if (res == -1) {
     die("open()");
   }
 
@@ -39,13 +38,13 @@ int_open(const char *p, int flag, mode_t mode = 0) noexcept {
 
 sp::fd
 open_trunc(const char *p) noexcept {
-  int flag = O_TRUNC;
+  int flag = O_TRUNC | O_WRONLY | O_CREAT;
   return int_open(p, flag);
 }
 
 sp::fd
 open_append(const char *p) noexcept {
-  int flag = O_APPEND;
+  int flag = O_APPEND | O_WRONLY | O_CREAT;
   return int_open(p, flag);
 }
 
@@ -70,7 +69,8 @@ write(sp::fd &f, sp::BytesView &b) noexcept {
     if (written > 0) {
       b.pos += written;
     }
-  } while ((written < 0 && errno == EAGAIN) && remaining_read(b) > 0);
+  } while ((written < 0 && errno == EAGAIN) &&
+           remaining_read(b) > 0); // TODO fix logic
 
   if (written < 0) {
     die("write()");
@@ -81,7 +81,7 @@ write(sp::fd &f, sp::BytesView &b) noexcept {
 
 bool
 write(sp::fd &, sp::CircularByteBuffer &) noexcept {
-  //TODO 
+  // TODO
   return true;
 }
 

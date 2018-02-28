@@ -54,7 +54,7 @@ clean:
 # gtest {{{
 LIBGTEST_ROOT = $(GTEST_ROOT)/make
 gtest:
-	$(MAKE) -C $(GTEST_ROOT)/make all
+	$(MAKE) -C $(GTEST_ROOT)/make all -j 4
 	cp $(LIBGTEST_ROOT)/gtest_main.a $(LIBGTEST_ROOT)/libgtest_main.a
 # }}}
 

@@ -4,16 +4,9 @@
 #include <buffer/BytesView.h>
 #include <buffer/CircularByteBuffer.h>
 #include <io/fd.h>
+#include <io/path.h>
 
-namespace file {
-
-struct Path {
-  char str[256];
-  explicit Path(const char *) noexcept;
-};
-
-Path
-parent(const Path &) noexcept;
+namespace fs {
 
 /*============*/
 sp::fd
@@ -25,6 +18,7 @@ open_append(const char *) noexcept;
 sp::fd
 open_read(const char *) noexcept;
 
+//TODO make templated and change this to explicit template instantiation
 bool
 write(sp::fd &, sp::BytesView &) noexcept;
 
