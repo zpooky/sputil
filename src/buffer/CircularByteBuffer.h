@@ -27,6 +27,9 @@ struct StaticCircularByteBuffer : public CircularByteBuffer {
 std::size_t
 length(const CircularByteBuffer &) noexcept;
 
+std::size_t
+capacity(const CircularByteBuffer &) noexcept;
+
 bool
 is_empty(const CircularByteBuffer &) noexcept;
 
@@ -46,6 +49,9 @@ std::size_t
 push_back(CircularByteBuffer &, BytesView &) noexcept;
 
 std::size_t
+push_back(CircularByteBuffer &, unsigned char) noexcept;
+
+std::size_t
 push_back(CircularByteBuffer &, const unsigned char *, std::size_t) noexcept;
 
 template <std::size_t SIZE>
@@ -60,11 +66,17 @@ pop_front(CircularByteBuffer &, BytesView &) noexcept;
 std::size_t
 pop_front(CircularByteBuffer &, unsigned char *, std::size_t) noexcept;
 
+std::size_t
+pop_front(CircularByteBuffer &, unsigned char &) noexcept;
+
 template <std::size_t SIZE>
 std::size_t
 pop_front(CircularByteBuffer &self, unsigned char (&buffer)[SIZE]) noexcept {
   return pop_front(self, buffer, SIZE);
 }
+
+void
+consume_bytes(CircularByteBuffer &, std::size_t) noexcept;
 
 bool
 read_buffer(CircularByteBuffer &,

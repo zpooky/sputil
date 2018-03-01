@@ -220,12 +220,35 @@ TEST(CircularByteBufferTest, test_random) {
     // printf("asd[%zu]\n", its++);
   } // while(true)
 }
+#define assert_ref(in_ref, in_ridx, b)                                         \
+  do {                                                                         \
+    auto idx = in_ridx;                                                        \
+    std::size_t as_len = 0;                                                    \
+    AT ar;                                                                     \
+    ASSERT_TRUE(read_buffer(b, ar));                                           \
+    for (std::size_t a = 0; a < ar.length; ++a) {                              \
+      auto current = ar[a];                                                    \
+      for (std::size_t k = 0; k < std::get<1>(current); ++k) {                 \
+        ASSERT_EQ(in_ref[idx++], *(std::get<0>(current) + k));                 \
+        as_len++;                                                              \
+      }                                                                        \
+    }                                                                          \
+    ASSERT_EQ(as_len, length(b));                                              \
+  } while (0)
 
 TEST(CircularByteBufferTest, test_read_buffer) {
   constexpr std::size_t sz = 8;
   sp::StaticCircularByteBuffer<sz> b;
+  prng::xorshift32 r(1);
   using AT = sp::StaticArray<std::tuple<unsigned char *, std::size_t>, 2>;
 
+  sp::StaticArray<unsigned char, 255> in_ref;
+  for (std::size_t i = 0; i < 255; ++i) {
+    insert(in_ref, char(i));
+  }
+  shuffle(r, in_ref);
+  std::size_t in_widx = 0;
+  std::size_t in_ridx = 0;
   {
     AT a;
     ASSERT_EQ(a.length, 0);
@@ -235,7 +258,7 @@ TEST(CircularByteBufferTest, test_read_buffer) {
 
   {
     for (unsigned char i = 0; i < sz; ++i) {
-      ASSERT_EQ(push_back(b, &i, 1), 1);
+      ASSERT_EQ(push_back(b, in_ref[in_widx++]), 1);
       ASSERT_TRUE(!is_empty(b));
       ASSERT_EQ(i + 1, length(b));
 
@@ -249,6 +272,7 @@ TEST(CircularByteBufferTest, test_read_buffer) {
         ASSERT_EQ(b.buffer, std::get<0>(*d));
         ASSERT_EQ(i + 1, std::get<1>(*d));
       }
+      assert_ref(in_ref, in_ridx, b);
     }
 
     ASSERT_EQ(length(b), sz);
@@ -257,8 +281,8 @@ TEST(CircularByteBufferTest, test_read_buffer) {
 
   for (unsigned char i = 0; i < sz / 2; ++i) {
     unsigned char c = 255;
-    ASSERT_EQ(1, pop_front(b, &c, 1));
-    ASSERT_EQ(c, i);
+    ASSERT_EQ(1, pop_front(b, c));
+    ASSERT_EQ(c, in_ref[in_ridx++]);
     {
       AT a;
       ASSERT_TRUE(read_buffer(b, a));
@@ -269,21 +293,22 @@ TEST(CircularByteBufferTest, test_read_buffer) {
       ASSERT_EQ(b.buffer + i + 1, std::get<0>(*d));
       ASSERT_EQ(length(b), std::get<1>(*d));
     }
+    assert_ref(in_ref, in_ridx, b);
   }
 
-  for (unsigned char i = 0; i < (sz / 2) - 1; ++i) {
-    ASSERT_EQ(push_back(b, &i, 1), 1);
+  for (unsigned char i = 0; i < (sz / 2); ++i) {
+    ASSERT_EQ(push_back(b, in_ref[in_widx++]), 1);
     {
       AT a;
       ASSERT_TRUE(read_buffer(b, a));
-      // ASSERT_EQ(a.length, 2);
+      ASSERT_EQ(a.length, 2);
 
       {
         std::size_t strt = 4;
         auto d = get(a, 0);
         ASSERT_TRUE(d);
         ASSERT_EQ(b.buffer + strt, std::get<0>(*d));
-        ASSERT_EQ(i + 1 + strt, std::get<1>(*d));
+        ASSERT_EQ(length(b) - (i + 1), std::get<1>(*d));
       }
       {
         auto d = get(a, 1);
@@ -292,19 +317,32 @@ TEST(CircularByteBufferTest, test_read_buffer) {
         ASSERT_EQ(i + 1, std::get<1>(*d));
       }
     }
+    assert_ref(in_ref, in_ridx, b);
   }
 
-  {
-    const unsigned char i = 255;
-    ASSERT_EQ(push_back(b, &i, 1), 1);
+  ASSERT_EQ(capacity(b), length(b));
+  ASSERT_TRUE(is_full(b));
+  printf("length: %zu\n", length(b));
 
-    AT a;
-    ASSERT_TRUE(read_buffer(b, a));
-    ASSERT_EQ(a.length, 1);
+  while (length(b) > 0) {
+    unsigned char c = 255;
+    ASSERT_EQ(1, pop_front(b, c));
+    ASSERT_EQ(c, in_ref[in_ridx++]);
 
-    auto d = get(a, 0);
-    ASSERT_TRUE(d);
-    ASSERT_EQ(b.buffer, std::get<0>(*d));
-    ASSERT_EQ(sz, std::get<1>(*d));
+    assert_ref(in_ref, in_ridx, b);
   }
+
+  // {
+  //   const unsigned char i = 255;
+  //   ASSERT_EQ(push_back(b, &i, 1), 1);
+  //
+  //   AT a;
+  //   ASSERT_TRUE(read_buffer(b, a));
+  //   ASSERT_EQ(a.length, 2);
+  //
+  //   auto d = get(a, 0);
+  //   ASSERT_TRUE(d);
+  //   ASSERT_EQ(b.buffer, std::get<0>(*d));
+  //   ASSERT_EQ(sz, std::get<1>(*d));
+  // }
 }

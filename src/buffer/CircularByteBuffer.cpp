@@ -22,6 +22,11 @@ length(const CircularByteBuffer &b) noexcept {
   return b.write - b.read;
 }
 
+std::size_t
+capacity(const CircularByteBuffer &b) noexcept {
+  return b.capacity;
+}
+
 bool
 is_empty(const CircularByteBuffer &b) noexcept {
   return b.read == b.write;
@@ -124,6 +129,11 @@ push_back(CircularByteBuffer &self, const unsigned char *write,
 } // namespace sp
 
 std::size_t
+push_back(CircularByteBuffer &self, unsigned char c) noexcept {
+  return push_back(self, &c, 1);
+}
+
+std::size_t
 pop_front(CircularByteBuffer &self, BytesView &read) noexcept {
   auto res = pop_front(self, read.raw + read.pos, remaining_write(read));
   read.pos += res;
@@ -159,6 +169,17 @@ pop_front(CircularByteBuffer &self, unsigned char *read,
   return result;
 }
 
+std::size_t
+pop_front(CircularByteBuffer &self, unsigned char &c) noexcept {
+  return pop_front(self, &c, 1);
+}
+
+void
+consume_bytes(CircularByteBuffer &self, std::size_t b) noexcept {
+  assert(self.read + b <= self.write);
+  self.read += b;
+}
+
 bool
 read_buffer(CircularByteBuffer &self,
             Array<std::tuple<unsigned char *, std::size_t>> &result) noexcept {
@@ -170,21 +191,33 @@ read_buffer(CircularByteBuffer &self,
   std::size_t r = self.read;
 Lit:
   if (r < w) {
-    std::size_t len = w - r;
-    auto out = insert(result, std::make_tuple(self.buffer + r, len));
-    assert(out != nullptr);
-  } else if (r != w) {
-    std::size_t len = self.capacity - index(r, self.capacity);
-    auto out = insert(result, std::make_tuple(self.buffer + r, len));
-    assert(out != nullptr);
-
+    const std::size_t bytes = w - r;
+    std::size_t r_idx = index(r, self.capacity);
 
     {
-      //TODO we are here
-      r = r + len;
+      const std::size_t l = std::min(bytes + r_idx, capacity(self) - r_idx);
+      printf("min(bytes[%zu],capacity[%zu]) = l[%zu]\n", bytes - r_idx,
+             self.capacity - r_idx, l);
+      auto out = insert(result, std::make_tuple(self.buffer + r_idx, l));
+      assert(out != nullptr);
+      r += l;
       goto Lit;
     }
   }
+  printf("\n");
+  /*
+   *
+   * else if (r != w) {
+   *   std::size_t len = self.capacity - index(r, self.capacity);
+   *   auto out = insert(result, std::make_tuple(self.buffer + r, len));
+   *   assert(out != nullptr);
+   *   {
+   *     //TODO we are here
+   *     r = r + len;
+   *     goto Lit;
+   *   }
+   * }
+   */
   return true;
 }
 

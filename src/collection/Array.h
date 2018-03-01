@@ -25,6 +25,11 @@ struct Array {
 
   Array(T *, std::size_t) noexcept;
   Array(T *, std::size_t, std::size_t) noexcept;
+
+  T &operator[](std::size_t idx) noexcept {
+    assert(idx < length);
+    return buffer[idx];
+  }
 };
 
 /*
