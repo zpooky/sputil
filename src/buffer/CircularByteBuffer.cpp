@@ -143,18 +143,6 @@ pop_front(CircularByteBuffer &self, BytesView &read) noexcept {
 std::size_t
 pop_front(CircularByteBuffer &self, unsigned char *read,
           std::size_t l) noexcept {
-  // TODO make better version
-  // std::size_t rlen = remaining_read(self);
-  // std::size_t length = std::min(l, rlen);
-  //
-  // if (length > 0) {
-  //   std::size_t r = index(self.read, self.capacity);
-  //   printf("read[r[%zu],len[%zu]]\n", r, length);
-  //   std::memcpy(read, self.buffer + r, length);
-  //   self.read += length;
-  // }
-
-  // return length;
 
   std::size_t result = 0;
   while (remaining_read(self) > 0) {
@@ -165,6 +153,20 @@ pop_front(CircularByteBuffer &self, unsigned char *read,
     std::size_t r = index(self.read++, self.capacity);
     read[result++] = self.buffer[r];
   }
+
+  // sp::StaticArray<std::tuple<unsigned char *, std::size_t>, 4> out;
+  // assert(read_buffer(self, out));
+  // printf("length(out):%zu\n", out.length);
+  //
+  // std::size_t result = 0;
+  // for (std::size_t i = 0; i < out.length && l > 0; ++i) {
+  //   std::size_t a_len = std::min(std::get<1>(out[i]), l);
+  //   const unsigned char *const arr = std::get<0>(out[i]);
+  //
+  //   std::memcpy(read, arr, a_len);
+  //   consume_bytes(self, a_len);
+  //   result += a_len;
+  // }
 
   return result;
 }
@@ -191,33 +193,30 @@ read_buffer(CircularByteBuffer &self,
   std::size_t r = self.read;
 Lit:
   if (r < w) {
-    const std::size_t bytes = w - r;
-    std::size_t r_idx = index(r, self.capacity);
+    const std::size_t bytes = w - r; // length of remaing bytes to read
+    const std::size_t r_idx = index(r, self.capacity);
 
     {
-      const std::size_t l = std::min(bytes + r_idx, capacity(self) - r_idx);
-      printf("min(bytes[%zu],capacity[%zu]) = l[%zu]\n", bytes - r_idx,
-             self.capacity - r_idx, l);
-      auto out = insert(result, std::make_tuple(self.buffer + r_idx, l));
-      assert(out != nullptr);
-      r += l;
-      goto Lit;
+      const std::size_t l = std::min(bytes, capacity(self) - r_idx);
+
+      // printf("bytes[%zu]|", bytes);
+      // printf("min(length(self):%zu"
+      //        ",capacity[%zu]-r_idx[%zu]):%zu"
+      //        "= l[%zu]\n", //
+      //        length(self), //
+      //        capacity(self), r_idx,
+      //        capacity(self) - r_idx, //
+      //        l);
+      if (l > 0) {
+        auto out = insert(result, std::make_tuple(self.buffer + r_idx, l));
+        assert(out != nullptr);
+        r += l;
+        goto Lit;
+      }
     }
   }
-  printf("\n");
-  /*
-   *
-   * else if (r != w) {
-   *   std::size_t len = self.capacity - index(r, self.capacity);
-   *   auto out = insert(result, std::make_tuple(self.buffer + r, len));
-   *   assert(out != nullptr);
-   *   {
-   *     //TODO we are here
-   *     r = r + len;
-   *     goto Lit;
-   *   }
-   * }
-   */
+  // printf("\n");
+
   return true;
 }
 

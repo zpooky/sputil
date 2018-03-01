@@ -244,7 +244,7 @@ TEST(CircularByteBufferTest, test_read_buffer) {
 
   sp::StaticArray<unsigned char, 255> in_ref;
   for (std::size_t i = 0; i < 255; ++i) {
-    insert(in_ref, char(i));
+    insert(in_ref, 'a' + i);
   }
   shuffle(r, in_ref);
   std::size_t in_widx = 0;
@@ -299,6 +299,8 @@ TEST(CircularByteBufferTest, test_read_buffer) {
   for (unsigned char i = 0; i < (sz / 2); ++i) {
     ASSERT_EQ(push_back(b, in_ref[in_widx++]), 1);
     {
+      // printf("lengt(b): %zu\n", length(b));
+
       AT a;
       ASSERT_TRUE(read_buffer(b, a));
       ASSERT_EQ(a.length, 2);
@@ -322,27 +324,14 @@ TEST(CircularByteBufferTest, test_read_buffer) {
 
   ASSERT_EQ(capacity(b), length(b));
   ASSERT_TRUE(is_full(b));
-  printf("length: %zu\n", length(b));
+  // printf("length: %zu\n", length(b));
 
   while (length(b) > 0) {
     unsigned char c = 255;
     ASSERT_EQ(1, pop_front(b, c));
     ASSERT_EQ(c, in_ref[in_ridx++]);
 
+    // printf("length(b): %zu\n", length(b));
     assert_ref(in_ref, in_ridx, b);
   }
-
-  // {
-  //   const unsigned char i = 255;
-  //   ASSERT_EQ(push_back(b, &i, 1), 1);
-  //
-  //   AT a;
-  //   ASSERT_TRUE(read_buffer(b, a));
-  //   ASSERT_EQ(a.length, 2);
-  //
-  //   auto d = get(a, 0);
-  //   ASSERT_TRUE(d);
-  //   ASSERT_EQ(b.buffer, std::get<0>(*d));
-  //   ASSERT_EQ(sz, std::get<1>(*d));
-  // }
 }
