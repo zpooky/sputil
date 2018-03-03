@@ -154,6 +154,7 @@ pop_front(CircularByteBuffer &self, unsigned char *read,
     read[result++] = self.buffer[r];
   }
 
+  // TODO
   // sp::StaticArray<std::tuple<unsigned char *, std::size_t>, 4> out;
   // assert(read_buffer(self, out));
   // printf("length(out):%zu\n", out.length);
@@ -166,6 +167,7 @@ pop_front(CircularByteBuffer &self, unsigned char *read,
   //   std::memcpy(read, arr, a_len);
   //   consume_bytes(self, a_len);
   //   result += a_len;
+  //   l -= a_len;
   // }
 
   return result;

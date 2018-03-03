@@ -335,3 +335,64 @@ TEST(CircularByteBufferTest, test_read_buffer) {
     assert_ref(in_ref, in_ridx, b);
   }
 }
+
+TEST(CircularByteBufferTest, test_random_read_buffer) {
+  prng::xorshift32 r(1);
+  constexpr std::size_t sz = 8;
+  std::size_t its = 0;
+  while (its++ < 1000) {
+    sp::StaticCircularByteBuffer<sz> b;
+    using AT = sp::StaticArray<std::tuple<unsigned char *, std::size_t>, 2>;
+
+    constexpr std::size_t in_cap = 255;
+    sp::StaticArray<unsigned char, in_cap> in_ref;
+    for (std::size_t i = 0; i < in_cap; ++i) {
+      insert(in_ref, char(i));
+    }
+    shuffle(r, in_ref);
+    std::size_t in_widx = 0;
+    std::size_t in_ridx = 0;
+
+    while (in_widx < in_cap) {
+      {
+        std::size_t remaining_in(in_cap - in_widx);
+        // assert(remaining_in > 0);
+        std::size_t write_max = std::min(remaining_write(b), remaining_in);
+        // assert(write_max > 0);
+        auto write = uniform_dist(r, std::uint32_t(0),
+                                  std::uint32_t(write_max) + 1); // TODO why +1
+        // printf("write(%zu),rem_w(%zu),rem_r(%zu)\n", write,
+        // remaining_write(b), remaining_read(b));
+
+        for (std::size_t i = 0; i < write; ++i) {
+          auto written = push_back(b, in_ref[in_widx++]);
+          ASSERT_EQ(written, 1);
+          assert_ref(in_ref, in_ridx, b);
+        }
+      }
+
+      {
+        // TODO
+        unsigned char out[sz] = {0};
+        auto read_max = std::min(remaining_read(b), sizeof(out));
+        // assert(read_max > 0);
+        auto read =
+            uniform_dist(r, std::uint32_t(0), std::uint32_t(read_max) + 1);
+        // printf("read(%zu),rem_w(%zu),rem_r(%zu)\n", read, remaining_write(b),
+        // remaining_read(b));
+        assert_ref(in_ref, in_ridx, b);
+        auto readed = pop_front(b, out, read);
+
+        // printf("y\n");
+        ASSERT_EQ(readed, read);
+        {
+          for (std::size_t i = 0; i < readed; ++i) {
+            ASSERT_EQ(out[i], in_ref[in_ridx++]);
+          }
+          assert_ref(in_ref, in_ridx, b);
+        }
+      }
+      // sleep(1);
+    }
+  }
+}
