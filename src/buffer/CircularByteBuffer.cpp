@@ -149,31 +149,18 @@ std::size_t
 pop_front(CircularByteBuffer &self, unsigned char *read,
           std::size_t l) noexcept {
 
-  std::size_t result = 0;
-  while (remaining_read(self) > 0) {
-    if (result == l) {
-      break;
-    }
-
-    std::size_t r = index(self.read++, self.capacity);
-    read[result++] = self.buffer[r];
-  }
-
-  // TODO
-  // sp::StaticArray<std::tuple<unsigned char *, std::size_t>, 4> out;
-  // assert(read_buffer(self, out));
-  // printf("length(out):%zu\n", out.length);
-  //
   // std::size_t result = 0;
-  // for (std::size_t i = 0; i < out.length && l > 0; ++i) {
-  //   std::size_t a_len = std::min(std::get<1>(out[i]), l);
-  //   const unsigned char *const arr = std::get<0>(out[i]);
+  // while (remaining_read(self) > 0) {
+  //   if (result == l) {
+  //     break;
+  //   }
   //
-  //   std::memcpy(read, arr, a_len);
-  //   result += a_len;
-  //   l -= a_len;
+  //   std::size_t r = index(self.read++, self.capacity);
+  //   read[result++] = self.buffer[r];
   // }
-  // consume_bytes(self, result);
+
+  std::size_t result = peek_front(self,read,l);
+  consume_bytes(self, result);
 
   return result;
 }
@@ -186,15 +173,30 @@ pop_front(CircularByteBuffer &self, unsigned char &c) noexcept {
 std::size_t
 peek_front(const CircularByteBuffer &self, unsigned char *read,
            std::size_t l) noexcept {
-  std::size_t result = 0;
-  std::size_t r_idx = self.read;
-  while (remaining_read(r_idx, self.write) > 0) {
-    if (result == l) {
-      break;
-    }
+  // std::size_t result = 0;
+  // std::size_t r_idx = self.read;
+  // while (remaining_read(r_idx, self.write) > 0) {
+  //   if (result == l) {
+  //     break;
+  //   }
+  //
+  //   std::size_t r = index(r_idx++, self.capacity);
+  //   read[result++] = self.buffer[r];
+  // }
 
-    std::size_t r = index(r_idx++, self.capacity);
-    read[result++] = self.buffer[r];
+  // TODO
+  sp::StaticArray<std::tuple<const unsigned char *, std::size_t>, 4> out;
+  assert(read_buffer(self, out));
+  // printf("length(out):%zu\n", out.length);
+
+  std::size_t result = 0;
+  for (std::size_t i = 0; i < out.length && l > 0; ++i) {
+    std::size_t a_len = std::min(std::get<1>(out[i]), l);
+    const unsigned char *const arr = std::get<0>(out[i]);
+
+    std::memcpy(read+result, arr, a_len);
+    result += a_len;
+    l -= a_len;
   }
 
   return result;
@@ -218,9 +220,9 @@ consume_bytes(CircularByteBuffer &self, std::size_t b) noexcept {
   self.read += b;
 }
 
-bool
-read_buffer(CircularByteBuffer &self,
-            Array<std::tuple<unsigned char *, std::size_t>> &result) noexcept {
+template <typename Buffer, typename Arr>
+static bool
+int_read_buffer(Buffer &self, Arr &result) {
   /*
    * read     write    read
    * |xxxxxxxx|........|xxxxxxxxxx|
@@ -229,7 +231,7 @@ read_buffer(CircularByteBuffer &self,
   std::size_t r = self.read;
 Lit:
   if (r < w) {
-    const std::size_t bytes = w - r; // length of remaing bytes to read
+    const std::size_t bytes = remaining_read(w, r);
     const std::size_t r_idx = index(r, self.capacity);
 
     {
@@ -244,6 +246,7 @@ Lit:
       //        capacity(self) - r_idx, //
       //        l);
       if (l > 0) {
+        // printf("insert(result, %c, length[%zu])\n", self.buffer[r_idx], l);
         auto out = insert(result, std::make_tuple(self.buffer + r_idx, l));
         assert(out != nullptr);
         r += l;
@@ -254,6 +257,19 @@ Lit:
   // printf("\n");
 
   return true;
+}
+
+bool
+read_buffer(CircularByteBuffer &self,
+            Array<std::tuple<unsigned char *, std::size_t>> &result) noexcept {
+  return int_read_buffer(self, result);
+}
+
+bool
+read_buffer(
+    const CircularByteBuffer &self,
+    Array<std::tuple<const unsigned char *, std::size_t>> &result) noexcept {
+  return int_read_buffer(self, result);
 }
 
 } // namespace sp

@@ -87,7 +87,7 @@ TEST(CircularByteBufferTest, test_circular) {
   }
 
   {
-    ASSERT_EQ(14, push_back(b, raw));
+    ASSERT_EQ(std::size_t(14), push_back(b, raw));
     ASSERT_EQ(std::size_t(0), push_back(b, raw));
 
     ASSERT_EQ(cap, length(b));
@@ -101,7 +101,7 @@ TEST(CircularByteBufferTest, test_circular) {
     // print_hex("read[%s]\n", read);
     ASSERT_EQ(char(0), read[2]);
     ASSERT_EQ(char(1), read[3]);
-    ASSERT_EQ(0, std::memcmp(read + 2, raw, 14));
+    ASSERT_EQ(std::size_t(0), std::memcmp(read + 2, raw, 14));
   }
 }
 
@@ -110,30 +110,30 @@ TEST(CircularByteBufferTest, test_pop_empty) {
   {
     sp::StaticCircularByteBuffer<sz> b;
     unsigned char c = 99;
-    ASSERT_EQ(0, pop_front(b, &c, 1));
+    ASSERT_EQ(std::size_t(0), pop_front(b, &c, 1));
     ASSERT_EQ(c, 99);
 
     unsigned char out[] = {0, 0};
-    ASSERT_EQ(0, pop_front(b, out, sizeof(out)));
+    ASSERT_EQ(std::size_t(0), pop_front(b, out, sizeof(out)));
   }
   {
 
     sp::StaticCircularByteBuffer<sz> b;
     {
       unsigned char in = 127;
-      ASSERT_EQ(1, push_back(b, &in, 1));
+      ASSERT_EQ(std::size_t(1), push_back(b, &in, 1));
 
       unsigned char c = 99;
-      ASSERT_EQ(1, pop_front(b, &c, 1));
+      ASSERT_EQ(std::size_t(1), pop_front(b, &c, 1));
       ASSERT_EQ(c, 127);
     }
 
     unsigned char c = 99;
-    ASSERT_EQ(0, pop_front(b, &c, 1));
+    ASSERT_EQ(std::size_t(0), pop_front(b, &c, 1));
     ASSERT_EQ(c, 99);
 
     unsigned char out[] = {0, 0};
-    ASSERT_EQ(0, pop_front(b, out, sizeof(out)));
+    ASSERT_EQ(std::size_t(0), pop_front(b, out, sizeof(out)));
   }
   {
 
@@ -143,13 +143,13 @@ TEST(CircularByteBufferTest, test_pop_empty) {
 
     {
       unsigned char out[] = {0, 0};
-      ASSERT_EQ(2, pop_front(b, out, sizeof(out)));
+      ASSERT_EQ(std::size_t(2), pop_front(b, out, sizeof(out)));
       ASSERT_EQ(out[0], 13);
       ASSERT_EQ(out[1], 240);
     }
 
     unsigned char c = 99;
-    ASSERT_EQ(0, pop_front(b, &c, 1));
+    ASSERT_EQ(std::size_t(0), pop_front(b, &c, 1));
     ASSERT_EQ(c, 99);
 
     unsigned char out[] = {0, 0};
@@ -160,7 +160,7 @@ TEST(CircularByteBufferTest, test_pop_empty) {
 TEST(CircularByteBufferTest, test_random) {
   prng::xorshift32 r(1);
   std::size_t its = 0;
-  while (its++ < 10000) {
+  while (its++ < 1000) {
     constexpr std::size_t sz = 16;
     unsigned char in[255];
     for (std::size_t i = 0; i < sizeof(in); ++i) {
@@ -267,15 +267,16 @@ TEST(CircularByteBufferTest, test_read_buffer) {
   std::size_t in_ridx = 0;
   {
     AT a;
-    ASSERT_EQ(a.length, 0);
+    ASSERT_EQ(a.length, std::size_t(0));
     ASSERT_TRUE(read_buffer(b, a));
-    ASSERT_EQ(a.length, 0);
+    ASSERT_EQ(a.length, std::size_t(0));
   }
 
   {
     for (unsigned char i = 0; i < sz; ++i) {
-      ASSERT_EQ(push_back(b, in_ref[in_widx++]), 1);
-      ASSERT_TRUE(!is_empty(b));
+      ASSERT_EQ(push_back(b, in_ref[in_widx++]), std::size_t(1));
+      ASSERT_FALSE(is_empty(b));
+
       ASSERT_EQ(i + 1, length(b));
 
       {
@@ -409,6 +410,70 @@ TEST(CircularByteBufferTest, test_random_read_buffer) {
         }
       }
       // sleep(1);
+    }
+  }
+}
+
+template <std::size_t N>
+static void
+print_raw(unsigned char (&buffer)[N], std::size_t l) {
+  printf("[");
+  for (std::size_t i = 0; i < l; ++i) {
+    if (buffer[i] >= 0 && buffer[i] <= 9) {
+      printf("\\%d.", buffer[i]);
+    } else {
+      printf("%c.", buffer[i]);
+    }
+  }
+  printf("]len: %zu\n", l);
+}
+
+TEST(CircularByteBufferTest, test_peek) {
+  constexpr std::size_t sz = 8;
+  sp::StaticCircularByteBuffer<sz> b;
+  for (std::size_t i = 0; i < sz; ++i) {
+    unsigned char out[sz] = {0};
+    ASSERT_EQ(i, peek_front(b, out));
+    for (std::size_t k = 0; k < i; ++k) {
+      ASSERT_EQ(out[k], (unsigned char)k);
+    }
+
+    ASSERT_EQ(1, push_back(b, char(i)));
+  }
+
+  {
+    unsigned char out[sz / 2] = {0};
+    ASSERT_EQ(sizeof(out), pop_front(b, out));
+    for (std::size_t i = 0; i < sizeof(out); ++i) {
+      ASSERT_EQ(out[i], char(i));
+    }
+  }
+
+  // printf("----\n");
+  // ref: [\4.\5.\6.\7.a.]len: 5
+  // ref: [\4.\5.\6.\7.a.b.]len: 6
+  // ref: [\4.\5.\6.\7.a.b.c.]len: 7
+  // ref: [\4.\5.\6.\7.a.b.c.d.]len: 8
+  const unsigned char in_char_strt = 'a';
+  unsigned char in_char = in_char_strt;
+  while (remaining_write(b) > 0) {
+    ASSERT_EQ(1, push_back(b, in_char++));
+    {
+      unsigned char out[sz] = {0};
+      ASSERT_EQ(length(b), peek_front(b, out));
+      // printf("cmp: ");
+      // print_raw(out, length(b));
+      std::size_t k = 0;
+      for (; k < sz / 2; ++k) {
+        // printf("k[%zu]\n", k);
+        ASSERT_EQ(out[k], char(k) + (sz / 2));
+      }
+      unsigned char char_cmp = in_char_strt;
+      while (char_cmp != in_char) {
+        auto cmp = out[k++];
+        ASSERT_EQ(char_cmp, cmp);
+        char_cmp++;
+      }
     }
   }
 }

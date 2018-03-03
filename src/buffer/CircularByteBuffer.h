@@ -96,6 +96,10 @@ consume_bytes(CircularByteBuffer &, std::size_t) noexcept;
 bool
 read_buffer(CircularByteBuffer &,
             Array<std::tuple<unsigned char *, std::size_t>> &) noexcept;
+
+bool
+read_buffer(const CircularByteBuffer &,
+            Array<std::tuple<const unsigned char *, std::size_t>> &) noexcept;
 /*
  * ==========================================================================
  */
