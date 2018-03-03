@@ -25,6 +25,12 @@ struct StaticCircularByteBuffer : public CircularByteBuffer {
 };
 
 std::size_t
+remaining_write(const CircularByteBuffer &) noexcept;
+
+std::size_t
+remaining_read(const CircularByteBuffer &) noexcept;
+
+std::size_t
 length(const CircularByteBuffer &) noexcept;
 
 std::size_t
@@ -38,12 +44,6 @@ is_full(const CircularByteBuffer &) noexcept;
 
 void
 reset(CircularByteBuffer &) noexcept;
-
-std::size_t
-remaining_write(const CircularByteBuffer &) noexcept;
-
-std::size_t
-remaining_read(const CircularByteBuffer &) noexcept;
 
 std::size_t
 push_back(CircularByteBuffer &, BytesView &) noexcept;
@@ -73,6 +73,21 @@ template <std::size_t SIZE>
 std::size_t
 pop_front(CircularByteBuffer &self, unsigned char (&buffer)[SIZE]) noexcept {
   return pop_front(self, buffer, SIZE);
+}
+
+std::size_t
+peek_front(const CircularByteBuffer &, BytesView &) noexcept;
+
+std::size_t
+peek_front(const CircularByteBuffer &, unsigned char *, std::size_t) noexcept;
+
+std::size_t
+peek_front(const CircularByteBuffer &, unsigned char &) noexcept;
+
+template <std::size_t SIZE>
+std::size_t
+peek_front(const CircularByteBuffer &self, unsigned char (&buffer)[SIZE]) noexcept {
+  return peek_front(self, buffer, SIZE);
 }
 
 void

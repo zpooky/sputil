@@ -17,9 +17,24 @@ index(std::size_t in, std::size_t capacity) noexcept {
   return in & (capacity - 1);
 }
 
+static std::size_t
+remaining_read(std::size_t write, std::size_t read) noexcept {
+  return write - read;
+}
+
+std::size_t
+remaining_read(const CircularByteBuffer &b) noexcept {
+  return remaining_read(b.write, b.read);
+}
+
+std::size_t
+remaining_write(const CircularByteBuffer &b) noexcept {
+  return b.capacity - length(b);
+}
+
 std::size_t
 length(const CircularByteBuffer &b) noexcept {
-  return b.write - b.read;
+  return remaining_read(b);
 }
 
 std::size_t
@@ -41,16 +56,6 @@ void
 reset(CircularByteBuffer &b) noexcept {
   b.read = 0;
   b.write = 0;
-}
-
-std::size_t
-remaining_write(const CircularByteBuffer &b) noexcept {
-  return b.capacity - length(b);
-}
-
-std::size_t
-remaining_read(const CircularByteBuffer &b) noexcept {
-  return length(b);
 }
 
 std::size_t
@@ -165,10 +170,10 @@ pop_front(CircularByteBuffer &self, unsigned char *read,
   //   const unsigned char *const arr = std::get<0>(out[i]);
   //
   //   std::memcpy(read, arr, a_len);
-  //   consume_bytes(self, a_len);
   //   result += a_len;
   //   l -= a_len;
   // }
+  // consume_bytes(self, result);
 
   return result;
 }
@@ -176,6 +181,35 @@ pop_front(CircularByteBuffer &self, unsigned char *read,
 std::size_t
 pop_front(CircularByteBuffer &self, unsigned char &c) noexcept {
   return pop_front(self, &c, 1);
+}
+
+std::size_t
+peek_front(const CircularByteBuffer &self, unsigned char *read,
+           std::size_t l) noexcept {
+  std::size_t result = 0;
+  std::size_t r_idx = self.read;
+  while (remaining_read(r_idx, self.write) > 0) {
+    if (result == l) {
+      break;
+    }
+
+    std::size_t r = index(r_idx++, self.capacity);
+    read[result++] = self.buffer[r];
+  }
+
+  return result;
+}
+
+std::size_t
+peek_front(const CircularByteBuffer &self, BytesView &b) noexcept {
+  std::size_t read = peek_front(self, b.raw + b.pos, remaining_read(b));
+  b.pos += read;
+  return read;
+}
+
+std::size_t
+peek_front(const CircularByteBuffer &self, unsigned char &c) noexcept {
+  return peek_front(self, &c, 1);
 }
 
 void

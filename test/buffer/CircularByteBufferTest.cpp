@@ -21,7 +21,7 @@ TEST(CircularByteBufferTest, test) {
   for (unsigned char i = 0; i < rcap; ++i) {
     raw[i] = i;
   }
-  print_hex("writ[%s]\n", raw);
+  // print_hex("writ[%s]\n", raw);
 
   ASSERT_EQ(std::size_t(0), length(b));
   ASSERT_TRUE(is_empty(b));
@@ -37,7 +37,7 @@ TEST(CircularByteBufferTest, test) {
   {
     unsigned char read[rcap];
     ASSERT_EQ(cap, pop_front(b, read));
-    print_hex("read[%s]\n", read);
+    // print_hex("read[%s]\n", read);
     ASSERT_EQ(0, std::memcmp(read, raw, cap));
   }
 }
@@ -98,7 +98,7 @@ TEST(CircularByteBufferTest, test_circular) {
   {
     unsigned char read[rcap];
     ASSERT_EQ(cap, pop_front(b, read));
-    print_hex("read[%s]\n", read);
+    // print_hex("read[%s]\n", read);
     ASSERT_EQ(char(0), read[2]);
     ASSERT_EQ(char(1), read[3]);
     ASSERT_EQ(0, std::memcmp(read + 2, raw, 14));
@@ -185,10 +185,18 @@ TEST(CircularByteBufferTest, test_random) {
         auto written = push_back(b, in_it, write);
         ASSERT_EQ(written, write);
         in_it += written;
+        /*peek*/ {
+          unsigned char out[sz] = {0};
+          ASSERT_EQ(peek_front(b, out), length(b));
+          std::size_t cmp_copy = cmp;
+          for (std::size_t i = 0; i < length(b); ++i) {
+            ASSERT_EQ(out[i], cmp_copy++);
+          }
+        }
       }
 
       {
-        unsigned char out[16] = {0};
+        unsigned char out[sz] = {0};
         auto read_max = std::min(remaining_read(b), sizeof(out));
         // assert(read_max > 0);
         auto read =
@@ -200,6 +208,14 @@ TEST(CircularByteBufferTest, test_random) {
         {
           for (std::size_t i = 0; i < readed; ++i) {
             ASSERT_EQ(out[i], cmp++);
+          }
+        }
+        /*peek*/ {
+          unsigned char out[sz] = {0};
+          ASSERT_EQ(peek_front(b, out), length(b));
+          std::size_t cmp_copy = cmp;
+          for (std::size_t i = 0; i < length(b); ++i) {
+            ASSERT_EQ(out[i], cmp_copy++);
           }
         }
       }
@@ -337,7 +353,7 @@ TEST(CircularByteBufferTest, test_read_buffer) {
 }
 
 TEST(CircularByteBufferTest, test_random_read_buffer) {
-  prng::xorshift32 r(1);
+  prng::xorshift32 r(2);
   constexpr std::size_t sz = 8;
   std::size_t its = 0;
   while (its++ < 1000) {
