@@ -1,32 +1,26 @@
 [
 {
   "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./buffer/BytesViewTest.o buffer/BytesViewTest.cpp",
-  "file": "buffer/BytesViewTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/concurrent/ReadWriteLock.o src/concurrent/ReadWriteLock.cpp",
-  "file": "src/concurrent/ReadWriteLock.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/buffer/CircularByteBuffer.o src/buffer/CircularByteBuffer.cpp",
-  "file": "src/buffer/CircularByteBuffer.cpp"
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./util/BitsetTest.o util/BitsetTest.cpp",
+  "file": "util/BitsetTest.cpp"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./concurrent/ReadWriteLockTest.o concurrent/ReadWriteLockTest.cpp",
-  "file": "concurrent/ReadWriteLockTest.cpp"
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./stack/StackTest.o stack/StackTest.cpp",
+  "file": "stack/StackTest.cpp"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./list/LinkedListTest.o list/LinkedListTest.cpp",
-  "file": "list/LinkedListTest.cpp"
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/StaticTreeTest.o tree/StaticTreeTest.cpp",
+  "file": "tree/StaticTreeTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/concurrent/Barrier.o src/concurrent/Barrier.cpp",
+  "file": "src/concurrent/Barrier.cpp"
 },
 
 {
@@ -42,165 +36,9 @@
 },
 
 {
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./collection/ArrayTest.o collection/ArrayTest.cpp",
-  "file": "collection/ArrayTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./other/tmplTest.o other/tmplTest.cpp",
-  "file": "other/tmplTest.cpp"
-},
-
-{
   "directory": "/home/spooky/development/repos/sputil",
   "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/prng/xorshift.o src/prng/xorshift.cpp",
   "file": "src/prng/xorshift.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/buffer/CircularBuffer.o src/buffer/CircularBuffer.cpp",
-  "file": "src/buffer/CircularBuffer.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./heap/binaryHeapTest.o heap/binaryHeapTest.cpp",
-  "file": "heap/binaryHeapTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/hash/fnv.o src/hash/fnv.cpp",
-  "file": "src/hash/fnv.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/prng/URandom.o src/prng/URandom.cpp",
-  "file": "src/prng/URandom.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/hash/crc.o src/hash/crc.cpp",
-  "file": "src/hash/crc.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./stack/StackTest.o stack/StackTest.cpp",
-  "file": "stack/StackTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./encode/hexTest.o encode/hexTest.cpp",
-  "file": "encode/hexTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./hash/crcTest.o hash/crcTest.cpp",
-  "file": "hash/crcTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./util/BloomFilterTest.o util/BloomFilterTest.cpp",
-  "file": "util/BloomFilterTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./map/ProbingHashMapTest.o map/ProbingHashMapTest.cpp",
-  "file": "map/ProbingHashMapTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./hash/fnvTest.o hash/fnvTest.cpp",
-  "file": "hash/fnvTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/encode/hex.o src/encode/hex.cpp",
-  "file": "src/encode/hex.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/buffer/BytesView.o src/buffer/BytesView.cpp",
-  "file": "src/buffer/BytesView.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./buffer/CircularBufferTest.o buffer/CircularBufferTest.cpp",
-  "file": "buffer/CircularBufferTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/red-blackTest.o tree/red-blackTest.cpp",
-  "file": "tree/red-blackTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./util/BitsetTest.o util/BitsetTest.cpp",
-  "file": "util/BitsetTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/StaticTreeTest.o tree/StaticTreeTest.cpp",
-  "file": "tree/StaticTreeTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./util/MaybeTest.o util/MaybeTest.cpp",
-  "file": "util/MaybeTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./list/SkipListTest.o list/SkipListTest.cpp",
-  "file": "list/SkipListTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./other/tmpl.o other/tmpl.cpp",
-  "file": "other/tmpl.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/btreeTest.o tree/btreeTest.cpp",
-  "file": "tree/btreeTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./list/FixedListTest.o list/FixedListTest.cpp",
-  "file": "list/FixedListTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./buffer/SinkTest.o buffer/SinkTest.cpp",
-  "file": "buffer/SinkTest.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/treeTest.o tree/treeTest.cpp",
-  "file": "tree/treeTest.cpp"
 },
 
 {
@@ -211,14 +49,26 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/util/Bitset.o src/util/Bitset.cpp",
-  "file": "src/util/Bitset.cpp"
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/main.o src/main.cpp",
+  "file": "src/main.cpp"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/avlTest.o tree/avlTest.cpp",
-  "file": "tree/avlTest.cpp"
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./buffer/CircularBufferTest.o buffer/CircularBufferTest.cpp",
+  "file": "buffer/CircularBufferTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./list/SkipListTest.o list/SkipListTest.cpp",
+  "file": "list/SkipListTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/hash/djb2.o src/hash/djb2.cpp",
+  "file": "src/hash/djb2.cpp"
 },
 
 {
@@ -229,14 +79,116 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./util/FeistlNetTest.o util/FeistlNetTest.cpp",
-  "file": "util/FeistlNetTest.cpp"
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./heap/binaryHeapTest.o heap/binaryHeapTest.cpp",
+  "file": "heap/binaryHeapTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./collection/ArrayTest.o collection/ArrayTest.cpp",
+  "file": "collection/ArrayTest.cpp"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/concurrent/Barrier.o src/concurrent/Barrier.cpp",
-  "file": "src/concurrent/Barrier.cpp"
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/collection/Array.o src/collection/Array.cpp",
+  "file": "src/collection/Array.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/red-blackTest.o tree/red-blackTest.cpp",
+  "file": "tree/red-blackTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/hash/crc.o src/hash/crc.cpp",
+  "file": "src/hash/crc.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/buffer/BytesView.o src/buffer/BytesView.cpp",
+  "file": "src/buffer/BytesView.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./hash/crcTest.o hash/crcTest.cpp",
+  "file": "hash/crcTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./buffer/BytesViewTest.o buffer/BytesViewTest.cpp",
+  "file": "buffer/BytesViewTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./concurrent/ReadWriteLockTest.o concurrent/ReadWriteLockTest.cpp",
+  "file": "concurrent/ReadWriteLockTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/hash/fnv.o src/hash/fnv.cpp",
+  "file": "src/hash/fnv.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/prng/util.o src/prng/util.cpp",
+  "file": "src/prng/util.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/buffer/CircularBuffer.o src/buffer/CircularBuffer.cpp",
+  "file": "src/buffer/CircularBuffer.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./other/tmplTest.o other/tmplTest.cpp",
+  "file": "other/tmplTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./hash/fnvTest.o hash/fnvTest.cpp",
+  "file": "hash/fnvTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./io/fileTest.o io/fileTest.cpp",
+  "file": "io/fileTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/util/Bitset.o src/util/Bitset.cpp",
+  "file": "src/util/Bitset.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/io/fd.o src/io/fd.cpp",
+  "file": "src/io/fd.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./buffer/SinkTest.o buffer/SinkTest.cpp",
+  "file": "buffer/SinkTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./list/FixedListTest.o list/FixedListTest.cpp",
+  "file": "list/FixedListTest.cpp"
 },
 
 {
@@ -247,26 +199,38 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/io/fd.o src/io/fd.cpp",
-  "file": "src/io/fd.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
   "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/util/numeric.o src/util/numeric.cpp",
   "file": "src/util/numeric.cpp"
 },
 
 {
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/collection/Array.o src/collection/Array.cpp",
-  "file": "src/collection/Array.cpp"
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./util/BloomFilterTest.o util/BloomFilterTest.cpp",
+  "file": "util/BloomFilterTest.cpp"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/hash/djb2.o src/hash/djb2.cpp",
-  "file": "src/hash/djb2.cpp"
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/encode/hex.o src/encode/hex.cpp",
+  "file": "src/encode/hex.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/avlTest.o tree/avlTest.cpp",
+  "file": "tree/avlTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./util/MaybeTest.o util/MaybeTest.cpp",
+  "file": "util/MaybeTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./list/LinkedListTest.o list/LinkedListTest.cpp",
+  "file": "list/LinkedListTest.cpp"
 },
 
 {
@@ -277,8 +241,56 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/main.o src/main.cpp",
-  "file": "src/main.cpp"
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/buffer/CircularByteBuffer.o src/buffer/CircularByteBuffer.cpp",
+  "file": "src/buffer/CircularByteBuffer.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/btreeTest.o tree/btreeTest.cpp",
+  "file": "tree/btreeTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./tree/treeTest.o tree/treeTest.cpp",
+  "file": "tree/treeTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./encode/hexTest.o encode/hexTest.cpp",
+  "file": "encode/hexTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./map/ProbingHashMapTest.o map/ProbingHashMapTest.cpp",
+  "file": "map/ProbingHashMapTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./util/FeistlNetTest.o util/FeistlNetTest.cpp",
+  "file": "util/FeistlNetTest.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/concurrent/ReadWriteLock.o src/concurrent/ReadWriteLock.cpp",
+  "file": "src/concurrent/ReadWriteLock.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -c -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -o build/bear/./other/tmpl.o other/tmpl.cpp",
+  "file": "other/tmpl.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/test/prng/URandom.o src/prng/URandom.cpp",
+  "file": "src/prng/URandom.cpp"
 },
 
 {
@@ -415,68 +427,14 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/buffer/BytesView.h",
-  "file": "../src/buffer/BytesView.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/concurrent/ReadWriteLock.h",
-  "file": "src/concurrent/ReadWriteLock.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/CircularByteBuffer.h",
-  "file": "src/buffer/CircularByteBuffer.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/buffer/BytesView.h",
-  "file": "include/buffer/BytesView.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/collection/Array.h",
-  "file": "include/collection/Array.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/util/comparator.h",
-  "file": "include/util/comparator.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/util/numeric.h",
-  "file": "include/util/numeric.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/util/swap.h",
-  "file": "include/util/swap.h"
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/util/Bitset.h",
+  "file": "../src/util/Bitset.h"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/concurrent/Barrier.h",
-  "file": "../src/concurrent/Barrier.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/collection/Array.h",
-  "file": "../src/collection/Array.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/util/comparator.h",
-  "file": "../src/util/comparator.h"
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/stack/Stack.h",
+  "file": "../src/stack/Stack.h"
 },
 
 {
@@ -493,6 +451,216 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/StaticTree.h",
+  "file": "../src/tree/StaticTree.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/tree.h",
+  "file": "../src/tree/tree.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/util/comparator.h",
+  "file": "../src/util/comparator.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/concurrent/Barrier.h",
+  "file": "src/concurrent/Barrier.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/buffer/CircularByteBuffer.h",
+  "file": "../src/buffer/CircularByteBuffer.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/BytesView.h",
+  "file": "src/buffer/BytesView.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/collection/Array.h",
+  "file": "../src/collection/Array.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/encode/hex.h",
+  "file": "../src/encode/hex.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/prng/util.h",
+  "file": "../src/prng/util.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/prng/xorshift.h",
+  "file": "../src/prng/xorshift.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/io/path.h",
+  "file": "src/io/path.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/util/numeric.h",
+  "file": "include/util/numeric.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/util/swap.h",
+  "file": "include/util/swap.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/prng/URandom.h",
+  "file": "../src/prng/URandom.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/tree/static_tree.h",
+  "file": "src/tree/static_tree.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/util/typed.h",
+  "file": "include/util/typed.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/tree/bst.h",
+  "file": "src/tree/bst.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/buffer/CircularBuffer.h",
+  "file": "../src/buffer/CircularBuffer.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/list/SkipList.h",
+  "file": "../src/list/SkipList.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/hash/djb2.h",
+  "file": "src/hash/djb2.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/heap/binary.h",
+  "file": "../src/heap/binary.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/red-black.h",
+  "file": "../src/tree/red-black.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/hash/crc.h",
+  "file": "src/hash/crc.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/concurrent/ReadWriteLock.h",
+  "file": "../src/concurrent/ReadWriteLock.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/hash/fnv.h",
+  "file": "src/hash/fnv.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/prng/URandom.h",
+  "file": "include/prng/URandom.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/prng/xorshift.h",
+  "file": "include/prng/xorshift.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c other/tmpl.h",
+  "file": "other/tmpl.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/io/file.h",
+  "file": "../src/io/file.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/io/fd.h",
+  "file": "../src/io/fd.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/tree/bst.h",
+  "file": "include/tree/bst.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/tree/tree.h",
+  "file": "include/tree/tree.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/util/comparator.h",
+  "file": "include/util/comparator.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/buffer/Sink.h",
+  "file": "../src/buffer/Sink.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/list/FixedList.h",
+  "file": "../src/list/FixedList.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
   "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/list/LinkedList.h",
   "file": "../src/list/LinkedList.h"
 },
@@ -505,104 +673,14 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/memory/FixedStackPooledAllocator.h",
+  "file": "../src/memory/FixedStackPooledAllocator.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil/test",
   "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/memory/StackPooledAllocator.h",
   "file": "../src/memory/StackPooledAllocator.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/prng/util.h",
-  "file": "../src/prng/util.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/prng/URandom.h",
-  "file": "src/prng/URandom.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/prng/xorshift.h",
-  "file": "../src/prng/xorshift.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/encode/hex.h",
-  "file": "../src/encode/hex.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/io/path.h",
-  "file": "src/io/path.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c other/tmpl.h",
-  "file": "other/tmpl.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/CircularBuffer.h",
-  "file": "src/buffer/CircularBuffer.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/heap/binary.h",
-  "file": "../src/heap/binary.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/stack/Stack.h",
-  "file": "../src/stack/Stack.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/hash/fnv.h",
-  "file": "src/hash/fnv.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/fd.h",
-  "file": "include/io/fd.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/file.h",
-  "file": "include/io/file.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/buffer/CircularByteBuffer.h",
-  "file": "include/buffer/CircularByteBuffer.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/path.h",
-  "file": "include/io/path.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/hash/crc.h",
-  "file": "src/hash/crc.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/hash/djb2.h",
-  "file": "../src/hash/djb2.h"
 },
 
 {
@@ -619,14 +697,8 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/util/Bitset.h",
-  "file": "../src/util/Bitset.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/map/ProbingHashMap.h",
-  "file": "../src/map/ProbingHashMap.h"
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/avl.h",
+  "file": "../src/tree/avl.h"
 },
 
 {
@@ -636,27 +708,21 @@
 },
 
 {
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/red-black.h",
-  "file": "../src/tree/red-black.h"
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/buffer/BytesView.h",
+  "file": "include/buffer/BytesView.h"
 },
 
 {
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/tree.h",
-  "file": "../src/tree/tree.h"
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/buffer/CircularByteBuffer.h",
+  "file": "include/buffer/CircularByteBuffer.h"
 },
 
 {
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/StaticTree.h",
-  "file": "../src/tree/StaticTree.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/list/SkipList.h",
-  "file": "../src/list/SkipList.h"
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/collection/Array.h",
+  "file": "include/collection/Array.h"
 },
 
 {
@@ -667,61 +733,25 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/list/FixedList.h",
-  "file": "../src/list/FixedList.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/memory/FixedStackPooledAllocator.h",
-  "file": "../src/memory/FixedStackPooledAllocator.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/buffer/Sink.h",
-  "file": "../src/buffer/Sink.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/avl.h",
-  "file": "../src/tree/avl.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/bst.h",
-  "file": "../src/tree/bst.h"
+  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/map/ProbingHashMap.h",
+  "file": "../src/map/ProbingHashMap.h"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/tree/bst.h",
-  "file": "include/tree/bst.h"
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/fd.h",
+  "file": "include/io/fd.h"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/tree/tree.h",
-  "file": "include/tree/tree.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/tree/static_tree.h",
-  "file": "../src/tree/static_tree.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil/test",
-  "command": "c++ -DSP_TEST -I../external/googletest/googletest/include -I../src -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST -ggdb -c ../src/util/typed.h",
-  "file": "../src/util/typed.h"
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/file.h",
+  "file": "include/io/file.h"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/io/file.h",
-  "file": "src/io/file.h"
+  "command": "c++ -DSP_TEST -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/path.h",
+  "file": "include/io/path.h"
 }
 ]

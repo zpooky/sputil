@@ -44,3 +44,6 @@ test/thetest
 *.stackdump
 sputil
 Session.vim
+AST_out.log
+*.patch
+chromatica.log

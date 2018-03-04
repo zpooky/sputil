@@ -1,26 +1,8 @@
 [
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/buffer/CircularByteBuffer.o src/buffer/CircularByteBuffer.cpp",
-  "file": "src/buffer/CircularByteBuffer.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/util/Bitset.o src/util/Bitset.cpp",
-  "file": "src/util/Bitset.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/collection/Array.o src/collection/Array.cpp",
-  "file": "src/collection/Array.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/hash/djb2.o src/hash/djb2.cpp",
-  "file": "src/hash/djb2.cpp"
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/io/fd.o src/io/fd.cpp",
+  "file": "src/io/fd.cpp"
 },
 
 {
@@ -31,8 +13,8 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/main.o src/main.cpp",
-  "file": "src/main.cpp"
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/buffer/CircularBuffer.o src/buffer/CircularBuffer.cpp",
+  "file": "src/buffer/CircularBuffer.cpp"
 },
 
 {
@@ -43,14 +25,14 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/io/file.o src/io/file.cpp",
-  "file": "src/io/file.cpp"
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/io/path.o src/io/path.cpp",
+  "file": "src/io/path.cpp"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/buffer/Sink.o src/buffer/Sink.cpp",
-  "file": "src/buffer/Sink.cpp"
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/collection/Array.o src/collection/Array.cpp",
+  "file": "src/collection/Array.cpp"
 },
 
 {
@@ -61,32 +43,14 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/main.o src/main.cpp",
+  "file": "src/main.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
   "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/concurrent/ReadWriteLock.o src/concurrent/ReadWriteLock.cpp",
   "file": "src/concurrent/ReadWriteLock.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/prng/xorshift.o src/prng/xorshift.cpp",
-  "file": "src/prng/xorshift.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/buffer/CircularBuffer.o src/buffer/CircularBuffer.cpp",
-  "file": "src/buffer/CircularBuffer.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/encode/hex.o src/encode/hex.cpp",
-  "file": "src/encode/hex.cpp"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/io/fd.o src/io/fd.cpp",
-  "file": "src/io/fd.cpp"
 },
 
 {
@@ -97,8 +61,14 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/io/path.o src/io/path.cpp",
-  "file": "src/io/path.cpp"
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/prng/util.o src/prng/util.cpp",
+  "file": "src/prng/util.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/buffer/Sink.o src/buffer/Sink.cpp",
+  "file": "src/buffer/Sink.cpp"
 },
 
 {
@@ -115,26 +85,56 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/CircularByteBuffer.h",
-  "file": "src/buffer/CircularByteBuffer.h"
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/io/file.o src/io/file.cpp",
+  "file": "src/io/file.cpp"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/buffer/BytesView.h",
-  "file": "include/buffer/BytesView.h"
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/util/Bitset.o src/util/Bitset.cpp",
+  "file": "src/util/Bitset.cpp"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/collection/Array.h",
-  "file": "include/collection/Array.h"
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/hash/djb2.o src/hash/djb2.cpp",
+  "file": "src/hash/djb2.cpp"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/util/comparator.h",
-  "file": "include/util/comparator.h"
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/prng/xorshift.o src/prng/xorshift.cpp",
+  "file": "src/prng/xorshift.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/buffer/CircularByteBuffer.o src/buffer/CircularByteBuffer.cpp",
+  "file": "src/buffer/CircularByteBuffer.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/encode/hex.o src/encode/hex.cpp",
+  "file": "src/encode/hex.cpp"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/io/file.h",
+  "file": "src/io/file.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/fd.h",
+  "file": "include/io/fd.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/path.h",
+  "file": "include/io/path.h"
 },
 
 {
@@ -151,20 +151,26 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/util/Bitset.h",
-  "file": "src/util/Bitset.h"
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/util/numeric.h",
+  "file": "src/util/numeric.h"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/tree/bst.h",
-  "file": "include/tree/bst.h"
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/CircularBuffer.h",
+  "file": "src/buffer/CircularBuffer.h"
 },
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/tree/tree.h",
-  "file": "include/tree/tree.h"
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/hash/crc.h",
+  "file": "src/hash/crc.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/io/path.h",
+  "file": "src/io/path.h"
 },
 
 {
@@ -175,14 +181,8 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/hash/djb2.h",
-  "file": "src/hash/djb2.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/util/numeric.h",
-  "file": "src/util/numeric.h"
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/util/comparator.h",
+  "file": "include/util/comparator.h"
 },
 
 {
@@ -217,62 +217,8 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/hash/crc.h",
-  "file": "src/hash/crc.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/io/file.h",
-  "file": "src/io/file.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/buffer/CircularByteBuffer.h",
-  "file": "include/buffer/CircularByteBuffer.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/fd.h",
-  "file": "include/io/fd.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/io/path.h",
-  "file": "include/io/path.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/Sink.h",
-  "file": "src/buffer/Sink.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
   "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/concurrent/ReadWriteLock.h",
   "file": "src/concurrent/ReadWriteLock.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/prng/xorshift.h",
-  "file": "src/prng/xorshift.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/CircularBuffer.h",
-  "file": "src/buffer/CircularBuffer.h"
-},
-
-{
-  "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/encode/hex.h",
-  "file": "src/encode/hex.h"
 },
 
 {
@@ -289,8 +235,44 @@
 
 {
   "directory": "/home/spooky/development/repos/sputil",
-  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/io/path.h",
-  "file": "src/io/path.h"
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/prng/util.h",
+  "file": "src/prng/util.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/prng/URandom.h",
+  "file": "include/prng/URandom.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/prng/xorshift.h",
+  "file": "include/prng/xorshift.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/Sink.h",
+  "file": "src/buffer/Sink.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/buffer/BytesView.h",
+  "file": "include/buffer/BytesView.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/buffer/CircularByteBuffer.h",
+  "file": "include/buffer/CircularByteBuffer.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/collection/Array.h",
+  "file": "include/collection/Array.h"
 },
 
 {
@@ -303,5 +285,47 @@
   "directory": "/home/spooky/development/repos/sputil",
   "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/BytesView.h",
   "file": "src/buffer/BytesView.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/util/Bitset.h",
+  "file": "src/util/Bitset.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/tree/bst.h",
+  "file": "include/tree/bst.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c include/tree/tree.h",
+  "file": "include/tree/tree.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/hash/djb2.h",
+  "file": "src/hash/djb2.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/prng/xorshift.h",
+  "file": "src/prng/xorshift.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/buffer/CircularByteBuffer.h",
+  "file": "src/buffer/CircularByteBuffer.h"
+},
+
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -c src/encode/hex.h",
+  "file": "src/encode/hex.h"
 }
 ]

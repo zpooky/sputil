@@ -11,11 +11,15 @@ namespace sp {
 //-------------------+---------------
 bool
 write(Sink &, const unsigned char *, std::size_t) noexcept {
+  // TODO
+  assert(false);
   return true;
 }
 
 bool
 write(Sink &, BytesView &) noexcept {
+  // TODO
+  assert(false);
   return true;
 }
 //-------------------+---------------

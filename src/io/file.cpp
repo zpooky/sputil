@@ -20,11 +20,7 @@ die(const char *s) {
   std::terminate();
 }
 
-Path::Path(const char *s) noexcept
-    : str{0} {
-  std::strcpy(str, s);
-}
-
+//-------------------+---------------
 static sp::fd
 int_open(const char *p, int flag, mode_t mode = 0) noexcept {
   // bool create = true;
@@ -40,23 +36,57 @@ int_open(const char *p, int flag, mode_t mode = 0) noexcept {
   return sp::fd{res};
 }
 
+//-------------------+---------------
 sp::fd
 open_trunc(const char *p) noexcept {
   int flag = O_TRUNC | O_WRONLY | O_CREAT;
   return int_open(p, flag);
 }
+//-------------------+---------------
 
 sp::fd
 open_append(const char *p) noexcept {
   int flag = O_APPEND | O_WRONLY | O_CREAT;
   return int_open(p, flag);
 }
+//-------------------+---------------
 
 sp::fd
 open_read(const char *p) noexcept {
   int flag = O_RDONLY;
   return int_open(p, flag);
 }
+//-------------------+---------------
+
+std::size_t
+write(sp::fd &f, const unsigned char *raw, std::size_t raw_len) noexcept {
+  assert(bool(f));
+
+  std::size_t result = 0;
+  ssize_t written = 0;
+  do {
+    if (raw_len == 0) {
+      break;
+    }
+
+    written = ::write(int(f), raw, raw_len);
+    if (written > 0) {
+      result += written;
+      assert(written <= raw_len);
+
+      raw_len -= written;
+      raw += written;
+    }
+
+  } while ((written < 0 && errno == EAGAIN) && raw_len > 0);
+
+  if (written < 0) {
+    die("write()");
+  }
+
+  return written;
+}
+//-------------------+---------------
 
 /*
  * template specializations for write()
@@ -64,35 +94,22 @@ open_read(const char *p) noexcept {
 template <>
 bool
 write(sp::fd &f, sp::BytesView &b) noexcept {
-  assert(int(f));
+  // sp::bencode_print(buf);
+  unsigned char *const raw = offset(b);
+  const std::size_t raw_len = remaining_read(b);
 
-  ssize_t written = 0;
-  do {
-    // sp::bencode_print(buf);
-    unsigned char *const raw = offset(b);
-    const std::size_t raw_len = remaining_read(b);
-    if (raw_len == 0) {
-      break;
-    }
+  std::size_t written = write(f, raw, raw_len);
+  b.pos += written;
 
-    written = ::write(int(f), raw, raw_len);
-    if (written > 0) {
-      b.pos += written;
-    }
-
-  } while ((written < 0 && errno == EAGAIN) && remaining_read(b) > 0);
-
-  if (written < 0) {
-    die("write()");
-  }
-
-  return true;
+  return true; // TODO?
 }
 
 template <>
 bool
 write(sp::fd &f, sp::CircularByteBuffer &b) noexcept {
+  assert(bool(f));
   using BA = typename sp::CircularByteBuffer::BufferArray;
+
   ssize_t written = 0;
   do {
     // constexpr std::sizarr
@@ -127,11 +144,13 @@ write(sp::fd &f, sp::CircularByteBuffer &b) noexcept {
  * Explicit instantiation of these variations. Will make these variations
  * aviailiable during linking without requiring them to be placed in the header.
  */
-template bool
-write<sp::CircularByteBuffer>(sp::fd &, sp::CircularByteBuffer &) noexcept;
 
 template bool
 write<sp::BytesView>(sp::fd &, sp::BytesView &) noexcept;
+
+template bool
+write<sp::CircularByteBuffer>(sp::fd &, sp::CircularByteBuffer &) noexcept;
+//-------------------+---------------
 
 //
 // bool

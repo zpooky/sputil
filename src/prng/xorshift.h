@@ -39,6 +39,7 @@ swap(xorshift128plus &, xorshift128plus &) noexcept;
 
 std::uint64_t
 random(xorshift128plus &) noexcept;
+
 } // namespace prng
 
 #endif
