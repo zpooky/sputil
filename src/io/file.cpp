@@ -1,11 +1,15 @@
 #include "file.h"
 
+#include <buffer/BytesView.h>
+#include <buffer/CircularByteBuffer.h>
+
 #include <cassert>
 #include <cstdio>
 #include <cstring>
 #include <exception>
 #include <fcntl.h>
 #include <sys/errno.h> //errno
+#include <sys/uio.h>   //writev
 #include <unistd.h>
 
 namespace fs {
@@ -54,6 +58,10 @@ open_read(const char *p) noexcept {
   return int_open(p, flag);
 }
 
+/*
+ * template specializations for write()
+ */
+template <>
 bool
 write(sp::fd &f, sp::BytesView &b) noexcept {
   assert(int(f));
@@ -63,14 +71,16 @@ write(sp::fd &f, sp::BytesView &b) noexcept {
     // sp::bencode_print(buf);
     unsigned char *const raw = offset(b);
     const std::size_t raw_len = remaining_read(b);
-    assert(raw_len > 0);
+    if (raw_len == 0) {
+      break;
+    }
 
     written = ::write(int(f), raw, raw_len);
     if (written > 0) {
       b.pos += written;
     }
-  } while ((written < 0 && errno == EAGAIN) &&
-           remaining_read(b) > 0); // TODO fix logic
+
+  } while ((written < 0 && errno == EAGAIN) && remaining_read(b) > 0);
 
   if (written < 0) {
     die("write()");
@@ -79,11 +89,49 @@ write(sp::fd &f, sp::BytesView &b) noexcept {
   return true;
 }
 
+template <>
 bool
-write(sp::fd &, sp::CircularByteBuffer &) noexcept {
-  // TODO
+write(sp::fd &f, sp::CircularByteBuffer &b) noexcept {
+  using BA = typename sp::CircularByteBuffer::BufferArray;
+  ssize_t written = 0;
+  do {
+    // constexpr std::sizarr
+    std::size_t points = 0;
+    ::iovec point[2];
+    {
+      BA arr;
+      assert(read_buffer(b, arr));
+      for (; points < length(arr); ++points) {
+        auto current = arr[points];
+        point[points].iov_base = std::get<0>(current);
+        point[points].iov_len = std::get<1>(current);
+      }
+    }
+
+    if (points == 0) {
+      break;
+    }
+
+    written = ::writev(int(f), point, points);
+
+    if (written > 0) {
+      consume_bytes(b, written);
+    }
+
+  } while ((written < 0 && errno == EAGAIN) && remaining_read(b) > 0);
+
   return true;
 }
+
+/*
+ * Explicit instantiation of these variations. Will make these variations
+ * aviailiable during linking without requiring them to be placed in the header.
+ */
+template bool
+write<sp::CircularByteBuffer>(sp::fd &, sp::CircularByteBuffer &) noexcept;
+
+template bool
+write<sp::BytesView>(sp::fd &, sp::BytesView &) noexcept;
 
 //
 // bool
@@ -113,4 +161,4 @@ write(sp::fd &, sp::CircularByteBuffer &) noexcept {
 // bool
 // is_socket(const url::Path &) noexcept;
 
-} // namespace file
+} // namespace fs

@@ -14,6 +14,8 @@ struct CircularByteBuffer {
   std::size_t write;
   const std::size_t capacity;
 
+  using BufferArray = Array<std::tuple<unsigned char *, std::size_t>>;
+
   CircularByteBuffer(unsigned char *, std::size_t) noexcept;
 };
 

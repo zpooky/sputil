@@ -71,6 +71,14 @@ struct UinStaticArray {
 };
 
 template <typename T>
+std::size_t
+length(const Array<T> &) noexcept;
+
+template <typename T, std::size_t c>
+std::size_t
+length(const UinStaticArray<T, c> &) noexcept;
+
+template <typename T>
 bool
 is_full(const Array<T> &) noexcept;
 
@@ -315,6 +323,18 @@ UinStaticArray<T, c>::UinStaticArray() noexcept
     , length{0} {
 }
 
+//=====================================
+template <typename T>
+std::size_t
+length(const Array<T> &a) noexcept {
+  return a.length;
+}
+
+template <typename T, std::size_t c>
+std::size_t
+length(const UinStaticArray<T, c> &a) noexcept {
+  return a.length;
+}
 //=====================================
 template <typename T>
 bool

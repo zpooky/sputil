@@ -1,8 +1,6 @@
 #ifndef SP_MAINLINE_DHT_FILE_H
 #define SP_MAINLINE_DHT_FILE_H
 
-#include <buffer/BytesView.h>
-#include <buffer/CircularByteBuffer.h>
 #include <io/fd.h>
 #include <io/path.h>
 
@@ -18,12 +16,12 @@ open_append(const char *) noexcept;
 sp::fd
 open_read(const char *) noexcept;
 
-//TODO make templated and change this to explicit template instantiation
+/*
+ * sp::BytesView & sp::CircularByteBuffer are supported.
+ */
+template <typename Buffer>
 bool
-write(sp::fd &, sp::BytesView &) noexcept;
-
-bool
-write(sp::fd &, sp::CircularByteBuffer &) noexcept;
+write(sp::fd &, Buffer &) noexcept;
 
 /*============*/
 bool
@@ -46,6 +44,6 @@ is_file(const Path &) noexcept;
 
 bool
 is_socket(const Path &) noexcept;
-} // namespace file
+} // namespace fs
 
 #endif
