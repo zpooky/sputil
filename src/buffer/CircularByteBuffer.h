@@ -14,7 +14,7 @@ struct CircularByteBuffer {
   std::size_t write;
   const std::size_t capacity;
 
-  using BufferArray = Array<std::tuple<unsigned char *, std::size_t>>;
+  using BufferArray = StaticArray<std::tuple<unsigned char *, std::size_t>, 2>;
 
   CircularByteBuffer(unsigned char *, std::size_t) noexcept;
 };
@@ -47,6 +47,7 @@ is_full(const CircularByteBuffer &) noexcept;
 void
 reset(CircularByteBuffer &) noexcept;
 
+//-------------------+---------------
 std::size_t
 push_back(CircularByteBuffer &, BytesView &) noexcept;
 
@@ -54,7 +55,10 @@ std::size_t
 push_back(CircularByteBuffer &, unsigned char) noexcept;
 
 std::size_t
-push_back(CircularByteBuffer &, const unsigned char *, std::size_t) noexcept;
+push_back(CircularByteBuffer &, char) noexcept;
+
+std::size_t
+push_back(CircularByteBuffer &, const void *, std::size_t) noexcept;
 
 template <std::size_t SIZE>
 std::size_t
@@ -62,6 +66,29 @@ push_back(CircularByteBuffer &b, const unsigned char (&buffer)[SIZE]) noexcept {
   return push_back(b, buffer, SIZE);
 }
 
+//-------------------+---------------
+bool
+write(CircularByteBuffer &, const void *, std::size_t) noexcept;
+
+bool
+write(CircularByteBuffer &, unsigned char) noexcept;
+
+bool
+write(CircularByteBuffer &, char) noexcept;
+
+template <std::size_t SIZE>
+bool
+write(CircularByteBuffer &b, const unsigned char (&buffer)[SIZE]) noexcept {
+  return write(b, buffer, SIZE);
+}
+
+template <std::size_t SIZE>
+bool
+write(CircularByteBuffer &b, const char (&buffer)[SIZE]) noexcept {
+  return write(b, buffer, SIZE);
+}
+
+//-------------------+---------------
 std::size_t
 pop_front(CircularByteBuffer &, BytesView &) noexcept;
 
@@ -88,7 +115,8 @@ peek_front(const CircularByteBuffer &, unsigned char &) noexcept;
 
 template <std::size_t SIZE>
 std::size_t
-peek_front(const CircularByteBuffer &self, unsigned char (&buffer)[SIZE]) noexcept {
+peek_front(const CircularByteBuffer &self,
+           unsigned char (&buffer)[SIZE]) noexcept {
   return peek_front(self, buffer, SIZE);
 }
 

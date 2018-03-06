@@ -12,7 +12,7 @@ struct Sink {
   FlushType sink;
   void *arg;
 
-  explicit Sink(CircularByteBuffer &b, void *a, FlushType s) noexcept
+  Sink(CircularByteBuffer &b, void *a, FlushType s) noexcept
       : buffer(b)
       , sink(s)
       , arg(a) {
@@ -21,7 +21,16 @@ struct Sink {
 
 //-------------------+---------------
 bool
-write(Sink &, const unsigned char *, std::size_t) noexcept;
+write(Sink &, BytesView &) noexcept;
+
+bool
+write(Sink &, const void *, std::size_t) noexcept;
+
+bool
+write(Sink &, unsigned char) noexcept;
+
+bool
+write(Sink &, char) noexcept;
 
 template <std::size_t SIZE>
 bool
@@ -29,14 +38,23 @@ write(Sink &s, const unsigned char (&buffer)[SIZE]) noexcept {
   return write(s, buffer, SIZE);
 }
 
+template <std::size_t SIZE>
 bool
-write(Sink &, BytesView &) noexcept;
+write(Sink &s, const char (&buffer)[SIZE]) noexcept {
+  return write(s, buffer, SIZE);
+}
 //-------------------+---------------
 /*
  * returns byte written
  */
 std::size_t
-push_back(Sink &, const unsigned char *, std::size_t) noexcept;
+push_back(Sink &, const void*, std::size_t) noexcept;
+
+bool
+push_back(Sink &, unsigned char) noexcept;
+
+bool
+push_back(Sink &, char) noexcept;
 
 template <std::size_t SIZE>
 std::size_t

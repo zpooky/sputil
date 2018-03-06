@@ -9,22 +9,61 @@ namespace sp {
 // }
 
 //-------------------+---------------
-bool
-write(Sink &, const unsigned char *, std::size_t) noexcept {
-  // TODO
-  assert(false);
+static bool
+write(Sink &sink, const unsigned char *w, std::size_t l) {
+  if (l > capacity(sink.buffer)) {
+    if (!flush(sink)) {
+      return false;
+    }
+
+    if (!sink.sink) {
+      return false;
+    }
+
+    // return sink.sink(w, l);
+    // TODO
+    assert(false);
+    return false;
+  } else if (l > remaining_write(sink.buffer)) {
+    if (!flush(sink)) {
+      return false;
+    }
+  }
+
+  if (!write(sink.buffer, w, l)) {
+    return false;
+  }
   return true;
 }
 
 bool
-write(Sink &, BytesView &) noexcept {
-  // TODO
-  assert(false);
+write(Sink &sink, BytesView &in) noexcept {
+  auto length = remaining_read(in);
+  if (!write(sink, offset(in), length)) {
+    return false;
+  }
+  in.pos += length;
   return true;
 }
+
+bool
+write(Sink &sink, const void *w, std::size_t l) noexcept {
+  return write(sink, (unsigned char *)w, l);
+}
+
+bool
+write(Sink &sink, unsigned char c) noexcept {
+  return write(sink, &c, 1);
+}
+
+bool
+write(Sink &sink, char c) noexcept {
+  return write(sink, &c, 1);
+}
+
 //-------------------+---------------
 
-std::size_t
+static std::size_t
 push_back(Sink &sink, const unsigned char *w, std::size_t len) noexcept {
   std::size_t written = 0;
 
@@ -37,6 +76,21 @@ Lit:
     }
   }
   return written;
+}
+
+std::size_t
+push_back(Sink &sink, const void *w, std::size_t len) noexcept {
+  return push_back(sink, (const unsigned char *)w, len);
+}
+
+bool
+push_back(Sink &sink, unsigned char c) noexcept {
+  return push_back(sink, &c, 1);
+}
+
+bool
+push_back(Sink &sink, char c) noexcept {
+  return push_back(sink, &c, 1);
 }
 
 std::size_t

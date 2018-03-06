@@ -79,6 +79,22 @@ std::size_t
 length(const UinStaticArray<T, c> &) noexcept;
 
 template <typename T>
+std::size_t
+capacity(const Array<T> &) noexcept;
+
+template <typename T, std::size_t c>
+std::size_t
+capacity(const UinStaticArray<T, c> &) noexcept;
+
+template <typename T>
+std::size_t
+remaining_write(const Array<T> &) noexcept;
+
+template <typename T, std::size_t c>
+std::size_t
+remaining_write(const UinStaticArray<T, c> &) noexcept;
+
+template <typename T>
 bool
 is_full(const Array<T> &) noexcept;
 
@@ -334,6 +350,31 @@ template <typename T, std::size_t c>
 std::size_t
 length(const UinStaticArray<T, c> &a) noexcept {
   return a.length;
+}
+
+//=====================================
+template <typename T>
+std::size_t
+capacity(const Array<T> &a) noexcept {
+  return a.capacity;
+}
+
+template <typename T, std::size_t c>
+std::size_t
+capacity(const UinStaticArray<T, c> &a) noexcept {
+  return a.capacity;
+}
+//=====================================
+template <typename T>
+std::size_t
+remaining_write(const Array<T> &a) noexcept {
+  return capacity(a) - length(a);
+}
+
+template <typename T, std::size_t c>
+std::size_t
+remaining_write(const UinStaticArray<T, c> &a) noexcept {
+  return capacity(a) - length(a);
 }
 //=====================================
 template <typename T>
