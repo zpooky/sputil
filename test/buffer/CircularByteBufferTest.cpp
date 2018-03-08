@@ -238,19 +238,33 @@ TEST(CircularByteBufferTest, test_random) {
 }
 #define assert_ref(in_ref, in_ridx, b)                                         \
   do {                                                                         \
-    auto idx = in_ridx;                                                        \
-    std::size_t as_len = 0;                                                    \
-    AT ar;                                                                     \
-    ASSERT_TRUE(read_buffer(b, ar));                                           \
-    for (std::size_t a = 0; a < ar.length; ++a) {                              \
-      auto current = ar[a];                                                    \
-      for (std::size_t k = 0; k < std::get<1>(current); ++k) {                 \
-        ASSERT_EQ(in_ref[idx++], *(std::get<0>(current) + k));                 \
-        as_len++;                                                              \
+    {                                                                          \
+      auto idx = in_ridx;                                                      \
+      std::size_t as_len = 0;                                                  \
+      AT ar;                                                                   \
+      ASSERT_TRUE(read_buffer(b, ar));                                         \
+      for (std::size_t a = 0; a < ar.length; ++a) {                            \
+        auto current = ar[a];                                                  \
+        for (std::size_t k = 0; k < std::get<1>(current); ++k) {               \
+          ASSERT_EQ(in_ref[idx++], *(std::get<0>(current) + k));               \
+          as_len++;                                                            \
+        }                                                                      \
       }                                                                        \
+      ASSERT_EQ(as_len, length(b));                                            \
     }                                                                          \
-    ASSERT_EQ(as_len, length(b));                                              \
+    {                                                                          \
+      AT ar;                                                                   \
+      ASSERT_TRUE(write_buffer(b, ar));                                        \
+      std::size_t write_sz = 0;                                                \
+      for (std::size_t a = 0; a < ar.length; ++a) {                            \
+        auto current = ar[a];                                                  \
+        write_sz += std::get<1>(current);                                      \
+      }                                                                        \
+      ASSERT_EQ(write_sz, remaining_write(b));                                 \
+    }                                                                          \
   } while (0)
+
+// printf("ASSERT_EQ(write_sz[%zu], remaining_write(b)[%zu])\n", write_sz,  remaining_write(b));                                              \
 
 TEST(CircularByteBufferTest, test_read_buffer) {
   constexpr std::size_t sz = 8;

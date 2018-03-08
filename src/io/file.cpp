@@ -152,6 +152,87 @@ template bool
 write<sp::CircularByteBuffer>(sp::fd &, sp::CircularByteBuffer &) noexcept;
 //-------------------+---------------
 
+std::size_t
+read(sp::fd &f, unsigned char *raw, std::size_t raw_len) noexcept {
+  assert(bool(f));
+
+  std::size_t result = 0;
+  ssize_t readed = 0;
+  do {
+    if (raw_len == 0) {
+      break;
+    }
+
+    readed = ::read(int(f), raw, raw_len);
+
+    if (readed > 0) {
+      assert(readed <= raw_len);
+      result += readed;
+    }
+  } while (readed < 0 && errno == EAGAIN);
+
+  if (readed < 0) {
+    die("write()");
+  }
+
+  return readed;
+}
+
+template <>
+bool
+read(sp::fd &f, sp::BytesView &b) noexcept {
+  unsigned char *const raw = offset(b);
+  const std::size_t raw_len = remaining_write(b);
+
+  std::size_t readed = read(f, raw, raw_len);
+  b.pos += readed;
+
+  return true; // TODO?
+}
+
+template <>
+bool
+read(sp::fd &f, sp::CircularByteBuffer &b) noexcept {
+  assert(bool(f));
+
+  using BA = typename sp::CircularByteBuffer::BufferArray;
+
+  ssize_t readed = 0;
+  do {
+    // constexpr std::sizarr
+    std::size_t points = 0;
+    ::iovec point[2];
+    {
+      BA arr;
+      assert(write_buffer(b, arr));
+      for (; points < length(arr); ++points) {
+        auto current = arr[points];
+        point[points].iov_base = std::get<0>(current);
+        point[points].iov_len = std::get<1>(current);
+      }
+    }
+
+    if (points == 0) {
+      break;
+    }
+
+    readed = ::readv(int(f), point, points);
+
+    if (readed > 0) {
+      produce_bytes(b, readed);
+    }
+
+  } while (readed < 0 && errno == EAGAIN);
+
+  return true;
+}
+
+template bool
+read<sp::BytesView>(sp::fd &, sp::BytesView &) noexcept;
+
+template bool
+read<sp::CircularByteBuffer>(sp::fd &, sp::CircularByteBuffer &) noexcept;
+
 //
 // bool
 // append(sp::fd &, sp::BytesView &) noexcept {

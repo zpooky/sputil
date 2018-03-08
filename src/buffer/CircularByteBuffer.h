@@ -19,6 +19,9 @@ struct CircularByteBuffer {
   CircularByteBuffer(unsigned char *, std::size_t) noexcept;
 };
 
+// TODO support write marks and rollback to that point. Stop read when mark
+// encountered?
+
 template <std::size_t SIZE>
 struct StaticCircularByteBuffer : public CircularByteBuffer {
   unsigned char raw[SIZE];
@@ -120,6 +123,7 @@ peek_front(const CircularByteBuffer &self,
   return peek_front(self, buffer, SIZE);
 }
 
+/* Used together with read_buffer() to signify how many bytes read */
 void
 consume_bytes(CircularByteBuffer &, std::size_t) noexcept;
 
@@ -130,6 +134,18 @@ read_buffer(CircularByteBuffer &,
 bool
 read_buffer(const CircularByteBuffer &,
             Array<std::tuple<const unsigned char *, std::size_t>> &) noexcept;
+
+/* Used together with write_buffer() to signify how many bytes written */
+void
+produce_bytes(CircularByteBuffer &self, std::size_t b) noexcept;
+
+bool
+write_buffer(CircularByteBuffer &,
+             Array<std::tuple<unsigned char *, std::size_t>> &) noexcept;
+
+bool
+write_buffer(const CircularByteBuffer &,
+             Array<std::tuple<const unsigned char *, std::size_t>> &) noexcept;
 /*
  * ==========================================================================
  */

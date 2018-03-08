@@ -8,6 +8,9 @@ namespace sp {
 //     , arg(a) {
 // }
 
+Sink::~Sink() {
+  flush(*this);
+}
 //-------------------+---------------
 static bool
 write(Sink &sink, const unsigned char *w, std::size_t l) {
@@ -20,8 +23,9 @@ write(Sink &sink, const unsigned char *w, std::size_t l) {
       return false;
     }
 
-    // return sink.sink(w, l);
-    // TODO
+    // TODO something like this
+    // CircularByteBuffer dummy(w,l)
+    // return sink.sink(dummy);
     assert(false);
     return false;
   } else if (l > remaining_write(sink.buffer)) {

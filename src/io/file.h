@@ -2,7 +2,6 @@
 #define SP_MAINLINE_DHT_FILE_H
 
 #include <cstdint>
-#include <cstring>
 #include <io/fd.h>
 #include <io/path.h>
 
@@ -41,6 +40,23 @@ template <typename Buffer>
 bool
 write(sp::fd &, Buffer &) noexcept;
 
+//-------------------+---------------
+std::size_t
+read(sp::fd &, unsigned char *, std::size_t) noexcept;
+
+template <std::size_t N>
+std::size_t
+read(sp::fd &f, unsigned char (&buffer)[N]) noexcept {
+  return read(f, buffer, N);
+}
+
+/*
+ * sp::BytesView & sp::CircularByteBuffer are supported.
+ */
+template <typename Buffer>
+bool
+read(sp::fd &, Buffer &) noexcept;
+
 // template <std::size_t N>
 // struct StaticBytesView;
 //
@@ -55,26 +71,26 @@ write(sp::fd &, Buffer &) noexcept;
 // }
 //-------------------+---------------
 
-bool
-is_block_device(const Path &) noexcept;
-
-bool
-is_character_device(const Path &) noexcept;
-
-bool
-is_directory(const Path &) noexcept;
-
-bool
-is_fifo(const Path &) noexcept;
-
-bool
-is_symlink(const Path &) noexcept;
-
-bool
-is_file(const Path &) noexcept;
-
-bool
-is_socket(const Path &) noexcept;
+// bool
+// is_block_device(const Path &) noexcept;
+//
+// bool
+// is_character_device(const Path &) noexcept;
+//
+// bool
+// is_directory(const Path &) noexcept;
+//
+// bool
+// is_fifo(const Path &) noexcept;
+//
+// bool
+// is_symlink(const Path &) noexcept;
+//
+// bool
+// is_file(const Path &) noexcept;
+//
+// bool
+// is_socket(const Path &) noexcept;
 } // namespace fs
 
 #endif
