@@ -264,7 +264,8 @@ TEST(CircularByteBufferTest, test_random) {
     }                                                                          \
   } while (0)
 
-// printf("ASSERT_EQ(write_sz[%zu], remaining_write(b)[%zu])\n", write_sz,  remaining_write(b));                                              \
+// printf("ASSERT_EQ(write_sz[%zu], remaining_write(b)[%zu])\n", write_sz,
+// remaining_write(b));
 
 TEST(CircularByteBufferTest, test_read_buffer) {
   constexpr std::size_t sz = 8;

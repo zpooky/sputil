@@ -118,6 +118,11 @@
   "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/buffer/Sink.o src/buffer/Sink.cpp",
   "file": "src/buffer/Sink.cpp"
 },
+{
+  "directory": "/home/spooky/development/repos/sputil",
+  "command": "c++ -c -DSP_TEST -Iinclude -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow -ggdb -o build/bear/tree/btree.o src/tree/btree.cpp",
+  "file": "src/tree/btree.cpp"
+},
 
 {
   "directory": "/home/spooky/development/repos/dht/external/sputil",
