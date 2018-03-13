@@ -35,6 +35,7 @@ DEPENDS = $(OBJECTS:.o=.d)
 # all {{{
 # The "all" target. Runs by default since it the first target
 all: ${EXEC}
+	$(AR) rcs $(BUILD_DIR)/$(LIB).a $(OBJECTS)
 # }}}
 
 # $(EXEC) {{{
@@ -71,16 +72,16 @@ test:
 	$(MAKE) -C test test
 # }}}
 
-# staticlib {{{
-staticlib: $(OBJECTS)
-# 'r' means to insert with replacement
-# 'c' means to create a new archive
-# 's' means to write an index
-	$(AR) rcs $(BUILD_DIR)/$(LIB).a $(OBJECTS)
-# }}}
+# # staticlib {{{
+# staticlib: $(OBJECTS)
+# # 'r' means to insert with replacement
+# # 'c' means to create a new archive
+# # 's' means to write an index
+# 	$(AR) rcs $(BUILD_DIR)/$(LIB).a $(OBJECTS)
+# # }}}
 
 # install {{{
-install: $(EXEC) staticlib
+install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
 # mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
