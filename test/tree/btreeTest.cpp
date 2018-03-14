@@ -47,12 +47,13 @@ template <std::size_t keys, std::size_t N>
 static void
 assert_elements(btree::impl::btree::BTNode<int, keys> *node,
                 const int (&elems)[N]) {
-  assert(N == node->elements.length);
+  assert(N == length(node->elements));
   for (std::size_t i = 0; i < N; ++i) {
     auto elem = get(node->elements, i);
     assert(elem);
     assert(elems[i] == *elem);
   }
+  // TODO assert(N + 1 == length(node->children));
 }
 
 template <std::size_t keys, std::size_t N>
@@ -108,11 +109,76 @@ TEST(btreeTest, test_shape) {
     sp_assert_child(t.root, 0, {1});
     sp_assert_child(t.root, 1, {3, 4});
   }
-  // {
-  //   assert_insert(t, 5);
-  //   assert_elements(t.root, {2, 4});
-  //   sp_assert_child(t.root, 0, {1});
-  //   sp_assert_child(t.root, 1, {3});
-  //   sp_assert_child(t.root, 2, {5});
-  // }
+  {
+    assert_insert(t, 5);
+    assert_elements(t.root, {2, 4});
+    sp_assert_child(t.root, 0, {1});
+    sp_assert_child(t.root, 1, {3});
+    sp_assert_child(t.root, 2, {5});
+  }
+  {
+    assert_insert(t, 6);
+    assert_elements(t.root, {2, 4});
+    sp_assert_child(t.root, 0, {1});
+    sp_assert_child(t.root, 1, {3});
+    sp_assert_child(t.root, 2, {5, 6});
+  }
+  {
+    assert_insert(t, 7);
+    assert_elements(t.root, {4});
+    {
+      sp_assert_child(t.root, 0, {2});
+      sp_assert_child(t.root->children[0], 0, {1});
+      sp_assert_child(t.root->children[0], 1, {3});
+    }
+    {
+      sp_assert_child(t.root, 1, {6});
+      sp_assert_child(t.root->children[1], 0, {5});
+      sp_assert_child(t.root->children[1], 1, {7});
+    }
+  }
+  {
+    assert_insert(t, 8);
+    assert_elements(t.root, {4});
+    {
+      sp_assert_child(t.root, 0, {2});
+      sp_assert_child(t.root->children[0], 0, {1});
+      sp_assert_child(t.root->children[0], 1, {3});
+    }
+    {
+      sp_assert_child(t.root, 1, {6});
+      sp_assert_child(t.root->children[1], 0, {5});
+      sp_assert_child(t.root->children[1], 1, {7, 8});
+    }
+  }
+  {
+    assert_insert(t, 9);
+    assert_elements(t.root, {4});
+    {
+      sp_assert_child(t.root, 0, {2});
+      sp_assert_child(t.root->children[0], 0, {1});
+      sp_assert_child(t.root->children[0], 1, {3});
+    }
+    {
+      sp_assert_child(t.root, 1, {6, 8});
+      sp_assert_child(t.root->children[1], 0, {5});
+      sp_assert_child(t.root->children[1], 1, {7});
+      sp_assert_child(t.root->children[1], 2, {9});
+    }
+  }
+  {
+    assert_insert(t, 10);
+    assert_elements(t.root, {4});
+    {
+      sp_assert_child(t.root, 0, {2});
+      sp_assert_child(t.root->children[0], 0, {1});
+      sp_assert_child(t.root->children[0], 1, {3});
+    }
+    {
+      sp_assert_child(t.root, 1, {6, 8});
+      sp_assert_child(t.root->children[1], 0, {5});
+      sp_assert_child(t.root->children[1], 1, {7});
+      sp_assert_child(t.root->children[1], 2, {9, 10});
+    }
+  }
 }

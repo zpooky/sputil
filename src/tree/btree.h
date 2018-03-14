@@ -4,6 +4,7 @@
 #include <collection/Array.h>
 #include <tuple>
 
+// TODO array bin_insert comparator
 namespace btree {
 namespace impl {
 namespace btree {
@@ -25,6 +26,13 @@ struct BTNode {
   sp::UinStaticArray<BTNode<T, keys> *, keys + 1> children;
 
   BTNode(BTNode<T, keys> *p = nullptr) noexcept;
+
+  BTNode(const BTNode<T, keys> &) = delete;
+  BTNode(const BTNode<T, keys> &&) = delete;
+  BTNode<T, keys> &
+  operator=(const BTNode<T, keys> &) = delete;
+  BTNode<T, keys> &
+  operator=(const BTNode<T, keys> &&) = delete;
 };
 } // namespace btree
 } // namespace impl
@@ -114,11 +122,11 @@ is_empty(const BTNode<T, K> &tree) noexcept {
   return is_empty(tree.elements);
 }
 
-template <typename T, std::size_t K, typename V>
-static T *
-do_insert_node(BTNode<T, K> *left, V &&v) noexcept {
-  return nullptr;
-}
+// template <typename T, std::size_t K, typename V>
+// static T *
+// do_insert_node(BTNode<T, K> *left, V &&v) noexcept {
+//   return nullptr;
+// }
 
 template <typename T, std::size_t K>
 static void
@@ -168,6 +176,8 @@ template <typename T, std::size_t K, typename V>
 static T *
 insert_parent_after(BTNode<T, K> *needle, V &&val,
                     BTNode<T, K> *right) noexcept {
+  assert(needle);
+  assert(right);
   auto parent = needle->parent;
   assert(parent);
   assert(!is_full(*parent));
@@ -188,6 +198,23 @@ insert_parent_after(BTNode<T, K> *needle, V &&val,
 
   printf("ins_p_a\n");
   return elem_res;
+}
+
+template <typename T, std::size_t K, typename V>
+T *
+do_insert_node(BTNode<T, K> *current, V &&val) noexcept {
+  assert(current);
+  assert(!is_full(*current));
+
+  auto res = bin_insert(current->elements, std::forward<V>(val));
+  assert(res);
+
+  std::size_t idx = index_of(current->elements, res);
+  assert(idx != current->elements.capacity);
+
+  ++idx;
+  assert(insert_at(current->children, idx, nullptr));
+  return res;
 }
 
 template <typename T, std::size_t K, typename Cmp, typename V>
@@ -240,13 +267,16 @@ Lit:
     assert(res_med);
     drop_back(left->elements, 1);
 
+    // assert(length(left->elements) + 1 == length(left->children));
+    // assert(length(right->elements) + 1 == length(right->children));
+
     /* actual perform the insertion of the new /val/ */
     Cmp c;
     T *res = nullptr;
     if (c(val, *res_med)) {
-      res = bin_insert(right->elements, std::forward<V>(val));
+      res = do_insert_node(right, std::forward<V>(val));
     } else {
-      res = bin_insert(left->elements, std::forward<V>(val));
+      res = do_insert_node(left, std::forward<V>(val));
     }
     assert(res);
 
@@ -279,7 +309,7 @@ insert(Tree<T, k, C> &tree, K &&val) noexcept {
     auto current = tree.root;
   Lit:
     if (current) {
-      sp::UinStaticArray<T, k> &elements = current->elements;
+      auto &elements = current->elements;
 
       /* First node with value >= /val/ */
       T *const successor = sp::bin_find_successor<T, k, K, C>(elements, val);
@@ -299,10 +329,13 @@ insert(Tree<T, k, C> &tree, K &&val) noexcept {
         } else {
           if (is_full(elements)) {
             assert(is_full(current->children));
+            assert(false);
             // TODO
           } else {
-            assert(insert_at(elements, index, std::forward<K>(val)));
-            assert(insert_at(current->children, index, nullptr));
+            auto res = insert_at(elements, index, std::forward<K>(val));
+            assert(res);
+            assert(insert_at(current->children, index+1, nullptr));
+            return std::make_tuple(res, true);
           }
         }
 
@@ -322,12 +355,8 @@ insert(Tree<T, k, C> &tree, K &&val) noexcept {
           T *ins = std::get<1>(sres);
           return std::make_tuple(ins, ins != nullptr);
         } else {
-          auto res = bin_insert(elements, std::forward<K>(val));
-          assert(res);
-          std::size_t idx = index_of(elements, res);
-          assert(idx != elements.capacity);
-          assert(insert_at(current->children, idx, nullptr));
 
+          auto res = do_insert_node(current, std::forward<K>(val));
           return std::make_tuple(res, true);
         }
       }
@@ -339,13 +368,10 @@ insert(Tree<T, k, C> &tree, K &&val) noexcept {
     if (node) {
       auto &elements = node->elements;
       auto res = bin_insert(elements, std::forward<K>(val));
-      if (res) {
-        // std::size_t idx = index_of(elements, res);
-        // assert(idx != elements.capacity);
-        assert(insert(node->children, nullptr));
-        assert(insert(node->children, nullptr));
-        return std::make_tuple(res, true);
-      }
+      assert(res);
+      assert(insert(node->children, nullptr));
+      assert(insert(node->children, nullptr));
+      return std::make_tuple(res, true);
     }
   }
   return std::make_tuple(nullptr, false);
@@ -434,9 +460,8 @@ dump(btree::impl::btree::BTNode<int, keys> *root) noexcept {
   if (root) {
     dump_elements(root);
     // dump_children(root);
-    for_each(root->children, [](auto c) {
-      if (c)
-        dump(c);
+    for_each(root->children, [](auto c) { //
+      dump(c);
     });
   }
 }

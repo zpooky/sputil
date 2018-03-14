@@ -162,67 +162,67 @@ TEST(ArrayTest, test_binary_insert) {
   prng::xorshift32 r(1);
   // while (true) {
 
-    sp::UinStaticArray<std::size_t, cap> a;
-    for (std::size_t i = 0; i < cap; ++i) {
-      ASSERT_EQ(a.length, i);
+  sp::UinStaticArray<std::size_t, cap> a;
+  for (std::size_t i = 0; i < cap; ++i) {
+    ASSERT_EQ(a.length, i);
 
-      auto *res = insert(a, i);
+    auto *res = insert(a, i);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, i);
+
+    for (std::size_t k = 0; k <= i; ++k) {
+      auto *sres = bin_search(a, k);
+      ASSERT_TRUE(sres);
+      ASSERT_EQ(*sres, k);
+    }
+  }
+
+  shuffle(r, a);
+  // printf("shuffled: ");
+  // for_each(a, [](auto it) {
+  //   #<{(||)}>#
+  //   printf("%zu,", it);
+  // });
+  // printf("\n");
+
+  {
+    sp::UinStaticArray<std::size_t, cap> next;
+    for (std::size_t i = 0; i < cap; ++i) {
+      ASSERT_EQ(next.length, i);
+
+      const auto ins = *get(a, i);
+      // printf("insert(%zu)\n", ins);
+      auto *res = bin_insert(next, ins);
+      {
+        // for_each(next, [](auto it) {
+        //   #<{(||)}>#
+        //   printf("%zu,", it);
+        // });
+        // printf("\n");
+      }
+
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, ins);
+      for (std::size_t k = 0; k <= i; ++k) {
+        auto *sres = bin_search(next, ins);
+        ASSERT_TRUE(sres);
+        ASSERT_EQ(*sres, ins);
+      }
+    }
+    // {
+    //   for_each(next, [](auto it) {
+    //     #<{(||)}>#
+    //     printf("%zu,", it);
+    //   });
+    //   printf("\n");
+    // }
+    for (std::size_t i = 0; i < cap; ++i) {
+      auto *res = get(next, i);
       ASSERT_TRUE(res);
       ASSERT_EQ(*res, i);
-
-      for (std::size_t k = 0; k <= i; ++k) {
-        auto *sres = bin_search(a, k);
-        ASSERT_TRUE(sres);
-        ASSERT_EQ(*sres, k);
-      }
     }
-
-    shuffle(r, a);
-    // printf("shuffled: ");
-    // for_each(a, [](auto it) {
-    //   #<{(||)}>#
-    //   printf("%zu,", it);
-    // });
-    // printf("\n");
-
-    {
-      sp::UinStaticArray<std::size_t, cap> next;
-      for (std::size_t i = 0; i < cap; ++i) {
-        ASSERT_EQ(next.length, i);
-
-        const auto ins = *get(a, i);
-        // printf("insert(%zu)\n", ins);
-        auto *res = bin_insert(next, ins);
-        {
-          // for_each(next, [](auto it) {
-          //   #<{(||)}>#
-          //   printf("%zu,", it);
-          // });
-          // printf("\n");
-        }
-
-        ASSERT_TRUE(res);
-        ASSERT_EQ(*res, ins);
-        for (std::size_t k = 0; k <= i; ++k) {
-          auto *sres = bin_search(next, ins);
-          ASSERT_TRUE(sres);
-          ASSERT_EQ(*sres, ins);
-        }
-      }
-      // {
-      //   for_each(next, [](auto it) {
-      //     #<{(||)}>#
-      //     printf("%zu,", it);
-      //   });
-      //   printf("\n");
-      // }
-      for (std::size_t i = 0; i < cap; ++i) {
-        auto *res = get(next, i);
-        ASSERT_TRUE(res);
-        ASSERT_EQ(*res, i);
-      }
-      ASSERT_FALSE(get(next, cap));
-    }
+    ASSERT_FALSE(get(next, cap));
+  }
   // }
 }
 
@@ -279,5 +279,44 @@ TEST(ArrayTest, test_binary) {
       clear(a);
       ASSERT_EQ(std::size_t(0), a.length);
     }
+  }
+}
+
+TEST(ArrayTest, test_insert_at) {
+  constexpr std::size_t cap = 1024;
+  prng::xorshift32 r(1);
+
+  sp::UinStaticArray<std::size_t, cap> in;
+  sp::UinStaticArray<std::size_t, cap * 2> sut;
+  for (std::size_t i = 0; i < cap; ++i) {
+    insert(in, i);
+    insert(sut, 0);
+  }
+  // shuffle(r, in);
+  // {
+  //   printf("in : ");
+  //   for (std::size_t i = 0; i < length(in); ++i) {
+  //     printf("%zu-", in[i]);
+  //   }
+  //   printf("\n");
+  // }
+
+  for (std::size_t i = 0; i < length(in); ++i) {
+    std::size_t idx = std::min(in[i], length(sut));
+    auto res = insert_at(sut, idx, in[i]);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, in[i]);
+  }
+  // {
+  //   printf("sut: ");
+  //   for (std::size_t i = 0; i < cap; ++i) {
+  //     printf("%zu-", sut[i]);
+  //   }
+  //   printf("\n");
+  // }
+  for (std::size_t i = 0; i < cap; ++i) {
+    auto res = get(sut, i);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, i);
   }
 }

@@ -700,16 +700,11 @@ insert_at(Array<T> &, std::size_t, V &&) noexcept {
 template <typename T, std::size_t c, typename V>
 T *
 insert_at(UinStaticArray<T, c> &a, std::size_t idx, V &&v) noexcept {
-  assert(idx < a.capacity);
-  if (idx >= a.capacity) {
-    return nullptr;
-  }
-
   if (idx <= a.length) {
-    std::size_t ins_idx = a.length;
     auto ins = insert(a, std::forward<V>(v));
+    std::size_t ins_idx = index_of(a, ins);
     if (ins) {
-      for (std::size_t i = ins_idx; i-- > idx;) {
+      for (std::size_t i = ins_idx; i > idx;--i) {
         using sp::swap;
         swap(a.data()[i - 1], a.data()[i]);
       }
