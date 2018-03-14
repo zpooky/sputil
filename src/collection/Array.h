@@ -352,7 +352,7 @@ length(const UinStaticArray<T, c> &a) noexcept {
   return a.length;
 }
 
-//=====================================
+/* ===================================== */
 template <typename T>
 std::size_t
 capacity(const Array<T> &a) noexcept {
@@ -936,6 +936,17 @@ K *
 reduce(const Array<T> &a, K *k, F f) noexcept {
   for (std::size_t i = 0; i < a.length; ++i) {
     const T *current = a.buffer + i;
+    k = f(k, current);
+  }
+
+  return k;
+}
+
+template <typename T, typename K, typename F>
+K &
+reduce(const Array<T> &a, K &k, F f) noexcept {
+  for (std::size_t i = 0; i < a.length; ++i) {
+    const T &current = a.buffer[i];
     k = f(k, current);
   }
 
