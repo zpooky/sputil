@@ -6,6 +6,10 @@
 #include <util/Bitset.h>
 
 namespace sp {
+
+// template <typename T, std::size_t N>
+// using HasherArray = StaticArray<Hasher<T>, N>;
+
 template <typename T, std::size_t size>
 struct BloomFilter {
   StaticBitset<size> bitset;
