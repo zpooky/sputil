@@ -41,12 +41,14 @@
       ASSERT_TRUE(res);                                                        \
       ASSERT_EQ(*res, v);                                                      \
     }                                                                          \
+    printf("--\n");                                                            \
   } while (0)
 
 template <std::size_t keys, std::size_t N>
 static void
 assert_elements(btree::impl::btree::BTNode<int, keys> *node,
                 const int (&elems)[N]) {
+  assert(node);
   assert(N == length(node->elements));
   for (std::size_t i = 0; i < N; ++i) {
     auto elem = get(node->elements, i);
@@ -60,6 +62,7 @@ template <std::size_t keys, std::size_t N>
 static bool
 sp_assert_child(btree::impl::btree::BTNode<int, keys> *root, std::size_t idx,
                 const int (&elems)[N]) {
+  assert(root);
   auto node = root->children[idx];
 
   assert_elements(node, elems);
@@ -133,7 +136,7 @@ TEST(btreeTest, test_shape) {
     }
     {
       sp_assert_child(t.root, 1, {6});
-      sp_assert_child(t.root->children[1], 0, {5});
+      sp_assert_child(t.root->children[1], 0, {5}); //###
       sp_assert_child(t.root->children[1], 1, {7});
     }
   }

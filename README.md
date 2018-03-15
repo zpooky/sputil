@@ -40,24 +40,8 @@ programitcly trigger breakpoint when assert fails
 ### bcrypt
 ### cbc,ecb ...
 
-##
-```cpp
-impl iniializer list with size as a template arg
-StaticArray[size](initializer_list<T,size>)
-```
-
-## interval 10s 5m 1h
-
-## Sink
-struct BufferedSink {
-  Buffer b;
-  bool (*sink)(Buffer&);
-};
-
-bool write(BufferedSink&,)
-
 ## "Sink" for reading supporting autofill the buffer
 
 
-## CircularByteBuffer
-- scattter gatter read & write
+## Huffman
+https://medium.com/@TravCav/huffman-coding-1e914c419912

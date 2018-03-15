@@ -202,7 +202,7 @@ insert_parent_after(BTNode<T, K> *needle, V &&val,
 
 template <typename T, std::size_t K, typename V>
 T *
-do_insert_node(BTNode<T, K> *current, V &&val) noexcept {
+do_insert_node(BTNode<T, K> *current, V &&val, BTNode<T, K> *gt) noexcept {
   assert(current);
   assert(!is_full(*current));
 
@@ -213,77 +213,105 @@ do_insert_node(BTNode<T, K> *current, V &&val) noexcept {
   assert(idx != current->elements.capacity);
 
   ++idx;
-  assert(insert_at(current->children, idx, nullptr));
+  assert(insert_at(current->children, idx, gt));
   return res;
 }
 
+template <typename T, std::size_t k, typename Cmp, typename V>
+static std::tuple<BTNode<T, k> *, T *>
+insert_node(BTNode<T, k> *tree, V &&val, std::size_t index,
+            BTNode<T, k> *gt) noexcept;
+
 template <typename T, std::size_t K, typename Cmp, typename V>
 static std::tuple<BTNode<T, K> *, T *>
-split_insert(BTNode<T, K> *tree, V &&val) noexcept {
+split_insert(BTNode<T, K> *tree, V &&val, BTNode<T, K> *gt = nullptr) noexcept {
   assert(tree);
   assert(is_full(*tree));
 
 Lit:
   auto parent = tree->parent;
-  if (parent && is_full(*parent)) {
-    assert(false);
-  } else {
-    auto left = tree;
-    if (!parent) {
-      assert(!tree->parent);
-
-      /* Create a new parent since we are the root */
-      parent = new BTNode<T, K>;
-      if (!parent) {
-        return std::make_pair(nullptr, nullptr);
-      }
-      insert(parent->children, left);
-      tree->parent = parent;
-    }
-    /* - Find the median of the full node.
-     * - Create a new leaf node and copy into it all the keys which appear after
-     *   the median.
-     * - Move up the median at an appropriate position in the parent of this
-     *   node.
-     * - Add an additional child pointer (after the median) from the parent node
-     *   to the new node.
-     * - Add the new key at the right location in the child nodes of the median.
-     */
-    auto right = new BTNode<T, K>(parent);
-    if (!right) {
+  if (parent == nullptr) {
+    /* Create a new parent since we are the root */
+    parent = new BTNode<T, K>;
+    if (parent == nullptr) {
       return std::make_pair(nullptr, nullptr);
     }
-    /* copy everything at the right of median from the left subtree too the
-     * empty right subtree
-     */
-    std::size_t med = median<K>();
-    copy_split(left, med, right);
-
-    /* median is now at the end of left subtree and we need to bubble it up
-     * together with right child onto the parent elements&child list
-     */
-    auto res_med =
-        insert_parent_after(left, std::move(left->elements[med]), right);
-    assert(res_med);
-    drop_back(left->elements, 1);
-
-    // assert(length(left->elements) + 1 == length(left->children));
-    // assert(length(right->elements) + 1 == length(right->children));
-
-    /* actual perform the insertion of the new /val/ */
-    Cmp c;
-    T *res = nullptr;
-    if (c(val, *res_med)) {
-      res = do_insert_node(right, std::forward<V>(val));
-    } else {
-      res = do_insert_node(left, std::forward<V>(val));
-    }
-    assert(res);
-
-    return std::make_pair(parent, res);
+    insert(parent->children, tree);
+    tree->parent = parent;
   }
 
-  return std::make_pair(nullptr, nullptr);
+  /* - Find the median of the full node.
+   * - Create a new leaf node and copy into it all the keys which appear after
+   *   the median.
+   * - Move up the median at an appropriate position in the parent of this
+   *   node.
+   * - Add an additional child pointer (after the median) from the parent node
+   *   to the new node.
+   * - Add the new key at the right location in the child nodes of the median.
+   */
+  auto right = new BTNode<T, K>(parent);
+  if (!right) {
+    return std::make_pair(nullptr, nullptr);
+  }
+  /* copy everything at the right of median from the left subtree too the
+   * empty right subtree
+   */
+  auto left = tree;
+  std::size_t med = median<K>();
+  copy_split(left, med, right);
+
+  /* median is now at the end of left subtree and we need to bubble it up
+   * together with right child onto the parent elements&child list
+   */
+  auto find_res = find(parent->children,
+                       [&left](auto current) { //
+                         return current == left;
+                       });
+  assert(find_res);
+  auto idx = index_of(parent->children, find_res);
+  assert(idx != capacity(parent->children));
+  // auto rmed = insert_parent_after(left, std::move(left->elements[med]),
+  // right);
+  auto asda = insert_node<T, K, Cmp, V>(parent, std::move(left->elements[med]),
+                                        idx, right);
+  auto rmed = std::get<1>(asda);
+  assert(rmed);
+  parent = std::get<0>(asda);
+  assert(parent);
+  drop_back(left->elements, 1);
+
+  // assert(length(left->elements) + 1 == length(left->children));
+  // assert(length(right->elements) + 1 == length(right->children));
+
+  /* actual perform the insertion of the new /val/ */
+  Cmp c;
+  T *res = nullptr;
+  if (c(val, *rmed)) {
+    res = do_insert_node(right, std::forward<V>(val), gt);
+  } else {
+    res = do_insert_node(left, std::forward<V>(val), gt);
+  }
+  assert(res);
+
+  return std::make_pair(parent, res);
+}
+
+template <typename T, std::size_t k, typename Cmp, typename V>
+static std::tuple<BTNode<T, k> *, T *>
+insert_node(BTNode<T, k> *tree, V &&val, std::size_t index,
+            BTNode<T, k> *gt) noexcept {
+  assert(tree);
+
+  if (is_full(*tree)) {
+    return split_insert<T, k, Cmp, V>(tree, std::forward<V>(val), gt);
+  } else {
+
+    auto res = insert_at(tree->elements, index, std::forward<V>(val));
+    assert(res);
+
+    assert(insert_at(tree->children, index + 1, gt));
+    return std::make_tuple(tree, res);
+  }
 }
 
 } // namespace btree
@@ -305,76 +333,65 @@ std::tuple<T *, bool>
 insert(Tree<T, k, C> &tree, K &&val) noexcept {
   using namespace btree::impl::btree;
 
-  if (tree.root) {
-    auto current = tree.root;
-  Lit:
-    if (current) {
-      auto &elements = current->elements;
+  /* empty tree */
+  if (tree.root == nullptr) {
 
-      /* First node with value >= /val/ */
-      T *const successor = sp::bin_find_successor<T, k, K, C>(elements, val);
-      if (successor) {
-        C cmp;
-        if (!cmp(*successor, val) && !cmp(val, *successor)) {
-          /* /val/ already present in node */
-          return std::make_tuple(successor, false);
-        }
-
-        std::size_t index = index_of(elements, successor);
-        assert(index != capacity(elements));
-
-        if (*get(current->children, index)) {
-          current = *get(current->children, index);
-          goto Lit;
-        } else {
-          if (is_full(elements)) {
-            assert(is_full(current->children));
-            assert(false);
-            // TODO
-          } else {
-            auto res = insert_at(elements, index, std::forward<K>(val));
-            assert(res);
-            assert(insert_at(current->children, index+1, nullptr));
-            return std::make_tuple(res, true);
-          }
-        }
-
-      } /*successor*/ else {
-        /* /val/ is greater than any value in the current node */
-        auto &children = current->children;
-        if (*last(children)) {
-          current = *last(children);
-          goto Lit;
-        } else if (is_full(elements)) {
-          assert(is_full(children));
-          auto sres = split_insert<T, k, C, K>(current, std::forward<K>(val));
-          auto p = std::get<0>(sres);
-          if (p->parent == nullptr) {
-            tree.root = p;
-          }
-          T *ins = std::get<1>(sres);
-          return std::make_tuple(ins, ins != nullptr);
-        } else {
-
-          auto res = do_insert_node(current, std::forward<K>(val));
-          return std::make_tuple(res, true);
-        }
-      }
-    }
-
-  } else {
-    /* empty tree */
     auto node = tree.root = new BTNode<T, k>(nullptr);
     if (node) {
       auto &elements = node->elements;
       auto res = bin_insert(elements, std::forward<K>(val));
       assert(res);
-      assert(insert(node->children, nullptr));
-      assert(insert(node->children, nullptr));
+      assert(insert(node->children, /*lt*/ nullptr));
+      assert(insert(node->children, /*gt*/ nullptr));
       return std::make_tuple(res, true);
     }
+
+    return std::make_tuple(nullptr, false);
   }
-  return std::make_tuple(nullptr, false);
+
+  auto current = tree.root;
+Lit:
+  auto &elements = current->elements;
+
+  /* First node with value >= /val/ */
+  T *const successor = sp::bin_find_successor<T, k, K, C>(elements, val);
+  std::size_t index = length(elements);
+  if (successor) {
+    C cmp;
+    if (!cmp(*successor, val) && !cmp(val, *successor)) {
+      /* /val/ already present in node */
+      return std::make_tuple(successor, false);
+    }
+
+    index = index_of(elements, successor);
+    assert(index != capacity(elements));
+
+    if (*get(current->children, index)) {
+      /* going down /successor/ less than child subtree*/
+      current = *get(current->children, index);
+      goto Lit;
+    }
+  } /*successor*/ else {
+    /* /val/ is greater than any value in the current node */
+    auto &children = current->children;
+    if (*last(children)) {
+      /* going down the greater than any element in this node subtree */
+      current = *last(children);
+      goto Lit;
+    }
+  }
+
+  {
+    /* insert /val/ potentially rebalancing the tree */
+    auto sres =
+        insert_node<T, k, C, K>(current, std::forward<K>(val), index, nullptr);
+    auto p = std::get<0>(sres);
+    if (p->parent == nullptr) {
+      tree.root = p;
+    }
+    T *ins = std::get<1>(sres);
+    return std::make_tuple(ins, ins != nullptr);
+  }
 }
 
 template <typename T, std::size_t k, typename C, typename K>
