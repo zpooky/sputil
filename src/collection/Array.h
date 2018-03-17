@@ -1044,7 +1044,8 @@ template <typename T, typename Predicate>
 T *
 find(Array<T> &a, Predicate f) noexcept {
   for (std::size_t i = 0; i < a.length; ++i) {
-    if (f(a.buffer[i])) {
+    T &current = a.buffer[i];
+    if (f(current)) {
       return a.buffer + i;
     }
   }

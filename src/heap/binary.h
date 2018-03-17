@@ -1,8 +1,8 @@
 #ifndef SP_UTIL_HEAP_BINARY_H
 #define SP_UTIL_HEAP_BINARY_H
 
-#include <util/comparator.h>
 #include <stack/Stack.h>
+#include <util/comparator.h>
 
 namespace heap {
 
@@ -10,6 +10,9 @@ namespace heap {
  * TODO emplace
  * TODO do not require default constructable
  * TODO dynamic binary
+ *
+ * TODO insert if full should drop the smallest element and replace it with the
+ * about to inserted element if the new element has higher priority
  */
 template <typename T, typename Comparator>
 struct Binary {
@@ -20,11 +23,26 @@ struct Binary {
   Binary(T *, std::size_t) noexcept;
 };
 
+template <typename T, std::size_t N, typename Comparator>
+struct StaticBinary : public Binary<T, Comparator>
+//
+{
+  T raw[N];
+
+  StaticBinary() noexcept;
+};
+
 template <typename T>
 using MaxBinary = Binary<T, sp::greater>;
 
+template <typename T, std::size_t N>
+using StaticMaxBinary = StaticBinary<T, N, sp::greater>;
+
 template <typename T>
 using MinBinary = Binary<T, sp::less>;
+
+template <typename T, std::size_t N>
+using StaticMinBinary = StaticBinary<T, N, sp::less>;
 
 template <typename T, typename Comparator, typename V>
 T *
@@ -36,6 +54,10 @@ insert(Binary<T, Comparator> &, V &&) noexcept;
 template <typename T, typename Comparator, typename K>
 bool
 take_head(Binary<T, Comparator> &, K &) noexcept;
+
+template <typename T, typename Comparator>
+bool
+drop_head(Binary<T, Comparator> &) noexcept;
 
 template <typename T, typename Comparator>
 T *
@@ -87,17 +109,17 @@ dump(Binary<int, Comparator> &, std::size_t idx = 0, std::string prefix = "",
 namespace impl {
 namespace heap {
 
-static std::size_t
+inline std::size_t
 parent(std::size_t idx) noexcept {
   return (idx - 1) / 2;
 }
 
-static std::size_t
+inline std::size_t
 left_child(std::size_t idx) noexcept {
   return (2 * idx) + 1;
 }
 
-static std::size_t
+inline std::size_t
 right_child(std::size_t idx) noexcept {
   return (2 * idx) + 2;
 }
@@ -176,6 +198,12 @@ Binary<T, Comparator>::Binary(T *b, std::size_t c) noexcept
     , length(0) {
 }
 
+template <typename T, std::size_t N, typename Comparator>
+StaticBinary<T, N, Comparator>::StaticBinary() noexcept
+    : Binary<T, Comparator>(raw, N)
+    , raw() {
+}
+
 template <typename T, typename Comparator, typename V>
 T *
 insert(Binary<T, Comparator> &heap, V &&val) noexcept {
@@ -217,6 +245,13 @@ take_head(Binary<T, Comparator> &heap, K &swp) noexcept {
 }
 
 template <typename T, typename Comparator>
+bool
+drop_head(Binary<T, Comparator> &heap) noexcept {
+  T out;
+  return take_head(heap, out);
+}
+
+template <typename T, typename Comparator>
 T *
 peek_head(Binary<T, Comparator> &heap) noexcept {
   if (heap.length > 0) {
@@ -233,24 +268,24 @@ find_heap(Binary<T, Comparator> &heap, const K &needle) noexcept {
 
   // std::size_t raw[1024] = {0};
   auto raw = new std::size_t[1024];
-  sp::Stack<std::size_t> stack{raw,1024};
+  sp::Stack<std::size_t> stack{raw, 1024};
   push(stack, 0);
   std::size_t index;
-  while(pop(stack,index)) {
+  while (pop(stack, index)) {
 
-Lit:
+  Lit:
     if (index < heap.length) {
       constexpr Comparator cmp;
-      const bool greater = cmp(heap.buffer[index],needle);
-      const bool lesser = cmp(needle,heap.buffer[index]);
+      const bool greater = cmp(heap.buffer[index], needle);
+      const bool lesser = cmp(needle, heap.buffer[index]);
 
-      if(!greater && !lesser){//==
+      if (!greater && !lesser) { //==
         delete raw;
         return &heap.buffer[index];
-      } else if (greater){
-        std::size_t left =left_child(index) ;
-        if(left < heap.length){
-          if(!push(stack, left)){
+      } else if (greater) {
+        std::size_t left = left_child(index);
+        if (left < heap.length) {
+          if (!push(stack, left)) {
             delete raw;
             assert(false);
             return nullptr;
@@ -272,23 +307,24 @@ Lit:
 
 template <typename T, typename Comparator, typename K>
 T *
-find_stack(Binary<T, Comparator> &heap, const K &needle,std::size_t index) noexcept {
+find_stack(Binary<T, Comparator> &heap, const K &needle,
+           std::size_t index) noexcept {
   using namespace impl::heap;
 
   if (index < heap.length) {
     constexpr Comparator cmp;
-    const bool greater = cmp(heap.buffer[index],needle);
-    const bool lesser = cmp(needle,heap.buffer[index]);
+    const bool greater = cmp(heap.buffer[index], needle);
+    const bool lesser = cmp(needle, heap.buffer[index]);
 
-    if(!greater && !lesser){//==
+    if (!greater && !lesser) { //==
       return &heap.buffer[index];
-    } else if (greater){
-      T* l = find_stack(heap,needle, left_child(index));
-      if(l != nullptr){
+    } else if (greater) {
+      T *l = find_stack(heap, needle, left_child(index));
+      if (l != nullptr) {
         return l;
       }
-      T* r = find_stack(heap,needle, right_child(index));
-      if(r != nullptr){
+      T *r = find_stack(heap, needle, right_child(index));
+      if (r != nullptr) {
         return r;
       }
     }
@@ -301,7 +337,7 @@ template <typename T, typename Comparator, typename K>
 T *
 find(Binary<T, Comparator> &heap, const K &needle) noexcept {
   // return find_stack(heap,needle,0);
-  return find_heap(heap,needle);
+  return find_heap(heap, needle);
 }
 
 template <typename T, typename Comparator>
