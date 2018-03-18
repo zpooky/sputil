@@ -101,7 +101,7 @@ uninstall:
 # Creates compilation_database.json
 bear:
 	$(MAKE) -C test bear
-	bear make BUILD_DIR=build/bear clean
+	make BUILD_DIR=build/bear clean
 	bear make BUILD_DIR=build/bear CXXFLAGS+=-DSP_TEST -j 4
 	compdb list > tmp_compile_commands.json
 	mv tmp_compile_commands.json compile_commands.json

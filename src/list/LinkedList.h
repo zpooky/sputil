@@ -5,6 +5,8 @@
 #include <new>
 #include <utility>
 
+// TODO emplace
+
 namespace sp {
 namespace impl {
 namespace LinkedList {
@@ -19,6 +21,7 @@ struct LLNode { //
       , value(std::forward<K>(k)) {
   }
 };
+
 } // namespace LinkedList
 } // namespace impl
 
@@ -108,6 +111,10 @@ template <typename T, template <typename> typename A>
 bool
 is_empty(const LinkedList<T, A> &) noexcept;
 
+template <typename T, template <typename> typename A, typename Predicate>
+std::size_t
+remove_if(LinkedList<T, A> &, Predicate) noexcept;
+
 // template <typename Random, typename T>
 // void
 // shuffle(Random &, sp::LinkedList<T> &) noexcept;
@@ -143,6 +150,36 @@ node_for(sp::LinkedList<T, A> &l, std::size_t index) noexcept {
   return (LLNode<T> *)node_for(c_l, index);
 } // impl::LinkedList::node_for()
 
+template <typename T, template <typename> typename A, typename Predicate>
+bool
+int_remove(sp::LinkedList<T, A> &list, LLNode<T> *priv, LLNode<T> *it,
+           Predicate p) noexcept {
+  assert(it);
+
+  T &value = it->value;
+  auto &allocator = list.allocator;
+
+  if (p(value)) {
+    auto next = it->next;
+    if (priv) {
+      priv->next = next;
+    }
+
+    if (list.root == it) {
+      list.root = next;
+    }
+
+    if (list.last == it) {
+      list.last = priv;
+    }
+
+    it->~LLNode<T>();
+    deallocate(allocator, it);
+    return true;
+  }
+
+  return false;
+}
 } // namespace LinkedList
 } // namespace impl
 /*
@@ -390,36 +427,17 @@ Lit:
   return nullptr;
 }
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> typename A, typename P>
 bool
-remove_first(LinkedList<T, A> &list, F f) noexcept {
+remove_first(LinkedList<T, A> &list, P p) noexcept {
   using namespace impl::LinkedList;
 
   LLNode<T> *it = list.root;
   LLNode<T> *priv = nullptr;
-  auto &allocator = list.allocator;
 
 Lit:
   if (it) {
-    T &value = it->value;
-    if (f(value)) {
-      // value.~T();
-
-      auto next = it->next;
-      if (priv) {
-        priv->next = next;
-      }
-
-      if (list.root == it) {
-        list.root = next;
-      }
-
-      if (list.last == it) {
-        list.last = priv;
-      }
-
-      it->~LLNode<T>();
-      deallocate(allocator, it);
+    if (int_remove(list, priv, it, p)) {
       return true;
     }
 
@@ -435,6 +453,32 @@ template <typename T, template <typename> typename A>
 bool
 is_empty(const LinkedList<T, A> &l) noexcept {
   return l.root == nullptr;
+}
+
+template <typename T, template <typename> typename A, typename Predicate>
+std::size_t
+remove_if(LinkedList<T, A> &list, Predicate p) noexcept {
+  using namespace impl::LinkedList;
+
+  std::size_t result = 0;
+  LLNode<T> *it = list.root;
+  LLNode<T> *priv = nullptr;
+
+Lit:
+  if (it) {
+    LLNode<T> *next = it->next;
+
+    if (int_remove(list, priv, it, p)) {
+      ++result;
+    } else {
+      priv = it;
+    }
+    it = next;
+
+    goto Lit;
+  }
+
+  return result;
 }
 
 } // namespace sp

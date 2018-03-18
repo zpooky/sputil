@@ -166,7 +166,7 @@ read(sp::fd &f, unsigned char *raw, std::size_t raw_len) noexcept {
     readed = ::read(int(f), raw, raw_len);
 
     if (readed > 0) {
-      assert(readed <= raw_len);
+      assert(std::size_t(readed) <= raw_len);
       result += readed;
     }
   } while (readed < 0 && errno == EAGAIN);
@@ -199,13 +199,12 @@ read(sp::fd &f, sp::CircularByteBuffer &b) noexcept {
 
   ssize_t readed = 0;
   do {
-    // constexpr std::sizarr
-    std::size_t points = 0;
+    int points = 0;
     ::iovec point[2];
     {
       BA arr;
       assert(write_buffer(b, arr));
-      for (; points < length(arr); ++points) {
+      for (; std::size_t(points) < length(arr); ++points) {
         auto current = arr[points];
         point[points].iov_base = std::get<0>(current);
         point[points].iov_len = std::get<1>(current);

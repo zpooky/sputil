@@ -175,3 +175,52 @@ TEST(LinkedListTest, test_speed_stack_alloc) {
   sp::LinkedList<std::uint64_t, sp::StackPooledAllocator> l;
   LinkedList_Test_speed(l);
 }
+
+TEST(LinkedListTest, test_remove_if) {
+  sp::LinkedList<std::uint64_t> l;
+  {
+    ASSERT_EQ(0, remove_if(l, [](auto c) {
+                /**/
+                return true;
+              }));
+  }
+  {
+    insert(l, 1);
+    ASSERT_EQ(0, remove_if(l, [](auto c) {
+                /**/
+                return false;
+              }));
+    ASSERT_EQ(false, is_empty(l));
+    auto c = get(l, 0);
+    ASSERT_TRUE(c);
+    ASSERT_EQ(*c, 1);
+  }
+  {
+    ASSERT_EQ(false, is_empty(l));
+    ASSERT_EQ(1, remove_if(l, [](auto c) {
+                /**/
+                return c == 1;
+              }));
+    ASSERT_EQ(true, is_empty(l));
+  }
+  {
+    prng::xorshift32 r(1);
+    constexpr std::size_t cap = 1024;
+    sp::StaticArray<std::uint64_t, cap> in;
+
+    for (std::uint64_t i = 0; i < cap; ++i) {
+      ASSERT_TRUE(insert(in, i));
+      insert(l, i);
+    }
+    ASSERT_EQ(cap, length(in));
+    shuffle(r, in);
+
+    for (std::size_t i = 0; i < cap; ++i) {
+      ASSERT_EQ(1, remove_if(l, [&in, i](auto c) {
+                  /**/
+                  return c == in[i];
+                }));
+    }
+    ASSERT_TRUE(is_empty(l));
+  }
+}
