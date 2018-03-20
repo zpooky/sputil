@@ -115,6 +115,10 @@ template <typename T, template <typename> typename A, typename Predicate>
 std::size_t
 remove_if(LinkedList<T, A> &, Predicate) noexcept;
 
+template <typename T, template <typename> typename A, typename Acum, typename F>
+Acum &
+reduce(LinkedList<T, A> &, Acum &, F) noexcept;
+
 // template <typename Random, typename T>
 // void
 // shuffle(Random &, sp::LinkedList<T> &) noexcept;
@@ -478,6 +482,17 @@ Lit:
     goto Lit;
   }
 
+  return result;
+}
+
+template <typename T, template <typename> typename A, typename Acum, typename F>
+Acum &
+reduce(LinkedList<T, A> &l, Acum &result, F f) noexcept {
+
+  for_each(l, [&result, f](auto &current) {
+    /**/
+    result = f(result, current);
+  });
   return result;
 }
 

@@ -15,6 +15,9 @@ swap(T *&f, T *&s) noexcept {
   s = tmp;
 }
 
+//TODO is_triviable copyable = xorshift
+//TODO has move constructor = T impl
+
 } // namespace sp
 
 #endif

@@ -45,3 +45,8 @@ programitcly trigger breakpoint when assert fails
 
 ## Huffman
 https://medium.com/@TravCav/huffman-coding-1e914c419912
+
+
+## timeout
+60seconds
+1hour
