@@ -43,6 +43,7 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
     {
       std::size_t index = static_cast<std::size_t>(*it++) - '0';
       if (index >= sizeof(lookup)) {
+        assert(false);
         return false;
       }
       f = lookup[index];
@@ -60,6 +61,7 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
     {
       std::size_t index = static_cast<std::size_t>(*it++) - '0';
       if (index >= sizeof(lookup)) {
+        assert(false);
         return false;
       }
       s = lookup[index];

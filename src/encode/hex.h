@@ -8,6 +8,10 @@ namespace hex {
 bool
 decode(const char *, /*OUT*/ std::uint8_t *, /*IN/OUT*/ std::size_t &) noexcept;
 
+// template <std::size_t N>
+// bool
+// decode(const char *, /*OUT*/ std::uint8_t (&out)[N], /*IN/OUT*/ std::size_t &) noexcept;
+
 bool
 encode(const std::uint8_t *, std::size_t, /*OUT*/ char *,
        /*IN/OUT*/ std::size_t &) noexcept;
