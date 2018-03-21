@@ -48,25 +48,24 @@ template <std::size_t keys, std::size_t N>
 static void
 assert_elements(btree::impl::btree::BTNode<int, keys> *node,
                 const int (&elems)[N]) {
-  assert(node);
-  assert(N == length(node->elements));
+  ASSERT_TRUE(node);
+  ASSERT_EQ(N, length(node->elements));
   for (std::size_t i = 0; i < N; ++i) {
     auto elem = get(node->elements, i);
-    assert(elem);
-    assert(elems[i] == *elem);
+    ASSERT_TRUE(elem);
+    ASSERT_EQ(elems[i], *elem);
   }
   // TODO assert(N + 1 == length(node->children));
 }
 
 template <std::size_t keys, std::size_t N>
-static bool
+static void
 sp_assert_child(btree::impl::btree::BTNode<int, keys> *root, std::size_t idx,
                 const int (&elems)[N]) {
-  assert(root);
+  ASSERT_TRUE(root);
   auto node = root->children[idx];
 
   assert_elements(node, elems);
-  return true;
 }
 
 #define assert_zero_children(node)                                             \

@@ -11,7 +11,7 @@ GTEST_ROOT = $(PROJECT_ROOT)/external/googletest/googletest
 HEADER_DIRS = -I$(GTEST_ROOT)/include -I$(SRC_ROOT)
 override CXXFLAGS += $(HEADER_DIRS) -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST
 CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
-LDLIBS = -L$(GTEST_ROOT)/make -lgtest_main -lpthread -L$(PROJECT_ROOT)/$(SUT_DIR) -lsut
+LDLIBS = -L$(GTEST_ROOT)/make -lgtest -lpthread -L$(PROJECT_ROOT)/$(SUT_DIR) -lsut
 BUILD_DIR = build
 
 # TODO `make all` get relinks to gtest because I copy gtest_main to lib... and change time stamp?
@@ -20,18 +20,18 @@ BUILD_DIR = build
 
 # File names
 EXEC = thetest
-SOURCES = $(shell find $(SOURCE_DIR) -iname *.cpp | xargs)
+SOURCES = $(shell find $(SOURCE_DIR) -iname "*.cpp" | xargs)
 OBJECTS = $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 DEPENDS = $(OBJECTS:.o=.d)
 
-.PHONY: test all clean gtest
+.PHONY: test all clean gtest sut bear
 
 # all {{{
 all: sut $(EXEC)
 # }}}
 
 # $(EXEC) linking {{{
-$(EXEC): gtest $(OBJECTS)
+$(EXEC): $(GTEST_ROOT)/make/gtest.a $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $(EXEC) $(LDLIBS)
 # }}}
 
@@ -47,15 +47,16 @@ $(BUILD_DIR)/%.o: %.cpp
 clean:
 # clean test binaries
 	rm -f $(EXEC) $(OBJECTS) $(DEPENDS)
+	$(MAKE) -C $(GTEST_ROOT)/make clean
 # Clean sut binaries
 	$(MAKE) BUILD_DIR=$(SUT_DIR) -C $(PROJECT_ROOT) dumb_clean
 # }}}
 
 # gtest {{{
 LIBGTEST_ROOT = $(GTEST_ROOT)/make
-gtest:
-	$(MAKE) -C $(GTEST_ROOT)/make all -j 4
-	cp $(LIBGTEST_ROOT)/gtest_main.a $(LIBGTEST_ROOT)/libgtest_main.a
+$(GTEST_ROOT)/make/gtest.a:
+	$(MAKE) -C $(GTEST_ROOT)/make gtest.a -j
+	cp $(LIBGTEST_ROOT)/gtest.a $(LIBGTEST_ROOT)/libgtest.a
 # }}}
 
 # sut {{{
@@ -63,7 +64,7 @@ sut:
 # Build sut binaries and put result in $(SUT_DIR) directory to differentiate the build for test binaries with regular binaries.
 # Define the SP_TEST preprocessor macro
 # The resulting static library will be called libsut
-	$(MAKE) BUILD_DIR=$(SUT_DIR) LIB=libsut CXXFLAGS+=-DSP_TEST -C $(PROJECT_ROOT)
+	$(MAKE) BUILD_DIR=$(SUT_DIR) LIB=libsut CXXFLAGS+=-DSP_TEST -C $(PROJECT_ROOT) -j
 # }}}
 
 # bear {{{

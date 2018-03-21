@@ -20,7 +20,7 @@ PREFIX = /usr/local
 EXEC = sputil
 LIB = lib$(EXEC)
 # Recursively search for cpp files
-SOURCES = $(shell find $(SOURCE_DIR) -iname *.cpp | xargs)
+SOURCES = $(shell find $(SOURCE_DIR) -iname "*.cpp" | xargs)
 # Translate cpp file names to there corresponding build location
 OBJECTS = $(patsubst $(SOURCE_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 # Translate the object file names to depend file names
