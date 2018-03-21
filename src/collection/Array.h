@@ -765,7 +765,7 @@ index_of(const Array<T> &a, const T *ptr) noexcept {
     auto e = reinterpret_cast<std::uintptr_t>(ptr);
     if (e >= s) {
       auto index = e - s;
-      assert(index % sizeof(*ptr) == 0);
+      // assert(index % sizeof(*ptr) == 0);??
       index /= sizeof(*ptr);
       if (index < a.length) {
         return index;

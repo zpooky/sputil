@@ -11,8 +11,6 @@ namespace heap {
  * TODO do not require default constructable
  * TODO dynamic binary
  *
- * TODO insert if full should drop the smallest element and replace it with the
- * about to inserted element if the new element has higher priority
  */
 template <typename T, typename Comparator>
 struct Binary {
@@ -62,9 +60,18 @@ template <typename T, typename Comparator, typename V>
 T *
 insert(Binary<T, Comparator> &, V &&) noexcept;
 
-template <typename T, typename Comparator, typename V>
+template <typename T, std::size_t N, typename Comparator, typename V>
 T *
-insert_eager(Binary<T, Comparator> &, V &&) noexcept;
+insert_eager(StaticBinary<T, N, Comparator> &, V &&) noexcept;
+
+// TODO verify last only iterates over leaf nodes
+template <typename T, typename Comparator>
+const T *
+last(const Binary<T, Comparator> &) noexcept;
+
+template <typename T, typename Comparator>
+T *
+last(Binary<T, Comparator> &) noexcept;
 
 // template<typename T,typename Comparator ,typename K>
 // bool remove(Binary<T,Comparator>&,const K&) noexcept;
@@ -150,7 +157,7 @@ swap(Binary<T, Comp> &heap, std::size_t idx1, std::size_t idx2) {
 
 template <typename T, typename Comp>
 static std::size_t
-sift_up(Binary<T, Comp> &heap, std::size_t idx) noexcept {
+shift_up(Binary<T, Comp> &heap, std::size_t idx) noexcept {
 Lit:
   if (idx == 0) {
     /* we are root, we can not shift up further */
@@ -167,14 +174,30 @@ Lit:
   return idx;
 }
 
+template <typename T, typename Comp, typename V>
+static T *
+insert_at(Binary<T, Comp> &heap, std::size_t idx, V &&val) noexcept {
+  // assert(idx < capacity(heap));
+
+  T *const dest = heap.buffer + idx;
+  dest->~T();
+  new (dest) T(std::forward<V>(val));
+
+  idx = shift_up(heap, idx);
+  return heap.buffer + idx;
+}
+
 template <typename T, typename Comp>
-static std::size_t
+std::size_t
 extreme(Binary<T, Comp> &heap, std::size_t first, std::size_t second) noexcept {
+  assert(first < heap.length);
+  assert(second < heap.length);
   constexpr Comp c;
   /* either: greater than or less than */
   if (c(heap.buffer[first], heap.buffer[second])) {
     return first;
   }
+
   return second;
 }
 
@@ -182,38 +205,46 @@ template <typename T, typename Comp>
 static void
 shift_down(Binary<T, Comp> &heap, std::size_t idx) noexcept {
 Lit:
-  std::size_t max_idx = heap.length;
+  std::size_t extreme_idx = heap.length;
 
   const std::size_t left_idx = left_child(idx);
   if (left_idx < heap.length) {
-    max_idx = left_idx;
+    extreme_idx = left_idx;
 
     const std::size_t right_idx = right_child(idx);
     if (right_idx < heap.length) {
-      max_idx = extreme(heap, right_idx, left_idx);
+      extreme_idx = extreme(heap, right_idx, left_idx);
     }
   }
 
-  if (max_idx < heap.length) {
+  if (extreme_idx < heap.length) {
 
     constexpr Comp c;
-    if (c(heap.buffer[max_idx], heap.buffer[idx])) {
-      swap(heap, idx, max_idx);
-      idx = max_idx;
+    if (c(heap.buffer[extreme_idx], heap.buffer[idx])) {
+      swap(heap, idx, extreme_idx);
+      idx = extreme_idx;
       goto Lit;
     }
   }
 }
 
-template <typename T, typename Comp, typename V>
-static T *
-insert_at(Binary<T, Comp> &heap, std::size_t idx, V &&val) noexcept {
-  T *const dest = heap.buffer + idx;
-  dest->~T();
-  new (dest) T(std::forward<V>(val));
-
-  idx = sift_up(heap, idx);
-  return heap.buffer + idx;
+template <typename T, typename Comparator>
+std::size_t
+index_of(const Binary<T, Comparator> &heap, T *ptr) noexcept {
+  assert(ptr);
+  if (heap.buffer) {
+    const T *start = heap.buffer;
+    auto s = reinterpret_cast<std::uintptr_t>(start);
+    auto e = reinterpret_cast<std::uintptr_t>(ptr);
+    if (e >= s) {
+      auto index = e - s;
+      index /= sizeof(*ptr);
+      if (index < heap.length) {
+        return index;
+      }
+    }
+  }
+  return heap.capacity;
 }
 
 } // namespace heap
@@ -268,23 +299,54 @@ insert(Binary<T, Comparator> &heap, V &&val) noexcept {
   return insert_lazy(heap, std::forward<V>(val));
 }
 
-template <typename T, typename Comparator, typename V>
+template <typename T, std::size_t N, typename Comparator, typename V>
 T *
-insert_eager(Binary<T, Comparator> &heap, V &&val) noexcept {
+insert_eager(StaticBinary<T, N, Comparator> &heap, V &&val) noexcept {
   using namespace impl::heap;
 
   if (heap.length == heap.capacity && heap.capacity > 0) {
-    std::size_t idx = heap.length - 1;
+    T *l = last(heap);
+    assert(l);
+    std::size_t idx = index_of(heap, l);
+    assert(idx != heap.capacity);
 
     constexpr Comparator cmp;
-    if (cmp(val, heap.buffer[idx])) {
-      return insert_at(heap, idx, std::forward<V>(val));
+    if (cmp(val, *l)) {
+
+      using sp::swap;
+      T copy(std::forward<V>(val));
+      swap(heap.buffer[idx], copy);
+      idx = shift_up(heap, idx);
+      return heap.buffer + idx;
     }
 
     return nullptr;
   }
 
   return insert_lazy(heap, std::forward<V>(val));
+}
+
+template <typename T, typename Comparator>
+const T *
+last(const Binary<T, Comparator> &heap) noexcept {
+  /* Itterate over leafs */
+  const T *result = nullptr;
+  for (std::size_t i = ((heap.length + 1) / 2) - 1; i < heap.length; ++i) {
+
+    constexpr Comparator cmp;
+    // if (c(heap.buffer[extreme_idx], heap.buffer[idx])) {
+    if (result == nullptr || cmp(*result, heap.buffer[i])) {
+      result = heap.buffer + i;
+    }
+  }
+  return result;
+}
+
+template <typename T, typename Comparator>
+T *
+last(Binary<T, Comparator> &heap) noexcept {
+  const auto &c_heap = heap;
+  return (T *)last(c_heap);
 }
 
 template <typename T, typename Comparator, typename K>

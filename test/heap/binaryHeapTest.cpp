@@ -19,7 +19,6 @@ random_fill(heap::Binary<int, C> &heap,
     ref.push(k);
   }
 }
-// TODO take test
 
 TEST(BinaryHeapTest, MinHeap) {
   constexpr int size = 256;
@@ -303,7 +302,7 @@ TEST(BinaryHeapTest, MaxHeap_lazy) {
     --cmp;
     ASSERT_EQ(cmp, out);
   }
-  ASSERT_EQ(cmp, 0);
+  ASSERT_EQ(cmp, std::size_t(0));
 }
 
 TEST(BinaryHeapTest, MaxHeap_lazy_rand) {
@@ -331,24 +330,58 @@ TEST(BinaryHeapTest, MaxHeap_lazy_rand) {
     --cmp;
     ASSERT_EQ(cmp, out);
   }
-  ASSERT_EQ(cmp, 0);
+  ASSERT_EQ(cmp, std::size_t(0));
 }
 
-TEST(BinaryHeapTest, MaxHeap_eager) {
-  constexpr std::size_t size = 256;
-  const std::size_t it = size * 4;
-  heap::StaticMaxBinary<std::size_t, size> heap;
-  for (std::size_t i = 0; i <= it; ++i) {
-    printf("insert_eager(heap, i[%zu])\n", i);
+TEST(BinaryHeapTest, MaxHeap_eager_check) {
+  constexpr int size = 10;
+  constexpr int its = size + 10;
+
+  heap::StaticMaxBinary<int, std::size_t(size)> heap;
+  int max = 0;
+  for (int i = 0; i < its; ++i) {
+
     auto res = insert_eager(heap, i);
     ASSERT_TRUE(res);
     ASSERT_EQ(*res, i);
+    max = i;
+
+    // dump(heap);
+    // printf("--------\n");
   }
-  std::size_t cmp = it;
+  ASSERT_EQ(length(heap), capacity(heap));
+  int last = 9999999;
   while (!is_empty(heap)) {
-    std::size_t out = 0;
+    int out = 0;
     ASSERT_TRUE(take_head(heap, out));
-    printf("take_head(heap, out[%zu])\n", out);
+    // printf("take_head(heap, out[%d])\n", out);
+    ASSERT_TRUE(out < last);
+    last = out;
+    // ASSERT_EQ(max, out);
+    --max;
+  }
+  ASSERT_TRUE(is_empty(heap));
+  ASSERT_EQ(std::size_t(0), length(heap));
+}
+
+TEST(BinaryHeapTest, MaxHeap_eager) {
+  constexpr int size = 1024;
+  heap::StaticMaxBinary<int, size> heap;
+  const int it = size * 4;
+  int cmp = 0;
+  for (int i = 0; i <= it; ++i) {
+    // printf("insert_eager(heap, i[%zu])\n", i);
+    auto ins = i;
+    auto res = insert_eager(heap, ins);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, i);
+    cmp = i;
+  }
+  // dump(heap);
+  while (!is_empty(heap)) {
+    int out = 0;
+    ASSERT_TRUE(take_head(heap, out));
+    // printf("take_head(heap, out[%zu])\n", out);
     ASSERT_EQ(cmp, out);
     --cmp;
   }
@@ -356,10 +389,10 @@ TEST(BinaryHeapTest, MaxHeap_eager) {
 }
 
 TEST(BinaryHeapTest, MaxHeap_eager_rand) {
-  constexpr std::size_t size = 10;
-  heap::StaticMaxBinary<std::size_t, size> heap;
-  sp::StaticArray<std::size_t, size * 2> in;
-  for (std::size_t i = 0; i < capacity(in); ++i) {
+  constexpr int size = 1024;
+  heap::StaticMaxBinary<int, size> heap;
+  sp::StaticArray<int, size * 4> in;
+  for (int i = 0; i < capacity(in); ++i) {
     auto res = insert(in, i);
     ASSERT_TRUE(res);
     ASSERT_EQ(*res, i);
@@ -368,18 +401,99 @@ TEST(BinaryHeapTest, MaxHeap_eager_rand) {
   shuffle(r, in);
 
   ASSERT_EQ(capacity(in), length(in));
-  for (std::size_t i = 0; i < length(in); ++i) {
-    insert_lazy(heap, in[i]);
+  for (int i = 0; i < length(in); ++i) {
+    insert_eager(heap, in[i]);
   }
   ASSERT_EQ(capacity(heap), length(heap));
 
-  std::size_t cmp = capacity(in);
+  // dump(heap);
+  int cmp = capacity(in);
   while (!is_empty(heap)) {
-    std::size_t out = 0;
+    int out = 0;
     ASSERT_TRUE(take_head(heap, out));
-    printf("take_head(heap, out[%zu])\n", out);
+    // printf("take_head(heap, out[%zu])\n", out);
     --cmp;
     ASSERT_EQ(cmp, out);
   }
-  ASSERT_EQ(cmp, 0);
+}
+
+TEST(BinaryHeapTest, MaxHeap_last) {
+  constexpr std::size_t size = 1024;
+  heap::StaticMaxBinary<std::size_t, size> heap;
+  ASSERT_FALSE(last(heap));
+  for (std::size_t i = 0; i < size; ++i) {
+    {
+      auto res = insert_lazy(heap, i);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, i);
+    }
+    {
+      // printf("last()\n");
+      auto res = last(heap);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, std::size_t(0));
+    }
+  }
+  std::size_t cmp = size;
+  for (std::size_t i = 0; i < size; ++i) {
+    {
+      // printf("last()\n");
+      auto res = last(heap);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, std::size_t(0));
+    }
+    {
+      std::size_t out = 9999999;
+      auto res = take_head(heap, out);
+      ASSERT_TRUE(res);
+      --cmp;
+      ASSERT_EQ(cmp, out);
+    }
+  }
+  ASSERT_FALSE(last(heap));
+}
+
+template <std::size_t size>
+static std::size_t
+find_min(sp::StaticArray<std::size_t, size> &in, std::size_t limit) {
+  std::size_t result = 99999999;
+  for (std::size_t i = 0; i <= limit; ++i) {
+    result = std::min(result, in[i]);
+  }
+  return result;
+}
+
+TEST(BinaryHeapTest, MaxHeap_last_rand) {
+  constexpr std::size_t size = 1024;
+
+  sp::StaticArray<std::size_t, size> in;
+  for (std::size_t i = 0; i < capacity(in); ++i) {
+    auto res = insert(in, i);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, i);
+  }
+  prng::xorshift32 r(2);
+  for (std::size_t seed = 1; seed < 20; ++seed) {
+    heap::StaticMaxBinary<std::size_t, size> heap;
+    shuffle(r, in);
+
+    ASSERT_EQ(capacity(in), length(in));
+    ASSERT_FALSE(last(heap));
+    for (std::size_t i = 0; i < length(in); ++i) {
+      std::size_t the_min = find_min(in, i);
+      {
+        auto res = insert_lazy(heap, in[i]);
+        ASSERT_TRUE(res);
+        // printf("insert_lazy(%zu)\n", in[i]);
+        ASSERT_EQ(*res, in[i]);
+      }
+      {
+        auto res = last(heap);
+        ASSERT_TRUE(res);
+        // printf("last():%zu\n", *res);
+        ASSERT_EQ(*res, the_min);
+      }
+    }
+    ASSERT_EQ(capacity(heap), length(heap));
+  }
 }

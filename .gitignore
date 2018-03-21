@@ -47,3 +47,4 @@ Session.vim
 AST_out.log
 *.patch
 chromatica.log
+compile_commands.json
