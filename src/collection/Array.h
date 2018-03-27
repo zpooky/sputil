@@ -17,6 +17,8 @@
 namespace sp {
 template <typename T>
 struct Array {
+  using value_type = T;
+
   T *buffer;
   std::size_t length;
   std::size_t capacity;
@@ -40,6 +42,8 @@ struct Array {
  */
 template <typename T, std::size_t cap>
 struct StaticArray : public Array<T> {
+  using value_type = T;
+
   T raw[cap];
   static constexpr std::size_t storage_capacity = cap;
 
@@ -51,6 +55,7 @@ struct StaticArray : public Array<T> {
  */
 template <typename T, std::size_t cap>
 struct UinStaticArray {
+  using value_type = T;
   using storage_type =
       typename std::aligned_storage<sizeof(T) * cap, alignof(T)>::type;
   static constexpr std::size_t capacity = cap;

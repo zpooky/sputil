@@ -60,9 +60,9 @@ template <typename T, typename Comparator, typename V>
 T *
 insert(Binary<T, Comparator> &, V &&) noexcept;
 
-template <typename T, std::size_t N, typename Comparator, typename V>
-T *
-insert_eager(StaticBinary<T, N, Comparator> &, V &&) noexcept;
+// template <typename T, std::size_t N, typename Comparator, typename V>
+// T *
+// insert_eager(StaticBinary<T, N, Comparator> &, V &&) noexcept;
 
 // TODO verify last only iterates over leaf nodes
 template <typename T, typename Comparator>
@@ -313,7 +313,7 @@ insert_eager(StaticBinary<T, N, Comparator> &heap, V &&val) noexcept {
     constexpr Comparator cmp;
     if (cmp(val, *l)) {
 
-      using sp::swap;
+      using std::swap;
       T copy(std::forward<V>(val));
       swap(heap.buffer[idx], copy);
       idx = shift_up(heap, idx);

@@ -102,6 +102,22 @@ template <typename T, std::size_t l, typename C>
 void
 swap(SkipList<T, l, C> &, SkipList<T, l, C> &) noexcept;
 
+template <typename T, std::size_t L, typename C, typename F>
+bool
+for_all(const SkipList<T, L, C> &, F) noexcept;
+
+template <typename T, std::size_t L, typename C, typename F>
+bool
+for_all(SkipList<T, L, C> &, F) noexcept;
+
+template <typename T, std::size_t L, typename C, typename F>
+void
+for_each(const SkipList<T, L, C> &, F) noexcept;
+
+template <typename T, std::size_t L, typename C, typename F>
+void
+for_each(SkipList<T, L, C> &, F) noexcept;
+
 template <std::size_t l, typename C>
 void
 dump(const SkipList<int, l, C> &) noexcept;
@@ -137,7 +153,7 @@ first_highest(const sp::SkipList<T, levels, C> &list, std::size_t limit) {
 /*
  * Randomize the depth of the about-to-inserted node
  */
-static std::size_t
+inline std::size_t
 random_level(prng::xorshift32 &state, std::size_t max) {
   /*
    * Generates a random number
@@ -528,6 +544,60 @@ swap(SkipList<T, l, C> &first, SkipList<T, l, C> &second) noexcept {
     std::swap(first.header[i], second.header[i]);
   }
   swap(first.state, second.state);
+}
+
+template <typename T, std::size_t L, typename C, typename F>
+bool
+for_all(const SkipList<T, L, C> &l, F f) noexcept {
+  auto *it = l.header[0];
+  while (it) {
+    const auto &current = it->value;
+    if (!f(current)) {
+      return false;
+    }
+    it = it->next[0];
+  }
+
+  return true;
+}
+
+template <typename T, std::size_t L, typename C, typename F>
+bool
+for_all(SkipList<T, L, C> &l, F f) noexcept {
+  auto *it = l.header[0];
+  while (it) {
+    auto &current = it->value;
+    if (!f(current)) {
+      return false;
+    }
+    it = it->next[0];
+  }
+
+  return true;
+}
+
+template <typename T, std::size_t L, typename C, typename F>
+void
+for_each(const SkipList<T, L, C> &l, F f) noexcept {
+  auto *it = l.header[0];
+  while (it) {
+    const auto &current = it->value;
+    f(current);
+
+    it = it->next[0];
+  }
+}
+
+template <typename T, std::size_t L, typename C, typename F>
+void
+for_each(SkipList<T, L, C> &l, F f) noexcept {
+  auto *it = l.header[0];
+  while (it) {
+    auto &current = it->value;
+    f(current);
+
+    it = it->next[0];
+  }
 }
 
 template <std::size_t L, typename C>
