@@ -182,13 +182,13 @@ lookup_relative(sp::relative_idx old_idx, impl::static_tree::Direction dir) noex
   return idx;
 }
 
-static sp::absolute_idx
+static inline sp::absolute_idx
 translate(std::size_t l, sp::relative_idx idx) {
   std::size_t start = level(l);
   return sp::absolute_idx(std::size_t(idx) + start);
 }
 
-static sp::relative_idx
+static inline sp::relative_idx
 parent_relative(sp::relative_idx idx) noexcept {
   using namespace impl::static_tree;
   sp::relative_idx i(std::size_t(idx) / 2);

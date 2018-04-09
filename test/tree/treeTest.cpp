@@ -12,14 +12,14 @@ find_stuff(Tree_t &tree, std::size_t deleted, T (&in)[in_size]) {
   for (std::size_t k = 0; k < in_size; ++k) {
     auto *f = find(tree, in[k]);
     if (k < deleted) {
-      assert(f == nullptr);
+      ASSERT_TRUE(f == nullptr);
     } else {
       if (!f) {
         printf("%p = find(tree, %d)\n", f, in[k]);
         dump(tree, "find|");
       }
-      assert(f);
-      assert(*f == in[k]);
+      ASSERT_TRUE(f);
+      ASSERT_TRUE(*f == in[k]);
     }
   }
 }
@@ -47,25 +47,25 @@ random_insert_delete(std::size_t goal) {
     for (int i = 0; i < in_size; ++i) {
       for (int k = 0; k < i; ++k) {
         auto f = find(tree, in[k]);
-        assert(f);
-        assert(*f == in[k]);
+        ASSERT_TRUE(f);
+        ASSERT_TRUE(*f == in[k]);
       }
       // printf(".%d <- %d\n", i, in[i]);
       auto res = insert(tree, in[i]);
       int *const iptr = std::get<0>(res);
-      assert(std::get<1>(res) == true);
-      assert(iptr);
-      assert(*iptr == in[i]);
+      ASSERT_TRUE(std::get<1>(res) == true);
+      ASSERT_TRUE(iptr);
+      ASSERT_TRUE(*iptr == in[i]);
       {
         int *const fptr = find(tree, in[i]);
-        assert(fptr);
-        assert(fptr == iptr);
-        assert(*fptr == *iptr);
+        ASSERT_TRUE(fptr);
+        ASSERT_TRUE(fptr == iptr);
+        ASSERT_TRUE(*fptr == *iptr);
       }
 
       if (!verify(tree)) {
         dump(tree, "ins|");
-        assert(false);
+        ASSERT_TRUE(false);
       }
     }
     dump(tree, "");
@@ -79,11 +79,11 @@ random_insert_delete(std::size_t goal) {
       // printf("remove(tree,%d)\n", in[i]);
       bool rb = remove(tree, in[i]);
       // printf(" = %s\n", rb ? "true" : "false");
-      assert(rb);
+      ASSERT_TRUE(rb);
       if (!verify(tree)) {
         printf("\n");
         dump(tree, "rem|");
-        assert(false);
+        ASSERT_TRUE(false);
       } else {
         // dump(tree, "rem|");
       }
@@ -131,7 +131,7 @@ random_insert(std::size_t goal) {
       ASSERT_TRUE(*iptr == in[i]);
 
       const int *const fptr = find(tree, in[i]);
-      if(!fptr){
+      if (!fptr) {
         dump(tree);
       }
       ASSERT_TRUE(fptr);
@@ -176,5 +176,3 @@ TEST(treeTest, test_insert_red_black) {
 // TEST(treeTest, test_insert_StaticTree) {
 //   random_insert<bst::StaticTree<int>>(10);
 // }
-
-

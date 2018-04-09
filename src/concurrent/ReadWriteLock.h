@@ -142,7 +142,7 @@ private:
 
 public:
   explicit LazyExclusiveLock(ReadWriteLock &) noexcept;
-  ~LazyExclusiveLock();
+  ~LazyExclusiveLock() noexcept;
 
   explicit operator bool() const noexcept;
 };
@@ -162,6 +162,6 @@ public:
 
   explicit operator bool() const noexcept;
 };
-}
+} // namespace sp
 
 #endif

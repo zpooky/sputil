@@ -9,10 +9,10 @@ BUILD_DIR = build/debug
 
 HEADER_DIRS = -I$(INCLUDE_DIR)
 # overrides makes it possible to externally append extra flags
-override CXXFLAGS += $(HEADER_DIRS) -enable-frame-pointers -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow
+override CXXFLAGS += $(HEADER_DIRS) -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow
 override CXXFLAGS += -Wduplicated-cond -Wlogical-op -Wnull-dereference -Wuseless-cast -Wdouble-promotion -Wformat=2
 CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
-LDFLAGS =
+LDFLAGS = -enable-frame-pointers
 LDLIBS =
 PREFIX = /usr/local
 
@@ -42,7 +42,7 @@ all: ${EXEC}
 # $(EXEC) {{{
 # depends on the targets for all the object files
 $(EXEC): $(OBJECTS)
-	$(CXX) $(OBJECTS) -o $(EXEC) $(LDLIBS)
+	$(CXX) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $(EXEC)
 # }}}
 
 # object {{{
@@ -55,7 +55,7 @@ $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp
 	mkdir -p $(dir $(@))
 # -c means to create an intermediary object file, rather than an executable
 # -MMD means to create *object*.d depend file with its depending cpp & h files
-	$(CXX) $(CXXFLAGS_DEBUG) $(LDFLAGS) -MMD -c $< -o $@
+	$(CXX) $(CXXFLAGS_DEBUG) -MMD -c $< -o $@
 # }}}
 
 # clean {{{

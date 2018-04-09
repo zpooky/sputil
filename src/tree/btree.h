@@ -41,7 +41,7 @@ template <typename T, std::size_t keys, typename Comparator = sp::greater>
 struct Tree {
   using value_type = T;
   using reference = value_type &;
-  using const_reference = const reference;
+  using const_reference = const value_type &;
   using pointer = value_type *;
   using const_pointer = const value_type *;
 

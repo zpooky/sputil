@@ -82,7 +82,7 @@ encode(const std::uint8_t *in, std::size_t in_length, /*OUT*/ char *out,
   const std::size_t size = len;
   len = 0;
 
-  std::uint8_t lookup[16] = {0};
+  char lookup[16] = {0};
   {
     std::size_t i = 0;
     lookup[i++] = '0';

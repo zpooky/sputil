@@ -7,7 +7,8 @@
 
 namespace sp {
 struct Sink {
-  using FlushType = bool (*)(CircularByteBuffer &, void *) noexcept;
+  using FlushType = bool (*)(CircularByteBuffer &, void *);
+
   CircularByteBuffer &buffer;
   FlushType sink;
   void *arg;
@@ -49,7 +50,7 @@ write(Sink &s, const char (&buffer)[SIZE]) noexcept {
  * returns byte written
  */
 std::size_t
-push_back(Sink &, const void*, std::size_t) noexcept;
+push_back(Sink &, const void *, std::size_t) noexcept;
 
 bool
 push_back(Sink &, unsigned char) noexcept;

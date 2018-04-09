@@ -9,9 +9,12 @@ SUT_DIR = build/test
 GTEST_ROOT = $(PROJECT_ROOT)/external/googletest/googletest
 
 HEADER_DIRS = -I$(GTEST_ROOT)/include -I$(SRC_ROOT)
-override CXXFLAGS += $(HEADER_DIRS) -enable-frame-pointers -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST
+override CXXFLAGS += $(HEADER_DIRS) -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST
 CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
+
 LDLIBS = -L$(GTEST_ROOT)/make -lgtest -lpthread -L$(PROJECT_ROOT)/$(SUT_DIR) -lsut
+LDFLAGS = -enable-frame-pointers
+
 BUILD_DIR = build
 
 # TODO `make all` get relinks to gtest because I copy gtest_main to lib... and change time stamp?
@@ -32,7 +35,7 @@ all: sut $(EXEC)
 
 # $(EXEC) linking {{{
 $(EXEC): $(GTEST_ROOT)/make/gtest.a $(OBJECTS)
-	$(CXX) $(OBJECTS) -o $(EXEC) $(LDLIBS)
+	$(CXX) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $(EXEC)
 # }}}
 
 # compile {{{
@@ -40,7 +43,7 @@ $(EXEC): $(GTEST_ROOT)/make/gtest.a $(OBJECTS)
 
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $(@))
-	$(CXX) $(CXXFLAGS_DEBUG) $(LDFLAGS) -MMD -c $< -o $@
+	$(CXX) $(CXXFLAGS_DEBUG) -MMD -c $< -o $@
 # }}}
 
 # clean {{{

@@ -49,7 +49,7 @@ crc_reversed(const void *b, std::size_t length, crc_t polynomial) noexcept {
     // The register now contains the remainder.
     for (std::size_t bit = 0; bit < bits; ++bit) {
       // check if the bit being shifted left is 1
-      const bool popped = crc & high_bit == high_bit;
+      const bool popped = (crc & high_bit) == high_bit;
       crc = (crc << 1);
 
       if (popped) {

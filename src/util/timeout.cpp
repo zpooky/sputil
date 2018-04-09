@@ -8,7 +8,7 @@ namespace sp {
 Timestamp
 now() noexcept {
   time_t t = std::time(nullptr);
-  return Timestamp(sp::Seconds(t));
+  return Timestamp(sp::Seconds((std::uint64_t)t));
 }
 
 /* Milliseconds */
@@ -71,19 +71,19 @@ Milliseconds::operator-(const Milliseconds &o) const noexcept {
 Milliseconds
 Milliseconds::operator-(const Seconds &v) const noexcept {
   Milliseconds o(v);
-  return this->operator-(v);
+  return this->operator-(o);
 }
 
 Milliseconds
 Milliseconds::operator-(const Minutes &v) const noexcept {
   Milliseconds o(v);
-  return this->operator-(v);
+  return this->operator-(o);
 }
 
 Milliseconds
 Milliseconds::operator-(const Hours &v) const noexcept {
   Milliseconds o(v);
-  return this->operator-(v);
+  return this->operator-(o);
 }
 
 /* ===================================== */

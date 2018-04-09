@@ -37,7 +37,7 @@ get_exclusive(std::uint64_t state) noexcept {
   return uint8_t(state & 0xFF);
 }
 
-bool
+static bool
 is_exclusive(std::uint64_t cmp) noexcept {
   return get_exclusive(cmp) > 0;
 }
@@ -47,22 +47,22 @@ get_prepare(std::uint64_t state) noexcept {
   return uint8_t((state >> 8) & 0xFF);
 }
 
-bool
+static bool
 is_prepare(std::uint64_t cmp) noexcept {
   return get_prepare(cmp) > 0;
 }
 
-uint64_t
+static uint64_t
 get_shared(uint64_t shared) noexcept {
   return shared >> (2 * 8);
 }
 
-bool
+static bool
 has_shared(std::uint64_t cmp) noexcept {
   return get_shared(cmp) > 0;
 }
 
-uint64_t
+static uint64_t
 add_shared(uint64_t shared, int8_t amount) noexcept {
   shared = get_shared(shared);
   shared = shared + amount;

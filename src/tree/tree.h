@@ -12,7 +12,7 @@ template <typename T, typename Comparator>
 struct Tree {
   using value_type = typename T::value_type;
   using reference = value_type &;
-  using const_reference = const reference;
+  using const_reference = const value_type &;
   using pointer = value_type *;
   using const_pointer = const value_type *;
 

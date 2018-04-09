@@ -119,9 +119,9 @@ write(sp::fd &f, sp::CircularByteBuffer &b) noexcept {
       BA arr;
       assert(read_buffer(b, arr));
       for (; std::size_t(points) < length(arr); ++points) {
-        auto current = arr[points];
-        point[points].iov_base = std::get<0>(current);
-        point[points].iov_len = std::get<1>(current);
+        auto current = arr[std::size_t(points)];
+        point[std::size_t(points)].iov_base = std::get<0>(current);
+        point[std::size_t(points)].iov_len = std::get<1>(current);
       }
     }
 
@@ -205,9 +205,9 @@ read(sp::fd &f, sp::CircularByteBuffer &b) noexcept {
       BA arr;
       assert(write_buffer(b, arr));
       for (; std::size_t(points) < length(arr); ++points) {
-        auto current = arr[points];
-        point[points].iov_base = std::get<0>(current);
-        point[points].iov_len = std::get<1>(current);
+        auto current = arr[std::size_t(points)];
+        point[std::size_t(points)].iov_base = std::get<0>(current);
+        point[std::size_t(points)].iov_len = std::get<1>(current);
       }
     }
 

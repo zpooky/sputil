@@ -418,7 +418,7 @@ template <typename T,typename C, typename K>
 bool
 remove(Tree<T,C> &, const K &) noexcept {
   //TODO
-  return nullptr;
+  return true;
 }//rb::remove()
 
 template <typename T,typename C>
