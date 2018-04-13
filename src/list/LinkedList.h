@@ -51,27 +51,27 @@ struct LinkedList {
 
 // TODO emplace
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 void
 swap(LinkedList<T, A> &, LinkedList<T, A> &) noexcept;
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 void
 clear(LinkedList<T, A> &) noexcept;
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 T *
 get(LinkedList<T, A> &, std::size_t) noexcept;
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 const T *
 get(const LinkedList<T, A> &, std::size_t) noexcept;
 
-template <typename T, template <typename> typename A, typename V>
+template <typename T, template <typename> class A, typename V>
 T *
 insert(LinkedList<T, A> &, V &&) noexcept;
 
-template <typename T, template <typename> typename A, typename V>
+template <typename T, template <typename> class A, typename V>
 T *
 push_back(LinkedList<T, A> &, V &&) noexcept;
 
@@ -79,43 +79,43 @@ push_back(LinkedList<T, A> &, V &&) noexcept;
 // T *
 // push_front(LinkedList<T,A> &, V &&) noexcept;
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 void
 for_each(const LinkedList<T, A> &, F) noexcept;
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 void
 for_each(LinkedList<T, A> &, F) noexcept;
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 bool
 for_all(const LinkedList<T, A> &, F) noexcept;
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 bool
 for_all(LinkedList<T, A> &, F) noexcept;
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 T *
 find_first(LinkedList<T, A> &, F) noexcept;
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 const T *
 find_first(const LinkedList<T, A> &, F) noexcept;
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 bool
 remove_first(LinkedList<T, A> &, F) noexcept;
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 bool
 is_empty(const LinkedList<T, A> &) noexcept;
 
-template <typename T, template <typename> typename A, typename Predicate>
+template <typename T, template <typename> class A, typename Predicate>
 std::size_t
 remove_if(LinkedList<T, A> &, Predicate) noexcept;
 
-template <typename T, template <typename> typename A, typename Acum, typename F>
+template <typename T, template <typename> class A, typename Acum, typename F>
 Acum &
 reduce(LinkedList<T, A> &, Acum &, F) noexcept;
 
@@ -129,7 +129,7 @@ reduce(LinkedList<T, A> &, Acum &, F) noexcept;
 namespace impl {
 namespace LinkedList {
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 const LLNode<T> *
 node_for(const sp::LinkedList<T, A> &l, std::size_t index) noexcept {
   const auto *current = l.root;
@@ -147,14 +147,14 @@ Lit:
   return current;
 } // impl::LinkedList::node_for()
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 LLNode<T> *
 node_for(sp::LinkedList<T, A> &l, std::size_t index) noexcept {
   const sp::LinkedList<T, A> &c_l = l;
   return (LLNode<T> *)node_for(c_l, index);
 } // impl::LinkedList::node_for()
 
-template <typename T, template <typename> typename A, typename Predicate>
+template <typename T, template <typename> class A, typename Predicate>
 bool
 int_remove(sp::LinkedList<T, A> &list, LLNode<T> *priv, LLNode<T> *it,
            Predicate p) noexcept {
@@ -196,7 +196,7 @@ int_remove(sp::LinkedList<T, A> &list, LLNode<T> *priv, LLNode<T> *it,
 //
 // }
 
-template <typename T, template <typename> typename Allocator>
+template <typename T, template <typename> class Allocator>
 LinkedList<T, Allocator>::LinkedList() noexcept(
     noexcept(Allocator<node_type>()))
     : root{nullptr}
@@ -204,7 +204,7 @@ LinkedList<T, Allocator>::LinkedList() noexcept(
     , allocator() {
 }
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 LinkedList<T, A>::~LinkedList() noexcept {
 Lit:
   if (root) {
@@ -221,7 +221,7 @@ Lit:
   last = nullptr;
 }
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 void
 swap(LinkedList<T, A> &first, LinkedList<T, A> &second) noexcept {
   std::swap(first.root, second.root);
@@ -229,7 +229,7 @@ swap(LinkedList<T, A> &first, LinkedList<T, A> &second) noexcept {
   std::swap(first.allocator, second.allocator);
 }
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 void
 clear(LinkedList<T, A> &l) noexcept {
   using namespace impl::LinkedList;
@@ -252,14 +252,14 @@ Lit:
   l.last = nullptr;
 } // sp::clear()
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 T *
 get(LinkedList<T, A> &l, std::size_t index) noexcept {
   const LinkedList<T, A> &c_l = l;
   return (T *)get(c_l, index);
 } // sp::get()
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 const T *
 get(const LinkedList<T, A> &l, std::size_t index) noexcept {
   using namespace impl::LinkedList;
@@ -272,13 +272,13 @@ get(const LinkedList<T, A> &l, std::size_t index) noexcept {
   return nullptr;
 } // sp::get()
 
-template <typename T, template <typename> typename A, typename V>
+template <typename T, template <typename> class A, typename V>
 T *
 insert(LinkedList<T, A> &list, V &&val) noexcept {
   return push_back(list, std::forward<V>(val));
 } // sp::insert()
 
-template <typename T, template <typename> typename A, typename V>
+template <typename T, template <typename> class A, typename V>
 T *
 push_back(LinkedList<T, A> &list, V &&val) noexcept {
   using namespace impl::LinkedList;
@@ -323,7 +323,7 @@ push_back(LinkedList<T, A> &list, V &&val) noexcept {
 //   return nullptr;
 // }
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 void
 for_each(const LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
@@ -338,7 +338,7 @@ Lit:
   }
 } // sp::for_each()
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 void
 for_each(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
@@ -353,7 +353,7 @@ Lit:
   }
 } // sp::for_each()
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 bool
 for_all(const LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
@@ -373,7 +373,7 @@ Lit:
   return true;
 } // sp::for_all()
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 bool
 for_all(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
@@ -393,7 +393,7 @@ Lit:
   return true;
 } // sp::for_all()
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 T *
 find_first(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
@@ -412,7 +412,7 @@ Lit:
   return nullptr;
 }
 
-template <typename T, template <typename> typename A, typename F>
+template <typename T, template <typename> class A, typename F>
 const T *
 find_first(const LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
@@ -431,7 +431,7 @@ Lit:
   return nullptr;
 }
 
-template <typename T, template <typename> typename A, typename P>
+template <typename T, template <typename> class A, typename P>
 bool
 remove_first(LinkedList<T, A> &list, P p) noexcept {
   using namespace impl::LinkedList;
@@ -453,13 +453,13 @@ Lit:
   return false;
 } // sp::remove_first()
 
-template <typename T, template <typename> typename A>
+template <typename T, template <typename> class A>
 bool
 is_empty(const LinkedList<T, A> &l) noexcept {
   return l.root == nullptr;
 }
 
-template <typename T, template <typename> typename A, typename Predicate>
+template <typename T, template <typename> class A, typename Predicate>
 std::size_t
 remove_if(LinkedList<T, A> &list, Predicate p) noexcept {
   using namespace impl::LinkedList;
@@ -485,7 +485,7 @@ Lit:
   return result;
 }
 
-template <typename T, template <typename> typename A, typename Acum, typename F>
+template <typename T, template <typename> class A, typename Acum, typename F>
 Acum &
 reduce(LinkedList<T, A> &l, Acum &result, F f) noexcept {
 

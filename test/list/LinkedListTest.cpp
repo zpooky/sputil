@@ -179,14 +179,14 @@ TEST(LinkedListTest, test_speed_stack_alloc) {
 TEST(LinkedListTest, test_remove_if) {
   sp::LinkedList<std::uint64_t> l;
   {
-    ASSERT_EQ(0, remove_if(l, [](auto c) {
+    ASSERT_EQ(0, remove_if(l, [](auto) {
                 /**/
                 return true;
               }));
   }
   {
     insert(l, 1);
-    ASSERT_EQ(0, remove_if(l, [](auto c) {
+    ASSERT_EQ(0, remove_if(l, [](auto) {
                 /**/
                 return false;
               }));
