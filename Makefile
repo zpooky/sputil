@@ -4,16 +4,17 @@
 CXX = g++
 
 SOURCE_DIR = src
-INCLUDE_DIR = include
 BUILD_DIR = build/debug
 
-HEADER_DIRS = -I$(INCLUDE_DIR)
+HEADER_DIRS = -Iinclude
 # overrides makes it possible to externally append extra flags
 override CXXFLAGS += $(HEADER_DIRS) -std=c++14 -Wall -Wextra -Wpedantic -Wpointer-arith -Wconversion -Wshadow
 override CXXFLAGS += -Wduplicated-cond -Wlogical-op -Wnull-dereference -Wuseless-cast -Wdouble-promotion -Wformat=2
-CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
-LDFLAGS = -enable-frame-pointers
+CXXFLAGS_DEBUG = $(CXXFLAGS) -O0 -ggdb
+
+LDFLAGS = -fno-omit-frame-pointer
 LDLIBS =
+
 PREFIX = /usr/local
 
 # File names
@@ -25,10 +26,6 @@ SOURCES = $(shell find $(SOURCE_DIR) -iname "*.cpp" | xargs)
 OBJECTS = $(patsubst $(SOURCE_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 # Translate the object file names to depend file names
 DEPENDS = $(OBJECTS:.o=.d)
-
-#TODO dynamic link lib
-#TODO https://kristerw.blogspot.se/2017/09/useful-gcc-warning-options-not-enabled.html
-#TODO build for different optimizations level in dedicated build directories
 
 # PHONY targets is not file backed targets
 .PHONY: test all clean install uninstall bear
