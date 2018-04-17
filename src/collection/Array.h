@@ -35,6 +35,11 @@ struct Array {
     assert(idx < length);
     return buffer[idx];
   }
+
+  const T &operator[](std::size_t idx) const noexcept {
+    assert(idx < length);
+    return buffer[idx];
+  }
 };
 
 /*
@@ -78,6 +83,11 @@ struct UinStaticArray {
   }
 
   T &operator[](std::size_t idx) noexcept {
+    assert(idx < length);
+    return data()[idx];
+  }
+
+  const T &operator[](std::size_t idx) const noexcept {
     assert(idx < length);
     return data()[idx];
   }
@@ -182,6 +192,23 @@ T *
 insert(UinStaticArray<T, c> &, V &&) noexcept;
 //=====================================
 
+template <typename T, typename From>
+bool
+insert_all(Array<T> &, const From &) noexcept;
+
+template <typename T, std::size_t c, typename From>
+bool
+insert_all(UinStaticArray<T, c> &, const From &) noexcept;
+
+template <typename T, typename V>
+bool
+insert_all(Array<T> &, const V *, std::size_t) noexcept;
+
+template <typename T, std::size_t c, typename V>
+bool
+insert_all(UinStaticArray<T, c> &, const V *, std::size_t) noexcept;
+//=====================================
+
 /*
  * Insert the value at the specified index. Values already present at and after
  * the index will be shifted upwards. returns a pointer to the newly inserted
@@ -241,11 +268,13 @@ index_of(const UinStaticArray<T, c> &, const T *) noexcept;
 
 template <typename T>
 bool
-remove(Array<T> &, std::size_t) noexcept;
+remove(Array<T> &, std::size_t idx) noexcept;
 
 template <typename T, std::size_t c>
 bool
-remove(UinStaticArray<T, c> &, std::size_t) noexcept;
+remove(UinStaticArray<T, c> &, std::size_t idx) noexcept;
+
+// TODO stable remove <- shifting everything after left
 //=====================================
 
 /*
@@ -692,6 +721,66 @@ insert(UinStaticArray<T, c> &a, V &&val) noexcept {
 
   return nullptr;
 }
+//=====================================
+
+template <typename T, typename From>
+bool
+insert_all(Array<T> &a, const From &src) noexcept {
+  std::size_t len = length(src);
+  if (remaining_write(a) >= len) {
+    for (std::size_t i = 0; i < len; ++i) {
+      assert(insert(a, src[i]));
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+template <typename T, std::size_t c, typename From>
+bool
+insert_all(UinStaticArray<T, c> &a, const From &src) noexcept {
+  std::size_t len = length(src);
+  if (remaining_write(a) >= len) {
+    for (std::size_t i = 0; i < len; ++i) {
+      assert(insert(a, src[i]));
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+template <typename T, typename V>
+bool
+insert_all(Array<T> &a, const V *values, std::size_t length) noexcept {
+  if (remaining_write(a) >= length) {
+    for (std::size_t i = 0; i < length; ++i) {
+      assert(insert(a, values[i]));
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+template <typename T, std::size_t c, typename V>
+bool
+insert_all(UinStaticArray<T, c> &a, const V *values,
+           std::size_t length) noexcept {
+  if (remaining_write(a) >= length) {
+    for (std::size_t i = 0; i < length; ++i) {
+      assert(insert(a, values[i]));
+    }
+
+    return true;
+  }
+
+  return false;
+}
 
 //=====================================
 template <typename T, typename V>
@@ -709,7 +798,7 @@ insert_at(UinStaticArray<T, c> &a, std::size_t idx, V &&v) noexcept {
     auto ins = insert(a, std::forward<V>(v));
     std::size_t ins_idx = index_of(a, ins);
     if (ins) {
-      for (std::size_t i = ins_idx; i > idx;--i) {
+      for (std::size_t i = ins_idx; i > idx; --i) {
         using sp::swap;
         swap(a.data()[i - 1], a.data()[i]);
       }
@@ -724,20 +813,34 @@ insert_at(UinStaticArray<T, c> &a, std::size_t idx, V &&v) noexcept {
 template <typename T, typename V>
 T *
 set(Array<T> &a, std::size_t idx, V &&val) noexcept {
-  if (idx < a.length) {
+  if (idx <= length(a) && idx < capacity(a)) {
     T *const p = a.buffer + idx;
     p->~T();
+
+    if (idx == a.length) {
+      ++a.length;
+    }
+
     return ::new (p) T(std::forward<V>(val));
   }
+
   return nullptr;
 }
 
 template <typename T, std::size_t c, typename V>
 T *
 set(UinStaticArray<T, c> &a, std::size_t idx, V &&val) noexcept {
-  constexpr std::size_t cap = UinStaticArray<T, c>::capacity;
-  Array<T> c_a(a.data(), a.length, cap);
-  return set(c_a, idx, std::forward<V>(val));
+  if (idx <= length(a) && idx < capacity(a)) {
+    T *const p = a.buffer + idx;
+
+    if (idx == a.length) {
+      ++a.length;
+    }
+
+    return ::new (p) T(std::forward<V>(val));
+  }
+
+  return nullptr;
 }
 
 //=====================================

@@ -50,3 +50,6 @@ https://medium.com/@TravCav/huffman-coding-1e914c419912
 ## timeout
 60seconds
 1hour
+
+##string
+suffix tree https://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-algorithm-in-plain-english/9513423#9513423

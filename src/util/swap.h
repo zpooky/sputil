@@ -7,6 +7,7 @@ template <typename T>
 void
 swap(T &, T &) noexcept;
 
+// template <>
 template <typename T>
 void
 swap(T *&f, T *&s) noexcept {
@@ -15,8 +16,11 @@ swap(T *&f, T *&s) noexcept {
   s = tmp;
 }
 
-//TODO is_triviable copyable = xorshift
-//TODO has move constructor = T impl
+// std::enable_if_t<std::is_trivially_copyable<T>::value, void>
+// swap
+
+// TODO is_triviable copyable = xorshift
+// TODO has move constructor = T impl
 
 } // namespace sp
 

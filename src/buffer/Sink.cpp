@@ -9,7 +9,7 @@ namespace sp {
 // }
 
 Sink::~Sink() {
-  flush(*this);
+  assert(flush(*this));
 }
 //-------------------+---------------
 static bool
@@ -110,6 +110,7 @@ flush(Sink &sink) noexcept {
   if (sink.sink) {
     return sink.sink(sink.buffer, sink.arg);
   }
+
   return false;
 }
 
