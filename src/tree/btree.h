@@ -305,6 +305,7 @@ insert_node(BTNode<T, k> *tree, V &&val, std::size_t index,
   assert(tree);
 
   if (is_full(*tree)) {
+    // dump(tree);
     return split_insert<T, k, Cmp, V>(tree, std::forward<V>(val), gt);
   } else {
 

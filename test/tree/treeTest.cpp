@@ -1,5 +1,6 @@
 #include <tree/avl.h>
 #include <tree/bst.h>
+#include <tree/bst_extra.h>
 #include <tree/red-black.h>
 
 #include "gtest/gtest.h"
