@@ -1,0 +1,25 @@
+name: sputil
+version: 1.0
+description:
+targets:
+# TODO what arch&os
+# TODO are this flags to compile itself?
+#      or are this flags that is used when linking against this lib?
+  - debug:
+    build: make debug
+    archive: build/debug/lib${name}_debug.a
+    library: build/debug/lib${name}_debug.so
+
+    cflags: -O0 -ggdb -DBACKWARD_HAS_BFD=1
+    libs: -lbfd -ldl
+    ldflags: -fno-omit-frame-pointer
+    headers: -Iinclude -Iexternal/backward-cpp
+# https://github.com/bombela/backward-cpp.git
+
+  # - release:
+  #   build: make buildO2
+  #
+  #   cflags: -O2 -ggdb -DBACKWARD_HAS_BFD=1
+  #   libs: -lbfd -ldl
+  #   headers: -Iinclude -Iexternal/backward-cpp
+
