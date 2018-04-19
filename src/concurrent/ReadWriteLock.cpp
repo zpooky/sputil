@@ -1,5 +1,5 @@
 #include "ReadWriteLock.h"
-#include <cassert>
+#include <util/assert.h>
 #include <cstdio>
 #include <utility>
 
@@ -164,7 +164,7 @@ ReadWriteLock::shared_unlock() noexcept {
   constexpr uint64_t prep_mask = SP_RW_PREPARE_MASK;
   constexpr uint64_t ex_mask = SP_RW_EXCLUSIVE_MASK;
 retry:
-  assert(has_shared(cmp));
+  assertx(has_shared(cmp));
   // 1. Decrement shared
   const uint64_t shared = cmp & shared_mask;
   const uint64_t new_shared = add_shared(shared, -int8_t(1));
@@ -190,11 +190,11 @@ ReadWriteLock::eager_exclusive_lock(bool decShared,
   constexpr uint64_t shared_mask = SP_RW_SHARED_MASK;
 retry:
   if (unsetPrepare) {
-    assert(is_prepare(cmp));
+    assertx(is_prepare(cmp));
   }
 
   if (decShared) {
-    assert(has_shared(cmp));
+    assertx(has_shared(cmp));
   }
   // Shared
   const uint64_t shared = cmp & shared_mask;
@@ -239,12 +239,12 @@ ReadWriteLock::try_exclusive_lock(bool preUnset, int8_t shaDec) noexcept {
   constexpr uint64_t prep_mask = SP_RW_PREPARE_MASK;
 retry:
   if (preUnset) {
-    assert(is_prepare(cmp));
+    assertx(is_prepare(cmp));
   }
 
   const uint64_t shared(cmp & shared_mask);
   // assert no overflow?
-  assert((get_shared(shared) - shaDec) <= get_shared(shared));
+  assertx((get_shared(shared) - shaDec) <= get_shared(shared));
   const uint64_t new_shared = add_shared(shared, int8_t(-shaDec));
 
   const uint64_t prepare(cmp & prep_mask);
@@ -276,7 +276,7 @@ ReadWriteLock::exclusive_unlock() noexcept {
   constexpr uint64_t shared_mask = SP_RW_SHARED_MASK;
   constexpr uint64_t prep_mask = SP_RW_PREPARE_MASK;
 retry:
-  assert(is_exclusive(cmp));
+  assertx(is_exclusive(cmp));
   const uint64_t shared(cmp & shared_mask);
   const uint64_t prepare(cmp & prep_mask);
   const uint64_t try_unexclusive = shared | prepare | uint64_t(0x00);
@@ -302,7 +302,7 @@ retry:
   if (!is_exclusive(cmp) && !is_prepare(cmp)) {
     const uint64_t shared(cmp & shared_mask);
     // TODO assert no overflow?
-    assert((get_shared(shared) - shared_dec) <= get_shared(shared));
+    assertx((get_shared(shared) - shared_dec) <= get_shared(shared));
     const uint64_t new_shared = add_shared(shared, int8_t(-shared_dec));
 
     const uint64_t prepare(0x00);
@@ -329,8 +329,8 @@ ReadWriteLock::prepare_unlock() noexcept {
   constexpr uint64_t prep_mask = SP_RW_PREPARE_MASK;
   constexpr uint64_t ex_mask = SP_RW_EXCLUSIVE_MASK;
 retry:
-  assert(is_prepare(cmp));
-  assert(!is_exclusive(cmp));
+  assertx(is_prepare(cmp));
+  assertx(!is_exclusive(cmp));
   const uint64_t shared(cmp & shared_mask);
   const uint64_t prepare(cmp & prep_mask);
   const uint64_t exclusive(cmp & ex_mask);
@@ -430,7 +430,7 @@ PrepareLock::PrepareLock(TrySharedLock &p_lock) noexcept //
     p_lock.m_lock->prepare_lock(shared_dec);
     p_lock.m_lock = nullptr;
   } else {
-    assert(false);
+    assertx(false);
   }
 }
 
@@ -442,7 +442,7 @@ PrepareLock::PrepareLock(SharedLock &p_lock) noexcept //
     p_lock.m_lock->prepare_lock(shared_dec);
     p_lock.m_lock = nullptr;
   } else {
-    assert(false);
+    assertx(false);
   }
 }
 
@@ -479,7 +479,7 @@ TryPrepareLock::TryPrepareLock(TrySharedLock &p_lock) noexcept //
       p_lock.m_lock = nullptr;
     }
   } else {
-    assert(false);
+    assertx(false);
   }
 }
 
@@ -493,7 +493,7 @@ TryPrepareLock::TryPrepareLock(SharedLock &p_lock) noexcept //
       p_lock.m_lock = nullptr;
     }
   } else {
-    assert(false);
+    assertx(false);
   }
 }
 
@@ -524,7 +524,7 @@ EagerExclusiveLock::EagerExclusiveLock(TryPrepareLock &p_lock) noexcept //
     m_lock = p_lock.m_lock;
     p_lock.m_lock = nullptr;
   } else {
-    assert(false);
+    assertx(false);
   }
 }
 
@@ -557,7 +557,7 @@ LazyExclusiveLock::~LazyExclusiveLock() noexcept {
     m_lock->exclusive_unlock();
     m_lock = nullptr;
   } else {
-    assert(false);
+    assertx(false);
   }
 }
 
@@ -591,7 +591,7 @@ TryExclusiveLock::TryExclusiveLock(ReadWriteLock &p_lock) noexcept //
 //       p_lock.m_lock = nullptr;
 //     }
 //   } else {
-//     assert(false);
+//     assertx(false);
 //   }
 // }
 
@@ -605,7 +605,7 @@ TryExclusiveLock::TryExclusiveLock(TryPrepareLock &p_lock) noexcept //
       p_lock.m_lock = nullptr;
     }
   } else {
-    assert(false);
+    assertx(false);
   }
 }
 

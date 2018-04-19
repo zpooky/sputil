@@ -22,14 +22,6 @@ Left l(failure);
 Right r(value);
 ```
 
-## !assert with stacktrace support
-http://boostorg.github.io/stacktrace/stacktrace/getting_started.html
-https://github.com/boostorg/stacktrace
-
-https://github.com/bombela/backward-cpp
-###assert with gdb break
-programitcly trigger breakpoint when assert fails
-
 ## sort
 ...
 

@@ -1,5 +1,5 @@
 #include "hex.h"
-#include <cassert>
+#include <util/assert.h>
 
 namespace hex {
 bool
@@ -43,7 +43,7 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
     {
       std::size_t index = static_cast<std::size_t>(*it++) - '0';
       if (index >= sizeof(lookup)) {
-        assert(false);
+        assertx(false);
         return false;
       }
       f = lookup[index];
@@ -61,7 +61,7 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
     {
       std::size_t index = static_cast<std::size_t>(*it++) - '0';
       if (index >= sizeof(lookup)) {
-        assert(false);
+        assertx(false);
         return false;
       }
       s = lookup[index];
@@ -104,10 +104,10 @@ encode(const std::uint8_t *in, std::size_t in_length, /*OUT*/ char *out,
   }
   for (std::size_t i = 0; i < in_length; ++i) {
     std::size_t f = (in[i] >> 4) & 0xf;
-    assert(f < sizeof(lookup));
+    assertx(f < sizeof(lookup));
 
     std::size_t s = in[i] & 0xf;
-    assert(s < sizeof(lookup));
+    assertx(s < sizeof(lookup));
 
     if (len >= size) {
       return false;

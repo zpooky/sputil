@@ -1,7 +1,7 @@
 #ifndef SP_TREE_BST_TREE_H
 #define SP_TREE_BST_TREE_H
 
-#include <cassert>
+#include <util/assert.h>
 #include <string>
 #include <tuple>
 #include <util/comparator.h>
@@ -120,7 +120,7 @@ child_count(T *tree) noexcept {
 template <typename T>
 T *
 find_min(T *node) noexcept {
-  assert(node);
+  assertx(node);
 
 Lstart:
   if (node->left) {
@@ -210,7 +210,7 @@ Lit:
 template <typename N>
 N *
 remove(N *const current) noexcept {
-  assert(current);
+  assertx(current);
 
   auto update_ParentToChild = [](N *subject, N *replacement) {
     // update parent -> child
@@ -219,7 +219,7 @@ remove(N *const current) noexcept {
       if (parent->left == subject) {
         parent->left = replacement;
       } else {
-        assert(parent->right == subject);
+        assertx(parent->right == subject);
         parent->right = replacement;
       }
     }
@@ -231,7 +231,7 @@ remove(N *const current) noexcept {
     subject->right = nullptr;
   };
 
-  assert(doubly_linked(current));
+  assertx(doubly_linked(current));
 
   if /*two children*/ (current->left && current->right) {
     /*
@@ -272,7 +272,7 @@ remove(N *const current) noexcept {
         }
       }
 
-      assert(doubly_linked(successor));
+      assertx(doubly_linked(successor));
     }
 
     unset(current);
@@ -287,7 +287,7 @@ remove(N *const current) noexcept {
      */
     N *const parent = current->parent;
     update_ParentToChild(current, (N *)nullptr);
-    assert(doubly_linked(parent));
+    assertx(doubly_linked(parent));
     unset(current);
 
     return parent;
@@ -300,12 +300,12 @@ remove(N *const current) noexcept {
     update_ParentToChild(current, left);
     left->parent = parent;
 
-    assert(doubly_linked(parent));
+    assertx(doubly_linked(parent));
     unset(current);
 
     return left;
   }
-  assert(current->right);
+  assertx(current->right);
   /* right child */
 
   /*
@@ -316,7 +316,7 @@ remove(N *const current) noexcept {
   update_ParentToChild(current, right);
   right->parent = parent;
 
-  assert(doubly_linked(parent));
+  assertx(doubly_linked(parent));
   unset(current);
 
   return right;

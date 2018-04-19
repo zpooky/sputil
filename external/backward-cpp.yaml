@@ -1,0 +1,19 @@
+name: backward-cpp
+version:
+description:
+
+# prefix is .../external/backward-cpp
+targets:
+  - release:
+    # header only
+    build:
+    clean:
+    artifacts:
+
+    compile_db: ...
+
+    cflags: -DBACKWARD_HAS_BFD=1
+    # binutils-dev
+    libs: -lbfd -ldl
+    ldflags:
+    headers: -I${prefix}

@@ -1,5 +1,5 @@
-#ifndef SP_UTIL_PERMUTATIONS_H
-#define SP_UTIL_PERMUTATIONS_H
+#ifndef SP_UTIL_UTIL_PERMUTATIONS_H
+#define SP_UTIL_UTIL_PERMUTATIONS_H
 
 #include <collection/Array.h>
 #include <cstddef>

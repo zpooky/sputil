@@ -2,7 +2,7 @@
 #define SP_UTIL_TREE_AVL_TREE_H
 
 #include "tree.h"
-#include <cassert>
+#include <util/assert.h>
 #include <cstdint>
 #include <tuple>
 #include <utility>
@@ -105,15 +105,15 @@ enum class Direction : bool { LEFT, RIGHT };
 template <typename T>
 static Direction
 direction(const Node<T> *const child) noexcept {
-  assert(child);
+  assertx(child);
   Node<T> *const parent = child->parent;
-  assert(parent);
+  assertx(parent);
 
   if (parent->left == child) {
     return Direction::LEFT;
   }
 
-  assert(parent->right == child);
+  assertx(parent->right == child);
   return Direction::RIGHT;
 } // avl::impl::avl::direction()
 
@@ -185,11 +185,11 @@ rotate_left(Node<T> *const A) noexcept {
     }
   }
 
-  assert(bst::impl::doubly_linked(A));
-  assert(bst::impl::doubly_linked(B));
+  assertx(bst::impl::doubly_linked(A));
+  assertx(bst::impl::doubly_linked(B));
 
-  // assert(bst::impl::doubly_linked(A_parent));
-  assert(bst::impl::doubly_linked(B_left));
+  // assertx(bst::impl::doubly_linked(A_parent));
+  assertx(bst::impl::doubly_linked(B_left));
 
   // since B can be null when B is null C is as well therefore in that case A
   // will be the root node.
@@ -246,11 +246,11 @@ rotate_right(Node<T> *const C) noexcept {
     }
   }
 
-  assert(bst::impl::doubly_linked(B));
-  assert(bst::impl::doubly_linked(C));
+  assertx(bst::impl::doubly_linked(B));
+  assertx(bst::impl::doubly_linked(C));
 
-  assert(bst::impl::doubly_linked(B_right));
-  // assert(bst::impl::doubly_linked(C_parent));
+  assertx(bst::impl::doubly_linked(B_right));
+  // assertx(bst::impl::doubly_linked(C_parent));
 
   return B;
 } // avl::impl::avl::rotate_right()
@@ -258,7 +258,7 @@ rotate_right(Node<T> *const C) noexcept {
 template <typename T>
 static Node<T> *&
 set(Node<T> *&child) noexcept {
-  assert(child);
+  assertx(child);
 
   Node<T> *const parent = child->parent;
 
@@ -270,7 +270,7 @@ set(Node<T> *&child) noexcept {
     return parent->left;
   }
 
-  assert(parent->right == child);
+  assertx(parent->right == child);
   return parent->right;
 } // avl::impl::avl::set()
 
@@ -317,7 +317,7 @@ verify(const Node<T> *parent, const Node<T> *tree,
       std::cout << "\n";
     }
 
-    assert(bl == b);
+    assertx(bl == b);
     if (tree->balance != b) {
       return false;
     }
@@ -343,7 +343,7 @@ exchange(Node<T> *node, Node<T> *n) noexcept {
       parent->left = n;
     }
     if (parent->right != node) {
-      assert(parent->right == node);
+      assertx(parent->right == node);
     }
     parent->right = n;
   }
@@ -521,7 +521,7 @@ remove_rebalance(Node<T> *current, Node<T> *P = nullptr) noexcept {
           printf("BalanceFactor(sibling%s) < 0", std::string(*sibling).c_str());
           P->right = rotate_right(
               P->right); // Double rotation: Right(sibling) then Left(P)
-          assert(P->right->parent == P);
+          assertx(P->right->parent == P);
         }
         set(P) = rotate_left(P);
         current = P; // sp?
@@ -547,7 +547,7 @@ remove_rebalance(Node<T> *current, Node<T> *P = nullptr) noexcept {
                  std::string(*sibling).c_str());
           P->left = rotate_left(
               P->left); // Double rotation: Left(sibling) then Right(P)
-          assert(P->left->parent == P);
+          assertx(P->left->parent == P);
         }
         set(P) = rotate_right(P); // Single rotation Right(P)
         current = P;              // sp?
@@ -562,7 +562,7 @@ remove_rebalance(Node<T> *current, Node<T> *P = nullptr) noexcept {
       }
       dump_root(current, "rebalance");
     } else {
-      assert(false);
+      assertx(false);
     }
   }
   return current;
@@ -607,7 +607,7 @@ calc_balance(const Node<T> *current) {
 //   }
 //   if(parent->balance != par_bal){
 //     printf("parent->balance[%d]\npar_bal[%d]\n",parent->balance,par_bal);
-//     assert(parent->balance == par_bal);
+//     assertx(parent->balance == par_bal);
 //   }
 //
 //   return parent->balance;
@@ -631,7 +631,7 @@ remove_parent_balance(Node<T> *const child) noexcept {
 template <typename T>
 /*new root*/ Node<T> *
 remove(Node<T> *const current) noexcept {
-  assert(current);
+  assertx(current);
 
   auto update_ParentToChild = [](Node<T> *subject, Node<T> *nev) {
     // update parent -> child
@@ -640,7 +640,7 @@ remove(Node<T> *const current) noexcept {
       if (parent->left == subject) {
         parent->left = nev;
       } else {
-        assert(parent->right == subject);
+        assertx(parent->right == subject);
         parent->right = nev;
       }
     }
@@ -652,7 +652,7 @@ remove(Node<T> *const current) noexcept {
   };
 
   printf("remove(%d)", current->value);
-  assert(bst::impl::doubly_linked(current));
+  assertx(bst::impl::doubly_linked(current));
   if /*two children*/ (current->left && current->right) {
     printf(":2->");
 
@@ -670,10 +670,10 @@ remove(Node<T> *const current) noexcept {
      * not change the balance of the second step.
      */
     Node<T> *const successor = bst::impl::find_min(current->right);
-    assert(bst::impl::doubly_linked(successor));
+    assertx(bst::impl::doubly_linked(successor));
     Node<T> *const new_root = remove(successor);
     // dump_root(current, "lr");
-    // assert(verify_root(current));
+    // assertx(verify_root(current));
     {
       /*
        * remove($successor) might run rebalancing meaning that we cannot assume
@@ -693,9 +693,9 @@ remove(Node<T> *const current) noexcept {
       }
       successor->balance = current->balance;
 
-      assert(bst::impl::doubly_linked(successor));
-      assert(bst::impl::doubly_linked(successor->left));
-      assert(bst::impl::doubly_linked(successor->right));
+      assertx(bst::impl::doubly_linked(successor));
+      assertx(bst::impl::doubly_linked(successor->left));
+      assertx(bst::impl::doubly_linked(successor->right));
     }
     unset(current);
     return new_root == current ? successor : new_root;
@@ -716,7 +716,7 @@ remove(Node<T> *const current) noexcept {
     // auto has_sibling = [](Node<T> *n) {
     //   Node<T> *parent = n->parent;
     //   if (parent) {
-    //     assert(parent->left == n || parent->right == n);
+    //     assertx(parent->left == n || parent->right == n);
     //     std::size_t children = 0;
     //     if (parent->left)
     //       children++;
@@ -728,13 +728,13 @@ remove(Node<T> *const current) noexcept {
     // };
 
     Node<T> *const parent = current->parent;
-    assert(verify(parent));
+    assertx(verify(parent));
     // bool sibling = has_sibling(current);
 
     // Direction d = parent_direction(current);
     {
       update_ParentToChild(current, (Node<T> *)nullptr);
-      assert(bst::impl::doubly_linked(current->parent));
+      assertx(bst::impl::doubly_linked(current->parent));
     }
 
     unset(current);
@@ -772,7 +772,7 @@ remove(Node<T> *const current) noexcept {
       Node<T> *const parent = current->parent;
       left->parent = parent;
 
-      assert(bst::impl::doubly_linked(parent));
+      assertx(bst::impl::doubly_linked(parent));
     }
 
     unset(current);
@@ -783,13 +783,13 @@ remove(Node<T> *const current) noexcept {
     //   printf("calc_balance(parent%s): %d\n",std::string(*parent).c_str(),bl);
     //   parent->balance =bl;
     // }
-    // assert(left->balance == calc_balance(left));
+    // assertx(left->balance == calc_balance(left));
 
     // return remove_rebalance(left);
     return insert::rebalance2(
         left, [](Node<T> *child) { return remove_parent_balance(child); });
   }
-  assert(current->right);
+  assertx(current->right);
   printf(":right\n");
   // one child
 
@@ -799,7 +799,7 @@ remove(Node<T> *const current) noexcept {
     Node<T> *const parent = current->parent;
     right->parent = parent;
 
-    assert(bst::impl::doubly_linked(parent));
+    assertx(bst::impl::doubly_linked(parent));
   }
 
   // Node<T> *const parent = right->parent;
@@ -808,7 +808,7 @@ remove(Node<T> *const current) noexcept {
   //   printf("calc_balance(parent%s): %d\n",std::string(*parent).c_str(),bl);
   //   right->balance =bl;
   // }
-  // assert(right->balance == calc_balance(right));
+  // assertx(right->balance == calc_balance(right));
 
   unset(current);
   // return remove_rebalance(right);
@@ -837,7 +837,7 @@ insert(Tree<T, C> &tree, K &&value) noexcept {
   bool inserted{std::get<1>(result)};
   Node<T> *node = std::get<0>(result);
   if (inserted) {
-    assert(node);
+    assertx(node);
 
     set_root(rebalance(node, [](Node<T> *child) { //
       return insert_parent_balance(child);

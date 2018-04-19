@@ -3,7 +3,6 @@
 
 #include <cstddef>
 #include <cstdint>
-// #include <cassert>
 
 namespace sp {
 struct Bitset {

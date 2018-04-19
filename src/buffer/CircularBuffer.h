@@ -1,6 +1,12 @@
 #ifndef SP_UTIL_UTIL_CIRCULAR_BUFFER_H
 #define SP_UTIL_UTIL_CIRCULAR_BUFFER_H
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <utility>
+#include <util/assert.h>
+
 namespace sp {
 /*
  * TODO Dynamic Buffer with increase capacity functionality
@@ -101,7 +107,7 @@ CircularBuffer<T>::CircularBuffer(T *b, std::size_t l) noexcept
     , read{0}
     , write{0}
     , capacity{l} {
-  assert(l > 0);
+  assertx(l > 0);
 }
 
 template <typename T>

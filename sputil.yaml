@@ -1,19 +1,31 @@
 name: sputil
 version: 1.0
 description:
+# name and target is not the same thing
+# [target: what paramter should be used, name: what it should be called on disk]
 targets:
 # TODO what arch&os
 # TODO are this flags to compile itself?
 #      or are this flags that is used when linking against this lib?
   - debug:
     build: make debug
-    archive: build/debug/lib${name}_debug.a
-    library: build/debug/lib${name}_debug.so
+    clean: ...
+    compile_db: make bear
+
+    artifacts: ${prefix}/build/${name}
+    archive: ${artifacts}/lib${name}_debug.a
+    library: ${artifacts}/lib${name}_debug.so
 
     cflags: -O0 -ggdb -DBACKWARD_HAS_BFD=1
     libs: -lbfd -ldl
     ldflags: -fno-omit-frame-pointer
-    headers: -Iinclude -Iexternal/backward-cpp
+    headers: -I${prefix}/include
+
+    depends:
+      - backward-cpp:
+        target: release
+        name: sputil
+
 # https://github.com/bombela/backward-cpp.git
 
   # - release:

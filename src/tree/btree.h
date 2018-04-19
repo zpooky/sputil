@@ -2,6 +2,7 @@
 #define SP_UTIL_TREE_BTREE_H
 
 #include <collection/Array.h>
+#include <util/assert.h>
 #include <tuple>
 
 // TODO array bin_insert comparator
@@ -111,7 +112,7 @@ static bool
 is_full(const BTNode<T, K> &tree) noexcept {
   bool res = is_full(tree.elements);
   if (res) {
-    assert(is_full(tree.children));
+    assertx(is_full(tree.children));
   }
   return res;
 }
@@ -131,10 +132,10 @@ is_empty(const BTNode<T, K> &tree) noexcept {
 template <typename T, std::size_t K>
 static void
 copy_split(BTNode<T, K> *left, std::size_t sep, BTNode<T, K> *right) noexcept {
-  assert(left);
-  assert(right);
-  assert(is_empty(*right));
-  assert(left->parent == right->parent);
+  assertx(left);
+  assertx(right);
+  assertx(is_empty(*right));
+  assertx(left->parent == right->parent);
 
   /* TODO Always add the smaller than first element child pointer? */
   insert(right->children, nullptr);
@@ -148,7 +149,7 @@ copy_split(BTNode<T, K> *left, std::size_t sep, BTNode<T, K> *right) noexcept {
     auto &elems = left->elements;
     for (std::size_t i = start; i < length(elems); ++i) {
       auto ins = insert(right->elements, std::move(elems[i]));
-      assert(ins);
+      assertx(ins);
       ++moved;
     }
     printf("e-moved[%zu]\n", moved);
@@ -162,7 +163,7 @@ copy_split(BTNode<T, K> *left, std::size_t sep, BTNode<T, K> *right) noexcept {
     auto &children = left->children;
     for (std::size_t i = start; i < length(children); ++i) {
       BTNode<T, K> **ins = insert(right->children, std::move(children[i]));
-      assert(ins);
+      assertx(ins);
       if (*ins) {
         /* Since it is not required that the node has a child */
         (*ins)->parent = right;
@@ -178,25 +179,25 @@ template <typename T, std::size_t K, typename V>
 static T *
 insert_parent_after(BTNode<T, K> *needle, V &&val,
                     BTNode<T, K> *right) noexcept {
-  assert(needle);
-  assert(right);
+  assertx(needle);
+  assertx(right);
   auto parent = needle->parent;
-  assert(parent);
-  assert(!is_full(*parent));
-  assert(needle->parent == right->parent);
+  assertx(parent);
+  assertx(!is_full(*parent));
+  assertx(needle->parent == right->parent);
 
   auto res = find(parent->children,
                   [&needle](auto current) { //
                     return current == needle;
                   });
-  assert(res);
+  assertx(res);
   auto idx = index_of(parent->children, res);
-  assert(idx != parent->children.capacity);
+  assertx(idx != parent->children.capacity);
 
   auto elem_res = insert_at(parent->elements, idx, std::forward<V>(val));
-  assert(elem_res);
+  assertx(elem_res);
   ++idx;
-  assert(insert_at(parent->children, idx, right));
+  assertx(insert_at(parent->children, idx, right));
 
   printf("ins_p_a\n");
   return elem_res;
@@ -205,17 +206,17 @@ insert_parent_after(BTNode<T, K> *needle, V &&val,
 template <typename T, std::size_t K, typename V>
 T *
 do_insert_node(BTNode<T, K> *current, V &&val, BTNode<T, K> *gt) noexcept {
-  assert(current);
-  assert(!is_full(*current));
+  assertx(current);
+  assertx(!is_full(*current));
 
   auto res = bin_insert(current->elements, std::forward<V>(val));
-  assert(res);
+  assertx(res);
 
   std::size_t idx = index_of(current->elements, res);
-  assert(idx != current->elements.capacity);
+  assertx(idx != current->elements.capacity);
 
   ++idx;
-  assert(insert_at(current->children, idx, gt));
+  assertx(insert_at(current->children, idx, gt));
   return res;
 }
 
@@ -227,8 +228,8 @@ insert_node(BTNode<T, k> *tree, V &&val, std::size_t index,
 template <typename T, std::size_t K, typename Cmp, typename V>
 static std::tuple<BTNode<T, K> *, T *>
 split_insert(BTNode<T, K> *tree, V &&val, BTNode<T, K> *gt = nullptr) noexcept {
-  assert(tree);
-  assert(is_full(*tree));
+  assertx(tree);
+  assertx(is_full(*tree));
 
 Lit:
   auto parent = tree->parent;
@@ -269,21 +270,21 @@ Lit:
                        [&left](auto current) { //
                          return current == left;
                        });
-  assert(find_res);
+  assertx(find_res);
   auto idx = index_of(parent->children, find_res);
-  assert(idx != capacity(parent->children));
+  assertx(idx != capacity(parent->children));
   // auto rmed = insert_parent_after(left, std::move(left->elements[med]),
   // right);
   auto asda = insert_node<T, K, Cmp, V>(parent, std::move(left->elements[med]),
                                         idx, right);
   auto rmed = std::get<1>(asda);
-  assert(rmed);
+  assertx(rmed);
   parent = std::get<0>(asda);
-  assert(parent);
+  assertx(parent);
   drop_back(left->elements, 1);
 
-  // assert(length(left->elements) + 1 == length(left->children));
-  // assert(length(right->elements) + 1 == length(right->children));
+  // assertx(length(left->elements) + 1 == length(left->children));
+  // assertx(length(right->elements) + 1 == length(right->children));
 
   /* actual perform the insertion of the new /val/ */
   Cmp c;
@@ -293,7 +294,7 @@ Lit:
   } else {
     res = do_insert_node(left, std::forward<V>(val), gt);
   }
-  assert(res);
+  assertx(res);
 
   return std::make_pair(parent, res);
 }
@@ -302,7 +303,7 @@ template <typename T, std::size_t k, typename Cmp, typename V>
 static std::tuple<BTNode<T, k> *, T *>
 insert_node(BTNode<T, k> *tree, V &&val, std::size_t index,
             BTNode<T, k> *gt) noexcept {
-  assert(tree);
+  assertx(tree);
 
   if (is_full(*tree)) {
     // dump(tree);
@@ -310,9 +311,9 @@ insert_node(BTNode<T, k> *tree, V &&val, std::size_t index,
   } else {
 
     auto res = insert_at(tree->elements, index, std::forward<V>(val));
-    assert(res);
+    assertx(res);
 
-    assert(insert_at(tree->children, index + 1, gt));
+    assertx(insert_at(tree->children, index + 1, gt));
     return std::make_tuple(tree, res);
   }
 }
@@ -374,10 +375,10 @@ dump_do_add_children(BTNode<int, keys> *root,
   auto &children = root->children;
   std::size_t i = 0;
   for (; i < length(children); ++i) {
-    assert(insert(result, children[i]));
+    assertx(insert(result, children[i]));
   }
   for (; i < capacity(children); ++i) {
-    assert(insert(result, nullptr));
+    assertx(insert(result, nullptr));
   }
 }
 
@@ -390,7 +391,7 @@ dump_get_columns_for(BTNode<int, keys> *root, std::size_t level,
   if (root == nullptr) {
     std::size_t empties = dump_max_node_children(keys + 1, orig_level);
     for (std::size_t i = 0; i < empties; ++i) {
-      assert(insert(result, nullptr));
+      assertx(insert(result, nullptr));
     }
   } else if (level == 0) {
     dump_do_add_children(root, result);
@@ -409,7 +410,7 @@ dump_get_columns_for(BTNode<int, keys> *root, std::size_t level,
 inline std::size_t
 dump_calc_width(std::size_t elements, std::size_t max_elements) {
   // printf("elements[%zu] <= max_elements[%zu]\n", elements, max_elements);
-  assert(elements <= max_elements);
+  assertx(elements <= max_elements);
   return (max_elements / elements);
 }
 
@@ -507,9 +508,9 @@ insert(Tree<T, k, C> &tree, K &&val) noexcept {
     if (node) {
       auto &elements = node->elements;
       auto res = bin_insert(elements, std::forward<K>(val));
-      assert(res);
-      assert(insert(node->children, /*lt*/ nullptr));
-      assert(insert(node->children, /*gt*/ nullptr));
+      assertx(res);
+      assertx(insert(node->children, /*lt*/ nullptr));
+      assertx(insert(node->children, /*gt*/ nullptr));
       return std::make_tuple(res, true);
     }
 
@@ -531,7 +532,7 @@ Lit:
     }
 
     index = index_of(elements, successor);
-    assert(index != capacity(elements));
+    assertx(index != capacity(elements));
 
     if (*get(current->children, index)) {
       /* going down /successor/ less than child subtree*/

@@ -150,7 +150,7 @@ pop(HeapStack<T, A> &stack, T &out) noexcept {
   UinStaticStack<T, 1024> *const current = stack.head;
   if (current) {
     bool result = pop(*current, out);
-    assert(result);
+    assertx(result);
 
     if (result && is_empty(*current)) {
       stack.head = current->priv;

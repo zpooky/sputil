@@ -1,5 +1,5 @@
 #include "timeout.h"
-#include <cassert>
+#include <util/assert.h>
 #include <ctime>
 #include <limits>
 
@@ -33,7 +33,7 @@ Milliseconds::operator std::uint64_t() const noexcept {
 }
 
 Milliseconds::operator int() const noexcept {
-  assert(std::numeric_limits<int>::max() > value);
+  assertx(std::numeric_limits<int>::max() > value);
   // TODO maybe max < value ? max : value
   return int(value);
 }
@@ -64,7 +64,7 @@ Milliseconds::operator+(const Hours &v) const noexcept {
 /* ===================================== */
 Milliseconds
 Milliseconds::operator-(const Milliseconds &o) const noexcept {
-  assert(value >= o.value);
+  assertx(value >= o.value);
   return Milliseconds(value - o.value);
 }
 
@@ -253,7 +253,7 @@ Seconds::operator std::uint64_t() const noexcept {
 }
 
 Seconds::operator std::int64_t() const noexcept {
-  assert(std::numeric_limits<std::int64_t>::max() > value);
+  assertx(std::numeric_limits<std::int64_t>::max() > value);
   return std::int64_t(value);
 }
 /* ===================================== */

@@ -1,5 +1,5 @@
 #include "Bitset.h"
-#include <cassert>
+#include <util/assert.h>
 #include <cstdlib>
 #include <tree/bst.h>
 #include <type_traits>
@@ -57,9 +57,9 @@ set(typename Bitset_buffer::type &word, std::size_t bit_idx, bool v) noexcept {
 
 static std::uint64_t *
 sparse_start(void *in) noexcept {
-  assert(in);
+  assertx(in);
   void *start = (unsigned char *)in;
-  assert(reinterpret_cast<uintptr_t>(start) % alignof(std::uint64_t) == 0);
+  assertx(reinterpret_cast<uintptr_t>(start) % alignof(std::uint64_t) == 0);
   return (std::uint64_t *)start;
 }
 
@@ -67,7 +67,7 @@ static std::uint64_t *
 sparse_buffer(void *in) noexcept {
   void *start = sparse_start(in);
   void *buffer = ((unsigned char *)start) + sizeof(std::uint64_t);
-  assert(reinterpret_cast<uintptr_t>(buffer) % alignof(std::uint64_t *) == 0);
+  assertx(reinterpret_cast<uintptr_t>(buffer) % alignof(std::uint64_t *) == 0);
   return (std::uint64_t *)buffer;
 }
 
@@ -75,7 +75,7 @@ struct SparseEntry {
   void *raw;
   SparseEntry(void *r) noexcept
       : raw(r) {
-    assert(raw);
+    assertx(raw);
   }
 
   SparseEntry(const SparseEntry &) = delete;
@@ -198,13 +198,13 @@ block_for_insert(SparseBitset &b, std::size_t index) noexcept {
         auto insres = insert(tree, SparseEntry(mem));
         SparseEntry *const inserted = std::get<0>(insres);
         if (inserted) {
-          assert(inserted->start() == index);
+          assertx(inserted->start() == index);
           // assert allocated new node in tree
-          assert(std::get<1>(insres));
+          assertx(std::get<1>(insres));
 
           return inserted;
         }
-        assert(false);
+        assertx(false);
 
         return nullptr;
       });
@@ -237,7 +237,7 @@ SparseBitset::~SparseBitset() noexcept {
 bool
 test(const Bitset &b, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
-  assert(wIdx < b.capacity);
+  assertx(wIdx < b.capacity);
 
   std::size_t bIdx = bit_index(idx);
   auto word = b.buffer[wIdx];
@@ -247,7 +247,7 @@ test(const Bitset &b, std::size_t idx) noexcept {
 
 bool
 test(const SparseBitset &b, std::size_t abs_idx) noexcept {
-  assert(abs_idx < bits(b));
+  assertx(abs_idx < bits(b));
 
   std::size_t block_idx = block_index(b, abs_idx);
   // printf("block_for(b,block_idx[%zu])\n", block_idx);
@@ -265,7 +265,7 @@ test(const SparseBitset &b, std::size_t abs_idx) noexcept {
 bool
 set(Bitset &b, std::size_t idx, bool v) noexcept {
   std::size_t wIdx = word_index(idx);
-  assert(wIdx < b.capacity);
+  assertx(wIdx < b.capacity);
 
   const std::size_t bIdx = bit_index(idx);
   auto &word = b.buffer[wIdx];
@@ -277,7 +277,7 @@ set(Bitset &b, std::size_t idx, bool v) noexcept {
 
 bool
 set(SparseBitset &b, std::size_t abs_idx, bool v) noexcept {
-  assert(abs_idx < bits(b));
+  assertx(abs_idx < bits(b));
 
   std::size_t block_idx = block_index(b, abs_idx);
   // printf("block_for_insert(b,block_idx[%zu])\n", block_idx);
@@ -289,7 +289,7 @@ set(SparseBitset &b, std::size_t abs_idx, bool v) noexcept {
     return set(bblock, idx, v);
   }
   // XXX How to handle failed alloc?
-  assert(false);
+  assertx(false);
 
   return false;
 }
@@ -297,7 +297,7 @@ set(SparseBitset &b, std::size_t abs_idx, bool v) noexcept {
 bool
 toggle(Bitset &b, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
-  assert(wIdx < b.capacity);
+  assertx(wIdx < b.capacity);
 
   const std::size_t bIdx = bit_index(idx);
   auto &word = b.buffer[wIdx];
@@ -310,7 +310,7 @@ toggle(Bitset &b, std::size_t idx) noexcept {
 
 bool
 toggle(SparseBitset &b, std::size_t abs_idx) noexcept {
-  assert(abs_idx < bits(b));
+  assertx(abs_idx < bits(b));
 
   std::size_t block_idx = block_index(b, abs_idx);
   SparseEntry *block = block_for_insert(b, block_idx);
@@ -322,7 +322,7 @@ toggle(SparseBitset &b, std::size_t abs_idx) noexcept {
   }
 
   // XXX How to handle failed alloc?
-  assert(false);
+  assertx(false);
 
   return false;
 }

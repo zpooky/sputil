@@ -1,7 +1,7 @@
 #ifndef SP_UTIL_STACK_STACK_H
 #define SP_UTIL_STACK_STACK_H
 
-#include <cassert>
+#include <util/assert.h>
 #include <util/numeric.h>
 
 namespace sp {
@@ -185,7 +185,7 @@ UinStaticStack<T, cap>::data() const noexcept {
 
 template <typename T, std::size_t cap>
 T &UinStaticStack<T, cap>::operator[](std::size_t idx) noexcept {
-  assert(idx < length);
+  assertx(idx < length);
   return data()[idx];
 }
 

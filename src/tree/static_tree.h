@@ -1,15 +1,15 @@
 #ifndef SP_UTIL_TREE_STATIC_TREE_H
 #define SP_UTIL_TREE_STATIC_TREE_H
 
-#include <util/typed.h>
 #include <cstdint>
-#include <cassert>
+#include <util/assert.h>
+#include <util/typed.h>
 
 namespace sp {
-  /*sp*/
+/*sp*/
 namespace impl {
 namespace static_tree {
-  /*sp::impl*/
+/*sp::impl*/
 enum class Direction : std::uint8_t { LEFT, RIGHT };
 
 template <std::size_t level>
@@ -54,12 +54,14 @@ struct static_level<0, 0> { //
 
 template <std::size_t size>
 struct static_level {
-  static constexpr std::size_t value = impl::static_tree::static_level<size>::value;
+  static constexpr std::size_t value =
+      impl::static_tree::static_level<size>::value;
 };
 
 template <std::size_t levels>
 struct static_size {
-  static constexpr std::size_t value = impl::static_tree::static_size<levels>::value;
+  static constexpr std::size_t value =
+      impl::static_tree::static_size<levels>::value;
 };
 // level -> size
 static_assert(static_size<0>::value == 1, "");
@@ -127,9 +129,9 @@ struct SortedNode {
 };
 
 namespace impl {
-  /*sp::impl*/
+/*sp::impl*/
 namespace static_tree {
-  /*sp::impl::static_tree*/
+/*sp::impl::static_tree*/
 /* Calculate level start offset
  * TODO does not support N
  * level|offset
@@ -169,7 +171,8 @@ base(std::size_t l, sp::relative_idx old_idx) noexcept {
 
 template <std::size_t CHILDREN = 2>
 static sp::relative_idx
-lookup_relative(sp::relative_idx old_idx, impl::static_tree::Direction dir) noexcept {
+lookup_relative(sp::relative_idx old_idx,
+                impl::static_tree::Direction dir) noexcept {
 
   sp::relative_idx idx = old_idx * CHILDREN;
   if (dir == impl::static_tree::Direction::RIGHT) {
@@ -200,7 +203,7 @@ parent_relative(sp::relative_idx idx) noexcept {
   if (lookup_relative(i, Direction::LEFT) == idx) {
     return i;
   }
-  assert(false);
+  assertx(false);
   return sp::relative_idx(0);
 }
 
@@ -223,7 +226,7 @@ cmp(const int &data, const int &o) noexcept {
   return 1;
 }
 
-} //namespace static_tree
+} // namespace static_tree
 } // namespace impl
 
 template <typename T, std::size_t levels, typename Key>
@@ -303,7 +306,7 @@ insert(static_tree<SortedNode<T>, levels> &tree, const T &ins) {
       if (impl::lookup_relative(pa, impl::Direction::RIGHT) == child) {
         return impl::Direction::RIGHT;
       }
-      assert(false);
+      assertx(false);
       return impl::Direction::LEFT;
     };
 
@@ -359,7 +362,7 @@ Lstart:
       int c = impl::cmp(current.value, ins);
       if (c == 0) {
         // TODO ?
-        assert(false);
+        assertx(false);
 
         return false;
       } else if (c > 0) {
@@ -458,7 +461,7 @@ Lstart:
       }
     }
   } else {
-    assert(t == Traversal::UP);
+    assertx(t == Traversal::UP);
     // level and index now point to an out of bound node
     // printf("end[idx[%zu], level[%zu]]\n", std::size_t(idx), level);
     idx = parent_relative(idx);

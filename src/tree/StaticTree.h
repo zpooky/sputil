@@ -233,7 +233,7 @@ Lit:
       goto Lit;
     } else {
       T *res = make(tree.buffer, idx, std::forward<V>(v));
-      assert(res);
+      assertx(res);
       return std::make_tuple(res, true);
     }
   }

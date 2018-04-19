@@ -1,0 +1,17 @@
+name: googletest
+version:
+description:
+
+#TODO create custom gtest Make file
+#this is how you link against googletest
+targets:
+  - release:
+    build: make --makefile=googletest.make
+    clean: ...
+
+    compile_db: ...
+
+    artifacts: ${prefix}/googletest/make
+    headers: -I${prefix}/googletest/include
+    libs: -L${artifacts} -lgtest -lpthread
+

@@ -1,5 +1,5 @@
 #include "xorshift.h"
-#include <cassert>
+#include <util/assert.h>
 #include <util/numeric.h>
 // #include <random>
 #include <cstdio>
@@ -12,7 +12,7 @@
 namespace prng {
 xorshift32::xorshift32(InitType seed) noexcept
     : state(seed) {
-  assert(seed != 0);
+  assertx(seed != 0);
 }
 
 xorshift32::xorshift32() noexcept
@@ -32,13 +32,13 @@ swap(xorshift32 &f, xorshift32 &s) noexcept {
 std::uint32_t
 random(xorshift32 &state) noexcept {
   std::uint32_t &x = state.state;
-  assert(x != 0);
+  assertx(x != 0);
 
   x ^= x << 13;
   x ^= x >> 17;
   x ^= x << 5;
 
-  assert(x != 0);
+  assertx(x != 0);
 
   return x;
 }
@@ -47,8 +47,8 @@ random(xorshift32 &state) noexcept {
 namespace prng {
 xorshift128plus::xorshift128plus(std::uint64_t f, std::uint64_t s) noexcept
     : state{f, s} {
-  assert(f != 0);
-  assert(s != 0);
+  assertx(f != 0);
+  assertx(s != 0);
 }
 
 xorshift128plus::xorshift128plus(const InitType init) noexcept
@@ -73,8 +73,8 @@ swap(xorshift128plus &f, xorshift128plus &s) noexcept {
 
 std::uint64_t
 random(xorshift128plus &state) noexcept {
-  assert(state.state[0] != 0);
-  assert(state.state[1] != 0);
+  assertx(state.state[0] != 0);
+  assertx(state.state[1] != 0);
   std::uint64_t s1 = state.state[0];
   const std::uint64_t s0 = state.state[1];
   const std::uint64_t result = s0 + s1;

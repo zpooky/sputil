@@ -1,4 +1,5 @@
 #include "Sink.h"
+#include <util/assert.h>
 
 namespace sp {
 
@@ -9,7 +10,8 @@ namespace sp {
 // }
 
 Sink::~Sink() {
-  assert(flush(*this));
+  // assertx(flush(*this));
+  flush(*this);
 }
 //-------------------+---------------
 static bool
@@ -26,7 +28,7 @@ write(Sink &sink, const unsigned char *w, std::size_t l) {
     // TODO something like this
     // CircularByteBuffer dummy(w,l)
     // return sink.sink(dummy);
-    assert(false);
+    assertx(false);
     return false;
   } else if (l > remaining_write(sink.buffer)) {
     if (!flush(sink)) {
@@ -71,7 +73,7 @@ static std::size_t
 push_back(Sink &sink, const unsigned char *w, std::size_t len) noexcept {
   std::size_t written = 0;
 
-  // TODO if buffer is empty and $len > buffer.cap then flush directly fron $w.
+// TODO if buffer is empty and $len > buffer.cap then flush directly fron $w.
 Lit:
   written += push_back(sink.buffer, w + written, len - written);
   if (written < len) {

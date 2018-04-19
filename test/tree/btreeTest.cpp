@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include <cassert>
 #include <initializer_list>
 #include <tree/btree.h>
 

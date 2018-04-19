@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <util/assert.h>
 
 namespace sp {
 
@@ -68,7 +69,7 @@ static std::size_t
 push_back(CircularByteBuffer &self, const unsigned char *write,
           std::size_t l) noexcept {
   sp::StaticArray<std::tuple<unsigned char *, std::size_t>, 4> out;
-  assert(write_buffer(self, out));
+  assertx(write_buffer(self, out));
   // printf("length(out):%zu\n", out.length);
 
   std::size_t result = 0;
@@ -120,7 +121,7 @@ push_back(CircularByteBuffer &self, char c) noexcept {
 bool
 write(CircularByteBuffer &self, const void *w, std::size_t l) noexcept {
   if (remaining_write(self) >= l) {
-    assert(push_back(self, w, l) == l);
+    assertx(push_back(self, w, l) == l);
     return true;
   }
   return false;
@@ -185,7 +186,7 @@ peek_front(const CircularByteBuffer &self, unsigned char *read,
   // }
 
   sp::StaticArray<std::tuple<const unsigned char *, std::size_t>, 4> out;
-  assert(read_buffer(self, out));
+  assertx(read_buffer(self, out));
 
   std::size_t result = 0;
   for (std::size_t i = 0; i < out.length && l > 0; ++i) {
@@ -214,14 +215,14 @@ peek_front(const CircularByteBuffer &self, unsigned char &c) noexcept {
 
 void
 consume_bytes(CircularByteBuffer &self, std::size_t b) noexcept {
-  assert(self.read + b <= self.write);
+  assertx(self.read + b <= self.write);
   self.read += b;
 }
 
 template <typename Buffer, typename Arr>
 static bool
 int_read_buffer(Buffer &self, Arr &result) noexcept {
-  assert(remaining_write(result) >= 2);
+  assertx(remaining_write(result) >= 2);
   /*
    * read     write    read
    * |xxxxxxxx|........|xxxxxxxxxx|
@@ -238,7 +239,7 @@ Lit:
 
       if (l > 0) {
         auto out = insert(result, std::make_tuple(self.buffer + r_idx, l));
-        assert(out != nullptr);
+        assertx(out != nullptr);
         r += l;
         goto Lit;
       }
@@ -264,7 +265,7 @@ read_buffer(
 
 void
 produce_bytes(CircularByteBuffer &self, std::size_t b) noexcept {
-  assert(remaining_write(self) >= b);
+  assertx(remaining_write(self) >= b);
 
   self.write += b;
 }
@@ -272,7 +273,7 @@ produce_bytes(CircularByteBuffer &self, std::size_t b) noexcept {
 template <typename Buffer, typename Arr>
 static bool
 int_write_buffer(Buffer &self, Arr &result) noexcept {
-  assert(remaining_write(result) >= 2);
+  assertx(remaining_write(result) >= 2);
   /*
    * write     read    write
    * |xxxxxxxx|........|xxxxxxxxxx|
@@ -289,9 +290,9 @@ Lit:
 
       const std::size_t l = std::min(writable, length_until_array_end);
 
-      assert(l > 0);
+      assertx(l > 0);
       auto out = insert(result, std::make_tuple(self.buffer + w_idx, l));
-      assert(out != nullptr);
+      assertx(out != nullptr);
       w += l;
       goto Lit;
     }

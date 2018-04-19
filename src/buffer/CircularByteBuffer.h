@@ -2,7 +2,6 @@
 #define SP_UTIL_BUFFER_CIRCULAR_BYTE_BUFFER_H
 
 #include "buffer/BytesView.h"
-#include <cassert>
 #include <collection/Array.h>
 #include <cstddef>
 #include <tuple>

@@ -1,7 +1,7 @@
 #ifndef SP_UTIL_TREE_RB_TREE_H
 #define SP_UTIL_TREE_RB_TREE_H
 
-#include "tree.h"
+#include <tree/tree.h>
 #include <tuple>
 #include <utility> //forward
 
@@ -89,7 +89,7 @@ namespace rb {
 template <typename T>
 static Node<T> *
 parent(Node<T> *n) {
-  assert(n);
+  assertx(n);
   return n->parent;
 }
 
@@ -98,7 +98,7 @@ static Node<T> *
 grandparent(Node<T> *n) {
   Node<T> *p = parent(n);
   if (!bst::impl::doubly_linked(p))
-    assert(bst::impl::doubly_linked(p));
+    assertx(bst::impl::doubly_linked(p));
   return p ? parent(p) : nullptr;
 }
 
@@ -108,11 +108,11 @@ uncle(Node<T> *n) {
   Node<T> *p = parent(n);
   Node<T> *g = grandparent(n);
   if (g->left != p) {
-    assert(g->right == p);
+    assertx(g->right == p);
     return g->left;
   }
 
-  assert(g->left == p);
+  assertx(g->left == p);
   return g->right;
 }
 
@@ -154,30 +154,30 @@ rotate_left(Node<T> *const A) noexcept {
     B->left = A;
   }
 
-  assert(bst::impl::doubly_linked(A));
-  assert(bst::impl::doubly_linked(B));
+  assertx(bst::impl::doubly_linked(A));
+  assertx(bst::impl::doubly_linked(B));
 
-  assert(bst::impl::doubly_linked(B_left));
+  assertx(bst::impl::doubly_linked(B_left));
 
   Node<T> *new_root = B ? B : A;
   if (A_parent) {
-    assert(A_parent->left == A || A_parent->right == A);
+    assertx(A_parent->left == A || A_parent->right == A);
     if (A_parent->left == A) {
       A_parent->left = new_root;
     } else {
       A_parent->right = new_root;
     }
   }
-  assert(bst::impl::doubly_linked(A));
-  assert(bst::impl::doubly_linked(B));
+  assertx(bst::impl::doubly_linked(A));
+  assertx(bst::impl::doubly_linked(B));
 
-  assert(bst::impl::doubly_linked(B_left));
-  assert(bst::impl::doubly_linked(A_parent));
+  assertx(bst::impl::doubly_linked(B_left));
+  assertx(bst::impl::doubly_linked(A_parent));
 
   new_root->colour = A_colour;
   A->colour = Colour::RED;
 
-  assert(c_before == bst::impl::child_count(A_parent));
+  assertx(c_before == bst::impl::child_count(A_parent));
 }
 
 template <typename T>
@@ -219,13 +219,13 @@ rotate_right(Node<T> *C) noexcept {
     B->right = C;
   }
 
-  assert(bst::impl::doubly_linked(B));
-  assert(bst::impl::doubly_linked(C));
+  assertx(bst::impl::doubly_linked(B));
+  assertx(bst::impl::doubly_linked(C));
 
-  assert(bst::impl::doubly_linked(B_right));
+  assertx(bst::impl::doubly_linked(B_right));
 
   if (C_parent) {
-    assert(C_parent->left == C || C_parent->right == C);
+    assertx(C_parent->left == C || C_parent->right == C);
 
     if (C_parent->left == C) {
       C_parent->left = B;
@@ -233,24 +233,24 @@ rotate_right(Node<T> *C) noexcept {
       C_parent->right = B;
     }
   }
-  assert(bst::impl::doubly_linked(B));
-  assert(bst::impl::doubly_linked(C));
+  assertx(bst::impl::doubly_linked(B));
+  assertx(bst::impl::doubly_linked(C));
 
-  assert(bst::impl::doubly_linked(B_right));
-  assert(bst::impl::doubly_linked(C_parent));
+  assertx(bst::impl::doubly_linked(B_right));
+  assertx(bst::impl::doubly_linked(C_parent));
 
   B->colour = C_colour;
   C->colour = Colour::RED;
   // A->color = B->colour;
 
-  assert(c_before == bst::impl::child_count(C_parent));
+  assertx(c_before == bst::impl::child_count(C_parent));
 }
 
 template <typename T>
 static Node<T> *
 rebalance(Node<T> *n) {
   // printf("rebalance(%d)\n",n->value);
-  assert(n->colour == Colour::RED);
+  assertx(n->colour == Colour::RED);
 
   Node<T> *p = parent(n);
   if (!p) {
@@ -265,7 +265,7 @@ rebalance(Node<T> *n) {
 
     if (u && u->colour == Colour::RED) {
       Node<T> *g = grandparent(n);
-      assert(g);
+      assertx(g);
 
       p->colour = Colour::BLACK;
       u->colour = Colour::BLACK;
@@ -277,16 +277,16 @@ rebalance(Node<T> *n) {
         Node<T> *g = grandparent(n);
         if (g) {
           Node<T> *p = parent(n);
-          // assert(g->left);
+          // assertx(g->left);
           if (g->left && n == g->left->right) {
-            assert(p);
+            assertx(p);
 
             rotate_left(p);
             n = n->left;
           } else {
-            // assert(g->right);
+            // assertx(g->right);
             if (g->right && n == g->right->left) {
-              assert(p);
+              assertx(p);
 
               rotate_right(p);
               n = n->right;
@@ -297,7 +297,7 @@ rebalance(Node<T> *n) {
 
       Node<T> *p = parent(n);
       Node<T> *g = grandparent(n);
-      assert(p);
+      assertx(p);
       if (n == p->left) {
         rotate_right(g);
       } else {
@@ -312,7 +312,7 @@ rebalance(Node<T> *n) {
       return p;
     }
   }
-  assert(false);
+  assertx(false);
 } // rb::impl::rb::rebalance()
 
 template <typename T>
@@ -400,7 +400,7 @@ insert(Tree<T,C> &tree, K &&value) noexcept {
   bool inserted{std::get<1>(result)};
   Node<T>* node = std::get<0>(result);
   if(inserted){
-    assert(node);
+    assertx(node);
 
     set_root(rebalance(node));
     tree.root->colour = Colour::BLACK;

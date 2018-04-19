@@ -1,7 +1,7 @@
 #ifndef SP_MALLOC_DYN_TREE_H
 #define SP_MALLOC_DYN_TREE_H
 
-#include <cassert>
+#include <util/assert.h>
 #include <cstdint>
 #include <tuple>
 #include <utility>
@@ -51,22 +51,22 @@ enum class Direction : bool { LEFT, RIGHT };
 // template <typename T>
 // static std::int8_t
 // balance(const DNode<T> *const node) noexcept {
-//   assert(node);
+//   assertx(node);
 //   return node->balance;
 // }
 
 template <typename T>
 static Direction
 direction(const DNode<T> *const child) noexcept {
-  assert(child);
+  assertx(child);
   DNode<T> *const parent = child->parent;
-  assert(parent);
+  assertx(parent);
 
   if (parent->left == child) {
     return Direction::LEFT;
   }
 
-  assert(parent->right == child);
+  assertx(parent->right == child);
   return Direction::RIGHT;
 }
 
@@ -77,9 +77,9 @@ direction(const DNode<T> *const child) noexcept {
 //
 //   // DNode<T> *const lnode = node->left;
 //   DNode<T> *const r_node = node->right;
-//   assert(r_node);
+//   assertx(r_node);
 //   DNode<T> *const rl_node = right->left;
-//   assert(rl_node);
+//   assertx(rl_node);
 // }
 //
 // template <typename T>
@@ -274,7 +274,7 @@ calc_parent_balance(const DNode<T> *child) noexcept {
 template <typename T>
 static DNode<T> *&
 set(DNode<T> *const root, DNode<T> *&child) noexcept {
-  assert(child);
+  assertx(child);
 
   if (!root) {
     return child;
@@ -284,7 +284,7 @@ set(DNode<T> *const root, DNode<T> *&child) noexcept {
     return root->left;
   }
 
-  assert(root->right == child);
+  assertx(root->right == child);
   return root->right;
 }
 
@@ -336,17 +336,17 @@ verify(DNode<T> *parent, DNode<T> *tree) noexcept {
   std::uint32_t result = 0;
   if (tree) {
     result += 1;
-    assert(tree->parent == parent);
+    assertx(tree->parent == parent);
 
     std::uint32_t left = 0;
     if (tree->left) {
-      assert(tree->value > tree->left->value);
+      assertx(tree->value > tree->left->value);
       left += verify(tree, tree->left);
     }
 
     std::uint32_t right = 0;
     if (tree->right) {
-      assert(tree->value < tree->right->value);
+      assertx(tree->value < tree->right->value);
       right += verify(tree, tree->right);
     }
 
@@ -361,8 +361,8 @@ verify(DNode<T> *parent, DNode<T> *tree) noexcept {
       std::cout << "\n";
     }
 
-    assert(bl == b);
-    assert(tree->balance == b);
+    assertx(bl == b);
+    assertx(tree->balance == b);
 
     result += right;
     result += left;

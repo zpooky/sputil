@@ -1,6 +1,6 @@
 #include "BytesView.h"
 #include "util/numeric.h"
-#include <cassert>
+#include <util/assert.h>
 
 namespace sp {
 /*BytesView*/
@@ -27,12 +27,12 @@ BytesView::BytesView(BytesView &in, std::size_t strt,
 }
 
 unsigned char &BytesView::operator[](std::size_t idx) noexcept {
-  assert(idx < capacity);
+  assertx(idx < capacity);
   return raw[idx];
 }
 
 const unsigned char &BytesView::operator[](std::size_t idx) const noexcept {
-  assert(idx < capacity);
+  assertx(idx < capacity);
   return raw[idx];
 }
 

@@ -2,12 +2,12 @@
 #define SP_UTIL_COLLECTION_ARRAY_H
 
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <util/comparator.h>
 #include <util/numeric.h>
 #include <utility>
+#include <util/assert.h>
 
 /*
  * TODO bin_search(arr, f -> -1|0|1)
@@ -32,12 +32,12 @@ struct Array {
   Array(T *, std::size_t, std::size_t) noexcept;
 
   T &operator[](std::size_t idx) noexcept {
-    assert(idx < length);
+    assertx(idx < length);
     return buffer[idx];
   }
 
   const T &operator[](std::size_t idx) const noexcept {
-    assert(idx < length);
+    assertx(idx < length);
     return buffer[idx];
   }
 };
@@ -83,12 +83,12 @@ struct UinStaticArray {
   }
 
   T &operator[](std::size_t idx) noexcept {
-    assert(idx < length);
+    assertx(idx < length);
     return data()[idx];
   }
 
   const T &operator[](std::size_t idx) const noexcept {
-    assert(idx < length);
+    assertx(idx < length);
     return data()[idx];
   }
 };
@@ -513,7 +513,7 @@ is_full(const UinStaticArray<T, c> &a) noexcept {
 template <typename T, typename V, typename Comparator>
 T *
 bin_insert(Array<T> &, V &&) noexcept {
-  assert(false);
+  assertx(false);
   // TODO
   return nullptr;
 }
@@ -586,7 +586,7 @@ bin_insert(UinStaticArray<T, c> &a, V &&val) noexcept {
     T *const first = bin_find_successor<T, c, V, Comparator>(/*>=*/a, val);
     // printf("------\n");
     T *it = insert(a, std::forward<V>(val));
-    assert(it);
+    assertx(it);
 
     if (first) {
     Lit:
@@ -729,7 +729,7 @@ insert_all(Array<T> &a, const From &src) noexcept {
   std::size_t len = length(src);
   if (remaining_write(a) >= len) {
     for (std::size_t i = 0; i < len; ++i) {
-      assert(insert(a, src[i]));
+      assertx(insert(a, src[i]));
     }
 
     return true;
@@ -744,7 +744,7 @@ insert_all(UinStaticArray<T, c> &a, const From &src) noexcept {
   std::size_t len = length(src);
   if (remaining_write(a) >= len) {
     for (std::size_t i = 0; i < len; ++i) {
-      assert(insert(a, src[i]));
+      assertx(insert(a, src[i]));
     }
 
     return true;
@@ -758,7 +758,7 @@ bool
 insert_all(Array<T> &a, const V *values, std::size_t length) noexcept {
   if (remaining_write(a) >= length) {
     for (std::size_t i = 0; i < length; ++i) {
-      assert(insert(a, values[i]));
+      assertx(insert(a, values[i]));
     }
 
     return true;
@@ -773,7 +773,7 @@ insert_all(UinStaticArray<T, c> &a, const V *values,
            std::size_t length) noexcept {
   if (remaining_write(a) >= length) {
     for (std::size_t i = 0; i < length; ++i) {
-      assert(insert(a, values[i]));
+      assertx(insert(a, values[i]));
     }
 
     return true;
@@ -787,7 +787,7 @@ template <typename T, typename V>
 T *
 insert_at(Array<T> &, std::size_t, V &&) noexcept {
   // TODO
-  assert(false);
+  assertx(false);
   return nullptr;
 }
 
@@ -806,7 +806,7 @@ insert_at(UinStaticArray<T, c> &a, std::size_t idx, V &&v) noexcept {
       return a.data() + idx;
     }
   }
-  assert(false);
+  assertx(false);
   return nullptr;
 }
 //=====================================
@@ -873,7 +873,7 @@ index_of(const Array<T> &a, const T *ptr) noexcept {
     auto e = reinterpret_cast<std::uintptr_t>(ptr);
     if (e >= s) {
       auto index = e - s;
-      // assert(index % sizeof(*ptr) == 0);??
+      // assertx(index % sizeof(*ptr) == 0);??
       index /= sizeof(*ptr);
       if (index < a.length) {
         return index;
@@ -939,7 +939,7 @@ take(Array<T> &a, std::size_t idx, /*OUT*/ T &out) noexcept {
     using sp::swap;
     swap(out, a.buffer[idx]);
 
-    assert(remove(a, idx));
+    assertx(remove(a, idx));
     return true;
   }
   return false;
@@ -952,7 +952,7 @@ take(UinStaticArray<T, c> &a, std::size_t idx, /*OUT*/ T &out) noexcept {
     using sp::swap;
     swap(out, a.data()[idx]);
 
-    assert(remove(a, idx));
+    assertx(remove(a, idx));
     return true;
   }
   return false;
@@ -1037,7 +1037,7 @@ clear(UinStaticArray<T, c> &a) noexcept {
 template <typename T>
 void
 drop_back(Array<T> &a, std::size_t len) noexcept {
-  assert(len <= length(a));
+  assertx(len <= length(a));
 
   length = std::min(length(a), len);
   for (std::size_t idx = len; idx-- > 0;) {
@@ -1050,7 +1050,7 @@ drop_back(Array<T> &a, std::size_t len) noexcept {
 template <typename T, std::size_t c>
 void
 drop_back(UinStaticArray<T, c> &a, std::size_t len) noexcept {
-  assert(len <= length(a));
+  assertx(len <= length(a));
 
   len = std::min(length(a), len);
   for (std::size_t idx = len; idx-- > 0;) {

@@ -1,8 +1,8 @@
 #include "crc.h"
-#include <cassert>
 #include <cstddef>
 #include <cstring>
 #include <memory>
+#include <util/assert.h>
 
 // https://github.com/Michaelangel007/crc32
 // http://www.ross.net/crc/download/crc_v3.txt
@@ -96,7 +96,6 @@ encode(const void *b, std::size_t len) noexcept {
   // return crc_reversed<crc32_t>(b, len, crc32_t(0x1EDC6F41));
   return crc<crc32_t>(b, len, crc32_t(0x82F63B78));
 }
-
 }
 
 namespace crc32 {
@@ -106,5 +105,4 @@ encode(const void *b, std::size_t len) noexcept {
   // return crc_reversed<crc32_t>(b, len, crc32_t(0x04C11DB7));
   return crc<crc32_t>(b, len, crc32_t(0xEDB88320));
 }
-
 }
