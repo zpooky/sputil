@@ -24,7 +24,7 @@ SOURCES = $(shell find $(SOURCE_DIR) -iname "*.cpp" | xargs)
 OBJECTS = $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 DEPENDS = $(OBJECTS:.o=.d)
 
-.PHONY: test all clean gtest sut bear
+.PHONY: test all clean gtest sut bear $(EXEC)
 
 # all {{{
 all: sut $(EXEC)

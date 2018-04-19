@@ -151,20 +151,6 @@ is_binary_tree_bst(const Node<T> *tree) noexcept {
   return true;
 }
 
-template <typename T>
-std::size_t
-max_width(const Node<T> *tree, std::size_t n = 0) noexcept {
-  // TODO this wont work it is better to find the number of levels and calculate
-  // the max widht
-  if (tree) {
-    // n = n == 0 ? 1 : n;
-    if (tree->left || tree->right)
-      return std::max(max_width(tree->left, n + 2),
-                      max_width(tree->right, n + 2));
-  }
-  return n;
-}
-
 } // namespace binary::rec::impl
 
 template <typename T, typename C>
@@ -303,6 +289,22 @@ level_first_left(const Tree<T, C> &, F) noexcept {
   // http://www.techiedelight.com/print-left-view-of-binary-tree/
 }
 
+namespace impl {
+
+template <typename T>
+std::size_t
+max_width(const Node<T> *tree, std::size_t n = 0) noexcept {
+  // TODO this wont work it is better to find the number of levels and calculate
+  // the max widht
+  if (tree) {
+    // n = n == 0 ? 1 : n;
+    if (tree->left || tree->right)
+      return std::max(max_width(tree->left, n + 2),
+                      max_width(tree->right, n + 2));
+  }
+  return n;
+}
+}
 template <typename T, typename C>
 std::size_t
 max_width(const Tree<T, C> &tree) noexcept {

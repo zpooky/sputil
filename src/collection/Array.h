@@ -8,6 +8,7 @@
 #include <util/numeric.h>
 #include <utility>
 #include <util/assert.h>
+#include <prng/util.h>
 
 /*
  * TODO bin_search(arr, f -> -1|0|1)

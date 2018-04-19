@@ -12,12 +12,12 @@ assert_func(const char *file, int line, const char *,
 
   auto &dest = stdout;
 
-  {// assert dump
-    fprintf(dest, "assertion failed: %s\n", cond);
-    fprintf(dest, "in %s:%d\n", file, line);
+  { // assert dump
+    fprintf(dest, "assertion failed: (%s)\n", cond);
+    fprintf(dest, "%s:%d\n", file, line);
   }
 
-  {//backtrace
+  { // backtrace
     using namespace backward;
     StackTrace st;
     st.load_here(32);
@@ -38,6 +38,7 @@ assert_func(const char *file, int line, const char *,
 
   { // gdb breakpoint
     std::raise(SIGINT);
+    std::raise(SIGABRT);
   }
 
   std::terminate();
