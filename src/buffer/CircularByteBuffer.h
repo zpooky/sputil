@@ -106,11 +106,13 @@ pop_front(CircularByteBuffer &self, unsigned char (&buffer)[SIZE]) noexcept {
   return pop_front(self, buffer, SIZE);
 }
 
+//-------------------+---------------
 std::size_t
-peek_front(const CircularByteBuffer &, BytesView &) noexcept;
+peek_front(const CircularByteBuffer &, /*copy DEST*/ BytesView &) noexcept;
 
 std::size_t
-peek_front(const CircularByteBuffer &, unsigned char *, std::size_t) noexcept;
+peek_front(const CircularByteBuffer &, /*copy DEST*/ unsigned char *,
+           std::size_t) noexcept;
 
 std::size_t
 peek_front(const CircularByteBuffer &, unsigned char &) noexcept;
@@ -122,29 +124,32 @@ peek_front(const CircularByteBuffer &self,
   return peek_front(self, buffer, SIZE);
 }
 
+// ConstBytesView
+// peek_front(const CircularByteBuffer &self) noexcept;
+
+//-------------------+---------------
+using BufferSegment = std::tuple<unsigned char *, std::size_t>;
+using ConstBufferSegment = std::tuple<const unsigned char *, std::size_t>;
 /* Used together with read_buffer() to signify how many bytes read */
 void
 consume_bytes(CircularByteBuffer &, std::size_t) noexcept;
 
 bool
-read_buffer(CircularByteBuffer &,
-            Array<std::tuple<unsigned char *, std::size_t>> &) noexcept;
+read_buffer(CircularByteBuffer &, Array<BufferSegment> &) noexcept;
 
 bool
-read_buffer(const CircularByteBuffer &,
-            Array<std::tuple<const unsigned char *, std::size_t>> &) noexcept;
+read_buffer(const CircularByteBuffer &, Array<ConstBufferSegment> &) noexcept;
 
+//-------------------+---------------
 /* Used together with write_buffer() to signify how many bytes written */
 void
 produce_bytes(CircularByteBuffer &self, std::size_t b) noexcept;
 
 bool
-write_buffer(CircularByteBuffer &,
-             Array<std::tuple<unsigned char *, std::size_t>> &) noexcept;
+write_buffer(CircularByteBuffer &, Array<BufferSegment> &) noexcept;
 
 bool
-write_buffer(const CircularByteBuffer &,
-             Array<std::tuple<const unsigned char *, std::size_t>> &) noexcept;
+write_buffer(const CircularByteBuffer &, Array<ConstBufferSegment> &) noexcept;
 /*
  * ==========================================================================
  */
@@ -155,6 +160,19 @@ StaticCircularByteBuffer<SIZE>::StaticCircularByteBuffer() noexcept
     , raw() {
   static_assert((SIZE & (SIZE - 1)) == 0, "required to be power of 2");
 }
+
+namespace impl {
+
+std::size_t
+remaining_read(std::size_t write, std::size_t read) noexcept;
+
+bool
+read_buffer(CircularByteBuffer &self, Array<BufferSegment> &result,
+            std::size_t w, std::size_t r) noexcept;
+bool
+read_buffer(const CircularByteBuffer &s, Array<ConstBufferSegment> &res,
+            std::size_t w, std::size_t r) noexcept;
+} // namespace impl
 
 } // namespace sp
 

@@ -45,6 +45,42 @@ TEST(randomTest, test_xorshift32_dist_limited) {
   test_uniform_one(r);
 }
 
+TEST(randomTest, test_xorshift32_uni) {
+  std::size_t max = 2560;
+  prng::xorshift32 r(1);
+  for (std::uint32_t strt = 0; strt < max; ++strt) {
+    for (std::uint32_t end = strt + 1; end < max; ++end) {
+      std::uint32_t res = prng::uniform_dist(r, strt, end);
+      // printf("uni(%u,%u): %u\n", strt, end, res);
+      ASSERT_TRUE(res >= strt);
+      ASSERT_TRUE(res < end);
+    }
+  }
+}
+
+TEST(randomTest, test_xorshift32_uni2) {
+  prng::xorshift32 r(1);
+  uint32_t strt = 0;
+  uint32_t end = 3;
+
+  for (std::size_t i = 0; i < 90000; ++i) {
+    std::uint32_t res = prng::uniform_dist(r, strt, end);
+    // printf("uni(%u,%u): %u\n", strt, end, res);
+    ASSERT_TRUE(res >= strt);
+    ASSERT_TRUE(res < end);
+  }
+}
+
+TEST(randomTest, test_xorshift32_uni3) {
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 90000; ++i) {
+    std::uint32_t res = prng::uniform_dist(r, 0, 3);
+    // printf("uni(%u,%u): %u\n", strt, end, res);
+    ASSERT_TRUE(res >= 0);
+    ASSERT_TRUE(res < 3);
+  }
+}
+
 TEST(randomTest, test_xorshift128plus) {
   prng::xorshift128plus r(1, 1);
   test(r);

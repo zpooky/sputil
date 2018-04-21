@@ -63,8 +63,8 @@ template <typename Value, std::size_t cap, typename H, typename K>
 Value *
 lookup(StaticProbingHashSet<Value, cap, H> &self, const K &needle) noexcept {
   H h;
-  assertx(h);
-  std::size_t idx = h(needle);
+  assertx(false);
+  // std::size_t idx = h(needle);
 
   return nullptr;
 }

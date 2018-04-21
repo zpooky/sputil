@@ -10,6 +10,10 @@ u8
 u16
 ...
 
+#string
+utf8
+Boyer–Moore string search algorithm
+
 # Distinct numeric
 DISTINCT_NUMERIC(name,underlying_type)
 

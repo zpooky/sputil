@@ -13,7 +13,7 @@ HEADER_DIRS = -I$(GTEST_ROOT)/include -I$(PROJECT_ROOT)/include
 override CXXFLAGS += $(HEADER_DIRS) -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST
 CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
 
-LDLIBS = -L$(GTEST_ROOT)/make -lgtest -lpthread -L$(PROJECT_ROOT)/$(SUT_DIR) -lsut
+LDLIBS = -L$(GTEST_ROOT)/make -lgtest -lpthread -L$(PROJECT_ROOT)/$(SUT_DIR) -lsut -lbfd -ldl
 LDFLAGS = -fno-omit-frame-pointer
 
 BUILD_DIR = build

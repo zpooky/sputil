@@ -42,6 +42,29 @@ TEST(CircularByteBufferTest, test) {
   }
 }
 
+TEST(CircularByteBufferTest, test_view) {
+  unsigned char braw[256];
+  sp::BytesView b(braw);
+
+  unsigned char raw[16];
+  sp::StaticCircularByteBuffer<sizeof(raw)> buffer;
+  for (unsigned char i = 0; i < sizeof(raw); ++i) {
+    raw[i] = i;
+  }
+
+  ASSERT_EQ(std::size_t(0), remaining_read(b));
+  ASSERT_EQ(std::size_t(0), remaining_read(buffer));
+  ASSERT_TRUE(write(buffer, raw));
+  ASSERT_EQ(sizeof(raw), remaining_read(buffer));
+
+  ASSERT_EQ(sizeof(raw), pop_front(buffer, b));
+
+  flip(b);
+  ASSERT_EQ(sizeof(raw), remaining_read(b));
+  ASSERT_EQ(0, remaining_read(buffer));
+  ASSERT_EQ(0, ::memcmp(raw, braw, sizeof(raw)));
+}
+
 TEST(CircularByteBufferTest, test_circular) {
   constexpr std::size_t cap = 16;
   constexpr std::size_t rcap = 19;

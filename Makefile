@@ -12,7 +12,7 @@ override CXXFLAGS += -Wduplicated-cond -Wlogical-op -Wnull-dereference -Wuseless
 CXXFLAGS_DEBUG = $(CXXFLAGS) -O0 -ggdb
 
 LDFLAGS = -fno-omit-frame-pointer
-LDLIBS =
+LDLIBS = -lbfd -ldl
 
 PREFIX = /usr/local
 

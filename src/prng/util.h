@@ -3,18 +3,27 @@
 
 #include <cstdint>
 #include <cstring>
+#include <util/assert.h>
 #include <utility>
 
 namespace prng {
 
-template <typename Random,
-          typename T = decltype(random(std::declval<Random>()))>
-T
-uniform_dist(Random &r, T inc, T ex) noexcept {
-  assert(inc >= T(0));
-  assert(inc < ex);
-  T res{random(r)};
+template <typename Random>
+typename Random::Word
+uniform_dist(Random &r, typename Random::Word inc,
+             typename Random::Word ex) noexcept {
+
+  assertx(inc >= 0);
+  assertx(inc < ex);
+  typename Random::Word res{random(r)};
   return (res % (ex - inc)) + inc;
+}
+
+template <typename Random>
+bool
+uniform_bool(Random &r) noexcept {
+  auto res = uniform_dist(r, 0, 2);
+  return res == 1 ? true : false;
 }
 
 template <typename Random>

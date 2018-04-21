@@ -5,39 +5,44 @@
 
 namespace sp {
 
-struct BytesView {
-  unsigned char *raw;
+template <typename T>
+struct IBytesView {
+  T *raw;
   const std::size_t capacity;
   std::size_t length;
   std::size_t pos;
 
-  BytesView(unsigned char *, std::size_t) noexcept;
+  IBytesView(T *, std::size_t) noexcept;
 
-  // BytesView(const BytesView &) = delete;
-  BytesView(const BytesView &) noexcept;
-  BytesView(const BytesView &&) = delete;
+  // IBytesView(const IBytesView &) = delete;
+  IBytesView(const IBytesView<T> &) noexcept;
+  IBytesView(const IBytesView<T> &&) = delete;
 
-  BytesView(BytesView &, std::size_t, std::size_t) noexcept;
+  IBytesView(IBytesView<T> &, std::size_t, std::size_t) noexcept;
 
   template <std::size_t SIZE>
-  explicit BytesView(unsigned char (&buffer)[SIZE]) noexcept
-      : BytesView(buffer, SIZE) {
+  explicit IBytesView(unsigned char (&buffer)[SIZE]) noexcept
+      : IBytesView(buffer, SIZE) {
   }
 
-  BytesView &
-  operator=(const BytesView &) = delete;
-  BytesView &
-  operator=(const BytesView &&) = delete;
+  IBytesView<T> &
+  operator=(const IBytesView<T> &) = delete;
+  IBytesView<T> &
+  operator=(const IBytesView<T> &&) = delete;
 
-  unsigned char &operator[](std::size_t) noexcept;
-
-  const unsigned char &operator[](std::size_t) const noexcept;
+  T &operator[](std::size_t) noexcept;
+  const T &operator[](std::size_t) const noexcept;
 };
+
+using BytesView = IBytesView<unsigned char>;
+using ConstBytesView = IBytesView<const unsigned char>;
 
 template <std::size_t SIZE>
 struct StaticBytesView : public BytesView {
+
   static constexpr std::size_t storage_capacity = SIZE;
   unsigned char r[SIZE];
+
   StaticBytesView();
 };
 

@@ -2,7 +2,7 @@
 #define SP_UTIL_STACK_HEAP_STACK_H
 
 #include <memory/Allocator.h>
-#include <stack/stack.h>
+#include <stack/Stack.h>
 
 namespace sp {
 

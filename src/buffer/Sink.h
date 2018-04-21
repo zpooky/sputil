@@ -6,6 +6,7 @@
 // TODO impl
 
 namespace sp {
+
 struct Sink {
   using FlushType = bool (*)(CircularByteBuffer &, void *);
 
@@ -18,6 +19,7 @@ struct Sink {
       , sink(s)
       , arg(a) {
   }
+
   ~Sink();
 };
 

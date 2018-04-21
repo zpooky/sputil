@@ -392,7 +392,7 @@ TEST(BinaryHeapTest, MaxHeap_eager_rand) {
   constexpr int size = 1024;
   heap::StaticMaxBinary<int, size> heap;
   sp::StaticArray<int, size * 4> in;
-  for (int i = 0; i < capacity(in); ++i) {
+  for (int i = 0; i < int(capacity(in)); ++i) {
     auto res = insert(in, i);
     ASSERT_TRUE(res);
     ASSERT_EQ(*res, i);
@@ -401,7 +401,7 @@ TEST(BinaryHeapTest, MaxHeap_eager_rand) {
   shuffle(r, in);
 
   ASSERT_EQ(capacity(in), length(in));
-  for (int i = 0; i < length(in); ++i) {
+  for (int i = 0; i < int(length(in)); ++i) {
     insert_eager(heap, in[i]);
   }
   ASSERT_EQ(capacity(heap), length(heap));
