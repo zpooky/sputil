@@ -698,7 +698,7 @@ TEST(ThingTest, test_marked_nested) {
 static void
 rec_pop(sp::Thing &thing, unsigned char &cmp, bool rollback,
         prng::xorshift32 &r, std::size_t lvl) {
-  if (lvl == 32) {
+  if (lvl == 10) {
     return;
   }
 
@@ -718,7 +718,7 @@ rec_pop(sp::Thing &thing, unsigned char &cmp, bool rollback,
     }
   }
   {
-    auto l = uniform_dist(r, 0, 32);
+    auto l = uniform_dist(r, 0, 10);
     for (std::uint32_t i = 0; i < l; ++i) {
       auto rb = uniform_bool(r);
       if (rb) {
