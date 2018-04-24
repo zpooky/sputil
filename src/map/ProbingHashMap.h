@@ -1,36 +1,38 @@
 #ifndef SP_UTIL_MAP_PROBING_HASH_MAP_H
 #define SP_UTIL_MAP_PROBING_HASH_MAP_H
 
+#include <cassert>
 #include <collection/Array.h>
 #include <cstddef>
 #include <hash/util.h>
 #include <util/maybe.h>
 
 namespace sp {
-template <typename Key, typename Value, typename H = Hasher<Key>>
+template <typename Key, typename Value, sp::Hasher<Key>>
 struct ProbingHashMap {
   /**/
 };
 
-template <typename Value, std::size_t cap, typename H = Hasher<Value>>
+template <typename Value, std::size_t cap, sp::Hasher<Value>>
 struct StaticProbingHashSet {
+  using node_type = Value *;
   /**/
-  Value **key[cap];
-  Value *value[cap];
+  node_type *key[cap];
+  node_type value[cap];
 
   StaticProbingHashSet() noexcept;
   StaticProbingHashSet(UinStaticArray<Value, cap> &) noexcept;
 };
 
 //=====================================
-template <typename Value, std::size_t cap, typename H>
-StaticProbingHashSet<Value, cap, H>
-create(Value (&)[cap]) noexcept;
+// template <typename Value, std::size_t cap, sp::Hasher<Value> h>
+// StaticProbingHashSet<Value, cap, h>
+// create(Value (&)[cap]) noexcept;
 
 //=====================================
-template <typename Value, std::size_t cap, typename H, typename K>
+template <typename Value, std::size_t cap, sp::Hasher<Value> h, typename K>
 Value *
-lookup(StaticProbingHashSet<Value, cap, H> &, const K &) noexcept;
+lookup(StaticProbingHashSet<Value, cap, h> &, const K &) noexcept;
 
 //=====================================
 
@@ -38,33 +40,49 @@ lookup(StaticProbingHashSet<Value, cap, H> &, const K &) noexcept;
 /* ======================================================= */
 /* ======================================================= */
 
-template <typename Value, std::size_t cap, typename H>
-StaticProbingHashSet<Value, cap, H>::StaticProbingHashSet() noexcept
+template <typename Value, std::size_t cap, sp::Hasher<Value> h>
+StaticProbingHashSet<Value, cap, h>::StaticProbingHashSet() noexcept
     : key{nullptr}
     , value{nullptr} {
+  assertx(false);
+  //
+  //
 }
 
-template <typename Value, std::size_t cap, typename H>
-StaticProbingHashSet<Value, cap, H>::StaticProbingHashSet(
-    UinStaticArray<Value, cap> &) noexcept
+template <typename Value, std::size_t cap, sp::Hasher<Value> h>
+StaticProbingHashSet<Value, cap, h>::StaticProbingHashSet(
+    UinStaticArray<Value, cap> &in) noexcept
     : key{nullptr}
     , value{nullptr} {
+  for_each(in, [](Value &current) {
+    const std::size_t hash = h(current);
+    const std::size_t idx = hash % cap;
+
+  });
+  // assertx(false);
 }
 
 //=====================================
-// template <typename Value, std::size_t cap, typename H>
-// StaticProbingHashSet<Value, cap, H>
+// template <typename Value, std::size_t cap, sp::Hasher<Value> h>
+// StaticProbingHashSet<Value, cap, h>
 // create(Value (&)[cap]) noexcept {
 //
 //   return {};
 // }
 //=====================================
-template <typename Value, std::size_t cap, typename H, typename K>
+template <typename Value, std::size_t cap, sp::Hasher<Value> h, typename K>
 Value *
-lookup(StaticProbingHashSet<Value, cap, H> &self, const K &needle) noexcept {
-  H h;
-  assertx(false);
-  // std::size_t idx = h(needle);
+lookup(StaticProbingHashSet<Value, cap, h> &self, const K &needle) noexcept {
+  const std::size_t hash = h(needle);
+  const std::size_t idx = hash % cap;
+  auto key = self.key[idx];
+  if (key) {
+    Value *it = *key;
+    // const Value *const end = self.value + cap;
+    // while (it != end) {
+    //   ++it;
+    // }
+  }
 
   return nullptr;
 }

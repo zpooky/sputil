@@ -27,7 +27,7 @@ OBJECTS = $(patsubst $(SOURCE_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 DEPENDS = $(OBJECTS:.o=.d)
 
 # PHONY targets is not file backed targets
-.PHONY: test all clean install uninstall bear $(EXEC)
+.PHONY: test all clean install uninstall bear
 
 # all {{{
 # The "all" target. Runs by default since it the first target
@@ -99,7 +99,7 @@ uninstall:
 bear:
 	$(MAKE) -C test bear
 	make BUILD_DIR=build/bear clean
-	bear make BUILD_DIR=build/bear CXXFLAGS+=-DSP_TEST -j 4
+	bear make BUILD_DIR=build/bear CXXFLAGS+=-DSP_TEST -j
 	compdb list > tmp_compile_commands.json
 	mv tmp_compile_commands.json compile_commands.json
 # }}}

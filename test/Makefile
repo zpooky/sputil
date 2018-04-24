@@ -24,14 +24,14 @@ SOURCES = $(shell find $(SOURCE_DIR) -iname "*.cpp" | xargs)
 OBJECTS = $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 DEPENDS = $(OBJECTS:.o=.d)
 
-.PHONY: test all clean gtest sut bear $(EXEC)
+.PHONY: test all clean gtest sut bear
 
 # all {{{
-all: sut $(EXEC)
+all: $(EXEC)
 # }}}
 
 # $(EXEC) linking {{{
-$(EXEC): $(GTEST_ROOT)/make/gtest.a $(OBJECTS)
+$(EXEC): $(OBJECTS) $(GTEST_ROOT)/make/gtest.a sut
 	$(CXX) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $(EXEC)
 # }}}
 
@@ -55,7 +55,7 @@ clean:
 # gtest {{{
 LIBGTEST_ROOT = $(GTEST_ROOT)/make
 $(GTEST_ROOT)/make/gtest.a:
-	$(MAKE) -C $(GTEST_ROOT)/make gtest.a -j
+	$(MAKE) -C $(GTEST_ROOT)/make gtest.a
 	cp $(LIBGTEST_ROOT)/gtest.a $(LIBGTEST_ROOT)/libgtest.a
 # }}}
 
@@ -64,14 +64,14 @@ sut:
 # Build sut binaries and put result in $(SUT_DIR) directory to differentiate the build for test binaries with regular binaries.
 # Define the SP_TEST preprocessor macro
 # The resulting static library will be called libsut
-	$(MAKE) BUILD_DIR=$(SUT_DIR) LIB=libsut CXXFLAGS+=-DSP_TEST -C $(PROJECT_ROOT) -j
+	$(MAKE) BUILD_DIR=$(SUT_DIR) LIB=libsut CXXFLAGS+=-DSP_TEST -C $(PROJECT_ROOT)
 # }}}
 
 # bear {{{
 # Creates compilation_database.json
 bear:
 	make BUILD_DIR=build/bear clean
-	bear make BUILD_DIR=build/bear CXXFLAGS+=-DSP_TEST -j 4
+	bear make BUILD_DIR=build/bear CXXFLAGS+=-DSP_TEST -j
 	compdb list > tmp_compile_commands.json
 	mv tmp_compile_commands.json compile_commands.json
 # }}}

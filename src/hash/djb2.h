@@ -22,7 +22,9 @@ std::uint32_t
 encode32(const void *buf, std::size_t length) noexcept;
 
 template <typename T>
-std::enable_if_t<std::is_trivially_copyable<T>::value, std::size_t>
+std::enable_if_t< //
+    std::is_trivially_copyable<T>::value && !std::is_pointer<T>::value,
+    std::size_t>
 hash(const T &in) noexcept {
   return encode32(&in, sizeof(in));
 }
