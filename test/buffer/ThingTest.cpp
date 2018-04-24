@@ -732,7 +732,6 @@ rec_pop(sp::Thing &thing, unsigned char &cmp, bool rollback,
 }
 
 TEST(ThingTest, test_marked_rand_nested) {
-  std::size_t sum = 0;
   unsigned char cnt = 0;
   sp::StaticCircularByteBuffer<512> buffer;
   sp::Thing thing(buffer, &cnt, [](auto &b, void *arg) {
@@ -751,6 +750,4 @@ TEST(ThingTest, test_marked_rand_nested) {
   // while (it++ < 500) {
   rec_pop(thing, cmp, false, r, 0);
   // }
-
-  printf("%zu\n", sum);
 }
