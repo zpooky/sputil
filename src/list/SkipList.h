@@ -4,6 +4,7 @@
 #include <cstring>
 #include <prng/xorshift.h>
 // #include <util/swap.h>
+#include <util/assert.h>
 #include <util/comparator.h>
 #include <utility>
 
@@ -26,6 +27,12 @@ struct SkipListNode {
   explicit SkipListNode(V &&v) noexcept
       : next{nullptr}
       , value{std::forward<V>(v)} {
+  }
+
+  template <typename... Arg>
+  SkipListNode(Arg &&... args) noexcept
+      : next{nullptr}
+      , value{std::forward<Arg>(args)...} {
   }
 
   ~SkipListNode() {
@@ -70,6 +77,10 @@ struct SkipList {
 
 // TODO SkipListSet
 
+template <typename T, std::size_t l, typename C, typename... Arg>
+T *
+emplace(SkipList<T, l, C> &, Arg &&...) noexcept;
+
 template <typename T, std::size_t l, typename C, typename V>
 T *
 insert(SkipList<T, l, C> &, V &&) noexcept;
@@ -77,6 +88,10 @@ insert(SkipList<T, l, C> &, V &&) noexcept;
 template <typename T, std::size_t l, typename C, typename V>
 std::tuple<T *, bool>
 insert_unique(SkipList<T, l, C> &, V &&) noexcept;
+
+// template <typename T, std::size_t l, typename C, typename Arg...>
+// std::tuple<T *, bool>
+// emplace_unique(SkipList<T, l, C> &, Arg &&...) noexcept;
 
 template <typename T, std::size_t l, typename C, typename K>
 T *
@@ -351,6 +366,69 @@ remove_node(sp::SkipList<T, L, C> &list, const K &needle) noexcept {
   return result;
 }
 
+template <typename T, std::size_t L, typename C>
+T *
+insert(sp::SkipList<T, L, C> &list, SkipListNode<T, L> *self) noexcept {
+  assertx(self);
+  /*
+   * Randomly generate what level self will be inserted into. The level also
+   * includes lower levels aswell.
+   */
+  const std::size_t target_level = random_level(list.state, L);
+
+  /*
+   * Search horizontally and vertically for the predecessor to self->value
+   * limit the result to target_level inclusive.
+   */
+  auto *start = find_predecessor(list, target_level, self->value);
+
+  for (std::size_t level = target_level + 1; level-- > 0;) {
+    if (!start) {
+      /*
+       * Start from the beginning of the level since there was NO higher
+       * level express-lane
+       */
+      start = list.header[level];
+    }
+
+    /*
+     * Search this level for the predecessor to self->value
+     */
+    auto *predecessor =
+        find_level_predecessor<T, L, C>(start, level, self->value);
+    if (predecessor) {
+      /*
+       * We update chain on this level by inserting self:
+       * predecessor->self->next
+       */
+      auto next = predecessor->next[level];
+      predecessor->next[level] = self;
+      self->next[level] = next;
+
+      /*
+       * Start next level search from the predecessor node on this level
+       */
+      start = predecessor;
+    } else {
+      /*
+       * This level is empty, or self is greater than the first node in chain:
+       * thus inserting self first in level
+       */
+      auto *next = list.header[level];
+      self->next[level] = next;
+      list.header[level] = self;
+
+      /*
+       * Since we could not find a predecessor on this level we have to start
+       * from the beginning on the next level
+       */
+      start = nullptr;
+    }
+  } // for
+
+  return &self->value;
+}
+
 } // namespace SkipList
 } // namespace impl
 
@@ -359,71 +437,27 @@ remove_node(sp::SkipList<T, L, C> &list, const K &needle) noexcept {
 //   : root{nullptr} {
 // }
 
+template <typename T, std::size_t l, typename C, typename... Arg>
+T *
+emplace(SkipList<T, l, C> &self, Arg &&... args) noexcept {
+  using impl::SkipList::SkipListNode;
+
+  auto s = new (std::nothrow) SkipListNode<T, l>{std::forward<Arg>(args)...};
+  if (s) {
+    return insert(self, s);
+  }
+
+  return nullptr;
+}
+
 template <typename T, std::size_t L, typename C, typename V>
 T *
 insert(SkipList<T, L, C> &list, V &&v) noexcept {
-  using namespace impl::SkipList;
+  using impl::SkipList::SkipListNode;
 
   auto self = new (std::nothrow) SkipListNode<T, L>{std::forward<V>(v)};
   if (self) {
-
-    /*
-     * Randomly generate what level self will be inserted into. The level also
-     * includes lower levels aswell.
-     */
-    const std::size_t target_level = random_level(list.state, L);
-
-    /*
-     * Search horizontally and vertically for the predecessor to self->value
-     * limit the result to target_level inclusive.
-     */
-    auto *start = find_predecessor(list, target_level, self->value);
-
-    for (std::size_t level = target_level + 1; level-- > 0;) {
-      if (!start) {
-        /*
-         * Start from the beginning of the level since there was NO higher
-         * level express-lane
-         */
-        start = list.header[level];
-      }
-
-      /*
-       * Search this level for the predecessor to self->value
-       */
-      auto *predecessor =
-          find_level_predecessor<T, L, C>(start, level, self->value);
-      if (predecessor) {
-        /*
-         * We update chain on this level by inserting self:
-         * predecessor->self->next
-         */
-        auto next = predecessor->next[level];
-        predecessor->next[level] = self;
-        self->next[level] = next;
-
-        /*
-         * Start next level search from the predecessor node on this level
-         */
-        start = predecessor;
-      } else {
-        /*
-         * This level is empty, or self is greater than the first node in chain:
-         * thus inserting self first in level
-         */
-        auto *next = list.header[level];
-        self->next[level] = next;
-        list.header[level] = self;
-
-        /*
-         * Since we could not find a predecessor on this level we have to start
-         * from the beginning on the next level
-         */
-        start = nullptr;
-      }
-    } // for
-
-    return &self->value;
+    return impl::SkipList::insert(list, self);
   }
 
   return nullptr;
@@ -475,6 +509,19 @@ insert_unique(SkipList<T, L, C> &list, V &&val) noexcept {
 
   return std::make_tuple(nullptr, false);
 }
+
+// template <typename T, std::size_t l, typename C, typename Arg...>
+// std::tuple<T *, bool>
+// emplace_unique(SkipList<T, l, C> &, Arg &&...) noexcept {
+//   using namespace impl::SkipList;
+//
+//   auto s = new (std::nothrow) SkipListNode<T, L>{std::forward<Arg>(args)...};
+//   if (s) {
+//     return impl::insert_unique(self, s);
+//   }
+//
+//   return nullptr;
+// }
 
 template <typename T, std::size_t l, typename C, typename K>
 T *

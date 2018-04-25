@@ -17,18 +17,18 @@ Sink::~Sink() {
 static bool
 write(Sink &sink, const unsigned char *w, std::size_t l) {
   if (l > capacity(sink.buffer)) {
-    if (!flush(sink)) {
+    if (sink.sink == nullptr) {
+      assertx(false);
       return false;
     }
 
-    if (!sink.sink) {
+    if (!flush(sink)) {
       return false;
     }
 
     // TODO something like this
     // CircularByteBuffer dummy(w,l)
     // return sink.sink(dummy);
-    assertx(false);
     return false;
   } else if (l > remaining_write(sink.buffer)) {
     if (!flush(sink)) {

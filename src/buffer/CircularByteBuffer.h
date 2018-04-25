@@ -124,6 +124,30 @@ peek_front(const CircularByteBuffer &self,
   return peek_front(self, buffer, SIZE);
 }
 
+//-------------------+---------------
+bool
+read(CircularByteBuffer &, void *, std::size_t) noexcept;
+
+bool
+read(CircularByteBuffer &, unsigned char&) noexcept;
+
+bool
+read(CircularByteBuffer &, char&) noexcept;
+
+template <std::size_t SIZE>
+bool
+read(CircularByteBuffer &b, unsigned char (&buffer)[SIZE]) noexcept {
+  return write(b, buffer, SIZE);
+}
+
+template <std::size_t SIZE>
+bool
+read(CircularByteBuffer &b, char (&buffer)[SIZE]) noexcept {
+  return write(b, buffer, SIZE);
+}
+
+//-------------------+---------------
+
 // ConstBytesView
 // peek_front(const CircularByteBuffer &self) noexcept;
 

@@ -196,4 +196,41 @@ peek_front(Thing &self, unsigned char &c) noexcept {
 }
 
 //-------------------+---------------
+bool
+read(Thing &self, void *dest, std::size_t len) noexcept {
+  if (len > capacity(self.buffer)) {
+    assertx(false);
+    return false;
+  }
+
+  if (length(self.buffer) < len) {
+    if (!fill(self)) {
+      return false;
+    }
+    if (length(self.buffer) < len) {
+      return false;
+    }
+  }
+
+  auto read = (unsigned char *)dest;
+  const auto res = peek_front(self, read, len);
+  if (res == len) {
+    consume_bytes(self, res);
+    return true;
+  }
+
+  return false;
+}
+
+bool
+read(Thing &self, unsigned char &dest) noexcept {
+  return read(self, &dest, 1);
+}
+
+bool
+read(Thing &self, char &dest) noexcept {
+  return read(self, &dest, 1);
+}
+
+//-------------------+---------------
 } // namespace sp

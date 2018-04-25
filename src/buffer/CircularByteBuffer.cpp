@@ -135,7 +135,8 @@ push_back(CircularByteBuffer &self, char c) noexcept {
 bool
 write(CircularByteBuffer &self, const void *w, std::size_t l) noexcept {
   if (remaining_write(self) >= l) {
-    assertx(push_back(self, w, l) == l);
+    auto out = push_back(self, w, l);
+    assertx(out == l);
     return true;
   }
   return false;
@@ -231,6 +232,32 @@ std::size_t
 peek_front(const CircularByteBuffer &self, unsigned char &c) noexcept {
   return peek_front(self, &c, 1);
 }
+//-------------------+---------------
+bool
+read(CircularByteBuffer &self, void *dest, std::size_t len) noexcept {
+  if (remaining_read(self) < len) {
+    return false;
+  }
+
+  auto read = (unsigned char *)dest;
+  auto res = peek_front(self, read, len);
+  assertx(res == len);
+  consume_bytes(self, len);
+
+  return true;
+}
+
+bool
+read(CircularByteBuffer &b, unsigned char &dest) noexcept {
+  return read(b, &dest, 1);
+}
+
+bool
+read(CircularByteBuffer &b, char &dest) noexcept {
+  return read(b, &dest, 1);
+}
+
+//-------------------+---------------
 
 // ConstBytesView
 // peek_front(const CircularByteBuffer &self) noexcept {

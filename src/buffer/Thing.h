@@ -88,6 +88,29 @@ std::size_t
 peek_front(Thing &self, unsigned char (&buffer)[SIZE]) noexcept {
   return peek_front(self, buffer, SIZE);
 }
+
+//-------------------+---------------
+bool
+read(Thing &, void *, std::size_t) noexcept;
+
+bool
+read(Thing &, unsigned char &) noexcept;
+
+bool
+read(Thing &, char &) noexcept;
+
+template <std::size_t SIZE>
+bool
+read(Thing &self, unsigned char (&buffer)[SIZE]) noexcept {
+  return read(self, buffer, SIZE);
+}
+
+template <std::size_t SIZE>
+bool
+read(Thing &self, char (&buffer)[SIZE]) noexcept {
+  return read(self, buffer, SIZE);
+}
+
 //-------------------+---------------
 
 } // namespace sp
