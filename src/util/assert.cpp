@@ -20,19 +20,38 @@ print_header(FILE *os, unsigned thread_id) {
   }
 }
 
+static const char *
+filename(const char *path, std::size_t len) noexcept {
+  const char *it = path + len;
+  while (it != path) {
+    if (*it == '/') {
+      ++it;
+      break;
+    }
+    --it;
+  }
+
+  return it;
+}
+
 static void
 print_source_loc(FILE *os, const char *indent,
-                 const ResolvedTrace::SourceLoc &source_loc, void *addr = 0) {
+                 const ResolvedTrace::SourceLoc &ln, void *addr = 0) {
 
   // fprintf(os, "%sSource \"%s\", line %i, in %s", indent,
-  //         source_loc.filename.c_str(), (int)source_loc.line,
-  //         source_loc.function.c_str());
+  //         ln.filename.c_str(), (int)ln.line,
+  //         ln.function.c_str());
 
   // make function name higlight
   fprintf(os,
-          "%s%s"
-          ": \033[92m%u\033[0m",
-          indent, source_loc.function.c_str(), source_loc.line);
+          "%s"
+          "%s"
+          " \033[91m%s\033[0m"
+          ":\033[92m%u\033[0m",
+          indent,                                              //
+          ln.function.c_str(),                                 //
+          filename(ln.filename.c_str(), ln.filename.length()), //
+          ln.line);
 
   if (false && addr != 0) {
     fprintf(os, " [%p]\n", addr);
@@ -42,25 +61,24 @@ print_source_loc(FILE *os, const char *indent,
 }
 
 static void
-print_trace(FILE *os, const ResolvedTrace &trace, Colorize &colorize) {
+print_trace(FILE *os, const ResolvedTrace &trace, Colorize &colorize) noexcept {
   fprintf(os, "#%-2u", trace.idx);
   bool already_indented = true;
 
   if (!trace.source.filename.size()) {
     // fprintf(os, "   Object \"%s\", at %p, in %s\n",
-    //         trace.object_filename.c_str(), trace.addr,
+    // trace.object_filename.c_str(), trace.addr,
     //         trace.object_function.c_str());
     already_indented = false;
 
     fprintf(os, "   %s\n", trace.object_function.c_str());
   }
 
-  for (size_t inliner_idx = 0; inliner_idx < trace.inliners.size();
-       ++inliner_idx) {
+  for (size_t iidx = 0; iidx < trace.inliners.size(); ++iidx) {
     if (!already_indented) {
       fprintf(os, "   ");
     }
-    const ResolvedTrace::SourceLoc &inliner_loc = trace.inliners[inliner_idx];
+    const ResolvedTrace::SourceLoc &inliner_loc = trace.inliners[iidx];
     print_source_loc(os, " | ", inliner_loc);
     // if (snippet) {
     //   print_snippet(os, "    | ", inliner_loc, colorize, Color::purple,
