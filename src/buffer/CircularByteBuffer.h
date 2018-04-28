@@ -188,7 +188,7 @@ StaticCircularByteBuffer<SIZE>::StaticCircularByteBuffer() noexcept
 namespace impl {
 
 std::size_t
-remaining_read(std::size_t write, std::size_t read) noexcept;
+cbb_remaining_read(std::size_t write, std::size_t read) noexcept;
 
 bool
 read_buffer(CircularByteBuffer &self, Array<BufferSegment> &result,

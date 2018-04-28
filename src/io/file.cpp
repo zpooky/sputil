@@ -28,9 +28,6 @@ int_open(const char *p, int flag, mode_t mode = 0) noexcept {
   // }
 
   int res = ::open(p, flag, mode);
-  if (res == -1) {
-    die("open()");
-  }
 
   return sp::fd{res};
 }

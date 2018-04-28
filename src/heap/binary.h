@@ -3,6 +3,7 @@
 
 #include <stack/Stack.h>
 #include <util/comparator.h>
+#include <util/assert.h>
 
 namespace heap {
 
@@ -177,7 +178,7 @@ Lit:
 template <typename T, typename Comp, typename V>
 static T *
 insert_at(Binary<T, Comp> &heap, std::size_t idx, V &&val) noexcept {
-  // assert(idx < capacity(heap));
+  // assertx(idx < capacity(heap));
 
   T *const dest = heap.buffer + idx;
   dest->~T();
@@ -190,8 +191,8 @@ insert_at(Binary<T, Comp> &heap, std::size_t idx, V &&val) noexcept {
 template <typename T, typename Comp>
 std::size_t
 extreme(Binary<T, Comp> &heap, std::size_t first, std::size_t second) noexcept {
-  assert(first < heap.length);
-  assert(second < heap.length);
+  assertx(first < heap.length);
+  assertx(second < heap.length);
   constexpr Comp c;
   /* either: greater than or less than */
   if (c(heap.buffer[first], heap.buffer[second])) {
@@ -231,7 +232,7 @@ Lit:
 template <typename T, typename Comparator>
 std::size_t
 index_of(const Binary<T, Comparator> &heap, T *ptr) noexcept {
-  assert(ptr);
+  assertx(ptr);
   if (heap.buffer) {
     const T *start = heap.buffer;
     auto s = reinterpret_cast<std::uintptr_t>(start);
@@ -306,9 +307,9 @@ insert_eager(StaticBinary<T, N, Comparator> &heap, V &&val) noexcept {
 
   if (heap.length == heap.capacity && heap.capacity > 0) {
     T *l = last(heap);
-    assert(l);
+    assertx(l);
     std::size_t idx = index_of(heap, l);
-    assert(idx != heap.capacity);
+    assertx(idx != heap.capacity);
 
     constexpr Comparator cmp;
     if (cmp(val, *l)) {
@@ -411,7 +412,7 @@ find_heap(Binary<T, Comparator> &heap, const K &needle) noexcept {
         if (left < heap.length) {
           if (!push(stack, left)) {
             delete raw;
-            assert(false);
+            assertx(false);
             return nullptr;
           }
         }

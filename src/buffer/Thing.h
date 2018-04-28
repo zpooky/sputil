@@ -54,6 +54,9 @@ mark(Thing &) noexcept;
 std::size_t
 marks(const Thing &) noexcept;
 
+bool
+is_marked(const Thing &) noexcept;
+
 //-------------------+---------------
 // ConstBytesView
 // peek() noexcept;

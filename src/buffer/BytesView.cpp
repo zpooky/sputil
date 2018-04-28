@@ -69,6 +69,7 @@ offset(BytesView &b) noexcept {
 std::size_t
 remaining_read(const BytesView &b) noexcept {
   assertx(b.length >= b.pos);
+
   if (b.length < b.pos) {
     return 0;
   }

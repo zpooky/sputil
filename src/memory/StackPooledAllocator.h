@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <memory/Allocator.h>
+#include <util/assert.h>
 
 /*
  * XXX only memset 0 in debug mode
@@ -53,7 +54,7 @@ struct SPANode {
 static inline SPANode *
 to_node(void *in) noexcept {
   if (in) {
-    assert(reinterpret_cast<uintptr_t>(in) % alignof(void *) == 0);
+    assertx(reinterpret_cast<uintptr_t>(in) % alignof(void *) == 0);
   }
 
   return (SPANode *)in;

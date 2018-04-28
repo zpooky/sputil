@@ -73,12 +73,6 @@ ThingMark::~ThingMark() noexcept {
 }
 
 //-------------------+---------------
-static bool
-is_marked(const Thing &self) noexcept {
-  return self.marked > 0;
-}
-
-//-------------------+---------------
 ThingMark
 mark(Thing &self) noexcept {
   std::size_t r = self.marked == 0 ? self.buffer.read : self.read_head;
@@ -93,6 +87,11 @@ mark(Thing &self) noexcept {
 std::size_t
 marks(const Thing &self) noexcept {
   return self.marked;
+}
+
+bool
+is_marked(const Thing &self) noexcept {
+  return self.marked > 0;
 }
 
 //-------------------+---------------
@@ -136,8 +135,13 @@ copy(unsigned char *dest, std::size_t l, StaticArray<BufferSegment, N> &src) {
 
 static std::size_t
 peek_front_marked(Thing &self, unsigned char *dest, std::size_t len) noexcept {
-  if (remaining_read(self.buffer) < len) {
-    fill(self);
+  {
+    const auto w = self.buffer.write;
+    const auto r = is_marked(self) ? self.read_head : self.buffer.read;
+
+    if (impl::cbb_remaining_read(w, r) < len) {
+      fill(self);
+    }
   }
 
   if (is_marked(self)) {
@@ -219,6 +223,7 @@ read(Thing &self, void *dest, std::size_t len) noexcept {
     return true;
   }
 
+  assertx(false);
   return false;
 }
 

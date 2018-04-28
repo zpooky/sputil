@@ -4,6 +4,7 @@
 #include <memory/Allocator.h>
 #include <new>
 #include <utility>
+#include <util/assert.h>
 
 // TODO emplace
 
@@ -158,7 +159,7 @@ template <typename T, template <typename> class A, typename Predicate>
 bool
 int_remove(sp::LinkedList<T, A> &list, LLNode<T> *priv, LLNode<T> *it,
            Predicate p) noexcept {
-  assert(it);
+  assertx(it);
 
   T &value = it->value;
   auto &allocator = list.allocator;
@@ -292,7 +293,7 @@ push_back(LinkedList<T, A> &list, V &&val) noexcept {
     }
 
     if (list.last) {
-      assert(list.last->next == nullptr);
+      assertx(list.last->next == nullptr);
       list.last->next = node;
     }
     list.last = node;

@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <memory/StackPooledAllocator.h>
+#include <util/assert.h>
 
 namespace sp {
 template <typename T>
@@ -42,7 +43,7 @@ allocate(FixedStackPooledAllocator<T> &a) noexcept {
 template <typename T>
 void
 deallocate(FixedStackPooledAllocator<T> &a, T *ptr) noexcept {
-  assert(a.length > 0);
+  assertx(a.length > 0);
   a.length--;
 
   // printf("dealloc(%p)\n", ptr);

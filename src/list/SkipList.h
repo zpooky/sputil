@@ -137,6 +137,12 @@ template <std::size_t l, typename C>
 void
 dump(const SkipList<int, l, C> &) noexcept;
 
+namespace n {
+template <typename T, std::size_t L, typename C>
+std::size_t
+length(const SkipList<T, L, C> &) noexcept;
+}
+
 /*
  * ==========================================================================
  */
@@ -734,6 +740,19 @@ dump(const SkipList<int, L, C> &list) noexcept {
     printf(">| %zu node(s)\n", line_length);
   }
 }
+
+namespace n {
+template <typename T, std::size_t L, typename C>
+std::size_t
+length(const SkipList<T, L, C> &self) noexcept {
+  std::size_t result = 0;
+  for_each(self, [&result](const auto &) {
+    /**/
+    ++result;
+  });
+  return result;
+}
+} // namespace n
 
 } // namespace sp
 

@@ -7,7 +7,7 @@
 namespace sp {
 namespace impl {
 std::size_t
-remaining_read(std::size_t write, std::size_t read) noexcept {
+cbb_remaining_read(std::size_t write, std::size_t read) noexcept {
   if (write >= read) {
     return write - read;
   }
@@ -30,7 +30,7 @@ index(std::size_t in, std::size_t capacity) noexcept {
 
 static std::size_t
 remaining_read(std::size_t write, std::size_t read) noexcept {
-  return impl::remaining_read(write, read);
+  return impl::cbb_remaining_read(write, read);
 }
 
 std::size_t
