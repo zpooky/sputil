@@ -153,7 +153,8 @@ right_child(std::size_t idx) noexcept {
 template <typename T, typename Comp>
 static void
 swap(Binary<T, Comp> &heap, std::size_t idx1, std::size_t idx2) {
-  std::swap(heap.buffer[idx1], heap.buffer[idx2]);
+  using std::swap;
+  swap(heap.buffer[idx1], heap.buffer[idx2]);
 }
 
 template <typename T, typename Comp>

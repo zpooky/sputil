@@ -14,6 +14,13 @@ u16
 utf8
 Boyer–Moore string search algorithm
 
+#file path
+			Path p;
+			p.pop(); = cd .. = path.drop_from_right_until("/")
+			p.push(s.split(/).foreach); = cd s = . = nop
+													.. = p.pop()
+													s  = path.push(s)
+
 # Distinct numeric
 DISTINCT_NUMERIC(name,underlying_type)
 
@@ -26,18 +33,16 @@ Left l(failure);
 Right r(value);
 ```
 
-## sort
+## sort !
 ...
 
 ## Diffie Hellman
+## RSA
 ...
 
 ## Blowfish
 ### bcrypt
 ### cbc,ecb ...
-
-## "Sink" for reading supporting autofill the buffer
-
 
 ## Huffman
 https://medium.com/@TravCav/huffman-coding-1e914c419912
@@ -49,3 +54,6 @@ https://medium.com/@TravCav/huffman-coding-1e914c419912
 
 ##string
 suffix tree https://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-algorithm-in-plain-english/9513423#9513423
+
+## 
+Markov chains
