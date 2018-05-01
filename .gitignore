@@ -48,3 +48,5 @@ AST_out.log
 *.patch
 chromatica.log
 compile_commands.json
+perf.data.old
+perf.data

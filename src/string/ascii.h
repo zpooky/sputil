@@ -1,6 +1,7 @@
 #ifndef SP_UTIL_STRING_UTIL_H
 #define SP_UTIL_STRING_UTIL_H
 
+#include <string/view.h>
 #include <cstddef>
 
 namespace ascii {
@@ -25,6 +26,11 @@ void
 reverse(char *str, std::size_t length) noexcept;
 
 //=====================================
-}
+
+sp::string_view
+longest_palindromic_substring(const char *str, std::size_t);
+
+//=====================================
+} // namespace ascii
 
 #endif

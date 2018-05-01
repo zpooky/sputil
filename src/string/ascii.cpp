@@ -50,7 +50,7 @@ redirect(char needle, std::size_t idx, char *str, std::size_t len) {
   }
 }
 
-}
+} // namespace rec
 void
 reflect(char needle, char *str, std::size_t len) noexcept {
   rec::redirect(needle, 0, str, len);
@@ -80,6 +80,67 @@ reverse(char *str, std::size_t length) noexcept {
     }
   }
 }
+//=====================================
+static bool
+is_palindrome(const char *str, std::size_t length) {
+  // printf("is_palindrome(%.*s,%zu): ", length, str, length);
+  if (length > 0) {
+    const char *head = str;
+    const char *tail = str + (length - 1);
+    while (head < tail) {
+      if (*head++ != *tail--) {
+        // printf("false\n");
+        return false;
+      }
+    }
+  }
+  // printf("true\n");
+  return true;
+  // return false;
+}
+#if 0
+namespace rec {
+
+static std::string
+longest_palindromic_substring(const char *p, const char *str, const char *end) {
+  if (str == end) {
+    return std::string(p, str - p);
+  }
+
+  if (!is_palindrome(p, str - p)) {
+    ++p;
+  }
+
+  auto res = longest_palindromic_substring(p, str + 1, end);
+  if (res.length() > str - p) {
+    return res;
+  }
+  return std::string(p, str - p);
+}
+
+} // namespace rec
+#endif
+
+sp::string_view
+longest_palindromic_substring(const char *str, std::size_t str_length) {
+  const char *res = nullptr;
+  std::size_t res_len = 0;
+
+  for (std::size_t strt = 0; strt < str_length; ++strt) {
+    for (std::size_t len = std::strlen(str + strt) + 1; len-- > 0;) {
+
+      if (is_palindrome(str + strt, len)) {
+        if (len > res_len) {
+          res = str + strt;
+          res_len = len;
+        }
+        break;
+      }
+    }
+  }
+
+  return sp::string_view(res, res_len);
+}
 
 //=====================================
-}
+} // namespace ascii
