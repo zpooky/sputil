@@ -224,3 +224,40 @@ TEST(LinkedListTest, test_remove_if) {
     ASSERT_TRUE(is_empty(l));
   }
 }
+
+TEST(LinkedListTest, test_reverse) {
+  sp::LinkedList<std::size_t> l;
+  ASSERT_EQ(l.root, nullptr);
+  sp::rec::reverse(l);
+  ASSERT_EQ(l.root, nullptr);
+  for (std::size_t i = 0; i < 10; ++i) {
+    ASSERT_TRUE(insert(l, i));
+
+    {
+      sp::rec::reverse(l);
+      ASSERT_EQ(l.root->value, i);
+      ASSERT_EQ(l.last->value, 0);
+      std::size_t cmp = i;
+      for (std::size_t a = 0; a <= i; ++a) {
+        auto current = get(l, a);
+        ASSERT_TRUE(current);
+        // printf("%zu,", *current);
+        ASSERT_EQ(cmp--, *current);
+      }
+      // printf("\n");
+    }
+    {
+      sp::rec::reverse(l);
+      ASSERT_EQ(l.root->value, 0);
+      ASSERT_EQ(l.last->value, i);
+      for (std::size_t a = 0; a <= i; ++a) {
+        auto current = get(l, a);
+        ASSERT_TRUE(current);
+        // printf("%zu,", *current);
+        ASSERT_EQ(a, *current);
+      }
+      // printf("\n");
+    }
+    // printf("---\n");
+  }
+}
