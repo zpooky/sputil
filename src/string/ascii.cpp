@@ -58,6 +58,7 @@ reflect(char needle, char *str, std::size_t len) noexcept {
 //=====================================
 void
 reflect_right(char needle, char *str, std::size_t length) noexcept {
+  //TODO
 }
 
 //=====================================

@@ -13,6 +13,7 @@ u16
 #string
 utf8
 Boyer–Moore string search algorithm
+Knuth-Morris-Pratt
 Levenshtein distance
 
 #file path

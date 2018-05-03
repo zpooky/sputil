@@ -699,14 +699,19 @@ bin_remove(UinStaticArray<T, c> &self, const K &needle) noexcept {
   T *const res = bin_search(self, needle);
   if (res) {
     std::size_t rem_idx = index_of(self, res);
-    for (; rem_idx < self.length;) {
+    for (; (rem_idx + 1) < self.length;) {
       using sp::swap;
-      swap(self.data()[rem_idx], self.data()[++rem_idx]);
+      T &first = self.data()[rem_idx];
+      T &second = self.data()[++rem_idx];
+      swap(first, second);
     }
-    assertxs(rem_idx == self.length - 1, rem_idx, self.length);
+    assertxs(rem_idx == (self.length - 1), rem_idx, self.length);
     self.data()[--self.length].~T();
+
+    return true;
   }
-  return bool(res);
+
+  return false;
 }
 
 template <typename T, typename K, typename Comparator = sp::greater>

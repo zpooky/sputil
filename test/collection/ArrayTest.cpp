@@ -222,6 +222,16 @@ TEST(ArrayTest, test_binary_insert) {
       ASSERT_EQ(*res, i);
     }
     ASSERT_FALSE(get(next, cap));
+    {
+      for (std::size_t i = 0; i < cap; ++i) {
+        const auto ins = a[i];
+        ASSERT_TRUE(bin_remove(next, ins));
+        ASSERT_EQ(nullptr, bin_search(next, ins));
+        ASSERT_FALSE(bin_remove(next, ins));
+      }
+      ASSERT_TRUE(is_empty(next));
+      ASSERT_EQ(length(next), 0);
+    }
   }
   // }
 }

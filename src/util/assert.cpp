@@ -124,7 +124,7 @@ assert_func(const char *file, int line, const char * /*function prototype*/,
   auto &dest = stdout;
 
   { // assert dump
-    fprintf(dest, "\nassertion failed: (%s)\n", cond);
+    fprintf(dest, "assertion failed: (%s)\n", cond);
     fprintf(dest,
             "%s"
             ": \033[92m%d\033[0m"

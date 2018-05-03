@@ -36,7 +36,14 @@ TEST(graphTest, test) {
     ASSERT_FALSE(remove_edge(*second, &first));
   }
   {
+    ASSERT_TRUE(is_adjacent(third, first));
+    ASSERT_TRUE(is_adjacent(first, third));
+
     ASSERT_TRUE(remove_edge(third, &first));
+
+    ASSERT_FALSE(is_adjacent(third, first));
+    ASSERT_FALSE(is_adjacent(first, third));
+
     ASSERT_FALSE(remove_edge(third, &first));
     ASSERT_FALSE(remove_edge(first, &third));
   }
