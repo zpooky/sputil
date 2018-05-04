@@ -607,6 +607,7 @@ bin_insert(UinStaticArray<T, c> &a, V &&val) noexcept {
     assertx(it);
 
     if (first) {
+    // shift down
     Lit:
       T *priv = it - 1;
       using std::swap;

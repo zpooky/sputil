@@ -20,10 +20,10 @@ print_arr(T &arr, std::size_t length, std::size_t idx = ~std::size_t(0)) {
 template <typename T>
 static void
 check(T *arr, std::size_t length) {
-  // sp::print_arr(arr, length);
+  // print_arr(arr, length);
   sp::rec::quicksort(arr, length);
 
-  // sp::print_arr(arr, length);
+  // print_arr(arr, length);
 
   ASSERT_TRUE(sp::is_sorted(arr, length));
   // printf("--\n");
