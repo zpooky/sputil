@@ -2,8 +2,8 @@
 #define SP_UTIL_TREE_BTREE_H
 
 #include <collection/Array.h>
-#include <util/assert.h>
 #include <tuple>
+#include <util/assert.h>
 
 // TODO array bin_insert comparator
 namespace btree {
@@ -38,6 +38,7 @@ struct BTNode {
 } // namespace btree
 } // namespace impl
 
+//=====================================
 template <typename T, std::size_t keys, typename Comparator = sp::greater>
 struct Tree {
   using value_type = T;
@@ -61,10 +62,12 @@ struct Tree {
   ~Tree() noexcept;
 };
 
+//=====================================
 template <typename T, std::size_t k, typename C, typename K>
 std::tuple<T *, bool>
 insert(Tree<T, k, C> &, K &&) noexcept;
 
+//=====================================
 template <typename T, std::size_t k, typename C, typename K>
 const T *
 find(const Tree<T, k, C> &, const K &) noexcept;
@@ -72,6 +75,7 @@ find(const Tree<T, k, C> &, const K &) noexcept;
 template <typename T, std::size_t k, typename C, typename K>
 T *
 find(Tree<T, k, C> &, const K &) noexcept;
+//=====================================
 
 /*
  * template <typename T, typename C, typename K>
@@ -82,6 +86,7 @@ find(Tree<T, k, C> &, const K &) noexcept;
 template <std::size_t k, typename C>
 void
 dump(const Tree<int, k, C> &) noexcept;
+//=====================================
 
 /*
  * template <typename T, typename C>
@@ -309,11 +314,13 @@ insert_node(BTNode<T, k> *tree, V &&val, std::size_t index,
     // dump(tree);
     return split_insert<T, k, Cmp, V>(tree, std::forward<V>(val), gt);
   } else {
-
     auto res = insert_at(tree->elements, index, std::forward<V>(val));
     assertx(res);
 
-    assertx(insert_at(tree->children, index + 1, gt));
+    {
+      auto ires = insert_at(tree->children, index + 1, gt);
+      assertx(ires);
+    }
     return std::make_tuple(tree, res);
   }
 }
@@ -375,10 +382,12 @@ dump_do_add_children(BTNode<int, keys> *root,
   auto &children = root->children;
   std::size_t i = 0;
   for (; i < length(children); ++i) {
-    assertx(insert(result, children[i]));
+    auto res = insert(result, children[i]);
+    assertx(res);
   }
   for (; i < capacity(children); ++i) {
-    assertx(insert(result, nullptr));
+    auto res = insert(result, nullptr);
+    assertx(res);
   }
 }
 
@@ -391,7 +400,8 @@ dump_get_columns_for(BTNode<int, keys> *root, std::size_t level,
   if (root == nullptr) {
     std::size_t empties = dump_max_node_children(keys + 1, orig_level);
     for (std::size_t i = 0; i < empties; ++i) {
-      assertx(insert(result, nullptr));
+      auto res = insert(result, nullptr);
+      assertx(res);
     }
   } else if (level == 0) {
     dump_do_add_children(root, result);
@@ -494,6 +504,7 @@ template <typename T, std::size_t keys, typename C>
 Tree<T, keys, C>::~Tree() noexcept {
   // TODO
 }
+//=====================================
 
 // http://btechsmartclass.com/DS/U5_T3.html
 template <typename T, std::size_t k, typename C, typename K>
@@ -509,8 +520,14 @@ insert(Tree<T, k, C> &tree, K &&val) noexcept {
       auto &elements = node->elements;
       auto res = bin_insert(elements, std::forward<K>(val));
       assertx(res);
-      assertx(insert(node->children, /*lt*/ nullptr));
-      assertx(insert(node->children, /*gt*/ nullptr));
+      {
+        auto ires = insert(node->children, /*lt*/ nullptr);
+        assertx(ires);
+      }
+      {
+        auto ires = insert(node->children, /*gt*/ nullptr);
+        assertx(ires);
+      }
       return std::make_tuple(res, true);
     }
 
@@ -561,6 +578,7 @@ Lit:
     return std::make_tuple(ins, ins != nullptr);
   }
 }
+//=====================================
 
 template <typename T, std::size_t k, typename C, typename K>
 const T *
@@ -603,6 +621,7 @@ find(Tree<T, k, C> &tree, const K &needle) noexcept {
   const auto &c_tree = tree;
   return (T *)find(c_tree, needle);
 }
+//=====================================
 
 template <typename T>
 static void
@@ -628,6 +647,7 @@ dump(const Tree<int, k, C> &tree) noexcept {
   using namespace btree::impl::btree;
   dump(tree.root);
 }
+//=====================================
 
 } // namespace btree
 #endif

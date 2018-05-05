@@ -121,6 +121,7 @@ longest_palindromic_substring(const char *p, const char *str, const char *end) {
 } // namespace rec
 #endif
 
+//TODO make better
 sp::string_view
 longest_palindromic_substring(const char *str, std::size_t str_length) {
   const char *res = nullptr;
