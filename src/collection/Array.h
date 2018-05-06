@@ -4,15 +4,14 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <prng/util.h>
+#include <util/assert.h>
 #include <util/comparator.h>
 #include <util/numeric.h>
 #include <utility>
-#include <util/assert.h>
-#include <prng/util.h>
 
 /*
  * TODO bin_search(arr, f -> -1|0|1)
- * TODO bin_remove
  */
 
 namespace sp {
@@ -151,8 +150,17 @@ bin_insert(UinStaticArray<T, c> &, V &&) noexcept;
 //=====================================
 
 template <typename T, typename K, typename Comparator = sp::greater>
+const T *
+bin_search(const Array<T> &, const K &) noexcept;
+
+template <typename T, typename K, typename Comparator = sp::greater>
 T *
 bin_search(Array<T> &, const K &) noexcept;
+
+template <typename T, std::size_t c, typename K,
+          typename Comparator = sp::greater>
+const T *
+bin_search(const UinStaticArray<T, c> &, const K &) noexcept;
 
 template <typename T, std::size_t c, typename K,
           typename Comparator = sp::greater>
@@ -160,9 +168,16 @@ T *
 bin_search(UinStaticArray<T, c> &, const K &) noexcept;
 //=====================================
 
-// TODO const bin_search()
-// TODO bin_remove()
+template <typename T, std::size_t c, typename K,
+          typename Comparator = sp::greater>
+bool
+bin_remove(UinStaticArray<T, c> &, const K &) noexcept;
 
+template <typename T, typename K, typename Comparator = sp::greater>
+bool
+bin_remove(Array<T> &, const K &) noexcept;
+
+//=====================================
 // template <typename T>
 // T *
 // get(Array<T> &, std::size_t) noexcept;
@@ -606,18 +621,18 @@ bin_insert(UinStaticArray<T, c> &a, V &&val) noexcept {
 }
 
 //=====================================
-template <typename T, typename K, typename Comparator>
-T *
-bin_search(Array<T> &a, const K &needle) noexcept {
+template <typename T, typename K, typename Comparator = sp::greater>
+const T *
+bin_search(const Array<T> &self, const K &needle) noexcept {
   auto middle = [](std::size_t len) {
     /**/
     return len / 2;
   };
 
-  if (a.length > 0) {
+  if (self.length > 0) {
 
-    std::size_t length = a.length;
-    T *p = a.buffer;
+    std::size_t length = self.length;
+    const T *p = self.buffer;
   Lit:
     /* think recursively:
      * p            mid         length
@@ -655,12 +670,50 @@ bin_search(Array<T> &a, const K &needle) noexcept {
   return nullptr;
 }
 
+template <typename T, typename K, typename Comparator>
+T *
+bin_search(Array<T> &self, const K &needle) noexcept {
+  return (T *)bin_search((const Array<T> &)self, needle);
+}
+
+template <typename T, std::size_t c, typename K,
+          typename Comparator = sp::greater>
+const T *
+bin_search(const UinStaticArray<T, c> &self, const K &needle) noexcept {
+  constexpr std::size_t cap = UinStaticArray<T, c>::capacity;
+  const Array<T> c_a((T *)self.data(), self.length, cap);
+  return bin_search<T, K, Comparator>(c_a, needle);
+}
+
 template <typename T, std::size_t c, typename K, typename Comparator>
 T *
-bin_search(UinStaticArray<T, c> &a, const K &needle) noexcept {
-  constexpr std::size_t cap = UinStaticArray<T, c>::capacity;
-  Array<T> c_a(a.data(), a.length, cap);
-  return bin_search<T, K, Comparator>(c_a, needle);
+bin_search(UinStaticArray<T, c> &self, const K &needle) noexcept {
+  return (T *)bin_search((const UinStaticArray<T, c> &)self, needle);
+}
+//=====================================
+
+template <typename T, std::size_t c, typename K,
+          typename Comparator = sp::greater>
+bool
+bin_remove(UinStaticArray<T, c> &self, const K &needle) noexcept {
+  T *const res = bin_search(self, needle);
+  if (res) {
+    std::size_t rem_idx = index_of(self, res);
+    for (; rem_idx < self.length;) {
+      using sp::swap;
+      swap(self.data()[rem_idx], self.data()[++rem_idx]);
+    }
+    assertxs(rem_idx == self.length - 1, rem_idx, self.length);
+    self.data()[--self.length].~T();
+  }
+  return bool(res);
+}
+
+template <typename T, typename K, typename Comparator = sp::greater>
+bool
+bin_remove(Array<T> &, const K &) noexcept {
+  assertx(false);
+  return false;
 }
 
 //=====================================
