@@ -149,6 +149,8 @@ T *
 bin_insert(UinStaticArray<T, c> &, V &&) noexcept;
 //=====================================
 
+//=====================================
+
 template <typename T, typename K, typename Comparator = sp::greater>
 const T *
 bin_search(const Array<T> &, const K &) noexcept;
@@ -606,8 +608,8 @@ bin_insert(UinStaticArray<T, c> &a, V &&val) noexcept {
 
     if (first) {
     Lit:
-      using sp::swap;
       T *priv = it - 1;
+      using std::swap;
       swap(*it, *priv);
       it = priv;
       if (priv != first) {
@@ -619,9 +621,10 @@ bin_insert(UinStaticArray<T, c> &a, V &&val) noexcept {
 
   return nullptr;
 }
+//=====================================
 
 //=====================================
-template <typename T, typename K, typename Comparator = sp::greater>
+template <typename T, typename K, typename Comparator>
 const T *
 bin_search(const Array<T> &self, const K &needle) noexcept {
   auto middle = [](std::size_t len) {
@@ -676,8 +679,7 @@ bin_search(Array<T> &self, const K &needle) noexcept {
   return (T *)bin_search((const Array<T> &)self, needle);
 }
 
-template <typename T, std::size_t c, typename K,
-          typename Comparator = sp::greater>
+template <typename T, std::size_t c, typename K, typename Comparator>
 const T *
 bin_search(const UinStaticArray<T, c> &self, const K &needle) noexcept {
   constexpr std::size_t cap = UinStaticArray<T, c>::capacity;
@@ -692,15 +694,14 @@ bin_search(UinStaticArray<T, c> &self, const K &needle) noexcept {
 }
 //=====================================
 
-template <typename T, std::size_t c, typename K,
-          typename Comparator = sp::greater>
+template <typename T, std::size_t c, typename K, typename Comparator>
 bool
 bin_remove(UinStaticArray<T, c> &self, const K &needle) noexcept {
   T *const res = bin_search(self, needle);
   if (res) {
     std::size_t rem_idx = index_of(self, res);
     for (; (rem_idx + 1) < self.length;) {
-      using sp::swap;
+      using std::swap;
       T &first = self.data()[rem_idx];
       T &second = self.data()[++rem_idx];
       swap(first, second);
@@ -714,7 +715,7 @@ bin_remove(UinStaticArray<T, c> &self, const K &needle) noexcept {
   return false;
 }
 
-template <typename T, typename K, typename Comparator = sp::greater>
+template <typename T, typename K, typename Comparator>
 bool
 bin_remove(Array<T> &, const K &) noexcept {
   assertx(false);
@@ -858,7 +859,7 @@ insert_at(UinStaticArray<T, c> &a, std::size_t idx, V &&v) noexcept {
     std::size_t ins_idx = index_of(a, ins);
     if (ins) {
       for (std::size_t i = ins_idx; i > idx; --i) {
-        using sp::swap;
+        using std::swap;
         swap(a.data()[i - 1], a.data()[i]);
       }
 
@@ -907,7 +908,7 @@ template <typename T, typename V>
 T *
 exchange(Array<T> &a, std::size_t idx, /*IN/OUT*/ V &out) noexcept {
   if (idx < a.length) {
-    using sp::swap;
+    using std::swap;
     swap(a.biffer[idx], out);
     return a.buffer + idx;
   }
@@ -955,7 +956,7 @@ remove(Array<T> &a, std::size_t idx) noexcept {
   if (idx < a.length) {
     std::size_t last = --a.length;
     if (idx != last) {
-      using sp::swap;
+      using std::swap;
       swap(a.buffer[idx], a.buffer[last]);
     }
 
@@ -977,7 +978,7 @@ remove(UinStaticArray<T, c> &a, std::size_t idx) noexcept {
   if (idx < a.length) {
     std::size_t last = --a.length;
     if (idx != last) {
-      using sp::swap;
+      using std::swap;
       swap(a.data()[idx], a.data()[last]);
     }
 
@@ -995,7 +996,7 @@ template <typename T>
 bool
 take(Array<T> &a, std::size_t idx, /*OUT*/ T &out) noexcept {
   if (idx < a.length) {
-    using sp::swap;
+    using std::swap;
     swap(out, a.buffer[idx]);
 
     assertx(remove(a, idx));
@@ -1008,7 +1009,7 @@ template <typename T, std::size_t c>
 bool
 take(UinStaticArray<T, c> &a, std::size_t idx, /*OUT*/ T &out) noexcept {
   if (idx < a.length) {
-    using sp::swap;
+    using std::swap;
     swap(out, a.data()[idx]);
 
     assertx(remove(a, idx));
@@ -1065,7 +1066,7 @@ shuffle(Random &r, Array<T> &a) noexcept {
   for (std::size_t idx = 0; idx < a.length; ++idx) {
     auto replace = uniform_dist(r, std::uint32_t(0), std::uint32_t(a.length));
     if (idx != replace) {
-      using sp::swap;
+      using std::swap;
       swap(a.buffer[idx], a.buffer[replace]);
     }
   }

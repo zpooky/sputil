@@ -9,19 +9,84 @@
  *
  */
 namespace graph {
+// TODO make implicit converse to Unidrect work
 
+template <typename T, std::size_t N>
+struct Undirected;
+
+template <typename T, std::size_t N>
+struct Wrapper {
+  using edge_type = Undirected<T, N>;
+  edge_type *ptr;
+  bool owner;
+
+  Wrapper(const edge_type *a) noexcept
+      : ptr((edge_type *)a)
+      , owner(false) {
+  }
+
+  Wrapper(Wrapper<T, N> &&o) noexcept
+      : ptr(o.ptr)
+      , owner(o.owner) {
+    o.owner = false;
+    o.ptr = nullptr;
+  }
+
+  Wrapper<T, N> &
+  operator=(Wrapper<T, N> &&o) noexcept {
+    using std::swap;
+    swap(ptr, o.ptr);
+    swap(owner, o.owner);
+    return *this;
+  }
+
+  bool
+  operator>(const Wrapper<T, N> &o) const noexcept {
+    return operator>(o.ptr);
+  }
+
+  bool
+  operator>(const Wrapper<T, N> *o) const noexcept {
+    return operator>(o->ptr);
+  }
+
+  bool
+  operator>(const edge_type *o) const noexcept {
+    return ptr > o;
+  }
+
+  bool
+  operator>(const edge_type &o) const noexcept {
+    return operator>(o.ptr);
+  }
+
+  ~Wrapper() noexcept {
+    if (owner) {
+      assertx(ptr);
+      if (ptr) {
+        delete ptr;
+      }
+      owner = false;
+    }
+    ptr = nullptr;
+  }
+};
 /*
  * <->
  */
 template <typename T, std::size_t N = 5>
 struct Undirected {
   static_assert(N >= 1, "");
-  using edges_type = sp::UinStaticArray<Undirected<T, N> *, N>;
+  // using edge_type = Undirected<T, N> *;
+  using edge_type = Wrapper<T, N>;
+  using edges_type = sp::UinStaticArray<edge_type, N>;
   T value;
   edges_type edges;
   /**/
   template <typename A>
   Undirected(A &&) noexcept;
+
+  ~Undirected() noexcept;
 };
 
 /*
@@ -95,20 +160,30 @@ Undirected<T, N>::Undirected(A &&arg) noexcept
     : value(std::forward<A>(arg)) {
 }
 
+template <typename T, std::size_t N>
+Undirected<T, N>::~Undirected() noexcept {
+  printf("dtor[%d]\n", value);
+  while (!is_empty(edges)) {
+    std::size_t last = edges.length - 1;
+    auto res = remove_edge(*this, edges[last].ptr);
+    assertx(res);
+  }
+}
+
 //=====================================
 template <typename T, std::size_t N, typename A>
 Undirected<T, N> *
 add_vertex(Undirected<T, N> &self, A &&arg) noexcept {
   if (!is_full(self.edges)) {
     auto edge = new Undirected<T, N>(std::forward<A>(arg));
-    // TODO ownership of edge of when to reclaim
     if (edge) {
       {
-        auto res = bin_insert(self.edges, edge);
+        auto res = bin_insert(self.edges, Wrapper<T, N>(edge));
+        res->owner = true;
         assertx(res);
       }
       {
-        auto res = bin_insert(edge->edges, &self);
+        auto res = bin_insert(edge->edges, Wrapper<T, N>(&self));
         assertx(res);
       }
     }
@@ -122,12 +197,14 @@ bool
 add_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
   if (!is_full(self.edges) && !is_full(edge->edges)) {
     {
-      auto res = bin_insert(self.edges, edge);
+      auto res = bin_insert(self.edges, Wrapper<T, N>(edge));
       assertx(res);
+      assertx(bin_search(self.edges, Wrapper<T, N>(edge)));
     }
     {
-      auto res = bin_insert(edge->edges, &self);
+      auto res = bin_insert(edge->edges, Wrapper<T, N>(&self));
       assertx(res);
+      assertx(bin_search(edge->edges, Wrapper<T, N>(&self)));
     }
     return true;
   }
@@ -138,9 +215,18 @@ add_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
 template <typename T, std::size_t N>
 bool
 remove_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
-  if (bin_remove(self.edges, edge)) {
-    bool res = bin_remove(edge->edges, &self);
+  assertx(edge);
+  // TODO
+  // if self.is_owner(edge)
+  //    if current has more than 1 edge
+  //    then change owner to that.
+  if (bin_remove(self.edges, Wrapper<T, N>(edge))) {
+    assertx(bin_search(self.edges, Wrapper<T, N>(edge)) == nullptr);
+
+    bool res = bin_remove(edge->edges, Wrapper<T, N>(&self));
     assertx(res);
+
+    assertx(bin_search(edge->edges, Wrapper<T, N>(&self)) == nullptr);
     return true;
   }
 
@@ -151,8 +237,8 @@ template <typename T, std::size_t N>
 bool
 is_adjacent(const Undirected<T, N> &self,
             const Undirected<T, N> &edge) noexcept {
-  if (bin_search(self.edges, &edge)) {
-    assertx(bin_search(edge.edges, &self));
+  if (bin_search(self.edges, Wrapper<T, N>(&edge))) {
+    assertx(bin_search(edge.edges, Wrapper<T, N>(&self)));
     return true;
   }
   return false;
@@ -160,6 +246,6 @@ is_adjacent(const Undirected<T, N> &self,
 
 //=====================================
 
-}; // namespace graph
+} // namespace graph
 
 #endif

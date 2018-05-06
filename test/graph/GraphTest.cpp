@@ -30,11 +30,20 @@ TEST(graphTest, test) {
     ASSERT_FALSE(remove_edge(*second, &dummy));
     ASSERT_FALSE(remove_edge(third, &dummy));
   }
+  printf("--\n");
   {
+    ASSERT_TRUE(is_adjacent(*second, first));
+    ASSERT_TRUE(is_adjacent(first, *second));
+
     ASSERT_TRUE(remove_edge(first, second));
+
+    ASSERT_FALSE(is_adjacent(*second, first));
+    ASSERT_FALSE(is_adjacent(first, *second));
+
     ASSERT_FALSE(remove_edge(first, second));
     ASSERT_FALSE(remove_edge(*second, &first));
   }
+  printf("--\n");
   {
     ASSERT_TRUE(is_adjacent(third, first));
     ASSERT_TRUE(is_adjacent(first, third));

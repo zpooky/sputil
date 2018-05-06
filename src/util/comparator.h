@@ -5,23 +5,43 @@ namespace sp {
 struct less {
   template <typename T, typename K>
   constexpr bool
-  operator()(const T &lhs, const K &rhs) const {
+  operator()(const T &lhs, const K &rhs) const noexcept {
     return lhs < rhs;
   }
 };
 
 struct greater {
   template <typename T, typename K>
-  constexpr bool
-  operator()(const T &lhs, const K &rhs) const {
+  constexpr
+      /**/
+      bool
+      operator()(const T &lhs, const K &rhs) const noexcept {
     return lhs > rhs;
   }
+
+  // template <typename T, typename K>
+  // constexpr bool
+  // operator()(const T *lhs, const K *rhs) const noexcept {
+  //   return lhs > *rhs;
+  // }
+  //
+  // template <typename T, typename K>
+  // constexpr bool
+  // operator()(const T *lhs, const K &rhs) const noexcept {
+  //   return lhs > rhs;
+  // }
+  //
+  // template <typename T, typename K>
+  // constexpr bool
+  // operator()(const T &lhs, const K *rhs) const noexcept {
+  //   return lhs > *rhs;
+  // }
 };
 
 struct present {
   template <typename T>
   constexpr bool
-  operator()(const T &o) const {
+  operator()(const T &o) const noexcept {
     return bool(o);
   }
 };
