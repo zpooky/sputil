@@ -2,14 +2,19 @@
 #define SP_UTIL_GRAPH_GRAPH_H
 
 #include <collection/Array.h>
+#include <hash/fnv.h>
+#include <map/Set.h>
+#include <memory/StackPooledAllocator.h>
+#include <stack/HeapStack.h>
 #include <utility>
 
 /*
- * http://web.cecs.pdx.edu/~sheard/course/Cs163/Doc/Graphs.html
- *
- */
+* http://web.cecs.pdx.edu/~sheard/course/Cs163/Doc/Graphs.html
+*
+*/
 namespace graph {
 // TODO make implicit converse to Unidrect work
+// TODO make owner <-> owner work dtor...
 
 template <typename T, std::size_t N>
 struct Undirected;
@@ -76,8 +81,8 @@ struct Wrapper {
   }
 };
 /*
- * <->
- */
+* <->
+*/
 template <typename T, std::size_t N = 5>
 struct Undirected {
   static_assert(N >= 1, "");
@@ -96,16 +101,16 @@ struct Undirected {
 };
 
 /*
- * ->
- */
+* ->
+*/
 struct Directed {
   /**/
 };
 
 /*
- *  N
- * <->
- */
+*  N
+* <->
+*/
 struct Weighted {
   /**/
 };
@@ -133,11 +138,16 @@ bfs(const Undirected<T, N> &, F) noexcept;
 //=====================================
 template <typename T, std::size_t N, typename F>
 void
-dfs(Undirected<T, N> &, F) noexcept;
+all_paths(const Undirected<T, N> &, F) noexcept;
+
+//=====================================
+template <typename T, std::size_t N, typename F>
+void
+depth_first(Undirected<T, N> &, F) noexcept;
 
 template <typename T, std::size_t N, typename F>
 void
-dfs(const Undirected<T, N> &, F) noexcept;
+depth_first(const Undirected<T, N> &, F) noexcept;
 
 //=====================================
 // TODO emplace_vertex()
@@ -147,7 +157,7 @@ add_vertex(Undirected<T, N> &, A &&) noexcept;
 
 template <typename T, std::size_t N>
 bool
-add_edge(Undirected<T, N> &, Undirected<T, N> *) noexcept;
+add_edge(Undirected<T, N> &, Undirected<T, N> *, bool owner = false) noexcept;
 
 //=====================================
 template <typename T, std::size_t N>
@@ -178,43 +188,91 @@ Undirected<T, N>::~Undirected() noexcept {
 }
 
 //=====================================
+template <typename T, std::size_t N, typename F>
+void
+depth_first(Undirected<T, N> &root, F f) noexcept {
+  using blah = Undirected<T, N> *;
+  sp::Set<blah, fnv_1a::hash<blah>> visited;
+
+  sp::HeapStack<Undirected<T, N> *, sp::StackPooledAllocator> toVisit;
+
+  {
+    auto res = push(toVisit, &root);
+    assertx(res);
+  }
+  while (!is_empty(toVisit)) {
+    Undirected<T, N> *current = nullptr;
+    pop(toVisit, current);
+    assertx(current);
+    f(*current);
+
+    for (std::size_t i = 0; i < length(current->edges); ++i) {
+      auto &edge = current->edges[i];
+      if (insert(visited, edge.ptr)) {
+        // insert only succeeds if it does not already contain edge
+        auto res = push(toVisit, edge.ptr);
+        assertx(res);
+      }
+    }
+  }
+}
+
+template <typename T, std::size_t N, typename F>
+void
+depth_first(const Undirected<T, N> &self, F f) noexcept {
+  Undirected<T, N> &s = (Undirected<T, N> &)self;
+  depth_first(s, [f](const auto &c) { f(c); });
+}
+
+//=====================================
 template <typename T, std::size_t N, typename A>
 Undirected<T, N> *
 add_vertex(Undirected<T, N> &self, A &&arg) noexcept {
   if (!is_full(self.edges)) {
     auto edge = new Undirected<T, N>(std::forward<A>(arg));
     if (edge) {
-      {
-        auto res = bin_insert(self.edges, Wrapper<T, N>(edge));
-        res->owner = true;
-        assertx(res);
+      if (add_edge(self, edge, true)) {
+        return edge;
       }
-      {
-        auto res = bin_insert(edge->edges, Wrapper<T, N>(&self));
-        assertx(res);
-      }
+      // bug! edge is created here therefore it should never be a duplicate
+      assertx(false);
+      delete edge;
     }
-    return edge;
   }
+
   return nullptr;
 }
 
 template <typename T, std::size_t N>
 bool
-add_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
-  if (!is_full(self.edges) && !is_full(edge->edges)) {
+add_edge(Undirected<T, N> &self, Undirected<T, N> *edge, bool owner) noexcept {
+  if (&self == edge) {
+    // self assignement
+    assertx(false);
+    return false;
+  }
+
+  if (is_full(self.edges)) {
+    return false;
+  }
+
+  if (is_full(edge->edges)) {
+    return false;
+  }
+
+  // should only fail on duplicate edge
+  auto res = bin_insert_unique(self.edges, Wrapper<T, N>(edge));
+  if (res) {
+    res->owner = owner;
+
     {
-      auto res = bin_insert(self.edges, Wrapper<T, N>(edge));
-      assertx(res);
-      assertx(bin_search(self.edges, Wrapper<T, N>(edge)));
+      auto res2 = bin_insert_unique(edge->edges, Wrapper<T, N>(&self));
+      assertx(res2);
     }
-    {
-      auto res = bin_insert(edge->edges, Wrapper<T, N>(&self));
-      assertx(res);
-      assertx(bin_search(edge->edges, Wrapper<T, N>(&self)));
-    }
+
     return true;
   }
+
   return false;
 }
 //=====================================
@@ -245,24 +303,30 @@ template <typename T, std::size_t N>
 bool
 remove_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
   assertx(edge);
-  // TODO
-  // if self.is_owner(edge)
-  //    if current has more than 1 edge
-  //    then change owner to that.
 
   auto res = bin_search(self.edges, Wrapper<T, N>(edge));
   if (res) {
     auto &the_edge = *res;
     if (the_edge.owner) {
-      impl::change_owner(the_edge, self);
+      if (impl::change_owner(the_edge, self)) {
+        // there where another owner
+        the_edge.owner = false;
+      }
     }
 
-    if (bin_remove(self.edges, the_edge)) {
+    {
+      // remove ourself from edge since we might dtor edge
       bool res = bin_remove(edge->edges, Wrapper<T, N>(&self));
-      // assertx(res);
-
-      return true;
+      assertx(res);
     }
+
+    {
+      bool res = bin_remove(self.edges, the_edge);
+      assertx(res);
+    }
+    //
+    return true;
+    // }
   }
 
   return false;

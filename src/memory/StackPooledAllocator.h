@@ -5,6 +5,8 @@
 #include <memory/Allocator.h>
 #include <util/assert.h>
 
+// TODO hide impl detail only pass down size and alignment
+
 /*
  * XXX only memset 0 in debug mode
  */
