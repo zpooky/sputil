@@ -1,3 +1,5 @@
 #include "Graph.h"
 
-namespace sp {}
+namespace graph {
+namespace impl {}
+} // namespace graph

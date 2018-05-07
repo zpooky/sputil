@@ -57,3 +57,14 @@ TEST(graphTest, test) {
     ASSERT_FALSE(remove_edge(first, &third));
   }
 }
+
+TEST(graphTest, test_dtor) {
+  using g_type = graph::Undirected<int, 26>;
+  g_type root(1);
+  sp::UinStaticArray<g_type *, g_type::capacity> a;
+  for (int i = 2; i < int(a.capacity); ++i) {
+    g_type *c = add_vertex(root, i);
+    ASSERT_TRUE(c);
+    ASSERT_TRUE(insert(a, c));
+  }
+}

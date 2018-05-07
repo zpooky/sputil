@@ -32,6 +32,10 @@ struct Wrapper {
     o.ptr = nullptr;
   }
 
+  Wrapper(const Wrapper<T, N> &) = delete;
+  Wrapper<T, N> &
+  operator=(const Wrapper<T, N> &) = delete;
+
   Wrapper<T, N> &
   operator=(Wrapper<T, N> &&o) noexcept {
     using std::swap;
@@ -80,6 +84,8 @@ struct Undirected {
   // using edge_type = Undirected<T, N> *;
   using edge_type = Wrapper<T, N>;
   using edges_type = sp::UinStaticArray<edge_type, N>;
+  static constexpr std::size_t capacity = N;
+
   T value;
   edges_type edges;
   /**/
@@ -162,12 +168,13 @@ Undirected<T, N>::Undirected(A &&arg) noexcept
 
 template <typename T, std::size_t N>
 Undirected<T, N>::~Undirected() noexcept {
-  printf("dtor[%d]\n", value);
+  printf("dtor[%d]", value);
   while (!is_empty(edges)) {
     std::size_t last = edges.length - 1;
     auto res = remove_edge(*this, edges[last].ptr);
     assertx(res);
   }
+  printf("-end[%d]\n", value);
 }
 
 //=====================================
@@ -211,6 +218,28 @@ add_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
   return false;
 }
 //=====================================
+namespace impl {
+template <typename T, std::size_t N>
+bool
+change_owner(Wrapper<T, N> &subject, Undirected<T, N> &owner) {
+  auto &subject_edges = subject.ptr->edges;
+  for (std::size_t i = 0; i < length(subject_edges); ++i) {
+    auto &current = subject_edges[i];
+    auto cur_ptr = current.ptr;
+    if (cur_ptr != &owner) {
+      auto s = bin_search(cur_ptr->edges, subject);
+      assertx(s);
+      if (s) {
+        assertx(s->owner == false);
+        s->owner = true;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+} // namespace impl
 
 template <typename T, std::size_t N>
 bool
@@ -220,14 +249,20 @@ remove_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
   // if self.is_owner(edge)
   //    if current has more than 1 edge
   //    then change owner to that.
-  if (bin_remove(self.edges, Wrapper<T, N>(edge))) {
-    assertx(bin_search(self.edges, Wrapper<T, N>(edge)) == nullptr);
 
-    bool res = bin_remove(edge->edges, Wrapper<T, N>(&self));
-    assertx(res);
+  auto res = bin_search(self.edges, Wrapper<T, N>(edge));
+  if (res) {
+    auto &the_edge = *res;
+    if (the_edge.owner) {
+      impl::change_owner(the_edge, self);
+    }
 
-    assertx(bin_search(edge->edges, Wrapper<T, N>(&self)) == nullptr);
-    return true;
+    if (bin_remove(self.edges, the_edge)) {
+      bool res = bin_remove(edge->edges, Wrapper<T, N>(&self));
+      // assertx(res);
+
+      return true;
+    }
   }
 
   return false;

@@ -32,12 +32,12 @@ struct Array {
   Array(T *, std::size_t, std::size_t) noexcept;
 
   T &operator[](std::size_t idx) noexcept {
-    assertx(idx < length);
+    assertxs(idx < length, idx, length);
     return buffer[idx];
   }
 
   const T &operator[](std::size_t idx) const noexcept {
-    assertx(idx < length);
+    assertxs(idx < length, idx, length);
     return buffer[idx];
   }
 };
@@ -83,12 +83,12 @@ struct UinStaticArray {
   }
 
   T &operator[](std::size_t idx) noexcept {
-    assertx(idx < length);
+    assertxs(idx < length, idx, length);
     return data()[idx];
   }
 
   const T &operator[](std::size_t idx) const noexcept {
-    assertx(idx < length);
+    assertxs(idx < length, idx, length);
     return data()[idx];
   }
 };
@@ -676,7 +676,7 @@ bin_search(const Array<T> &self, const K &needle) noexcept {
 template <typename T, typename K, typename Comparator>
 T *
 bin_search(Array<T> &self, const K &needle) noexcept {
-  return (T *)bin_search((const Array<T> &)self, needle);
+  return (T *)bin_search<T, K, Comparator>((const Array<T> &)self, needle);
 }
 
 template <typename T, std::size_t c, typename K, typename Comparator>
@@ -690,7 +690,8 @@ bin_search(const UinStaticArray<T, c> &self, const K &needle) noexcept {
 template <typename T, std::size_t c, typename K, typename Comparator>
 T *
 bin_search(UinStaticArray<T, c> &self, const K &needle) noexcept {
-  return (T *)bin_search((const UinStaticArray<T, c> &)self, needle);
+  const UinStaticArray<T, c> &c_self = self;
+  return (T *)bin_search<T, c, K, Comparator>(c_self, needle);
 }
 //=====================================
 
