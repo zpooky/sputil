@@ -292,6 +292,162 @@ TEST(ArrayTest, test_binary) {
   }
 }
 
+TEST(ArrayTest, test_bin_insert_unique) {
+  constexpr std::size_t cap = 1024;
+  prng::xorshift32 r(1);
+
+  sp::UinStaticArray<std::size_t, cap> in;
+  for (std::size_t i = 0; i < cap; ++i) {
+    ASSERT_TRUE(insert(in, i));
+  }
+  shuffle(r, in);
+
+  sp::UinStaticArray<std::size_t, cap> sut;
+  for (std::size_t i = 0; i < cap; ++i) {
+    auto ires = bin_insert_unique(sut, in[i]);
+    ASSERT_TRUE(ires);
+    auto sres = bin_search(sut, in[i]);
+    ASSERT_TRUE(sres);
+
+    ASSERT_EQ(ires, sres);
+    ASSERT_EQ(*ires, *sres);
+
+    ASSERT_EQ(in[i], *ires);
+    ASSERT_EQ(in[i], *sres);
+  }
+
+  for (std::size_t i = 0; i < cap; ++i) {
+    auto sres = bin_search(sut, in[i]);
+    ASSERT_TRUE(sres);
+
+    ASSERT_EQ(in[i], *sres);
+  }
+
+  for (std::size_t i = 0; i < cap; ++i) {
+    auto ires = bin_insert_unique(sut, in[i]);
+    ASSERT_FALSE(ires);
+  }
+
+  for (std::size_t i = 0; i < cap; ++i) {
+    auto sres = bin_search(sut, in[i]);
+    ASSERT_TRUE(sres);
+
+    ASSERT_EQ(in[i], *sres);
+  }
+
+  for (std::size_t i = 0; i < cap; ++i) {
+    ASSERT_EQ(sut[i], i);
+  }
+
+  ASSERT_TRUE(is_full(sut));
+  for (std::size_t a = 0; a < cap; ++a) {
+    ASSERT_TRUE(bin_remove(sut, in[a]));
+
+    for (std::size_t i = 0; i < a; ++i) {
+      auto sres = bin_search(sut, in[i]);
+      ASSERT_FALSE(sres);
+    }
+
+    for (std::size_t i = a + 1; i < cap; ++i) {
+      auto sres = bin_search(sut, in[i]);
+      ASSERT_TRUE(sres);
+
+      ASSERT_EQ(in[i], *sres);
+    }
+  }
+  ASSERT_TRUE(is_empty(sut));
+}
+
+TEST(ArrayTest, test_bin_insert_unique2) {
+  constexpr std::size_t cap = 1024;
+  prng::xorshift32 r(1);
+
+  sp::UinStaticArray<std::size_t, cap> in;
+  for (std::size_t i = 0; i < cap; ++i) {
+    ASSERT_TRUE(insert(in, i));
+  }
+  shuffle(r, in);
+
+  sp::UinStaticArray<std::size_t, cap> sut;
+  for (std::size_t i = 0; i < cap; ++i) {
+    ASSERT_EQ(i, length(sut));
+    {
+      auto res = bin_insert(sut, in[i]);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, in[i]);
+    }
+
+    {
+      for (std::size_t i = 0; i < length(sut); ++i) {
+        printf("%zu, ", sut[i]);
+      }
+      printf("\n");
+    }
+
+    {
+      auto res = bin_search(sut, in[i]);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, in[i]);
+    }
+
+    {
+      if (bin_insert_unique(sut, in[i])) {
+
+        ASSERT_FALSE(true);
+      }
+    }
+
+    { ASSERT_TRUE(bin_remove(sut, in[i])); }
+
+    {
+      auto res = bin_insert_unique(sut, in[i]);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, in[i]);
+    }
+  }
+}
+
+TEST(ArrayTest, test_bin_insert3) {
+  constexpr std::size_t cap = 256;
+  prng::xorshift32 r(1);
+
+  sp::UinStaticArray<std::size_t, cap> in;
+  for (std::size_t i = 0; i < cap; ++i) {
+    ASSERT_TRUE(insert(in, i));
+  }
+  shuffle(r, in);
+
+  sp::UinStaticArray<std::size_t, cap> sut;
+  for (std::size_t i = 0; i < cap; ++i) {
+    while (!is_full(sut)) {
+      auto res = bin_insert(sut, in[i]);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, in[i]);
+    }
+
+    {
+      bool res = false;
+      do {
+        res = bin_remove(sut, in[i]);
+      } while (res);
+    }
+
+    auto res = bin_insert(sut, in[i]);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, in[i]);
+  }
+  for (std::size_t i = 0; i < cap; ++i) {
+    auto res = bin_search(sut, in[i]);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, in[i]);
+  }
+
+  // for (std::size_t i = 0; i < length(sut); ++i) {
+  //   printf("%zu, ", sut[i]);
+  // }
+  // printf("\n");
+}
+
 TEST(ArrayTest, test_insert_at) {
   constexpr std::size_t cap = 1024;
   prng::xorshift32 r(1);

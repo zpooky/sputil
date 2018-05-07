@@ -1,9 +1,9 @@
 #ifndef SP_UTIL_HEAP_BINARY_H
 #define SP_UTIL_HEAP_BINARY_H
 
-#include <stack/Stack.h>
-#include <util/comparator.h>
+#include <stack/HeapStack.h>
 #include <util/assert.h>
+#include <util/comparator.h>
 
 namespace heap {
 
@@ -392,9 +392,7 @@ T *
 find_heap(Binary<T, Comparator> &heap, const K &needle) noexcept {
   using namespace impl::heap;
 
-  // std::size_t raw[1024] = {0};
-  auto raw = new std::size_t[1024];
-  sp::Stack<std::size_t> stack{raw, 1024};
+  sp::HeapStack<std::size_t> stack;
   push(stack, 0);
   std::size_t index;
   while (pop(stack, index)) {
@@ -406,13 +404,11 @@ find_heap(Binary<T, Comparator> &heap, const K &needle) noexcept {
       const bool lesser = cmp(needle, heap.buffer[index]);
 
       if (!greater && !lesser) { //==
-        delete raw;
         return &heap.buffer[index];
       } else if (greater) {
         std::size_t left = left_child(index);
         if (left < heap.length) {
           if (!push(stack, left)) {
-            delete raw;
             assertx(false);
             return nullptr;
           }
@@ -427,7 +423,6 @@ find_heap(Binary<T, Comparator> &heap, const K &needle) noexcept {
     }
   }
 
-  delete raw;
   return nullptr; // TODO
 }
 

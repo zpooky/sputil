@@ -30,7 +30,7 @@ mirror(std::size_t idx, std::size_t len) noexcept {
 
 namespace rec {
 void
-redirect(char needle, std::size_t idx, char *str, std::size_t len) {
+reflect(char needle, std::size_t idx, char *str, std::size_t len) {
   if (idx < len) {
     bool swp = false;
     if (str[idx] == needle) {
@@ -39,7 +39,7 @@ redirect(char needle, std::size_t idx, char *str, std::size_t len) {
       // printf("swap(idx[%zu],m[%zu])\n", idx, m);
     }
 
-    redirect(needle, idx + 1, str, len);
+    reflect(needle, idx + 1, str, len);
 
     if (swp) {
       std::size_t m = mirror(idx, len);
@@ -53,7 +53,7 @@ redirect(char needle, std::size_t idx, char *str, std::size_t len) {
 } // namespace rec
 void
 reflect(char needle, char *str, std::size_t len) noexcept {
-  rec::redirect(needle, 0, str, len);
+  rec::reflect(needle, 0, str, len);
 }
 //=====================================
 void

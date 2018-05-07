@@ -9,9 +9,9 @@
 #include <utility>
 
 /*
-* http://web.cecs.pdx.edu/~sheard/course/Cs163/Doc/Graphs.html
-*
-*/
+ * http://web.cecs.pdx.edu/~sheard/course/Cs163/Doc/Graphs.html
+ *
+ */
 namespace graph {
 // TODO make implicit converse to Unidrect work
 // TODO make owner <-> owner work dtor...
@@ -81,8 +81,8 @@ struct Wrapper {
   }
 };
 /*
-* <->
-*/
+ * <->
+ */
 template <typename T, std::size_t N = 5>
 struct Undirected {
   static_assert(N >= 1, "");
@@ -101,16 +101,16 @@ struct Undirected {
 };
 
 /*
-* ->
-*/
+ * ->
+ */
 struct Directed {
   /**/
 };
 
 /*
-*  N
-* <->
-*/
+ *  N
+ * <->
+ */
 struct Weighted {
   /**/
 };
@@ -316,13 +316,13 @@ remove_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
 
     {
       // remove ourself from edge since we might dtor edge
-      bool res = bin_remove(edge->edges, Wrapper<T, N>(&self));
-      assertx(res);
+      bool rres = bin_remove(edge->edges, Wrapper<T, N>(&self));
+      assertx(rres);
     }
 
     {
-      bool res = bin_remove(self.edges, the_edge);
-      assertx(res);
+      bool rres = bin_remove(self.edges, the_edge);
+      assertx(rres);
     }
     //
     return true;
