@@ -72,16 +72,22 @@ is_all_adjacent(graph::Undirected<T, N> &c) {
     ASSERT_TRUE(is_adjacent(*edge.ptr, c));
     ASSERT_TRUE(is_adjacent(c, *edge.ptr));
   }
+
+  bool fail = false;
   for (std::size_t i = 0; i < length(c.edges); ++i) {
     auto &iedge = c.edges[i];
     for (std::size_t a = 0; a < length(c.edges); ++a) {
-      auto &aedge = c.edges[i];
+      auto &aedge = c.edges[a];
       if (a != i) {
-        printf("i.%zu %p| a.%zu %p\n", i, iedge.ptr, a, aedge.ptr);
-        ASSERT_FALSE(iedge.ptr == aedge.ptr);
+        if (iedge.ptr == aedge.ptr) {
+          printf("i.%zu %p| a.%zu %p\n", i, iedge.ptr, a, aedge.ptr);
+          fail = true;
+        }
       }
     }
   }
+
+  ASSERT_FALSE(fail);
 }
 
 TEST(graphTest, test_dtor) {
@@ -100,8 +106,9 @@ TEST(graphTest, test_dtor) {
     }
   }
   for (std::size_t i = 0; i < length(arr); ++i) {
-    auto &current = arr[i];
-    // printf("current[%d].length[%zu]\n", current->value, length(current->edges));
+    // auto &current = arr[i];
+    // printf("current[%d].length[%zu]\n", current->value,
+    // length(current->edges));
   }
   printf("--\n");
 
@@ -113,7 +120,7 @@ TEST(graphTest, test_dtor) {
       // is_all_adjacent(*current);
       std::uint32_t idx = uniform_dist(r, 0, length(arr));
 
-      printf("add_edge(current[%d], arr[idx[%lu]]->value[%d])", arr[i]->value,
+      printf("add_edge(current[%d], arr[idx[%u]]->value[%d])", arr[i]->value,
              idx, arr[idx]->value);
       const bool already = is_adjacent(*arr[idx], *current);
 

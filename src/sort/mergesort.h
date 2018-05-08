@@ -90,6 +90,7 @@ sp_msort(T *arr, std::size_t length, std::size_t pivot) noexcept {
   }
 }
 #endif
+// http://rosettacode.org/wiki/Sorting_algorithms/Merge_sort#C
 
 template <typename T>
 void

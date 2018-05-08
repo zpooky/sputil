@@ -5,6 +5,7 @@
 #include <cstdint>
 
 namespace sp {
+//=====================================
 struct Bitset {
   std::uint64_t *buffer;
   const std::size_t capacity;
@@ -15,6 +16,7 @@ struct Bitset {
   explicit Bitset(std::uint64_t (&)[SIZE]) noexcept;
 };
 
+//=====================================
 template <std::size_t cap>
 struct StaticBitset : public Bitset {
   std::uint64_t raw[cap];
@@ -22,6 +24,7 @@ struct StaticBitset : public Bitset {
   StaticBitset() noexcept;
 };
 
+//=====================================
 /*
  * capacity: block_size * blocks;
  * Block are lazy allocated when required.
@@ -37,6 +40,7 @@ struct SparseBitset {
   ~SparseBitset() noexcept;
 };
 
+//=====================================
 /*
  * returns the value
  */
@@ -46,6 +50,7 @@ test(const Bitset &, std::size_t) noexcept;
 bool
 test(const SparseBitset &, std::size_t) noexcept;
 
+//=====================================
 /*
  * returns the old value
  */
@@ -55,6 +60,7 @@ set(Bitset &, std::size_t, bool) noexcept;
 bool
 set(SparseBitset &, std::size_t, bool) noexcept;
 
+//=====================================
 /*
  * returns the new value
  */
@@ -64,6 +70,7 @@ toggle(Bitset &, std::size_t) noexcept;
 bool
 toggle(SparseBitset &, std::size_t) noexcept;
 
+//=====================================
 /*
  * return the bit capacity of the Bitset
  */
@@ -73,9 +80,9 @@ bits(const Bitset &) noexcept;
 std::size_t
 bits(const SparseBitset &) noexcept;
 
-/*
- * ==========================================================================
- */
+//=====================================
+//====Implementation===================
+//=====================================
 template <std::size_t SIZE>
 Bitset::Bitset(std::uint64_t (&b)[SIZE]) noexcept
     : buffer(b)
@@ -84,6 +91,7 @@ Bitset::Bitset(std::uint64_t (&b)[SIZE]) noexcept
   //   assert(buffer[i] == 0);
   // }
 }
+//=====================================
 
 template <std::size_t c>
 StaticBitset<c>::StaticBitset() noexcept

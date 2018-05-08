@@ -1,7 +1,7 @@
 #ifndef SP_UTIL_TREE_BINARY_SEARCH_TREE_H
 #define SP_UTIL_TREE_BINARY_SEARCH_TREE_H
 
-#include "tree.h"
+#include <tree/tree.h>
 
 namespace binary {
 template <typename T>
@@ -45,31 +45,21 @@ struct Node {
 template <typename T, typename Comparator = sp::greater>
 using Tree = bst::Tree<Node<T>, Comparator>;
 
-template <typename T,typename C, typename K>
+template <typename T, typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T,C> &, K &&) noexcept;
+insert(Tree<T, C> &, K &&) noexcept;
 
-template <typename T,typename C , typename K>
+template <typename T, typename C, typename K>
 bool
-remove(Tree<T,C> &, const K &) noexcept;
+remove(Tree<T, C> &, const K &) noexcept;
 
-template <typename T,typename C>
+template <typename T, typename C>
 void
-dump(Tree<T,C> &tree, std::string prefix = "") noexcept;
+dump(Tree<T, C> &tree, std::string prefix = "") noexcept;
 
-template <typename T,typename C>
+template <typename T, typename C>
 bool
-verify(Tree<T,C> &tree) noexcept;
-
-// Unbalanced Tree -> Balanced Tree
-template <typename T,typename C>
-bool
-balance(Tree<T,C> &) noexcept;
-
-//??
-template <typename T,typename C>
-bool
-reverse(Tree<T, C> &) noexcept;
+verify(Tree<T, C> &tree) noexcept;
 
 /*
  * ==========================================================================
@@ -117,25 +107,25 @@ verify(Node<T> *parent, Node<T> *tree) noexcept {
 } // namespace impl
 //===================================================
 
-template <typename T,typename C, typename K>
+template <typename T, typename C, typename K>
 std::tuple<T *, bool>
-insert(Tree<T,C> &tree, K &&value) noexcept {
+insert(Tree<T, C> &tree, K &&value) noexcept {
   auto result = bst::impl::insert(tree, std::forward<K>(value));
-  Node<T>* node = std::get<0>(result);
+  Node<T> *node = std::get<0>(result);
   bool status = std::get<1>(result);
-  T* val = nullptr;
-  if(node){
+  T *val = nullptr;
+  if (node) {
     val = &node->value;
   }
   return std::make_tuple(val, status);
 }
 
-template <typename T,typename C, typename K>
+template <typename T, typename C, typename K>
 bool
-remove(Tree<T,C> &tree, const K &k) noexcept {
+remove(Tree<T, C> &tree, const K &k) noexcept {
   auto set_root = [&tree](Node<T> *root) {
     if (root) {
-      if(root->parent == nullptr) {
+      if (root->parent == nullptr) {
         tree.root = root;
       }
     } else {
@@ -156,25 +146,17 @@ remove(Tree<T,C> &tree, const K &k) noexcept {
   return false;
 } // binary::remove()
 
-template <typename T,typename C>
+template <typename T, typename C>
 void
-dump(Tree<T,C> &tree, std::string prefix) noexcept {
+dump(Tree<T, C> &tree, std::string prefix) noexcept {
   return bst::impl::dump(tree.root, prefix);
 } // binary::dump()
 
-template <typename T,typename C>
+template <typename T, typename C>
 bool
-verify(Tree<T,C> &tree) noexcept {
+verify(Tree<T, C> &tree) noexcept {
   return impl::binary::verify((Node<T> *)nullptr, tree.root);
 } // binary::verify()
-
-// Unbalanced Tree -> Balanced Tree
-template <typename T,typename C>
-bool
-balance(Tree<T,C> &) noexcept {
-  // TODO
-  return true;
-} // binary::balance()
 
 } // namespace bst
 

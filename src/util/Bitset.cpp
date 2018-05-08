@@ -1,8 +1,8 @@
 #include "Bitset.h"
-#include <util/assert.h>
 #include <cstdlib>
 #include <tree/bst.h>
 #include <type_traits>
+#include <util/assert.h>
 
 namespace sp {
 struct Bitset_buffer {
@@ -189,7 +189,7 @@ alloc_block(const SparseBitset &b, std::size_t start) noexcept {
 
 static SparseEntry *
 block_for_insert(SparseBitset &b, std::size_t index) noexcept {
-  //XXX find_or_insert(b,index,[]{});
+  // XXX find_or_insert(b,index,[]{});
   SparseEntry *result = block_for(b, index);
   if (!result) {
     void *mem = alloc_block(b, index);
@@ -234,6 +234,7 @@ SparseBitset::~SparseBitset() noexcept {
   }
 }
 
+//=====================================
 bool
 test(const Bitset &b, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
@@ -262,6 +263,7 @@ test(const SparseBitset &b, std::size_t abs_idx) noexcept {
   return false;
 }
 
+//=====================================
 bool
 set(Bitset &b, std::size_t idx, bool v) noexcept {
   std::size_t wIdx = word_index(idx);
@@ -294,6 +296,7 @@ set(SparseBitset &b, std::size_t abs_idx, bool v) noexcept {
   return false;
 }
 
+//=====================================
 bool
 toggle(Bitset &b, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
@@ -327,6 +330,7 @@ toggle(SparseBitset &b, std::size_t abs_idx) noexcept {
   return false;
 }
 
+//=====================================
 static std::size_t
 bits(std::size_t capacity) noexcept {
   return sizeof(Bitset_buffer::type) * 8 * capacity;

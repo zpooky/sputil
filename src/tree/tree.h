@@ -1,9 +1,9 @@
 #ifndef SP_TREE_BST_TREE_H
 #define SP_TREE_BST_TREE_H
 
-#include <util/assert.h>
 #include <string>
 #include <tuple>
+#include <util/assert.h>
 #include <util/comparator.h>
 
 namespace bst {
@@ -140,11 +140,11 @@ find_node(const Tree<N, C> &tree, const K &search) noexcept {
 Lstart:
   if (current) {
     constexpr C cmp;
-    if /*current > search*/ (cmp(current->value, search)) {
+    if (cmp(current->value, /*>*/ search)) {
 
       current = current->left;
       goto Lstart;
-    } else if /*current < search*/ (cmp(search, current->value)) {
+    } else if (cmp(search, /*>*/ current->value)) {
 
       current = current->right;
       goto Lstart;
@@ -164,7 +164,7 @@ find_node(Tree<N, C> &tree, const K &search) noexcept {
 template <typename N, typename C, typename K>
 std::tuple<N *, bool>
 insert(Tree<N, C> &tree, K &&ins) noexcept {
-  if (!tree.root) {
+  if (tree.root == nullptr) {
     // insert into empty tree
     tree.root = new (std::nothrow) N(std::forward<K>(ins));
     if (tree.root) {
@@ -177,7 +177,7 @@ insert(Tree<N, C> &tree, K &&ins) noexcept {
   N *it = tree.root;
 Lit:
   constexpr C cmp;
-  if /*ins < it->value*/ (cmp(it->value, ins)) {
+  if (cmp(it->value, /*>*/ ins)) {
     if (it->left) {
       it = it->left;
 
@@ -188,7 +188,7 @@ Lit:
     if (it->left) {
       return std::make_tuple(it->left, true);
     }
-  } else if /*ins > it->value*/ (cmp(ins, it->value)) {
+  } else if (cmp(ins, /*>*/ it->value)) {
     if (it->right) {
       it = it->right;
 

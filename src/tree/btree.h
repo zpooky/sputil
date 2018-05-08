@@ -539,7 +539,7 @@ Lit:
   auto &elements = current->elements;
 
   /* First node with value >= /val/ */
-  T *const successor = sp::bin_find_successor<T, k, K, C>(elements, val);
+  T *const successor = sp::bin_find_gte<T, k, K, C>(elements, val);
   std::size_t index = length(elements);
   if (successor) {
     C cmp;

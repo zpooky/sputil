@@ -2,6 +2,16 @@
 #include <collection/Array.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
+#include <sort/util.h>
+
+template <std::size_t N>
+static void
+print_arr(const sp::UinStaticArray<std::size_t, N> &sut) {
+  for (std::size_t i = 0; i < length(sut); ++i) {
+    printf("%zu, ", sut[i]);
+  }
+  printf("\n");
+}
 
 TEST(ArrayTest, test_empty) {
   sp::Array<int> a;
@@ -76,16 +86,16 @@ TEST(ArrayTest, test_data) {
   for (int i = 0; i < int(b.length); ++i) {
     auto *c = get(b, std::size_t(i));
     ASSERT_TRUE(c);
-    printf("%d,", c->i);
+    // printf("%d,", c->i);
   }
-  printf("\n");
+  // printf("\n");
   shuffle(r, b);
   for (int i = 0; i < int(b.length); ++i) {
     auto *c = get(b, std::size_t(i));
     ASSERT_TRUE(c);
-    printf("%d,", c->i);
+    // printf("%d,", c->i);
   }
-  printf("\n");
+  // printf("\n");
 }
 
 TEST(ArrayTest, test_remove) {
@@ -324,8 +334,10 @@ TEST(ArrayTest, test_bin_insert_unique) {
   }
 
   for (std::size_t i = 0; i < cap; ++i) {
+    const auto lb = length(sut);
     auto ires = bin_insert_unique(sut, in[i]);
     ASSERT_FALSE(ires);
+    ASSERT_EQ(lb, length(sut));
   }
 
   for (std::size_t i = 0; i < cap; ++i) {
@@ -378,32 +390,71 @@ TEST(ArrayTest, test_bin_insert_unique2) {
     }
 
     {
-      for (std::size_t i = 0; i < length(sut); ++i) {
-        printf("%zu, ", sut[i]);
-      }
-      printf("\n");
-    }
-
-    {
       auto res = bin_search(sut, in[i]);
       ASSERT_TRUE(res);
       ASSERT_EQ(*res, in[i]);
     }
 
     {
+      const auto lb = length(sut);
       if (bin_insert_unique(sut, in[i])) {
 
         ASSERT_FALSE(true);
       }
+      ASSERT_EQ(lb, length(sut));
     }
 
     { ASSERT_TRUE(bin_remove(sut, in[i])); }
 
     {
+      const auto lb = length(sut);
       auto res = bin_insert_unique(sut, in[i]);
       ASSERT_TRUE(res);
       ASSERT_EQ(*res, in[i]);
+      ASSERT_EQ(lb + 1, length(sut));
     }
+  }
+}
+
+TEST(ArrayTest, test_bin_insert_unique3) {
+  constexpr std::size_t cap = 1024;
+  prng::xorshift32 r(1);
+
+  sp::UinStaticArray<std::size_t, cap> in;
+  for (std::size_t i = 0; i < cap; ++i) {
+    ASSERT_TRUE(insert(in, i));
+  }
+  shuffle(r, in);
+
+  sp::UinStaticArray<std::size_t, cap> sut;
+  for (std::size_t i = 0; i < cap; ++i) {
+    // printf("%zu|", i);
+    // print_arr(sut);
+
+    for (std::size_t a = 0; a < i; ++a) {
+      auto res = bin_insert_unique(sut, in[a]);
+      if (res) {
+        printf("fail|");
+        print_arr(sut);
+      }
+      ASSERT_FALSE(res);
+    }
+    auto res = bin_insert_unique(sut, in[i]);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, in[i]);
+    if (!sp::is_sorted(sut.data(), length(sut))) {
+      printf("is_sorted|");
+      print_arr(sut);
+      ASSERT_TRUE(false);
+    }
+  }
+  for (std::size_t i = 0; i < cap; ++i) {
+    auto res = bin_search(sut, in[i]);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, in[i]);
+  }
+  for (std::size_t i = 0; i < cap; ++i) {
+    ASSERT_EQ(sut[i], i);
   }
 }
 

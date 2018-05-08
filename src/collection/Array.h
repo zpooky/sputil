@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <prng/util.h>
 #include <util/assert.h>
 #include <util/comparator.h>
@@ -77,7 +78,7 @@ struct UinStaticArray {
     return reinterpret_cast<T *>(&buffer);
   }
 
-  constexpr const T *
+  const T *
   data() const noexcept {
     return reinterpret_cast<const T *>(&buffer);
   }
@@ -547,60 +548,51 @@ bin_insert(Array<T> &, V &&) noexcept {
 // TODO
 template <typename T, std::size_t c, typename K, typename Comparator>
 T *
-bin_find_successor(UinStaticArray<T, c> &self, const K &needle) noexcept {
+bin_find_gte(UinStaticArray<T, c> &self, const K &needle) noexcept {
+  if (self.length == 0) {
+    return nullptr;
+  }
+
   auto middle = [](std::size_t len) {
     /**/
     return len / 2;
   };
 
-  auto seq_pred = [&needle](T *start, std::size_t len) -> T * {
-    /**/
-    for (std::size_t i = 0; i < len; ++i) {
-      Comparator cmp;
-      if (cmp(start[i], needle)) {
-        return start + i;
-      }
-    }
-    return nullptr;
-  };
-
-  if (self.length > 0) {
-    std::size_t length = self.length;
-    T *p = self.data();
-  Lit:
-    std::size_t mid = middle(length);
-    // printf("%zu-[%zu]-%zu", p[0], p[mid], p[length - 1]);
-    Comparator cmp;
-    if /*needle < mid*/ (cmp(p[mid], needle)) {
-      // printf("|mid[idx%zu] > needle[v%zu]|len:%zu\n", mid, needle, length);
-      if (length == 1) {
-        return p;
-      }
-      // length -= (mid);
-      // length++;
-      std::size_t before = length;
-      length -= (mid);
-      length++;
-      if (before == length) {
-        return seq_pred(p, length);
-      }
-      goto Lit;
-    } /* needle > mid*/ else if (cmp(needle, p[mid])) {
-      // printf("|n[v%zu] > mid[idx%zu]|len:%zu\n", needle, mid, length);
-      p = p + mid;
-      if (length > 1) {
-        length -= mid;
-        goto Lit;
-      }
-    } else {
-      /* needle exact match */
-      return p + mid;
+  std::size_t length = self.length;
+  T *p = self.data();
+  const T *const end = p + length;
+Lit : {
+  const std::size_t mid = middle(length);
+  // printf("%zu-[%zu]-%zu", p[0], p[mid], p[length - 1]);
+  Comparator cmp;
+  if /*needle < mid*/ (cmp(p[mid], /*<*/ needle)) {
+    // printf("|mid[idx%zu] > needle[v%zu]|len:%zu\n", mid, needle, length);
+    if (length == 0) {
+      return p;
     }
 
-    // if (length > 1) {
-    //   goto Lit;
-    // }
+    length = mid;
+
+    goto Lit;
+  } /* needle > mid*/ else if (cmp(needle, /*>*/ p[mid])) {
+    // printf("|n[v%zu] > mid[idx%zu]|len:%zu\n", needle, mid, length);
+    if (length == 1) {
+      if (p + length != end) {
+        return p + length;
+      } else {
+        return nullptr;
+      }
+    }
+
+    p = p + mid;
+    length = length - mid;
+
+    goto Lit;
+  } else {
+    /* needle is exact match */
+    return p + mid;
   }
+}
 
   return nullptr;
 }
@@ -609,7 +601,7 @@ template <typename T, std::size_t c, typename V, typename Comparator>
 T *
 bin_insert(UinStaticArray<T, c> &self, V &&val) noexcept {
   if (self.length < self.capacity) {
-    T *const first = bin_find_successor<T, c, V, Comparator>(/*>=*/self, val);
+    T *const first = bin_find_gte<T, c, V, Comparator>(/*>=*/self, val);
     // printf("------\n");
     T *it = insert(self, std::forward<V>(val));
     assertx(it);
@@ -642,7 +634,7 @@ template <typename T, std::size_t c, typename V, typename Comparator>
 T *
 bin_insert_unique(UinStaticArray<T, c> &self, V &&val) noexcept {
   if (self.length < self.capacity) {
-    T *const first = bin_find_successor<T, c, V, Comparator>(/*>=*/self, val);
+    T *const first = bin_find_gte<T, c, V, Comparator>(/*>=*/self, val);
     if (first) {
       Comparator cmp;
       if (!cmp(val, *first) && !cmp(*first, val)) {
@@ -969,7 +961,8 @@ exchange(Array<T> &self, std::size_t idx, /*IN/OUT*/ V &out) noexcept {
 
 template <typename T, std::size_t c, typename V>
 T *
-exchange(UinStaticArray<T, c> &self, std::size_t idx, /*IN/OUT*/ V &out) noexcept {
+exchange(UinStaticArray<T, c> &self, std::size_t idx,
+         /*IN/OUT*/ V &out) noexcept {
   constexpr std::size_t cap = UinStaticArray<T, c>::capacity;
   Array<T> c_self(self.data(), self.length, cap);
   return exchange(c_self, idx, out);
@@ -1116,7 +1109,8 @@ template <typename Random, typename T>
 void
 shuffle(Random &r, Array<T> &self) noexcept {
   for (std::size_t idx = 0; idx < self.length; ++idx) {
-    auto replace = uniform_dist(r, std::uint32_t(0), std::uint32_t(self.length));
+    auto replace =
+        uniform_dist(r, std::uint32_t(0), std::uint32_t(self.length));
     if (idx != replace) {
       using std::swap;
       swap(self.buffer[idx], self.buffer[replace]);

@@ -5,6 +5,7 @@
 #include <util/comparator.h>
 
 namespace sp {
+//=====================================
 template <typename T, typename Comparator = sp::greater>
 bool
 is_sorted(T *, std::size_t) noexcept;
@@ -25,6 +26,7 @@ is_sorted(T *arr, std::size_t length) noexcept {
 
   return true;
 }
+//=====================================
 }
 
 #endif

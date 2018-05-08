@@ -46,8 +46,9 @@ Right r(value);
 ### bcrypt
 ### cbc,ecb ...
 
-## Huffman
-https://medium.com/@TravCav/huffman-coding-1e914c419912
+## compress
+Huffman - https://medium.com/@TravCav/huffman-coding-1e914c419912
+lz77 - https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/source/lz77.c
 
 
 ## timeout
@@ -59,3 +60,6 @@ suffix tree https://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-alg
 
 ## 
 Markov chains
+
+Minimum spanning tree
+radix sort -https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/source/rxsort.c

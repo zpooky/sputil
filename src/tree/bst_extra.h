@@ -288,7 +288,20 @@ void
 level_first_left(const Tree<T, C> &, F) noexcept {
   // http://www.techiedelight.com/print-left-view-of-binary-tree/
 }
+}
+//=====================================
+// Unbalanced Tree -> Balanced Tree
+template <typename T, typename C>
+bool
+balance(Tree<T, C> &) noexcept;
 
+//=====================================
+template <typename T, typename C>
+bool
+reverse(Tree<T, C> &) noexcept;
+
+//=====================================
+namespace rec {
 namespace impl {
 
 template <typename T>
@@ -305,6 +318,7 @@ max_width(const Node<T> *tree, std::size_t n = 0) noexcept {
   return n;
 }
 }
+
 template <typename T, typename C>
 std::size_t
 max_width(const Tree<T, C> &tree) noexcept {

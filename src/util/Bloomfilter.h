@@ -10,6 +10,7 @@ namespace sp {
 // template <typename T, std::size_t N>
 // using HasherArray = StaticArray<Hasher<T>, N>;
 
+//=====================================
 template <typename T, std::size_t size>
 struct BloomFilter {
   StaticBitset<size> bitset;
@@ -19,23 +20,26 @@ struct BloomFilter {
   explicit BloomFilter(Array<Hasher<T>> &) noexcept;
 };
 
+//=====================================
 template <typename T, std::size_t s>
 bool
 test(const BloomFilter<T, s> &, const T &) noexcept;
 
+//=====================================
 template <typename T, std::size_t s>
 bool
 insert(BloomFilter<T, s> &, const T &) noexcept;
 
-/*
- * ==========================================================================
- */
+//=====================================
+//====Implementation===================
+//=====================================
 template <typename T, std::size_t size>
 BloomFilter<T, size>::BloomFilter(Array<Hasher<T>> &hs) noexcept
     : bitset{}
     , hashers{hs} {
 }
 
+//=====================================
 template <typename T, std::size_t s>
 bool
 test(const BloomFilter<T, s> &b, const T &v) noexcept {
@@ -51,6 +55,7 @@ test(const BloomFilter<T, s> &b, const T &v) noexcept {
   });
 }
 
+//=====================================
 template <typename T, std::size_t s>
 bool
 insert(BloomFilter<T, s> &b, const T &v) noexcept {
@@ -63,6 +68,7 @@ insert(BloomFilter<T, s> &b, const T &v) noexcept {
 
   return true;
 }
+//=====================================
 
 } // namespace sp
 
