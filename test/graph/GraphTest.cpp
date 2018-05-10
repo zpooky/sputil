@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
+#include <util/Bitset.h>
+#include <utility>
 
 TEST(graphTest, test) {
   graph::Undirected<int> first(1);
@@ -92,7 +94,7 @@ is_all_adjacent(graph::Undirected<T, N> &c) {
 
 TEST(graphTest, test_dtor) {
   // not workign gc
-  using g_type = graph::Undirected<int, 5>;
+  using g_type = graph::Undirected<int, 1024>;
   sp::UinStaticArray<g_type *, g_type::capacity> arr;
   int a = 0;
   g_type root(a++);
@@ -115,35 +117,65 @@ TEST(graphTest, test_dtor) {
   prng::xorshift32 r(1);
   for (std::size_t i = 0; i < length(arr); ++i) {
     auto &current = arr[i];
-    std::uint32_t n = uniform_dist(r, 0, length(arr));
+    std::uint32_t n = uniform_dist(r, 0, std::min(std::size_t(5), length(arr)));
     for (std::uint32_t k = 0; k < n; ++k) {
       // is_all_adjacent(*current);
       std::uint32_t idx = uniform_dist(r, 0, length(arr));
 
-      printf("add_edge(current[%d], arr[idx[%u]]->value[%d])", arr[i]->value,
-             idx, arr[idx]->value);
+      // printf("add_edge(current[%d], arr[idx[%u]]->value[%d])", arr[i]->value,
+      //        idx, arr[idx]->value);
       const bool already = is_adjacent(*arr[idx], *current);
 
       if (arr[idx] != current) { // do not try for self assignment
         // is_all_adjacent(*current);
         const auto res = add_edge(*current, arr[idx]);
 
-        printf(" = %s", res ? "true" : "false");
-        printf(" edges.length[%zu]\n", length(current->edges));
+        // printf(" = %s", res ? "true" : "false");
+        // printf(" edges.length[%zu]\n", length(current->edges));
         is_all_adjacent(*current);
         ASSERT_EQ(res, !already); // test for no duplicate edges
       } else {
-        printf(" = self\n");
+        // printf(" = self\n");
         ASSERT_FALSE(already);
       }
     }
-    printf("--\n");
+    // printf("--\n");
   }
 
-  depth_first(root, [](auto &c) {
-    printf("%d\n", c.value);
-    /**/
-  });
+  {
+    sp::StaticBitset<g_type::capacity> bits;
+    std::size_t bfs_cnt = 0;
+    breadth_first(root, [&bfs_cnt, &bits](auto &c) {
+      bool priv = sp::set(bits, c.value, true);
+      assertx(priv == false);
+
+      // printf("%d\n", c.value);
+      ++bfs_cnt;
+    });
+
+    for (std::size_t i = 0; i < g_type::capacity; ++i) {
+      ASSERT_TRUE(test(bits, i));
+    }
+
+    ASSERT_EQ(bfs_cnt, length(arr));
+  }
+  {
+    sp::StaticBitset<g_type::capacity> bits;
+    std::size_t dfs_cnt = 0;
+    depth_first(root, [&dfs_cnt, &bits](auto &c) {
+      bool priv = sp::set(bits, c.value, true);
+      assertx(priv == false);
+
+      // printf("%d\n", c.value);
+      ++dfs_cnt;
+    });
+
+    for (std::size_t i = 0; i < g_type::capacity; ++i) {
+      ASSERT_TRUE(test(bits, i));
+    }
+
+    ASSERT_EQ(dfs_cnt, length(arr));
+  }
 
   // ASSERT_TRUE(add_vertex(root, 1337));
 }

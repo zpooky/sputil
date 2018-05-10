@@ -86,15 +86,20 @@ namespace impl {
 template <typename T>
 HSBucket<T>::HSBucket() noexcept
     : next{nullptr}
+    , value()
     , present(false) {
 }
 
 template <typename T>
 HSBucket<T>::~HSBucket() noexcept {
   if (present) {
+    present = false;
     T *const value = (T *)&value;
     value->~T();
-    present = false;
+  }
+  if (next) {
+    delete next;
+    next = nullptr;
   }
 }
 
@@ -104,7 +109,7 @@ HSNode<T, c>::HSNode(std::size_t strt, std::size_t len) noexcept
     : entries(0)
     , start(strt)
     , length{len}
-    , buckets() {
+    , buckets{} {
 }
 
 template <typename T, std::size_t c>
@@ -216,7 +221,7 @@ insert(HSNode<T, cap> &node, const HashKey &code, V &&val) noexcept {
   HSBucket<T> &bucket = lookup(node, code);
   T *const result = insert(bucket, std::forward<V>(val));
   if (result) {
-    ++node.elements;
+    ++node.entries;
   }
   return result;
 }
@@ -240,7 +245,7 @@ insert(HashSet<T, hash> &self, V &&val) noexcept {
   }
 
   if (node) {
-    return impl::insert(*node, code, std::forward<T>(val));
+    return impl::insert(*node, code, std::forward<V>(val));
   }
 
   return nullptr;
@@ -274,7 +279,7 @@ lookup(const HSNode<T, c> &node, const HashKey &code,
   const HSBucket<T> &bucket = lookup(node, code);
   return lookup(bucket, needle);
 }
-}
+} // namespace impl
 
 template <typename T, sp::Hasher<T> hash, typename V>
 const T *

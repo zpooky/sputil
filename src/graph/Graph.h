@@ -216,7 +216,7 @@ breadth_first(Undirected<T, N> &root, F f) noexcept {
       auto &edge = current->edges[i];
       if (insert(visited, edge.ptr)) {
         // insert only succeeds if it does not already contain edge
-        auto res = push(toVisit, edge.ptr);
+        auto res = enqueue(toVisit, edge.ptr);
         assertx(res);
       }
     }
@@ -245,7 +245,7 @@ depth_first(Undirected<T, N> &root, F f) noexcept {
   }
   {
     auto res = insert(visited, &root);
-    // assertx(res);
+    assertx(res);
   }
   while (!is_empty(toVisit)) {
     Undirected<T, N> *current = nullptr;

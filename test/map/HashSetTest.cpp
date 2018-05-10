@@ -68,6 +68,14 @@ struct TestHashSetTest {
     ++active;
   }
 
+  TestHashSetTest(const TestHashSetTest &) = delete;
+  TestHashSetTest(const TestHashSetTest &&) = delete;
+
+  TestHashSetTest &
+  operator=(const TestHashSetTest &&) = delete;
+  TestHashSetTest &
+  operator=(const TestHashSetTest &) = delete;
+
   bool
   operator==(std::size_t o) const noexcept {
     return data == o;
@@ -93,25 +101,27 @@ tst_hash(const TestHashSetTest &in) noexcept {
 }
 
 TEST(HashSetTest, test_dtor) {
-  sp::HashSet<TestHashSetTest, tst_hash> set;
+  {
+    sp::HashSet<TestHashSetTest, tst_hash> set;
 
-  for (std::size_t i = 0; i < 512; ++i) {
-    for (std::size_t a = 0; a < i; ++a) {
-      {
-        auto *res = insert(set, TestHashSetTest(a));
-        ASSERT_FALSE(res);
+    for (std::size_t i = 0; i < 512; ++i) {
+      for (std::size_t a = 0; a < i; ++a) {
+        {
+          auto *res = insert(set, a);
+          ASSERT_FALSE(res);
+        }
+        {
+          auto *res = lookup(set, TestHashSetTest(a));
+          ASSERT_TRUE(res);
+          ASSERT_EQ(*res, a);
+        }
       }
       {
-        auto *res = lookup(set, TestHashSetTest(a));
+        auto *res = insert(set, i);
+
         ASSERT_TRUE(res);
-        ASSERT_EQ(*res, a);
+        ASSERT_EQ(*res, i);
       }
-    }
-    {
-      auto *res = insert(set, TestHashSetTest(i));
-
-      ASSERT_TRUE(res);
-      ASSERT_EQ(*res, i);
     }
   }
   ASSERT_EQ(std::int64_t(0), TestHashSetTest::active);

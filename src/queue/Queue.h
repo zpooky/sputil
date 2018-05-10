@@ -66,9 +66,14 @@ dequeue(LinkedListQueue<T, A> &queue, T &out) noexcept {
     // using sp::swap;
     using std::swap;
     swap(*head, out);
-    assert(remove_first(queue.impl, //
-                        [](const auto &) { return true; }));
-    return true;
+
+    auto res = remove_first(queue.impl, [](const auto &) {
+      /**/
+      return true;
+    });
+    assertx(res);
+
+    return res;
   }
 
   return false;
@@ -87,6 +92,6 @@ length(const LinkedListQueue<T, A> &queue) noexcept {
 }
 
 //=====================================
-}
+} // namespace sp
 
 #endif
