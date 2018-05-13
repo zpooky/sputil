@@ -69,7 +69,9 @@ struct TestHashSetTest {
   }
 
   TestHashSetTest(const TestHashSetTest &) = delete;
-  TestHashSetTest(const TestHashSetTest &&) = delete;
+  TestHashSetTest(TestHashSetTest &&o)
+      : TestHashSetTest(o.data) {
+  }
 
   TestHashSetTest &
   operator=(const TestHashSetTest &&) = delete;

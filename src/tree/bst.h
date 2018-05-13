@@ -49,6 +49,10 @@ template <typename T, typename C, typename K>
 std::tuple<T *, bool>
 insert(Tree<T, C> &, K &&) noexcept;
 
+template <typename T, typename C, typename... Arg>
+std::tuple<T *, bool>
+emplace(Tree<T, C> &, Arg &&...) noexcept;
+
 template <typename T, typename C, typename K>
 bool
 remove(Tree<T, C> &, const K &) noexcept;
@@ -146,6 +150,13 @@ remove(Tree<T, C> &tree, const K &k) noexcept {
   return false;
 } // binary::remove()
 
+template <typename T, typename C, typename... Arg>
+std::tuple<T *, bool>
+emplace(Tree<T, C> &self, Arg &&... args) noexcept {
+  // TODO make actual impl
+  return insert(self, T(std::forward<Arg>(args)...));
+}
+
 template <typename T, typename C>
 void
 dump(Tree<T, C> &tree, std::string prefix) noexcept {
@@ -158,6 +169,6 @@ verify(Tree<T, C> &tree) noexcept {
   return impl::binary::verify((Node<T> *)nullptr, tree.root);
 } // binary::verify()
 
-} // namespace bst
+} // namespace binary
 
 #endif
