@@ -96,40 +96,40 @@ template <typename T>
 void
 sp_msort(T *arr, std::size_t length, std::size_t pivot) noexcept {
   assertxs(length > pivot, length, pivot);
+  const T *const arr_end = arr + length;
 
-  std::size_t first_length = pivot;
-  T *first = new T[first_length];
+  const std::size_t first_length = pivot;
+  T *const first = new T[first_length];
   for (std::size_t i = 0; i < first_length; ++i) {
-    first[i] = arr[i];
+    first[i] = std::move(arr[i]);
   }
+  T *fit = first;
+  const T *const f_end = first + first_length;
 
-  T *second = arr + first_length;
-  std::size_t second_length(length - first_length);
+  T *sit = arr + first_length;
+  const std::size_t second_length(length - first_length);
+  const T *const s_end = sit + second_length;
 
-  std::size_t dest_idx = 0;
-  std::size_t f_idx = 0;
-  std::size_t s_idx = 0;
-
-  for (std::size_t i = 0; i < std::min(first_length, second_length); ++i) {
+  while (fit != f_end && sit != s_end) {
     // use '=' here for stable sort
-    if (first[f_idx] <= second[s_idx]) {
-      arr[dest_idx++] = first[f_idx++];
+    if (*fit <= *sit) {
+      *arr++ = std::move(*fit++);
     } else {
-      arr[dest_idx++] = second[s_idx++];
+      *arr++ = std::move(*sit++);
     }
   }
 
-  while (f_idx < first_length) {
-    arr[dest_idx++] = first[f_idx++];
+  while (fit != f_end) {
+    *arr++ = std::move(*fit++);
   }
 
-  while (s_idx < second_length) {
-    arr[dest_idx++] = second[s_idx++];
+  while (sit != s_end) {
+    *arr++ = std::move(*sit++);
   }
-
-  assertxs(dest_idx == length, dest_idx, length);
 
   delete[] first;
+
+  assertxs(arr == arr_end, arr, arr_end);
 }
 
 } // namespace impl
@@ -226,7 +226,7 @@ mergeSort(int arr[], int length) {
 #endif
 
 //=====================================
-}
-}
+} // namespace rec
+} // namespace sp
 
 #endif

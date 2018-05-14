@@ -31,13 +31,13 @@ check(T *arr, std::size_t length) {
 
 TEST(QuicksortTest, test) {
   prng::xorshift32 r(1);
-  sp::StaticArray<int, 1000> arr;
+  sp::StaticArray<int, 1024> arr;
   for (int i = 0; i < int(capacity(arr)); ++i) {
     ASSERT_TRUE(insert(arr, i));
   }
   ASSERT_EQ(capacity(arr), length(arr));
 
-  for (std::size_t a = 0; a < 1000; ++a) {
+  for (std::size_t a = 0; a < 1024; ++a) {
     shuffle(r, arr);
     // print_arr(arr, length(arr));
 
