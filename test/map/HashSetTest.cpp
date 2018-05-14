@@ -11,10 +11,15 @@ identity(const std::size_t &in) {
   return in;
 }
 
+static std::size_t
+identity(const std::uint32_t &in) {
+  return std::size_t(in);
+}
+
 TEST(HashSetTest, test) {
   sp::HashSet<std::size_t, identity> set;
   std::size_t i = 0;
-  for (; i < 512; ++i) {
+  for (; i < 1024; ++i) {
     for (std::size_t a = 0; a < i; ++a) {
       {
         std::size_t *res = insert(set, a);
@@ -31,6 +36,21 @@ TEST(HashSetTest, test) {
       std::size_t *res = insert(set, i);
       ASSERT_TRUE(res);
       ASSERT_EQ(*res, i);
+    }
+  }
+}
+
+TEST(HashSetTest, test_rand) {
+  sp::HashSet<std::uint32_t, identity> set;
+  prng::xorshift32 r(1);
+  std::size_t i = 0;
+  for (; i < 1024 * 960; ++i) {
+    const std::uint32_t current = random(r);
+    {
+      printf(" insert(set, i[%u])\n", current);
+      auto res = insert(set, current);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, current);
     }
   }
 }

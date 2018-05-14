@@ -104,7 +104,7 @@ bool
 verify(Node<T> *parent, Node<T> *tree) noexcept {
   if (tree) {
     if (!verify(tree, tree->left)) {
-      printf("left-");
+      // printf("left-");
       return false;
     }
     if (!verify(tree, tree->right)) {
@@ -119,7 +119,7 @@ verify(Node<T> *parent, Node<T> *tree) noexcept {
     auto *left = tree->left;
     if (left) {
       if (!(tree->value > left->value)) {
-        printf("left-");
+        // printf("left-");
         return false;
       }
     }

@@ -41,6 +41,9 @@ struct HSNode {
   bool
   operator>(const HSNode<T> &) const noexcept;
 
+  bool
+  operator<(const HSNode<T> &) const noexcept;
+
   operator std::string() const noexcept {
     std::stringstream res;
     res << "HSNode[start[" << start << "],length[" << length << "]]";
@@ -129,30 +132,46 @@ HSNode<T, c>::operator>(const HashKey &o) const noexcept {
     return false;
   }
 
-  const bool res = (start) > o.hash;
+  const bool res = (start + length) >= o.hash;
+  printf("(start[%zu] + length[%zu]) >= o.hash[%zu] == %s\n", //
+         start, length, o.hash, res ? "true" : "false");
+  if (res) {
+    return true;
+  }
+
+  return false;
+
+  // const bool res = (start) > o.hash;
   // printf("(start[%zu]+length[%zu]: %zu) > o.hash[%zu]: "
   //        "%s\n",
   //        start, length, start + length, //
   //        o.hash,                        //
   //        res ? "true" : "false");
 
-  return res;
+  // return res;
 }
 
 template <typename T, std::size_t c>
 bool
 HSNode<T, c>::operator>(const HSNode<T> &o) const noexcept {
-  // bool res = (start + length) > (o.start + o.length);
-  bool res = start > o.start;
-  printf("HSNode::>(start[%zu] > o.start[%zu]): %s\n", start, o.start,
-         res ? "true" : "false");
-  // printf("HSNode::>(start[%zu]+length[%zu]: %zu) > "
-  //        "(o.start[%zu]+o.length[%zu]: %zu): "
-  //        "%s\n",
-  //        start, length, start + length,         //
-  //        o.start, o.length, o.start + o.length, //
-  //        res ? "true" : "false");               //
+  // bool res = start > o.start;
+  // printf("HSNode::>(start[%zu] > o.start[%zu]): %s\n", start, o.start,
+  //        res ? "true" : "false");
+  const bool res = (start + length) > (o.start + o.length);
+  printf("HSNode::>(start[%zu]+length[%zu]: %zu) > "
+         "(o.start[%zu]+o.length[%zu]: %zu): "
+         "%s\n",
+         start, length, start + length,         //
+         o.start, o.length, o.start + o.length, //
+         res ? "true" : "false");               //
   return res;
+}
+
+template <typename T, std::size_t c>
+bool
+HSNode<T, c>::operator<(const HSNode<T> &o) const noexcept {
+  // verify(tree)
+  return start < o.start;
 }
 
 } // namespace impl
@@ -230,7 +249,13 @@ split(HashSet<T, hash> &self, HSNode<T, cap> &source) noexcept {
 
   if (split >= source.capacity) {
     const std::size_t start(source.start + split);
+    const std::size_t before = source.length;
+    source.length -= split;
     auto status = emplace(self.tree, start, split);
+    if (!verify(self.tree)) { // TODO debug
+      dump(self.tree);
+      assertx(false);
+    }
     // printf("emplace(self.tree, start[%zu], split[%zu])\n", start, split);
 
     bool created = std::get<1>(status);
@@ -241,14 +266,15 @@ split(HashSet<T, hash> &self, HSNode<T, cap> &source) noexcept {
       assertx(result->start == start);
       assertx(result->length == split);
       // printf("Before[%zu, %zu]\n", source.start, source.length);
-      source.length -= split;
 
       // printf("SPlit[%zu, %zu]\n", source.start, source.length);
       // printf("SplitOther[%zu, %zu]\n", result->start, result->length);
       return result;
+    } else {
+      source.length = before;
     }
-    assertx(false); // TODO remove
   }
+  assertx(false); // TODO remove
 
   return nullptr;
 }
@@ -296,7 +322,7 @@ migrate_list(HSNode<T, cap> &node, HSBucket<T> *current, HSNode<T, cap> &dest) {
 
   return nullptr;
 }
-}
+} // namespace rec
 
 template <typename T, sp::Hasher<T> h, std::size_t cap>
 static bool
@@ -336,6 +362,7 @@ rehash(HashSet<T, h> &self, HSNode<T, cap> &source) noexcept {
 
     return true;
   }
+  assertx(false); // TODO remove
 
   return false;
 } // impl::rehash()
@@ -380,7 +407,14 @@ insert(HashSet<T, hash> &self, V &&val) noexcept {
     auto res = emplace(tree, start, length);
 
     node = std::get<0>(res);
+    assertx(in_range(*node, code)); // TODO only for debug
     assertxs(std::get<1>(res), node, std::get<1>(res));
+
+    // assertx(find(tree, *node) == node); // TODO only for debug
+    if (!find(tree, code)) { // TODO only for debug
+      dump(tree);
+      assertx(false);
+    }
   }
 
   if (node) {
