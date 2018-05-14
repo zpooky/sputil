@@ -6,6 +6,7 @@
 
 namespace sp {
 
+//=====================================
 template <typename T, template <typename> class Allocator = sp::Allocator>
 struct HeapStack {
   using value_type = T;
@@ -30,30 +31,37 @@ struct HeapStack {
 template <typename T, template <typename> class A>
 std::size_t
 length(const HeapStack<T, A> &) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A>
 bool
 is_empty(const HeapStack<T, A> &) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A>
 bool
 is_full(const HeapStack<T, A> &) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A, typename V>
 T *
 push(HeapStack<T, A> &, V &&) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A>
 T *
 peek(HeapStack<T, A> &) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A>
 const T *
 peek(const HeapStack<T, A> &) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A>
 bool
 pop(HeapStack<T, A> &, T &out) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A, typename F>
 void
@@ -62,10 +70,10 @@ for_each(HeapStack<T, A> &, F) noexcept;
 template <typename T, template <typename> class A, typename F>
 void
 for_each(const HeapStack<T, A> &, F) noexcept;
+
 //=====================================
-/*
- * ==========================================================================
- */
+//====Implementation===================
+//=====================================
 template <typename T, template <typename> class A>
 HeapStack<T, A>::HeapStack() noexcept
     : head(nullptr)

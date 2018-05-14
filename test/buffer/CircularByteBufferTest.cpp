@@ -61,8 +61,8 @@ TEST(CircularByteBufferTest, test_view) {
 
   flip(b);
   ASSERT_EQ(sizeof(raw), remaining_read(b));
-  ASSERT_EQ(0, remaining_read(buffer));
-  ASSERT_EQ(0, ::memcmp(raw, braw, sizeof(raw)));
+  ASSERT_EQ(std::size_t(0), remaining_read(buffer));
+  ASSERT_EQ(int(0), ::memcmp(raw, braw, sizeof(raw)));
 }
 
 TEST(CircularByteBufferTest, test_circular) {
@@ -124,7 +124,7 @@ TEST(CircularByteBufferTest, test_circular) {
     // print_hex("read[%s]\n", read);
     ASSERT_EQ(char(0), read[2]);
     ASSERT_EQ(char(1), read[3]);
-    ASSERT_EQ(std::size_t(0), std::memcmp(read + 2, raw, 14));
+    ASSERT_EQ(int(0), std::memcmp(read + 2, raw, 14));
   }
 }
 
@@ -134,7 +134,7 @@ TEST(CircularByteBufferTest, test_pop_empty) {
     sp::StaticCircularByteBuffer<sz> b;
     unsigned char c = 99;
     ASSERT_EQ(std::size_t(0), pop_front(b, &c, 1));
-    ASSERT_EQ(c, 99);
+    ASSERT_EQ(c, (unsigned char)99);
 
     unsigned char out[] = {0, 0};
     ASSERT_EQ(std::size_t(0), pop_front(b, out, sizeof(out)));
@@ -148,12 +148,12 @@ TEST(CircularByteBufferTest, test_pop_empty) {
 
       unsigned char c = 99;
       ASSERT_EQ(std::size_t(1), pop_front(b, &c, 1));
-      ASSERT_EQ(c, 127);
+      ASSERT_EQ(c, (unsigned char)127);
     }
 
     unsigned char c = 99;
     ASSERT_EQ(std::size_t(0), pop_front(b, &c, 1));
-    ASSERT_EQ(c, 99);
+    ASSERT_EQ(c, (unsigned char)99);
 
     unsigned char out[] = {0, 0};
     ASSERT_EQ(std::size_t(0), pop_front(b, out, sizeof(out)));
@@ -162,21 +162,21 @@ TEST(CircularByteBufferTest, test_pop_empty) {
 
     sp::StaticCircularByteBuffer<sz> b;
     unsigned char in[] = {13, 240};
-    ASSERT_EQ(2, push_back(b, in, sizeof(in)));
+    ASSERT_EQ(std::size_t(2), push_back(b, in, sizeof(in)));
 
     {
       unsigned char out[] = {0, 0};
       ASSERT_EQ(std::size_t(2), pop_front(b, out, sizeof(out)));
-      ASSERT_EQ(out[0], 13);
-      ASSERT_EQ(out[1], 240);
+      ASSERT_EQ(out[0], (unsigned char)13);
+      ASSERT_EQ(out[1], (unsigned char)240);
     }
 
     unsigned char c = 99;
     ASSERT_EQ(std::size_t(0), pop_front(b, &c, 1));
-    ASSERT_EQ(c, 99);
+    ASSERT_EQ(c, (unsigned char)99);
 
     unsigned char out[] = {0, 0};
-    ASSERT_EQ(0, pop_front(b, out, sizeof(out)));
+    ASSERT_EQ(std::size_t(0), pop_front(b, out, sizeof(out)));
   }
 }
 
@@ -315,17 +315,17 @@ TEST(CircularByteBufferTest, test_read_buffer) {
       ASSERT_EQ(push_back(b, in_ref[in_widx++]), std::size_t(1));
       ASSERT_FALSE(is_empty(b));
 
-      ASSERT_EQ(i + 1, length(b));
+      ASSERT_EQ(std::size_t(i + 1), length(b));
 
       {
         AT a;
         ASSERT_TRUE(read_buffer(b, a));
-        ASSERT_EQ(a.length, 1);
+        ASSERT_EQ(a.length, std::size_t(1));
 
         auto d = get(a, 0);
         ASSERT_TRUE(d);
         ASSERT_EQ(b.buffer, std::get<0>(*d));
-        ASSERT_EQ(i + 1, std::get<1>(*d));
+        ASSERT_EQ(std::size_t(i + 1), std::get<1>(*d));
       }
       assert_ref(in_ref, in_ridx, b);
     }
@@ -336,12 +336,12 @@ TEST(CircularByteBufferTest, test_read_buffer) {
 
   for (unsigned char i = 0; i < sz / 2; ++i) {
     unsigned char c = 255;
-    ASSERT_EQ(1, pop_front(b, c));
+    ASSERT_EQ(std::size_t(1), pop_front(b, c));
     ASSERT_EQ(c, in_ref[in_ridx++]);
     {
       AT a;
       ASSERT_TRUE(read_buffer(b, a));
-      ASSERT_EQ(a.length, 1);
+      ASSERT_EQ(a.length, std::size_t(1));
 
       auto d = get(a, 0);
       ASSERT_TRUE(d);
@@ -352,13 +352,13 @@ TEST(CircularByteBufferTest, test_read_buffer) {
   }
 
   for (unsigned char i = 0; i < (sz / 2); ++i) {
-    ASSERT_EQ(push_back(b, in_ref[in_widx++]), 1);
+    ASSERT_EQ(push_back(b, in_ref[in_widx++]), std::size_t(1));
     {
       // printf("lengt(b): %zu\n", length(b));
 
       AT a;
       ASSERT_TRUE(read_buffer(b, a));
-      ASSERT_EQ(a.length, 2);
+      ASSERT_EQ(a.length, std::size_t(2));
 
       {
         std::size_t strt = 4;
@@ -371,7 +371,7 @@ TEST(CircularByteBufferTest, test_read_buffer) {
         auto d = get(a, 1);
         ASSERT_TRUE(d);
         ASSERT_EQ(b.buffer, std::get<0>(*d));
-        ASSERT_EQ(i + 1, std::get<1>(*d));
+        ASSERT_EQ(std::size_t(i + 1), std::get<1>(*d));
       }
     }
     assert_ref(in_ref, in_ridx, b);
@@ -383,7 +383,7 @@ TEST(CircularByteBufferTest, test_read_buffer) {
 
   while (length(b) > 0) {
     unsigned char c = 255;
-    ASSERT_EQ(1, pop_front(b, c));
+    ASSERT_EQ(std::size_t(1), pop_front(b, c));
     ASSERT_EQ(c, in_ref[in_ridx++]);
 
     // printf("length(b): %zu\n", length(b));
@@ -421,7 +421,7 @@ TEST(CircularByteBufferTest, test_random_read_buffer) {
 
         for (std::size_t i = 0; i < write; ++i) {
           auto written = push_back(b, in_ref[in_widx++]);
-          ASSERT_EQ(written, 1);
+          ASSERT_EQ(written, std::size_t(1));
           assert_ref(in_ref, in_ridx, b);
         }
       }
@@ -476,7 +476,7 @@ TEST(CircularByteBufferTest, test_peek) {
       ASSERT_EQ(out[k], (unsigned char)k);
     }
 
-    ASSERT_EQ(1, push_back(b, char(i)));
+    ASSERT_EQ(std::size_t(1), push_back(b, char(i)));
   }
 
   {
@@ -495,7 +495,7 @@ TEST(CircularByteBufferTest, test_peek) {
   const unsigned char in_char_strt = 'a';
   unsigned char in_char = in_char_strt;
   while (remaining_write(b) > 0) {
-    ASSERT_EQ(1, push_back(b, in_char++));
+    ASSERT_EQ(std::size_t(1), push_back(b, in_char++));
     {
       unsigned char out[sz] = {0};
       ASSERT_EQ(length(b), peek_front(b, out));

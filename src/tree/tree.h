@@ -7,6 +7,7 @@
 #include <util/comparator.h>
 
 namespace bst {
+//=====================================
 // typename Allocator = std::allocator<Key>
 template <typename T, typename Comparator>
 struct Tree {
@@ -43,6 +44,7 @@ struct Tree {
   }
 };
 
+//=====================================
 template <typename T, typename C, typename S>
 typename Tree<T, C>::const_pointer
 find(const Tree<T, C> &tree, const S &search) noexcept;
@@ -51,19 +53,18 @@ template <typename T, typename C, typename S>
 typename Tree<T, C>::pointer
 find(Tree<T, C> &tree, const S &search) noexcept;
 
+//=====================================
 template <typename T, typename C>
 void
 swap(Tree<T, C> &, Tree<T, C> &) noexcept;
 
-// TODO
-// bfs_search
-// inorder_search
-
-/*
- * ==========================================================================
- */
+//=====================================
+//====Implementation===================
+//=====================================
 namespace impl {
 /*impl*/
+
+//=====================================
 template <typename T>
 static bool
 doubly_linked(T *n) noexcept {
@@ -76,6 +77,7 @@ doubly_linked(T *n) noexcept {
   return true;
 }
 
+//=====================================
 template <typename T>
 void
 dump(T *tree, std::string prefix = "", bool isTail = true,
@@ -101,6 +103,7 @@ dump(T *tree, std::string prefix = "", bool isTail = true,
   }
 }
 
+//=====================================
 template <typename T>
 std::size_t
 child_count(T *tree) noexcept {
@@ -113,6 +116,7 @@ child_count(T *tree) noexcept {
   return result;
 }
 
+//=====================================
 /*
  * Recursively search down in the left branch to find the smallest node in the
  * tree.
@@ -130,6 +134,7 @@ Lstart:
   return node;
 } // bst::impl::find_min()
 
+//=====================================
 /*
  * Recursivly search in tree until matching node is found
  */
@@ -155,14 +160,15 @@ Lstart:
 } // bst::impl::find_node()
 
 template <typename N, typename C, typename K>
-N *
+static N *
 find_node(Tree<N, C> &tree, const K &search) noexcept {
   const Tree<N, C> &c_tree = tree;
   return (N *)find_node(c_tree, search);
 }
 
+//=====================================
 template <typename N, typename C, typename K>
-std::tuple<N *, bool>
+static std::tuple<N *, bool>
 insert(Tree<N, C> &tree, K &&ins) noexcept {
   if (tree.root == nullptr) {
     // insert into empty tree
@@ -207,8 +213,9 @@ Lit:
   return std::make_tuple(nullptr, false);
 } // bst::impl::insert()
 
+//=====================================
 template <typename N>
-N *
+static N *
 remove(N *const current) noexcept {
   assertx(current);
 
@@ -323,8 +330,7 @@ remove(N *const current) noexcept {
 } // impl::remove()
 
 } // namespace impl
-//===================================================
-
+//=====================================
 template <typename N, typename C, typename K>
 typename Tree<N, C>::const_pointer
 find(const Tree<N, C> &tree, const K &search) noexcept {
@@ -342,12 +348,15 @@ find(Tree<T, C> &tree, const K &search) noexcept {
   return (typename Tree<T, C>::pointer)find<T, C, K>(ctree, search);
 } // bst::find()
 
+//=====================================
 template <typename T, typename C>
 void
 swap(Tree<T, C> &first, Tree<T, C> &second) noexcept {
   using std::swap;
   swap(first.root, second.root);
 } // bst::swap()
+
+//=====================================
 
 } // namespace bst
 #endif

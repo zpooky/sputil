@@ -2,8 +2,10 @@
 #define SP_UTIL_TREE_BINARY_SEARCH_TREE_H
 
 #include <tree/tree.h>
+#include <string>
 
 namespace binary {
+//=====================================
 template <typename T>
 struct Node {
   using value_type = T;
@@ -14,63 +16,89 @@ struct Node {
   T value;
 
   template <typename K>
-  explicit Node(K &&k, Node<T> *p = nullptr)
-      : left(nullptr)
-      , right(nullptr)
-      , parent(p)
-      , value(std::forward<K>(k)) {
-  }
+  explicit Node(K &&, Node<T> * = nullptr) noexcept;
 
-  explicit operator std::string() const {
-    std::string s;
-    s.append("[v:");
-    s.append(std::to_string(int(value)));
-    s.append("]");
-    return s;
-  }
+  explicit operator std::string() const;
 
-  ~Node() noexcept {
-    // TODO this is recursive
-    if (left) {
-      delete left;
-      left = nullptr;
-    }
-    if (right) {
-      delete right;
-      right = nullptr;
-    }
-  }
+  ~Node() noexcept;
 };
 
 template <typename T, typename Comparator = sp::greater>
 using Tree = bst::Tree<Node<T>, Comparator>;
 
+//=====================================
 template <typename T, typename C, typename K>
 std::tuple<T *, bool>
 insert(Tree<T, C> &, K &&) noexcept;
 
+//=====================================
 template <typename T, typename C, typename... Arg>
 std::tuple<T *, bool>
 emplace(Tree<T, C> &, Arg &&...) noexcept;
 
+//=====================================
 template <typename T, typename C, typename K>
 bool
 remove(Tree<T, C> &, const K &) noexcept;
 
+//=====================================
 template <typename T, typename C>
 void
 dump(Tree<T, C> &tree, std::string prefix = "") noexcept;
 
+//=====================================
 template <typename T, typename C>
 bool
 verify(Tree<T, C> &tree) noexcept;
 
-/*
- * ==========================================================================
- */
+//=====================================
+//====Implementation===================
+//=====================================
+template <typename T>
+template <typename K>
+Node<T>::Node(K &&k, Node<T> *p) noexcept
+    : left(nullptr)
+    , right(nullptr)
+    , parent(p)
+    , value(std::forward<K>(k)) {
+}
+
+template <>
+inline Node<int>::operator std::string() const {
+  std::string s;
+  s.append("[v:");
+  s.append(std::to_string(int(value)));
+  s.append("]");
+  return s;
+}
+
+template <typename T>
+Node<T>::operator std::string() const {
+  std::string s;
+  s.append("[v:");
+  s.append(std::string(value));
+  s.append("]");
+  return s;
+}
+
+template <typename T>
+Node<T>::~Node() noexcept {
+  // TODO this is recursive
+  if (left) {
+    delete left;
+    left = nullptr;
+  }
+  if (right) {
+    delete right;
+    right = nullptr;
+  }
+}
+
+//=====================================
 namespace impl {
 namespace binary {
 
+//=====================================
 template <typename T>
 bool
 verify(Node<T> *parent, Node<T> *tree) noexcept {
@@ -109,8 +137,7 @@ verify(Node<T> *parent, Node<T> *tree) noexcept {
 
 } // namespace binary
 } // namespace impl
-//===================================================
-
+//=====================================
 template <typename T, typename C, typename K>
 std::tuple<T *, bool>
 insert(Tree<T, C> &tree, K &&value) noexcept {
@@ -124,6 +151,15 @@ insert(Tree<T, C> &tree, K &&value) noexcept {
   return std::make_tuple(val, status);
 }
 
+//=====================================
+template <typename T, typename C, typename... Arg>
+std::tuple<T *, bool>
+emplace(Tree<T, C> &self, Arg &&... args) noexcept {
+  // TODO make actual impl
+  return insert(self, T(std::forward<Arg>(args)...));
+}
+
+//=====================================
 template <typename T, typename C, typename K>
 bool
 remove(Tree<T, C> &tree, const K &k) noexcept {
@@ -150,19 +186,14 @@ remove(Tree<T, C> &tree, const K &k) noexcept {
   return false;
 } // binary::remove()
 
-template <typename T, typename C, typename... Arg>
-std::tuple<T *, bool>
-emplace(Tree<T, C> &self, Arg &&... args) noexcept {
-  // TODO make actual impl
-  return insert(self, T(std::forward<Arg>(args)...));
-}
-
+//=====================================
 template <typename T, typename C>
 void
 dump(Tree<T, C> &tree, std::string prefix) noexcept {
   return bst::impl::dump(tree.root, prefix);
 } // binary::dump()
 
+//=====================================
 template <typename T, typename C>
 bool
 verify(Tree<T, C> &tree) noexcept {

@@ -431,12 +431,10 @@ reduce(const Array<T> &, K &, F) noexcept;
 template <typename T, std::size_t c, typename K, typename F>
 K &
 reduce(const UinStaticArray<T, c> &, K &, F) noexcept;
+
 //=====================================
-
-/*
- * =======================================================
- */
-
+//====Implementation===================
+//=====================================
 template <typename T>
 Array<T>::Array() noexcept
     : Array(nullptr, 0) {

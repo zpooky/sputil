@@ -17,6 +17,7 @@ namespace btree {
  * keys = [2*t-1];
  * children = [2*t]
  */
+//=====================================
 template <typename T, std::size_t keys>
 struct BTNode {
   using value_type = T;
@@ -35,6 +36,7 @@ struct BTNode {
   BTNode<T, keys> &
   operator=(const BTNode<T, keys> &&) = delete;
 };
+
 } // namespace btree
 } // namespace impl
 
@@ -75,6 +77,7 @@ find(const Tree<T, k, C> &, const K &) noexcept;
 template <typename T, std::size_t k, typename C, typename K>
 T *
 find(Tree<T, k, C> &, const K &) noexcept;
+
 //=====================================
 
 /*
@@ -94,11 +97,12 @@ dump(const Tree<int, k, C> &) noexcept;
  * verify(Tree<T, C> &tree) noexcept;
  */
 
-/*
- * ==========================================================================
- */
+//=====================================
+//====Implementation===================
+//=====================================
 namespace impl {
 namespace btree {
+//=====================================
 template <typename T, std::size_t keys>
 BTNode<T, keys>::BTNode(BTNode<T, keys> *p) noexcept
     : parent{p}
@@ -106,12 +110,14 @@ BTNode<T, keys>::BTNode(BTNode<T, keys> *p) noexcept
     , children() {
 }
 
-template <typename std::size_t K>
-constexpr std::size_t
+//=====================================
+template <std::size_t K>
+static constexpr std::size_t
 median() noexcept {
   return K / 2;
 }
 
+//=====================================
 template <typename T, std::size_t K>
 static bool
 is_full(const BTNode<T, K> &tree) noexcept {
@@ -122,6 +128,7 @@ is_full(const BTNode<T, K> &tree) noexcept {
   return res;
 }
 
+//=====================================
 template <typename T, std::size_t K>
 static bool
 is_empty(const BTNode<T, K> &tree) noexcept {
@@ -134,6 +141,7 @@ is_empty(const BTNode<T, K> &tree) noexcept {
 //   return nullptr;
 // }
 
+//=====================================
 template <typename T, std::size_t K>
 static void
 copy_split(BTNode<T, K> *left, std::size_t sep, BTNode<T, K> *right) noexcept {
@@ -325,6 +333,7 @@ insert_node(BTNode<T, k> *tree, V &&val, std::size_t index,
   }
 }
 
+//=====================================
 template <std::size_t keys>
 std::size_t
 dump_levels(BTNode<int, keys> *root, std::size_t acum = 0) noexcept {
@@ -492,9 +501,11 @@ dump(BTNode<int, keys> *root) noexcept {
   // }
 }
 
+//=====================================
 } // namespace btree
 } // namespace impl
 
+//=====================================
 template <typename T, std::size_t keys, typename C>
 Tree<T, keys, C>::Tree() noexcept
     : root(nullptr) {
@@ -504,8 +515,8 @@ template <typename T, std::size_t keys, typename C>
 Tree<T, keys, C>::~Tree() noexcept {
   // TODO
 }
-//=====================================
 
+//=====================================
 // http://btechsmartclass.com/DS/U5_T3.html
 template <typename T, std::size_t k, typename C, typename K>
 std::tuple<T *, bool>
@@ -578,8 +589,8 @@ Lit:
     return std::make_tuple(ins, ins != nullptr);
   }
 }
-//=====================================
 
+//=====================================
 template <typename T, std::size_t k, typename C, typename K>
 const T *
 find(const Tree<T, k, C> &tree, const K &needle) noexcept {
@@ -621,8 +632,8 @@ find(Tree<T, k, C> &tree, const K &needle) noexcept {
   const auto &c_tree = tree;
   return (T *)find(c_tree, needle);
 }
-//=====================================
 
+//=====================================
 template <typename T>
 static void
 dump_children(T *root) noexcept {

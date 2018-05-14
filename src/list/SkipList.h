@@ -13,6 +13,7 @@
  * special cases.
  */
 
+//=====================================
 /*Sorted container*/
 namespace sp {
 namespace impl {
@@ -41,6 +42,7 @@ struct SkipListNode {
 
 } // namespace SkipList
 } // namespace impl
+//=====================================
 /*
  * Level 0 should be the plain linked list structure for each higher level the
  * amount of nodes should be halved. This is accomplished by the random level
@@ -74,13 +76,15 @@ struct SkipList {
   static_assert(levels > 0, "gt 0");
   static_assert(levels < 32, "lt 32");
 };
-
+//=====================================
 // TODO SkipListSet
 
+//=====================================
 template <typename T, std::size_t l, typename C, typename... Arg>
 T *
 emplace(SkipList<T, l, C> &, Arg &&...) noexcept;
 
+//=====================================
 template <typename T, std::size_t l, typename C, typename V>
 T *
 insert(SkipList<T, l, C> &, V &&) noexcept;
@@ -93,6 +97,7 @@ insert_unique(SkipList<T, l, C> &, V &&) noexcept;
 // std::tuple<T *, bool>
 // emplace_unique(SkipList<T, l, C> &, Arg &&...) noexcept;
 
+//=====================================
 template <typename T, std::size_t l, typename C, typename K>
 T *
 find(SkipList<T, l, C> &, const K &) noexcept;
@@ -101,22 +106,27 @@ template <typename T, std::size_t l, typename C, typename K>
 const T *
 find(const SkipList<T, l, C> &, const K &) noexcept;
 
+//=====================================
 template <typename T, std::size_t l, typename C, typename K>
 bool
 take(SkipList<T, l, C> &, const K &, T &) noexcept;
 
+//=====================================
 template <typename T, std::size_t l, typename C, typename K>
 bool
 remove(SkipList<T, l, C> &, const K &) noexcept;
 
+//=====================================
 template <typename T, std::size_t l, typename C>
 bool
 is_empty(const SkipList<T, l, C> &) noexcept;
 
+//=====================================
 template <typename T, std::size_t l, typename C>
 void
 swap(SkipList<T, l, C> &, SkipList<T, l, C> &) noexcept;
 
+//=====================================
 template <typename T, std::size_t L, typename C, typename F>
 bool
 for_all(const SkipList<T, L, C> &, F) noexcept;
@@ -125,6 +135,7 @@ template <typename T, std::size_t L, typename C, typename F>
 bool
 for_all(SkipList<T, L, C> &, F) noexcept;
 
+//=====================================
 template <typename T, std::size_t L, typename C, typename F>
 void
 for_each(const SkipList<T, L, C> &, F) noexcept;
@@ -133,19 +144,21 @@ template <typename T, std::size_t L, typename C, typename F>
 void
 for_each(SkipList<T, L, C> &, F) noexcept;
 
+//=====================================
 template <std::size_t l, typename C>
 void
 dump(const SkipList<int, l, C> &) noexcept;
 
+//=====================================
 namespace n {
 template <typename T, std::size_t L, typename C>
 std::size_t
 length(const SkipList<T, L, C> &) noexcept;
 }
 
-/*
- * ==========================================================================
- */
+//=====================================
+//====Implementation===================
+//=====================================
 namespace impl {
 namespace SkipList {
 
@@ -156,6 +169,7 @@ namespace SkipList {
 // value{std::forward<V>(v)} {
 // }
 
+//=====================================
 template <typename T, std::size_t levels, typename C>
 std::size_t
 first_highest(const sp::SkipList<T, levels, C> &list, std::size_t limit) {
@@ -171,6 +185,7 @@ first_highest(const sp::SkipList<T, levels, C> &list, std::size_t limit) {
   return levels;
 }
 
+//=====================================
 /*
  * Randomize the depth of the about-to-inserted node
  */
@@ -201,6 +216,7 @@ random_level(prng::xorshift32 &state, std::size_t max) {
   return level % max;
 }
 
+//=====================================
 template <typename T, std::size_t levels, typename C, typename K>
 const SkipListNode<T, levels> *
 find_node(const sp::SkipList<T, levels, C> &list, const K &needle) noexcept {
@@ -246,6 +262,7 @@ find_node(const sp::SkipList<T, levels, C> &list, const K &needle) noexcept {
   return nullptr;
 }
 
+//=====================================
 template <typename T, std::size_t L, typename C, typename K>
 SkipListNode<T, L> *
 find_level_predecessor(SkipListNode<T, L> *start, std::size_t level,
@@ -270,6 +287,7 @@ Lit:
   return nullptr;
 }
 
+//=====================================
 /*
  * Starting from the highest present node in the list header, search downwards
  * until we are on target_level, then horizontally search for needle node
@@ -315,6 +333,7 @@ Lhorizontal:
   return current;
 }
 
+//=====================================
 template <typename T, std::size_t L, typename C, typename K>
 static bool
 is_equal(const SkipListNode<T, L> *node, const K &needle) {
@@ -338,6 +357,7 @@ is_next_equal(const SkipListNode<T, L> *node, const K &needle,
   return false;
 }
 
+//=====================================
 template <typename T, std::size_t L, typename C, typename K>
 SkipListNode<T, L> *
 remove_node(sp::SkipList<T, L, C> &list, const K &needle) noexcept {
@@ -372,6 +392,7 @@ remove_node(sp::SkipList<T, L, C> &list, const K &needle) noexcept {
   return result;
 }
 
+//=====================================
 template <typename T, std::size_t L, typename C>
 T *
 insert(sp::SkipList<T, L, C> &list, SkipListNode<T, L> *self) noexcept {
@@ -435,14 +456,17 @@ insert(sp::SkipList<T, L, C> &list, SkipListNode<T, L> *self) noexcept {
   return &self->value;
 }
 
+//=====================================
 } // namespace SkipList
 } // namespace impl
 
+//=====================================
 // template<typename T,std::size_t l,template C>
 // SkipList<T,l,C>::SkipList()noexcept
 //   : root{nullptr} {
 // }
 
+//=====================================
 template <typename T, std::size_t l, typename C, typename... Arg>
 T *
 emplace(SkipList<T, l, C> &self, Arg &&... args) noexcept {
@@ -456,6 +480,7 @@ emplace(SkipList<T, l, C> &self, Arg &&... args) noexcept {
   return nullptr;
 }
 
+//=====================================
 template <typename T, std::size_t L, typename C, typename V>
 T *
 insert(SkipList<T, L, C> &list, V &&v) noexcept {
@@ -516,6 +541,7 @@ insert_unique(SkipList<T, L, C> &list, V &&val) noexcept {
   return std::make_tuple(nullptr, false);
 }
 
+//=====================================
 // template <typename T, std::size_t l, typename C, typename Arg...>
 // std::tuple<T *, bool>
 // emplace_unique(SkipList<T, l, C> &, Arg &&...) noexcept {
@@ -529,6 +555,7 @@ insert_unique(SkipList<T, L, C> &list, V &&val) noexcept {
 //   return nullptr;
 // }
 
+//=====================================
 template <typename T, std::size_t l, typename C, typename K>
 T *
 find(SkipList<T, l, C> &list, const K &needle) noexcept {
@@ -548,6 +575,7 @@ find(const SkipList<T, levels, Comparator> &list, const K &needle) noexcept {
   return nullptr;
 } // sp::find()
 
+//=====================================
 template <typename T, std::size_t l, typename C, typename K>
 bool
 take(SkipList<T, l, C> &list, const K &needle, T &out) noexcept {
@@ -566,6 +594,7 @@ take(SkipList<T, l, C> &list, const K &needle, T &out) noexcept {
   return false;
 }
 
+//=====================================
 template <typename T, std::size_t L, typename C, typename K>
 bool
 remove(SkipList<T, L, C> &list, const K &needle) noexcept {
@@ -579,6 +608,7 @@ remove(SkipList<T, L, C> &list, const K &needle) noexcept {
   return result != nullptr;
 } // sp::remove()
 
+//=====================================
 template <typename T, std::size_t L, typename C>
 bool
 is_empty(const SkipList<T, L, C> &list) noexcept {
@@ -590,6 +620,7 @@ is_empty(const SkipList<T, L, C> &list) noexcept {
   return true;
 }
 
+//=====================================
 template <typename T, std::size_t l, typename C>
 void
 swap(SkipList<T, l, C> &first, SkipList<T, l, C> &second) noexcept {
@@ -599,6 +630,7 @@ swap(SkipList<T, l, C> &first, SkipList<T, l, C> &second) noexcept {
   swap(first.state, second.state);
 }
 
+//=====================================
 template <typename T, std::size_t L, typename C, typename F>
 bool
 for_all(const SkipList<T, L, C> &l, F f) noexcept {
@@ -629,6 +661,7 @@ for_all(SkipList<T, L, C> &l, F f) noexcept {
   return true;
 }
 
+//=====================================
 template <typename T, std::size_t L, typename C, typename F>
 void
 for_each(const SkipList<T, L, C> &l, F f) noexcept {
@@ -653,6 +686,7 @@ for_each(SkipList<T, L, C> &l, F f) noexcept {
   }
 }
 
+//=====================================
 template <std::size_t L, typename C>
 void
 dump(const SkipList<int, L, C> &list) noexcept {
@@ -742,6 +776,7 @@ dump(const SkipList<int, L, C> &list) noexcept {
 }
 
 namespace n {
+//=====================================
 template <typename T, std::size_t L, typename C>
 std::size_t
 length(const SkipList<T, L, C> &self) noexcept {
@@ -752,6 +787,8 @@ length(const SkipList<T, L, C> &self) noexcept {
   });
   return result;
 }
+
+//=====================================
 } // namespace n
 
 } // namespace sp

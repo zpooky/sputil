@@ -1,7 +1,7 @@
 #ifndef SP_UTIL_MAP_PROBING_HASH_MAP_H
 #define SP_UTIL_MAP_PROBING_HASH_MAP_H
 
-#include <cassert>
+#include <util/assert.h>
 #include <collection/Array.h>
 #include <cstddef>
 #include <hash/util.h>
@@ -44,8 +44,7 @@ template <typename Value, std::size_t cap, sp::Hasher<Value> h>
 StaticProbingHashSet<Value, cap, h>::StaticProbingHashSet() noexcept
     : key{nullptr}
     , value{nullptr} {
-  assertx(false);
-  //
+  // TODO
   //
 }
 

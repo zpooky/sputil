@@ -1,8 +1,6 @@
+#include <gtest/gtest.h>
 #include <tree/avl.h>
-
-#include "gtest/gtest.h"
-
-#include <random>
+#include <sstream>
 
 struct AVLData {
   using T = int;
@@ -19,6 +17,11 @@ struct AVLData {
 
   explicit operator bool() const noexcept {
     return present;
+  }
+  explicit operator std::string() const noexcept {
+    std::stringstream s;
+    s << data;
+    return s.str();
   }
 
   AVLData &
@@ -222,8 +225,7 @@ TEST(avlTest, test1) {
   ASSERT_TRUE(reb->right->balance == 0);
 }
 
-TEST(avlTest, test_increasing_order) 
-{
+TEST(avlTest, test_increasing_order) {
   avl::Tree<AVLData> tree;
   int i = 0;
   for (; i < 10; ++i) {
@@ -240,8 +242,7 @@ TEST(avlTest, test_increasing_order)
   }
 }
 
-TEST(avlTest, test_1a) 
-{
+TEST(avlTest, test_1a) {
   avl::Tree<int> tree;
   {
     avl::insert(tree, 20);

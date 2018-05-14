@@ -1,20 +1,19 @@
-#ifndef P_UTIL_TREE_AVL_TREE_H
+#ifndef SP_UTIL_TREE_AVL_TREE_H
 #define SP_UTIL_TREE_AVL_TREE_H
 
-#include "tree.h"
-#include <util/assert.h>
 #include <cstdint>
+#include <tree/tree.h>
 #include <tuple>
+#include <util/assert.h>
 #include <utility>
 
 #include <iostream>
 #include <string> //debug
 
-// TODO noexcept operator
-
 namespace avl {
 /*avl*/
 
+//=====================================
 template <typename T>
 struct Node {
   using value_type = T;
@@ -26,44 +25,27 @@ struct Node {
   std::int8_t balance;
 
   template <typename K>
-  explicit Node(K &&v, Node<T> *p = nullptr)
-      : left(nullptr)
-      , right(nullptr)
-      , parent(p)
-      , value(std::forward<K>(v))
-      , balance(0) {
-  }
+  explicit Node(K &&, Node<T> * = nullptr) noexcept;
 
-  explicit operator std::string() const {
-    std::string s;
-    s.append("[v:");
-    s.append(std::to_string(int(value)));
-    s.append("|b:");
-    s.append(std::to_string(balance));
-    s.append("]");
-    return s;
-  }
+  explicit operator std::string() const;
 
-  ~Node() noexcept {
-    // TODO this is recursive
-    if (left) {
-      delete left;
-      left = nullptr;
-    }
-    if (right) {
-      delete right;
-      right = nullptr;
-    }
-  }
+  ~Node() noexcept;
 };
 
 template <typename T, typename Comparator = sp::greater>
 using Tree = bst::Tree<avl::Node<T>, Comparator>;
 
+//=====================================
 template <typename T, typename C, typename K>
 std::tuple<T *, bool>
 insert(Tree<T, C> &, K &&) noexcept;
 
+//=====================================
+template <typename T, typename C, typename... Arg>
+std::tuple<T *, bool>
+emplace(Tree<T, C> &, Arg &&...) noexcept;
+
+//=====================================
 template <typename T, typename C, typename K>
 const T *
 find(const Tree<T, C> &, const K &) noexcept;
@@ -72,22 +54,70 @@ template <typename T, typename C, typename K>
 T *
 find(Tree<T, C> &, const K &) noexcept;
 
+//=====================================
 template <typename T, typename C, typename K>
 bool
 remove(Tree<T, C> &, const K &) noexcept;
 
+//=====================================
 template <typename T, typename C>
 void
 dump(Tree<T, C> &tree, std::string prefix = "") noexcept;
 
+//=====================================
 template <typename T, typename C>
 bool
 verify(Tree<T, C> &tree) noexcept;
 
-/*
- * ==========================================================================
- */
+//=====================================
+//====Implementation===================
+//=====================================
+template <typename T>
+template <typename K>
+Node<T>::Node(K &&v, Node<T> *p) noexcept
+    : left(nullptr)
+    , right(nullptr)
+    , parent(p)
+    , value(std::forward<K>(v))
+    , balance(0) {
+}
 
+template <>
+inline Node<int>::operator std::string() const {
+  std::string s;
+  s.append("[v:");
+  s.append(std::to_string(int(value)));
+  s.append("|b:");
+  s.append(std::to_string(balance));
+  s.append("]");
+  return s;
+}
+
+template <typename T>
+Node<T>::operator std::string() const {
+  std::string s;
+  s.append("[v:");
+  s.append(std::string(value));
+  s.append("|b:");
+  s.append(std::to_string(balance));
+  s.append("]");
+  return s;
+}
+
+template <typename T>
+Node<T>::~Node() noexcept {
+  // TODO this is recursive
+  if (left) {
+    delete left;
+    left = nullptr;
+  }
+  if (right) {
+    delete right;
+    right = nullptr;
+  }
+}
+
+//=====================================
 namespace impl {
 /*avl::impl*/
 namespace avl {
@@ -100,6 +130,7 @@ namespace avl {
 // BalanceFactor(N) > 0 is called "right-heavy", and one with BalanceFactor(N)
 // = 0 is sometimes simply called "balanced".
 
+//=====================================
 enum class Direction : bool { LEFT, RIGHT };
 
 template <typename T>
@@ -117,6 +148,7 @@ direction(const Node<T> *const child) noexcept {
   return Direction::RIGHT;
 } // avl::impl::avl::direction()
 
+//=====================================
 template <typename T>
 void
 dump_root(Node<T> *tree, std::string prefix = "") noexcept {
@@ -129,12 +161,14 @@ Lstart:
   return bst::impl::dump(root, prefix);
 } // avl::impl::avl::dump_root()
 
+//=====================================
 template <typename T>
 static std::int8_t
 balance(const Node<T> *const node) noexcept {
   return node ? node->balance : 0;
 } // avl::impl::avl::balance()
 
+//=====================================
 template <typename T>
 static Node<T> *
 rotate_left(Node<T> *const A) noexcept {
@@ -196,6 +230,7 @@ rotate_left(Node<T> *const A) noexcept {
   return B ? B : A;
 } // avl::impl::avl::rotate_light()
 
+//=====================================
 template <typename T>
 static Node<T> *
 rotate_right(Node<T> *const C) noexcept {
@@ -255,6 +290,7 @@ rotate_right(Node<T> *const C) noexcept {
   return B;
 } // avl::impl::avl::rotate_right()
 
+//=====================================
 template <typename T>
 static Node<T> *&
 set(Node<T> *&child) noexcept {
@@ -274,6 +310,7 @@ set(Node<T> *&child) noexcept {
   return parent->right;
 } // avl::impl::avl::set()
 
+//=====================================
 template <typename T>
 bool
 verify(const Node<T> *parent, const Node<T> *tree,
@@ -334,6 +371,7 @@ verify(const Node<T> *parent, const Node<T> *tree,
   return true;
 } // avl::impl::avl::verify()
 
+//=====================================
 template <typename T>
 void
 exchange(Node<T> *node, Node<T> *n) noexcept {
@@ -363,6 +401,7 @@ exchange(Node<T> *node, Node<T> *n) noexcept {
   }
 } // avl::impl::avl::exchange()
 
+//=====================================
 template <typename T>
 static bool
 verify(Node<T> *const tree) {
@@ -391,6 +430,7 @@ Lstart:
 namespace insert {
 /*avl::impl::avl::insert*/
 
+//=====================================
 template <typename T>
 static std::size_t
 insert_parent_balance(Node<T> *const child) noexcept {
@@ -613,6 +653,7 @@ calc_balance(const Node<T> *current) {
 //   return parent->balance;
 // } // avl::impl::avl::remove::remove_parent_balance()
 
+//=====================================
 template <typename T>
 static std::size_t
 remove_parent_balance(Node<T> *const child) noexcept {
@@ -822,6 +863,7 @@ remove(Node<T> *const current) noexcept {
 } // namespace avl
 } // namespace impl
 
+//=====================================
 template <typename T, typename C, typename K>
 std::tuple<T *, bool>
 insert(Tree<T, C> &tree, K &&value) noexcept {
@@ -852,6 +894,15 @@ insert(Tree<T, C> &tree, K &&value) noexcept {
   return std::make_tuple(insval, inserted);
 } // avl::insert()
 
+//=====================================
+template <typename T, typename C, typename... Arg>
+std::tuple<T *, bool>
+emplace(Tree<T, C> &self, Arg &&... args) noexcept {
+  // TODO make correct
+  return insert(self, T(std::forward<Arg>(args)...));
+} // avl::emplace()
+
+//=====================================
 template <typename T, typename C, typename K>
 const T *
 find(const Tree<T, C> &tree, const K &key) noexcept {
@@ -864,6 +915,7 @@ find(Tree<T, C> &tree, const K &key) noexcept {
   return bst::find(tree, key);
 } // avl::find()
 
+//=====================================
 template <typename T, typename C, typename K>
 bool
 remove(Tree<T, C> &tree, const K &k) noexcept {
@@ -888,12 +940,14 @@ remove(Tree<T, C> &tree, const K &k) noexcept {
   return false;
 } // avl::remove()
 
+//=====================================
 template <typename T, typename C>
 void
 dump(Tree<T, C> &tree, std::string prefix) noexcept {
   return bst::impl::dump(tree.root, prefix);
 } // avl::dump()
 
+//=====================================
 template <typename T, typename C>
 bool
 verify(Tree<T, C> &tree) noexcept {
@@ -901,6 +955,7 @@ verify(Tree<T, C> &tree) noexcept {
   return impl::avl::verify((Node<T> *)nullptr, tree.root, balance);
 } // avl::verify()
 
+//=====================================
 } // namespace avl
 
 #endif
