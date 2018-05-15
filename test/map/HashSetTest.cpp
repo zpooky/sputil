@@ -23,13 +23,15 @@ struct StrictHashSetTest {
 
   explicit StrictHashSetTest(std::size_t d, int)
       : data(d) {
-    assertxs(active >= 0, active);
+    // printf("\nctor %p\n", this);
     ++active;
   }
 
   StrictHashSetTest(const StrictHashSetTest &) = delete;
   StrictHashSetTest(StrictHashSetTest &&o)
       : data(o.data) {
+    // printf("\nmove ctor %p <- %p\n", this, &o);
+    ++active;
   }
 
   StrictHashSetTest &
@@ -52,6 +54,7 @@ struct StrictHashSetTest {
   }
 
   ~StrictHashSetTest() {
+    // printf("dtor %p\n", this);
     assertxs(active > 0, active);
     --active;
     assertxs(active >= 0, active);
@@ -66,41 +69,41 @@ identity(const StrictHashSetTest &in) {
 }
 
 TEST(HashSetTest, test) {
-  // using TType = std::size_t;
-  using TType = StrictHashSetTest;
+  {
+    // using TType = std::size_t;
+    using TType = StrictHashSetTest;
 
-  sp::HashSet<TType, identity> set;
-  for (std::size_t i = 0; i < 1024; ++i) {
-    for (std::size_t a = 0; a < i; ++a) {
-      {
-        if (a == 256) {
-          printf("");
+    sp::HashSet<TType, identity> set;
+    for (std::size_t i = 0; i < 1024; ++i) {
+      for (std::size_t a = 0; a < i; ++a) {
+        {
+          if (i == 311 && a == 256) {
+            printf("");
+          }
+          TType *res = insert(set, TType(a, 0));
+          if (res) {
+            printf("i[%zu] a[%zu] = res[%zu]\n", i, a, std::size_t(*res));
+            dump(set.tree);
+          }
+          ASSERT_FALSE(res);
         }
-        TType *res = insert(set, TType(a, 0));
-        if (res) {
-          printf("a[%zu] = res[%zu]\n", a, std::size_t(*res));
-          dump(set.tree);
+        {
+          const TType *res = lookup(set, TType(a, 0));
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
         }
-        ASSERT_FALSE(res);
       }
+
+      ASSERT_EQ(i, sp::rec::length(set));
       {
-        const TType *res = lookup(set, TType(a, 0));
+        TType *res = insert(set, TType(i, 0));
         ASSERT_TRUE(res);
-        ASSERT_EQ(res->data, a);
+        ASSERT_EQ(res->data, i);
+        ASSERT_TRUE(sp::rec::verify(set));
       }
-    }
-
-    ASSERT_EQ(i, sp::rec::length(set));
-    {
-      if (i == 256) {
-        printf(" insert(set, i[%zu])\n", i);
-      }
-      TType *res = insert(set, TType(i, 0));
-      ASSERT_TRUE(res);
-      ASSERT_EQ(res->data, i);
-      ASSERT_TRUE(sp::rec::verify(set));
     }
   }
+  ASSERT_EQ(std::size_t(0), StrictHashSetTest::active);
 }
 
 TEST(HashSetTest, test_rand) {
@@ -112,7 +115,7 @@ TEST(HashSetTest, test_rand) {
   ASSERT_TRUE(range % bits == 0);
   std::size_t length = range / bits;
 
-  auto raw = new uint64_t[length];
+  auto raw = new uint64_t[length]{0};
   sp::Bitset bset(raw, length);
 
   for (; i < range; ++i) {
@@ -129,7 +132,6 @@ TEST(HashSetTest, test_rand) {
 
     const std::uint32_t current = uniform_dist(r, 0, range);
     {
-      printf(" insert(set, i[%u])\n", current);
       const bool v = test(bset, current);
       auto res = insert(set, std::size_t(current));
       if (v) {
@@ -141,6 +143,8 @@ TEST(HashSetTest, test_rand) {
       }
     }
   }
+  ASSERT_TRUE(sp::rec::verify(set));
+  // dump(set.tree);
 
   delete[] raw;
 }
@@ -221,42 +225,6 @@ TEST(HashSetTest, test_dtor) {
         ASSERT_TRUE(res);
         ASSERT_EQ(*res, i);
       }
-    }
-  }
-  ASSERT_EQ(std::int64_t(0), TestHashSetTest::active);
-}
-
-TEST(HashSetTest, test_rehash) {
-  {
-    prng::xorshift32 r(1);
-    sp::SkipList<std::size_t, 8> inserted;
-    sp::HashSet<TestHashSetTest, fnv_hash> set;
-
-    for (std::size_t i = 0; i < 1024 * 128; ++i) {
-      // for_each(inserted, [&set](auto &a) {
-      //   auto *res = insert(set, a);
-      //   ASSERT_FALSE(res);
-      //
-      //   {
-      //     auto *res = lookup(set, a);
-      //     ASSERT_TRUE(res);
-      //     ASSERT_EQ(*res, a);
-      //   }
-      // });
-      // ASSERT_EQ(i, sp::n::length(inserted));
-
-      {
-        auto *res = insert(set, i);
-        ASSERT_TRUE(res);
-        ASSERT_EQ(*res, i);
-      }
-      // {
-      //   auto res = insert_unique(inserted, i);
-      //   bool inserted = std::get<1>(res);
-      //   ASSERT_TRUE(inserted);
-      //   auto val = std::get<0>(res);
-      //   ASSERT_EQ(*val, i);
-      // }
     }
   }
   ASSERT_EQ(std::int64_t(0), TestHashSetTest::active);

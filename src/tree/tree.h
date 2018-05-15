@@ -373,7 +373,8 @@ swap(Tree<T, C> &first, Tree<T, C> &second) noexcept {
 
 template <typename T, typename C, typename F>
 void
-for_each(const Tree<T, C> &self, F f) noexcept {
+for_each(const Tree<T, C> &, F) noexcept {
+  assertx(false);
 }
 //=====================================
 

@@ -16,9 +16,11 @@
 namespace graph {
 // TODO make implicit converse to Unidrect work
 
+//=====================================
 template <typename T, std::size_t N>
 struct Undirected;
 
+//=====================================
 template <typename T, std::size_t N>
 struct Wrapper {
   using edge_type = Undirected<T, N>;
@@ -82,6 +84,8 @@ struct Wrapper {
     ptr = nullptr;
   }
 };
+
+//=====================================
 /*
  * <->
  */
@@ -102,6 +106,7 @@ struct Undirected {
   ~Undirected() noexcept;
 };
 
+//=====================================
 /*
  * ->
  */
@@ -109,6 +114,7 @@ struct Directed {
   /**/
 };
 
+//=====================================
 /*
  *  N
  * <->
@@ -118,17 +124,8 @@ struct Weighted {
 };
 } // namespace graph
 
-namespace dijkstra {
-// void
-// shortest_path(graph::Weighted *from, graph::Weighted *to) noexcept;
-// // invert weight
-// void
-// longest_path(graph::Weighted *from, graph::Weighted *to) noexcept;
-} // namespace dijkstra
-
-namespace graph {
-
 //=====================================
+namespace graph {
 template <typename T, std::size_t N, typename F>
 void
 breadth_first(Undirected<T, N> &, F) noexcept;

@@ -55,7 +55,7 @@ dump(Tree<T, C> &tree, std::string prefix = "") noexcept;
 //=====================================
 template <typename T, typename C>
 bool
-verify(Tree<T, C> &tree) noexcept;
+verify(const Tree<T, C> &tree) noexcept;
 
 //=====================================
 //====Implementation===================
@@ -103,11 +103,9 @@ Node<T>::~Node() noexcept {
 //=====================================
 namespace impl {
 namespace binary {
-
-//=====================================
 template <typename T>
 bool
-verify(Node<T> *parent, Node<T> *tree) noexcept {
+verify(const Node<T> *parent, const Node<T> *tree) noexcept {
   if (tree) {
     if (!verify(tree, tree->left)) {
       // printf("left-");
@@ -209,7 +207,7 @@ dump(Tree<T, C> &tree, std::string prefix) noexcept {
 //=====================================
 template <typename T, typename C>
 bool
-verify(Tree<T, C> &tree) noexcept {
+verify(const Tree<T, C> &tree) noexcept {
   return impl::binary::verify((Node<T> *)nullptr, tree.root);
 } // binary::verify()
 

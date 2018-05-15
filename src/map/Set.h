@@ -3,14 +3,17 @@
 
 #include <hash/util.h>
 #include <limits>
-#include <sstream>
+#include <sstream> //debug
 #include <tree/avl.h>
 #include <tree/bst.h>
 #include <tree/bst_extra.h>
 #include <tree/red-black.h>
 
+// TODO mix of hash to avoid identity 1 -> 1 hash problem
+// TODO try use avl/red-black
 namespace sp {
 namespace impl {
+//=====================================
 template <typename T>
 struct HSBucket {
   using st = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
@@ -22,8 +25,10 @@ struct HSBucket {
   ~HSBucket() noexcept;
 };
 
+//=====================================
 struct HashKey;
 
+//=====================================
 template <typename T, std::size_t c = 256>
 struct HSNode {
   static constexpr std::size_t capacity = c;
@@ -45,43 +50,23 @@ struct HSNode {
   bool
   operator<(const HSNode<T> &) const noexcept;
 
-  operator std::string() const noexcept {
-    std::stringstream res;
-    res << "HSNode[start[" << start << "],length[" << length << "]]";
-    return res.str();
-  }
+  operator std::string() const noexcept;
 };
 
+//=====================================
 struct HashKey {
   const std::size_t hash;
 
-  HashKey(std::size_t h) noexcept
-      : hash(h) {
-  }
+  HashKey(std::size_t h) noexcept;
 
   template <typename T>
   bool
-  operator>(const HSNode<T> &o) const noexcept {
-    const bool res = hash >= (o.start + o.length);
-    if (hash == 256) {
-      printf("HashKey[%zu]>HSNode[%zu,%zu] in_range = %s gt=%s\n", hash,
-             o.start,
-             o.length,                              //
-             in_range(o, *this) ? "true" : "false", //
-             res ? "true" : "false");
-    }
-    if (in_range(o, *this)) {
-      return false;
-    }
-
-    // printf("hash[%zu] > o[o.start[%zu+o.length[%zu]: %zu]\n", hash, o.start,
-    //        o.length, o.start + o.length);
-    return res;
-  }
+  operator>(const HSNode<T> &o) const noexcept;
 };
 
 } // namespace impl
 
+//=====================================
 template <typename T, sp::Hasher<T>>
 struct HashSet {
 
@@ -106,7 +91,6 @@ lookup(const HashSet<T, h> &, const V &) noexcept;
 
 //=====================================
 namespace rec {
-//=====================================
 template <typename T, sp::Hasher<T> h>
 bool
 verify(const HashSet<T, h> &) noexcept;
@@ -116,9 +100,7 @@ template <typename T, sp::Hasher<T> h>
 std::size_t
 length(const HashSet<T, h> &) noexcept;
 
-//=====================================
-}
-//=====================================
+} // namespace rec
 
 //=====================================
 //====Implementation===================
@@ -159,48 +141,35 @@ bool
 HSNode<T, c>::operator>(const HashKey &o) const noexcept {
   const bool res = (start + length) > o.hash;
   if (o.hash == 256) {
-    printf("HSNode[%zu,%zu]>HashKey[%zu] in_range = %s gt=%s\n", start, length,
-           o.hash //
-           ,
-           in_range(*this, o) ? "true" : "false", //
-           res ? "true" : "false");
+    // printf("HSNode[%zu,%zu]>HashKey[%zu] in_range = %s gt=%s\n", start,
+    // length,
+    //        o.hash //
+    //        ,
+    //        in_range(*this, o) ? "true" : "false", //
+    //        res ? "true" : "false");
   }
 
   if (in_range(*this, o)) {
     return false;
   }
 
-  // printf("(start[%zu] + length[%zu]) >= o.hash[%zu] == %s\n", //
-  //        start, length, o.hash, res ? "true" : "false");
   if (res) {
     return true;
   }
 
   return false;
-
-  // const bool res = (start) > o.hash;
-  // printf("(start[%zu]+length[%zu]: %zu) > o.hash[%zu]: "
-  //        "%s\n",
-  //        start, length, start + length, //
-  //        o.hash,                        //
-  //        res ? "true" : "false");
-
-  // return res;
 }
 
 template <typename T, std::size_t c>
 bool
 HSNode<T, c>::operator>(const HSNode<T> &o) const noexcept {
-  // bool res = start > o.start;
-  // printf("HSNode(start[%zu] > o.start[%zu]): %s\n", start, o.start,
-  //        res ? "true" : "false");
   const bool res = (start + length) > (o.start + o.length);
-  printf("HSNode(start[%zu]+length[%zu]: %zu) > "
-         "HSNode(o.start[%zu]+o.length[%zu]: %zu): "
-         "%s\n",
-         start, length, start + length,         //
-         o.start, o.length, o.start + o.length, //
-         res ? "true" : "false");               //
+  // printf("HSNode(start[%zu]+length[%zu]: %zu) > "
+  //        "HSNode(o.start[%zu]+o.length[%zu]: %zu): "
+  //        "%s\n",
+  //        start, length, start + length,         //
+  //        o.start, o.length, o.start + o.length, //
+  //        res ? "true" : "false");               //
   return res;
 }
 
@@ -209,6 +178,33 @@ bool
 HSNode<T, c>::operator<(const HSNode<T> &o) const noexcept {
   // verify(tree)
   return start < o.start;
+}
+
+template <typename T, std::size_t c>
+HSNode<T, c>::operator std::string() const noexcept {
+  std::stringstream res;
+  res << "HSNode[start[" << start << "],length[" << length << "]]";
+  return res.str();
+}
+
+inline HashKey::HashKey(std::size_t h) noexcept
+    : hash(h) {
+}
+
+template <typename T>
+bool
+HashKey::operator>(const HSNode<T> &o) const noexcept {
+  const bool res = hash >= (o.start + o.length);
+  // printf("HashKey[%zu]>HSNode[%zu,%zu] in_range = %s gt=%s\n", hash,
+  //        o.start,
+  //        o.length,                              //
+  //        in_range(o, *this) ? "true" : "false", //
+  //        res ? "true" : "false");
+  if (in_range(o, *this)) {
+    return false;
+  }
+
+  return res;
 }
 
 } // namespace impl
@@ -245,19 +241,22 @@ Lit:
         // already present
         return nullptr;
       }
-
-      if (current->next) {
-        current = current->next;
-        goto Lit;
-      }
-
-      current = current->next = new (std::nothrow) HSBucket<T>;
     }
 
+    if (current->next) {
+      current = current->next;
+      goto Lit;
+    }
+    current = current->next = new (std::nothrow) HSBucket<T>;
+
     if (current) {
+      assertx(!current->present);
+
       current->present = true;
       return new (&current->value) T(std::forward<V>(val));
     }
+  } else {
+    assertx(false);
   }
 
   return nullptr;
@@ -311,7 +310,6 @@ split(HashSet<T, hash> &self, HSNode<T, cap> &source) noexcept {
       source.length = before;
     }
   }
-  assertx(false); // TODO remove
 
   return nullptr;
 }
@@ -332,14 +330,16 @@ in_range(const HSNode<T, cap> &node, const HashKey &h) noexcept {
 namespace rec {
 template <typename T, sp::Hasher<T> h, std::size_t cap>
 HSBucket<T> *
-migrate_list(HSNode<T, cap> &node, HSBucket<T> *current, HSNode<T, cap> &dest) {
-  // TODO this is recursive
+migrate_list(HSNode<T, cap> &node, HSBucket<T> *const current,
+             HSNode<T, cap> &dest) {
   if (current) {
+
+    HSBucket<T> *const next = current->next;
     if (current->present) {
+
       const HashKey code(hash<T, h>(*current));
       if (!in_range(node, code)) {
         assertx(in_range(dest, code));
-        HSBucket<T> *const next = current->next;
 
         HSBucket<T> &bucket = lookup(dest, code);
         current->next = bucket.next;
@@ -353,7 +353,7 @@ migrate_list(HSNode<T, cap> &node, HSBucket<T> *current, HSNode<T, cap> &dest) {
       }
     }
 
-    current->next = migrate_list<T, h, cap>(node, current->next, dest);
+    current->next = migrate_list<T, h, cap>(node, next, dest);
     return current;
   }
 
@@ -362,7 +362,7 @@ migrate_list(HSNode<T, cap> &node, HSBucket<T> *current, HSNode<T, cap> &dest) {
 } // namespace rec
 
 template <typename T, sp::Hasher<T> h, std::size_t cap>
-static bool
+static void
 migrate(HSNode<T, cap> &node, HSBucket<T> &source,
         HSNode<T, cap> &dest) noexcept {
   if (source.present) {
@@ -384,8 +384,6 @@ migrate(HSNode<T, cap> &node, HSBucket<T> &source,
   }
 
   source.next = rec::migrate_list<T, h, cap>(node, source.next, dest);
-
-  return true;
 }
 
 template <typename T, sp::Hasher<T> h, std::size_t cap>
@@ -395,13 +393,14 @@ rehash(HashSet<T, h> &self, HSNode<T, cap> &source) noexcept {
   assertx(verify(self.tree));
 
   if (other) {
+    const std::size_t before = source.entries;
+
     for (std::size_t i = 0; i < source.capacity; ++i) {
       migrate<T, h, cap>(source, source.buckets[i], *other);
     }
 
     return true;
   }
-  assertx(false); // TODO remove
 
   return false;
 } // impl::rehash()
@@ -437,42 +436,27 @@ insert(HashSet<T, hash> &self, V &&val) noexcept {
 
   auto &tree = self.tree;
   const HashKey code(hash(val));
-  if (code.hash == 256)
-    printf("-insert_find(hash[%zu])\n", code.hash);
 
   HSNode<T> *node = find(tree, code);
   if (node == nullptr) {
-    if (!is_empty(tree)) {
-      { HSNode<T> *node2 = find(tree, code); }
-      printf("-\n");
-      dump(tree);
-      printf("hash[%zu]\n", code.hash);
-      assertx(verify(tree));
-      assertx(false);
-    }
     // should only get here on first invocation
+    assertx(is_empty(tree));
+
     const std::size_t start = 0;
     const auto length = std::numeric_limits<std::size_t>::max();
     auto res = emplace(tree, start, length);
 
     node = std::get<0>(res);
-    assertx(in_range(*node, code)); // TODO only for debug
-    assertxs(std::get<1>(res), node, std::get<1>(res));
-
-    // assertx(find(tree, *node) == node); // TODO only for debug
-    if (!find(tree, code)) { // TODO only for debug
-      assertx(node);
-      dump(tree);
-      printf("%s\n", std::string(*node).c_str());
-      assertx(verify(tree));
-      assertx(false);
+    if (node) {
+      const bool created = std::get<1>(res);
+      assertxs(created, node, created);
     }
   }
 
   if (node) {
-    if (!in_range(*node, code)) {
-      dump(tree);
-    }
+    assertx(find(tree, code) == node);
+    assertx(in_range(*node, code));
+
     T *const result = impl::insert(*node, code, std::forward<V>(val));
     if (result) {
       // TODO resize factor
@@ -491,8 +475,8 @@ namespace impl {
 template <typename T, typename V>
 static const T *
 lookup(const HSBucket<T> &node, const V &needle) noexcept {
-
   const HSBucket<T> *current = &node;
+
 Lit:
   if (current) {
     if (current->present) {
@@ -501,6 +485,7 @@ Lit:
         return value;
       }
     }
+
     current = current->next;
     goto Lit;
   }
@@ -560,14 +545,14 @@ for_each(const sp::impl::HSBucket<T> &bucket, F f) noexcept {
     it = it->next;
   }
 }
-}
+} // namespace impl
 
 template <typename T, sp::Hasher<T> h>
 bool
 verify(const sp::HashSet<T, h> &self) noexcept {
   using namespace impl;
 
-  // assertx(verify(self.tree));
+  assertx(binary::verify(self.tree));
 
   binary::rec::inorder(self.tree, [](const auto &node) {
     for_each(node, [&node](const auto &buckets) {
@@ -576,7 +561,6 @@ verify(const sp::HashSet<T, h> &self) noexcept {
 
         assertxs(sp::impl::in_range(node, code), code.hash, node.start,
                  node.length);
-
       });
     });
     /**/

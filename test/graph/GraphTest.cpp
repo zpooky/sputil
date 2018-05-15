@@ -147,7 +147,7 @@ TEST(graphTest, test_dtor) {
     std::size_t bfs_cnt = 0;
     breadth_first(root, [&bfs_cnt, &bits](auto &c) {
       bool priv = sp::set(bits, c.value, true);
-      assertx(priv == false);
+      ASSERT_EQ(priv, false);
 
       // printf("%d\n", c.value);
       ++bfs_cnt;

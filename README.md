@@ -15,6 +15,7 @@ utf8
 Boyer–Moore string search algorithm
 Knuth-Morris-Pratt
 Levenshtein distance
+suffix tree https://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-algorithm-in-plain-english/9513423#9513423
 
 #file path
 			Path p;
@@ -36,7 +37,9 @@ Right r(value);
 ```
 
 ## sort !
-...
+- selction
+- heap sort
+- radix sort -https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/source/rxsort.c
 
 ## Diffie Hellman
 ## RSA
@@ -55,11 +58,8 @@ lz77 - https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/sou
 60seconds
 1hour
 
-##string
-suffix tree https://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-algorithm-in-plain-english/9513423#9513423
 
-## 
+##
 Markov chains
 
 Minimum spanning tree
-radix sort -https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/source/rxsort.c
