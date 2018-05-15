@@ -12,8 +12,8 @@ namespace binary {
 //===Recursive================================================
 //============================================================
 namespace rec {
+//=====================================
 namespace impl {
-
 template <typename T, typename C>
 bool
 equal(const Node<T> *a, const Node<T> *b) noexcept {
@@ -43,8 +43,18 @@ equal(const Node<T> *a, const Node<T> *b) noexcept {
   }
 
   return true;
-} // binary::impl::binary::equal()
+} // binary::rec::impl::binary::equal()
 
+} // namespace binary::rec::impl
+
+template <typename T, typename C>
+bool
+equal(const Tree<T, C> &a, const Tree<T, C> &b) noexcept {
+  return impl::equal<T, C>(a.root, b.root);
+}
+
+//=====================================
+namespace impl {
 template <typename T>
 std::size_t
 height(const Node<T> *node) noexcept {
@@ -54,7 +64,16 @@ height(const Node<T> *node) noexcept {
     return 0;
   }
 } // binary::impl::binary::height()
+}
 
+template <typename T, typename C>
+std::size_t
+height(const Tree<T, C> &tree) noexcept {
+  return impl::height(tree.root);
+}
+
+//=====================================
+namespace impl {
 template <typename T>
 Node<T> *
 delete_self(Node<T> *tree) noexcept {
@@ -67,7 +86,16 @@ delete_self(Node<T> *tree) noexcept {
   }
   return nullptr;
 }
+}
 
+template <typename T, typename C>
+void
+delete_self(Tree<T, C> &tree) noexcept {
+  tree.root = impl::delete_self(tree.root);
+}
+
+//=====================================
+namespace impl {
 template <typename T, typename F>
 void
 inorder(const Node<T> *tree, F f) noexcept {
@@ -77,7 +105,17 @@ inorder(const Node<T> *tree, F f) noexcept {
     inorder(tree->right, f);
   }
 }
+}
 
+/*walker*/
+template <typename T, typename C, typename F>
+void
+inorder(const Tree<T, C> &tree, F f) noexcept {
+  return impl::inorder(tree.root, f);
+}
+
+//=====================================
+namespace impl {
 template <typename T, typename F>
 void
 preorder(const Node<T> *tree, F f) noexcept {
@@ -87,7 +125,16 @@ preorder(const Node<T> *tree, F f) noexcept {
     preorder(tree->right, f);
   }
 }
+}
 
+template <typename T, typename C, typename F>
+void
+preorder(const Tree<T, C> &tree, F f) noexcept {
+  return impl::preorder(tree.root, f);
+}
+
+//=====================================
+namespace impl {
 template <typename T, typename F>
 void
 postorder(const Node<T> *tree, F f) noexcept {
@@ -97,7 +144,16 @@ postorder(const Node<T> *tree, F f) noexcept {
     f(tree->value);
   }
 }
+}
 
+template <typename T, typename C, typename F>
+void
+postorder(const Tree<T, C> &tree, F f) noexcept {
+  return impl::postorder(tree.root, f);
+}
+
+//=====================================
+namespace impl {
 template <typename T, typename F>
 bool
 levelorder(const Node<T> *tree, F f, std::size_t cnt) noexcept {
@@ -113,7 +169,19 @@ levelorder(const Node<T> *tree, F f, std::size_t cnt) noexcept {
   }
   return false;
 }
+}
 
+template <typename T, typename C, typename F>
+void
+levelorder(const Tree<T, C> &tree, F f) noexcept {
+  // start at the top level and work down
+  std::size_t level = 0;
+  while (impl::levelorder(tree.root, f, level++))
+    ;
+}
+
+//=====================================
+namespace impl {
 template <typename T, typename F>
 void
 reverse_levelorder(const Node<T> *tree, F f,
@@ -124,7 +192,78 @@ reverse_levelorder(const Node<T> *tree, F f,
     reverse_levelorder(tree->right, f, stack);
   }
 }
+}
 
+template <typename T, typename C, typename F>
+void
+reverse_levelorder(const Tree<T, C> &tree, F f) noexcept {
+  sp::HeapStack<const Node<T> *> stack;
+  // start at the bottom level and work up
+  impl::reverse_levelorder(tree.root, f, stack);
+  for_each(stack, [f](auto *c) {
+    /**/
+    return f(c->value);
+  });
+}
+
+//=====================================
+template <typename T, typename C, typename F>
+void
+spiralorder(const Tree<T, C> &, F) noexcept {
+  // http://www.techiedelight.com/spiral-order-traversal-binary-tree/
+  // TODO
+}
+
+//=====================================
+template <typename T, typename C, typename F>
+void
+inverseorder(const Tree<T, C> &, F) noexcept;
+
+//=====================================
+template <typename T, typename C>
+bool
+is_perfect_binary_tree(const Tree<T, C> &) noexcept {
+  return false;
+}
+
+//=====================================
+template <typename T, typename C>
+bool
+is_complete_binary_tree(const Tree<T, C> &) noexcept {
+  // http://www.techiedelight.com/check-given-binary-tree-complete-binary-tree-not/
+  // every node is filled except possible last which is empty/full/left
+  return false;
+}
+
+//=====================================
+template <typename T, typename C>
+bool
+is_sum_tree(const Tree<T, C> &) noexcept {
+  // check if the value of a node is the sum of all values for each child nodes
+  // http://www.techiedelight.com/check-given-binary-tree-sum-tree-not/
+  return false;
+}
+
+//=====================================
+template <typename T, typename C>
+bool
+is_symmetric(const Tree<T, C> &) noexcept {
+  // http://www.techiedelight.com/check-given-binary-tree-symmetric-structure-not/
+  // check the shape of the left subtree is the inverse on the right subtree
+  return false;
+}
+
+//=====================================
+template <typename T, typename C>
+bool
+is_height_balanced(const Tree<T, C> &) noexcept {
+  // http://www.techiedelight.com/check-given-binary-tree-is-height-balanced-not/
+  // is the difference in height either 0/1 between the left and right child
+  return false;
+}
+
+//=====================================
+namespace impl {
 template <typename T, typename C>
 bool
 is_binary_tree_bst(const Node<T> *tree) noexcept {
@@ -150,111 +289,6 @@ is_binary_tree_bst(const Node<T> *tree) noexcept {
 
   return true;
 }
-
-} // namespace binary::rec::impl
-
-template <typename T, typename C>
-bool
-equal(const Tree<T, C> &a, const Tree<T, C> &b) noexcept {
-  return impl::equal<T, C>(a.root, b.root);
-}
-
-template <typename T, typename C>
-std::size_t
-height(const Tree<T, C> &tree) noexcept {
-  return impl::height(tree.root);
-}
-
-template <typename T, typename C>
-void
-delete_self(Tree<T, C> &tree) noexcept {
-  tree.root = impl::delete_self(tree.root);
-}
-
-/*walker*/
-template <typename T, typename C, typename F>
-void
-inorder(const Tree<T, C> &tree, F f) noexcept {
-  return impl::inorder(tree.root, f);
-}
-
-template <typename T, typename C, typename F>
-void
-preorder(const Tree<T, C> &tree, F f) noexcept {
-  return impl::preorder(tree.root, f);
-}
-
-template <typename T, typename C, typename F>
-void
-postorder(const Tree<T, C> &tree, F f) noexcept {
-  return impl::postorder(tree.root, f);
-}
-
-template <typename T, typename C, typename F>
-void
-levelorder(const Tree<T, C> &tree, F f) noexcept {
-  // start at the top level and work down
-  std::size_t level = 0;
-  while (impl::levelorder(tree.root, f, level++))
-    ;
-}
-
-template <typename T, typename C, typename F>
-void
-reverse_levelorder(const Tree<T, C> &tree, F f) noexcept {
-  sp::HeapStack<const Node<T> *> stack;
-  // start at the bottom level and work up
-  impl::reverse_levelorder(tree.root, f, stack);
-  for_each(stack, [f](auto *c) { return f(c->value); });
-}
-
-template <typename T, typename C, typename F>
-void
-spiralorder(const Tree<T, C> &, F) noexcept {
-  // http://www.techiedelight.com/spiral-order-traversal-binary-tree/
-  // TODO
-}
-
-template <typename T, typename C, typename F>
-void
-inverseorder(const Tree<T, C> &, F) noexcept;
-
-template <typename T, typename C>
-bool
-is_perfect_binary_tree(const Tree<T, C> &) noexcept {
-  return false;
-}
-
-template <typename T, typename C>
-bool
-is_complete_binary_tree(const Tree<T, C> &) noexcept {
-  // http://www.techiedelight.com/check-given-binary-tree-complete-binary-tree-not/
-  // every node is filled except possible last which is empty/full/left
-  return false;
-}
-
-template <typename T, typename C>
-bool
-is_sum_tree(const Tree<T, C> &) noexcept {
-  // check if the value of a node is the sum of all values for each child nodes
-  // http://www.techiedelight.com/check-given-binary-tree-sum-tree-not/
-  return false;
-}
-
-template <typename T, typename C>
-bool
-is_symmetric(const Tree<T, C> &) noexcept {
-  // http://www.techiedelight.com/check-given-binary-tree-symmetric-structure-not/
-  // check the shape of the left subtree is the inverse on the right subtree
-  return false;
-}
-
-template <typename T, typename C>
-bool
-is_height_balanced(const Tree<T, C> &) noexcept {
-  // http://www.techiedelight.com/check-given-binary-tree-is-height-balanced-not/
-  // is the difference in height either 0/1 between the left and right child
-  return false;
 }
 
 template <typename T, typename C>
@@ -265,45 +299,8 @@ is_binary_tree_bst(const Tree<T, C> &tree) noexcept {
   return impl::is_binary_tree_bst<T, C>(tree.root);
 }
 
-template <typename T, typename C>
-void
-print_cousin_nodes(const Tree<T, C> &) noexcept {
-  // http: // www.techiedelight.com/print-cousins-of-given-node-binary-tree/
-}
-
-template <typename T, typename C>
-void
-mirror(const Tree<T, C> &) noexcept {
-  // http://www.techiedelight.com/convert-binary-tree-to-its-mirror/
-}
-
-template <typename T, typename C>
-void
-lowest_common_ancestor(const Tree<T, C> &) noexcept {
-  // http://www.techiedelight.com/find-lowest-common-ancestor-lca-two-nodes-binary-tree/
-}
-
-template <typename T, typename C, typename F>
-void
-level_first_left(const Tree<T, C> &, F) noexcept {
-  // http://www.techiedelight.com/print-left-view-of-binary-tree/
-}
-}
 //=====================================
-// Unbalanced Tree -> Balanced Tree
-template <typename T, typename C>
-bool
-balance(Tree<T, C> &) noexcept;
-
-//=====================================
-template <typename T, typename C>
-bool
-reverse(Tree<T, C> &) noexcept;
-
-//=====================================
-namespace rec {
 namespace impl {
-
 template <typename T>
 std::size_t
 max_width(const Node<T> *tree, std::size_t n = 0) noexcept {
@@ -317,7 +314,7 @@ max_width(const Node<T> *tree, std::size_t n = 0) noexcept {
   }
   return n;
 }
-}
+} // namespace rec::impl
 
 template <typename T, typename C>
 std::size_t
@@ -325,7 +322,52 @@ max_width(const Tree<T, C> &tree) noexcept {
   // http://www.techiedelight.com/find-maximum-width-given-binary-tree/
   return impl::max_width(tree.root);
 }
+
 } // namespace binary::rec
+
+//=====================================
+template <typename T, typename C>
+void
+print_cousin_nodes(const Tree<T, C> &) noexcept {
+  // http: // www.techiedelight.com/print-cousins-of-given-node-binary-tree/
+}
+
+//=====================================
+template <typename T, typename C>
+void
+mirror(const Tree<T, C> &) noexcept {
+  // http://www.techiedelight.com/convert-binary-tree-to-its-mirror/
+}
+
+//=====================================
+template <typename T, typename C>
+void
+lowest_common_ancestor(const Tree<T, C> &) noexcept {
+  // http://www.techiedelight.com/find-lowest-common-ancestor-lca-two-nodes-binary-tree/
+}
+
+//=====================================
+template <typename T, typename C, typename F>
+void
+level_first_left(const Tree<T, C> &, F) noexcept {
+  // http://www.techiedelight.com/print-left-view-of-binary-tree/
+}
+
+//=====================================
+// Unbalanced Tree -> Balanced Tree
+template <typename T, typename C>
+bool
+balance(Tree<T, C> &) noexcept;
+
+//=====================================
+template <typename T, typename C>
+bool
+reverse(Tree<T, C> &) noexcept;
+
+//=====================================
+namespace rec {} // namespace binary::rec
+
+//=====================================
 
 //============================================================
 //===Itterative===============================================
@@ -397,7 +439,7 @@ reverse_levelorder(const Tree<T, C> &tree, F f) noexcept {
     return f(c->value);
   });
 }
-} // namespace binary::it
+} // namepace binary::it
 
 } // namespace binary
 

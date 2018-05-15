@@ -27,6 +27,11 @@ template <typename T, typename Comparator = sp::greater>
 using Tree = bst::Tree<Node<T>, Comparator>;
 
 //=====================================
+template <typename T, typename C>
+bool
+is_empty(const Tree<T, C> &) noexcept;
+
+//=====================================
 template <typename T, typename C, typename K>
 std::tuple<T *, bool>
 insert(Tree<T, C> &, K &&) noexcept;
@@ -41,6 +46,7 @@ template <typename T, typename C, typename K>
 bool
 remove(Tree<T, C> &, const K &) noexcept;
 
+//=====================================
 //=====================================
 template <typename T, typename C>
 void
@@ -137,6 +143,13 @@ verify(Node<T> *parent, Node<T> *tree) noexcept {
 
 } // namespace binary
 } // namespace impl
+//=====================================
+template <typename T, typename C>
+bool
+is_empty(const Tree<T, C> &self) noexcept {
+  return self.root == nullptr;
+}
+
 //=====================================
 template <typename T, typename C, typename K>
 std::tuple<T *, bool>

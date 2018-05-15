@@ -6,6 +6,7 @@
 #include <sstream>
 #include <tree/avl.h>
 #include <tree/bst.h>
+#include <tree/bst_extra.h>
 #include <tree/red-black.h>
 
 namespace sp {
@@ -61,9 +62,21 @@ struct HashKey {
   template <typename T>
   bool
   operator>(const HSNode<T> &o) const noexcept {
+    const bool res = hash >= (o.start + o.length);
+    if (hash == 256) {
+      printf("HashKey[%zu]>HSNode[%zu,%zu] in_range = %s gt=%s\n", hash,
+             o.start,
+             o.length,                              //
+             in_range(o, *this) ? "true" : "false", //
+             res ? "true" : "false");
+    }
+    if (in_range(o, *this)) {
+      return false;
+    }
+
     // printf("hash[%zu] > o[o.start[%zu+o.length[%zu]: %zu]\n", hash, o.start,
     //        o.length, o.start + o.length);
-    return hash > (o.start + o.length);
+    return res;
   }
 };
 
@@ -90,6 +103,22 @@ insert(HashSet<T, h> &, V &&) noexcept;
 template <typename T, sp::Hasher<T> h, typename V>
 const T *
 lookup(const HashSet<T, h> &, const V &) noexcept;
+
+//=====================================
+namespace rec {
+//=====================================
+template <typename T, sp::Hasher<T> h>
+bool
+verify(const HashSet<T, h> &) noexcept;
+
+//=====================================
+template <typename T, sp::Hasher<T> h>
+std::size_t
+length(const HashSet<T, h> &) noexcept;
+
+//=====================================
+}
+//=====================================
 
 //=====================================
 //====Implementation===================
@@ -128,13 +157,21 @@ HSNode<T, c>::HSNode(std::size_t strt, std::size_t len) noexcept
 template <typename T, std::size_t c>
 bool
 HSNode<T, c>::operator>(const HashKey &o) const noexcept {
+  const bool res = (start + length) > o.hash;
+  if (o.hash == 256) {
+    printf("HSNode[%zu,%zu]>HashKey[%zu] in_range = %s gt=%s\n", start, length,
+           o.hash //
+           ,
+           in_range(*this, o) ? "true" : "false", //
+           res ? "true" : "false");
+  }
+
   if (in_range(*this, o)) {
     return false;
   }
 
-  const bool res = (start + length) >= o.hash;
-  printf("(start[%zu] + length[%zu]) >= o.hash[%zu] == %s\n", //
-         start, length, o.hash, res ? "true" : "false");
+  // printf("(start[%zu] + length[%zu]) >= o.hash[%zu] == %s\n", //
+  //        start, length, o.hash, res ? "true" : "false");
   if (res) {
     return true;
   }
@@ -155,11 +192,11 @@ template <typename T, std::size_t c>
 bool
 HSNode<T, c>::operator>(const HSNode<T> &o) const noexcept {
   // bool res = start > o.start;
-  // printf("HSNode::>(start[%zu] > o.start[%zu]): %s\n", start, o.start,
+  // printf("HSNode(start[%zu] > o.start[%zu]): %s\n", start, o.start,
   //        res ? "true" : "false");
   const bool res = (start + length) > (o.start + o.length);
-  printf("HSNode::>(start[%zu]+length[%zu]: %zu) > "
-         "(o.start[%zu]+o.length[%zu]: %zu): "
+  printf("HSNode(start[%zu]+length[%zu]: %zu) > "
+         "HSNode(o.start[%zu]+o.length[%zu]: %zu): "
          "%s\n",
          start, length, start + length,         //
          o.start, o.length, o.start + o.length, //
@@ -355,6 +392,8 @@ template <typename T, sp::Hasher<T> h, std::size_t cap>
 static bool
 rehash(HashSet<T, h> &self, HSNode<T, cap> &source) noexcept {
   HSNode<T, cap> *const other = split(self, source);
+  assertx(verify(self.tree));
+
   if (other) {
     for (std::size_t i = 0; i < source.capacity; ++i) {
       migrate<T, h, cap>(source, source.buckets[i], *other);
@@ -398,9 +437,19 @@ insert(HashSet<T, hash> &self, V &&val) noexcept {
 
   auto &tree = self.tree;
   const HashKey code(hash(val));
+  if (code.hash == 256)
+    printf("-insert_find(hash[%zu])\n", code.hash);
 
   HSNode<T> *node = find(tree, code);
   if (node == nullptr) {
+    if (!is_empty(tree)) {
+      { HSNode<T> *node2 = find(tree, code); }
+      printf("-\n");
+      dump(tree);
+      printf("hash[%zu]\n", code.hash);
+      assertx(verify(tree));
+      assertx(false);
+    }
     // should only get here on first invocation
     const std::size_t start = 0;
     const auto length = std::numeric_limits<std::size_t>::max();
@@ -412,7 +461,10 @@ insert(HashSet<T, hash> &self, V &&val) noexcept {
 
     // assertx(find(tree, *node) == node); // TODO only for debug
     if (!find(tree, code)) { // TODO only for debug
+      assertx(node);
       dump(tree);
+      printf("%s\n", std::string(*node).c_str());
+      assertx(verify(tree));
       assertx(false);
     }
   }
@@ -484,6 +536,74 @@ lookup(const HashSet<T, hash> &self, const V &needle) noexcept {
   return nullptr;
 }
 
+//=====================================
+namespace rec {
+namespace impl {
+template <typename T, std::size_t c, typename F>
+static void
+for_each(const sp::impl::HSNode<T, c> &node, F f) noexcept {
+  for (std::size_t i = 0; i < node.capacity; ++i) {
+    const sp::impl::HSBucket<T> &bucket = node.buckets[i];
+    f(bucket);
+  }
+}
+
+template <typename T, typename F>
+static void
+for_each(const sp::impl::HSBucket<T> &bucket, F f) noexcept {
+  const sp::impl::HSBucket<T> *it = &bucket;
+  while (it) {
+    if (it->present) {
+      const T *const value = (T *)&it->value;
+      f(*value);
+    }
+    it = it->next;
+  }
+}
+}
+
+template <typename T, sp::Hasher<T> h>
+bool
+verify(const sp::HashSet<T, h> &self) noexcept {
+  using namespace impl;
+
+  // assertx(verify(self.tree));
+
+  binary::rec::inorder(self.tree, [](const auto &node) {
+    for_each(node, [&node](const auto &buckets) {
+      for_each(buckets, [&node](const T &value) {
+        const sp::impl::HashKey code(h(value));
+
+        assertxs(sp::impl::in_range(node, code), code.hash, node.start,
+                 node.length);
+
+      });
+    });
+    /**/
+  });
+  return true;
+}
+
+//=====================================
+template <typename T, sp::Hasher<T> h>
+std::size_t
+length(const HashSet<T, h> &self) noexcept {
+  using namespace impl;
+
+  std::size_t length = 0;
+  binary::rec::inorder(self.tree, [&length](const auto &node) {
+    for_each(node, [&node, &length](const auto &buckets) {
+      for_each(buckets, [&node, &length](const T &) {
+        /**/
+        ++length;
+      });
+    });
+    /**/
+  });
+  return length;
+}
+
+} // namespace rec
 //=====================================
 } // namespace sp
 

@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <util/assert.h>
 
 namespace sp {
 //=====================================
@@ -81,6 +82,15 @@ std::size_t
 bits(const SparseBitset &) noexcept;
 
 //=====================================
+template <typename F>
+void
+for_each(const Bitset &, F) noexcept;
+
+template <typename F>
+void
+for_each(const SparseBitset &, F) noexcept;
+
+//=====================================
 //====Implementation===================
 //=====================================
 template <std::size_t SIZE>
@@ -91,13 +101,32 @@ Bitset::Bitset(std::uint64_t (&b)[SIZE]) noexcept
   //   assert(buffer[i] == 0);
   // }
 }
-//=====================================
 
+//=====================================
 template <std::size_t c>
 StaticBitset<c>::StaticBitset() noexcept
     : Bitset(raw)
     , raw{0} {
 }
+
+//=====================================
+template <typename F>
+void
+for_each(const Bitset &self, F f) noexcept {
+  for (std::size_t idx = 0; idx < self.capacity; ++idx) {
+    bool v = test(self, idx);
+    f(idx, v);
+  }
+}
+
+template <typename F>
+void
+for_each(const SparseBitset &, F) noexcept {
+  assertx(false);
+  // TODO
+}
+
+//=====================================
 
 } // namespace sp
 

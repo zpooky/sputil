@@ -4,6 +4,7 @@
 #include <map/Set.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
+#include <util/Bitset.h>
 #include <util/assert.h>
 
 static std::size_t
@@ -16,26 +17,88 @@ identity(const std::uint32_t &in) {
   return std::size_t(in);
 }
 
+struct StrictHashSetTest {
+  static std::int64_t active;
+  const std::size_t data;
+
+  explicit StrictHashSetTest(std::size_t d, int)
+      : data(d) {
+    assertxs(active >= 0, active);
+    ++active;
+  }
+
+  StrictHashSetTest(const StrictHashSetTest &) = delete;
+  StrictHashSetTest(StrictHashSetTest &&o)
+      : data(o.data) {
+  }
+
+  StrictHashSetTest &
+  operator=(const StrictHashSetTest &&) = delete;
+  StrictHashSetTest &
+  operator=(const StrictHashSetTest &) = delete;
+
+  bool
+  operator==(const StrictHashSetTest &o) const noexcept {
+    return data == o.data;
+  }
+
+  bool
+  operator>(const StrictHashSetTest &o) const noexcept {
+    return data > o.data;
+  }
+
+  explicit operator std::size_t() const noexcept {
+    return data;
+  }
+
+  ~StrictHashSetTest() {
+    assertxs(active > 0, active);
+    --active;
+    assertxs(active >= 0, active);
+  }
+};
+
+std::int64_t StrictHashSetTest::active = 0;
+
+static std::size_t
+identity(const StrictHashSetTest &in) {
+  return std::size_t(in.data);
+}
+
 TEST(HashSetTest, test) {
-  sp::HashSet<std::size_t, identity> set;
-  std::size_t i = 0;
-  for (; i < 1024; ++i) {
+  // using TType = std::size_t;
+  using TType = StrictHashSetTest;
+
+  sp::HashSet<TType, identity> set;
+  for (std::size_t i = 0; i < 1024; ++i) {
     for (std::size_t a = 0; a < i; ++a) {
       {
-        std::size_t *res = insert(set, a);
+        if (a == 256) {
+          printf("");
+        }
+        TType *res = insert(set, TType(a, 0));
+        if (res) {
+          printf("a[%zu] = res[%zu]\n", a, std::size_t(*res));
+          dump(set.tree);
+        }
         ASSERT_FALSE(res);
       }
       {
-        const std::size_t *res = lookup(set, a);
+        const TType *res = lookup(set, TType(a, 0));
         ASSERT_TRUE(res);
-        ASSERT_EQ(*res, a);
+        ASSERT_EQ(res->data, a);
       }
     }
+
+    ASSERT_EQ(i, sp::rec::length(set));
     {
-      printf(" insert(set, i[%zu])\n", i);
-      std::size_t *res = insert(set, i);
+      if (i == 256) {
+        printf(" insert(set, i[%zu])\n", i);
+      }
+      TType *res = insert(set, TType(i, 0));
       ASSERT_TRUE(res);
-      ASSERT_EQ(*res, i);
+      ASSERT_EQ(res->data, i);
+      ASSERT_TRUE(sp::rec::verify(set));
     }
   }
 }
@@ -44,15 +107,42 @@ TEST(HashSetTest, test_rand) {
   sp::HashSet<std::uint32_t, identity> set;
   prng::xorshift32 r(1);
   std::size_t i = 0;
-  for (; i < 1024 * 960; ++i) {
-    const std::uint32_t current = random(r);
+  constexpr std::uint32_t range = 1024 * 9;
+  constexpr std::size_t bits(sizeof(std::uint64_t) * 8);
+  ASSERT_TRUE(range % bits == 0);
+  std::size_t length = range / bits;
+
+  auto raw = new uint64_t[length];
+  sp::Bitset bset(raw, length);
+
+  for (; i < range; ++i) {
+    for_each(bset, [&set](std::size_t idx, bool v) {
+      const std::uint32_t in(idx);
+      auto res = lookup(set, in);
+      if (v) {
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, in);
+      } else {
+        ASSERT_FALSE(res);
+      }
+    });
+
+    const std::uint32_t current = uniform_dist(r, 0, range);
     {
       printf(" insert(set, i[%u])\n", current);
-      auto res = insert(set, current);
-      ASSERT_TRUE(res);
-      ASSERT_EQ(*res, current);
+      const bool v = test(bset, current);
+      auto res = insert(set, std::size_t(current));
+      if (v) {
+        ASSERT_FALSE(res);
+      } else {
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, current);
+        ASSERT_EQ(false, sp::set(bset, std::size_t(current), true));
+      }
     }
   }
+
+  delete[] raw;
 }
 
 struct TestHashSetTest {

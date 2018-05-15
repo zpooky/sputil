@@ -19,13 +19,8 @@ struct Tree {
 
   T *root;
 
-  Tree(T *r) noexcept
-      : root(r) {
-  }
-
-  Tree() noexcept
-      : Tree(nullptr) {
-  }
+  Tree(T *) noexcept;
+  Tree() noexcept;
 
   Tree(const Tree<T, Comparator> &) = delete;
   Tree(const Tree<T, Comparator> &&) = delete;
@@ -35,13 +30,7 @@ struct Tree {
   Tree &
   operator=(const Tree<T, Comparator> &&) = delete;
 
-  ~Tree() {
-    if (root) {
-      // TODO support non recursive delete
-      delete root;
-      root = nullptr;
-    }
-  }
+  ~Tree() noexcept;
 };
 
 //=====================================
@@ -59,7 +48,32 @@ void
 swap(Tree<T, C> &, Tree<T, C> &) noexcept;
 
 //=====================================
+template <typename T, typename C, typename F>
+void
+for_each(const Tree<T, C> &, F) noexcept;
+
+//=====================================
 //====Implementation===================
+//=====================================
+template <typename T, typename C>
+Tree<T, C>::Tree(T *r) noexcept
+    : root(r) {
+}
+
+template <typename T, typename C>
+Tree<T, C>::Tree() noexcept
+    : Tree(nullptr) {
+}
+
+template <typename T, typename C>
+Tree<T, C>::~Tree() noexcept {
+  if (root) {
+    // TODO support non recursive delete
+    delete root;
+    root = nullptr;
+  }
+}
+
 //=====================================
 namespace impl {
 /*impl*/
@@ -87,9 +101,8 @@ dump(T *tree, std::string prefix = "", bool isTail = true,
     auto val = std::string(*tree);
     sprintf(name, "%s%s", ctx, val.c_str());
 
-    printf("%s%s%s\n", prefix.c_str(), (isTail ? "└── " : "├── "), name);
-
-    const char *ls = (isTail ? "    " : "│   ");
+    printf("%s%s%s\n", prefix.c_str(), (isTail ? "└──" : "├──"), name);
+    const char *ls = (isTail ? "   " : "│  ");
     if (tree->right && tree->left) {
       dump(tree->right, prefix + ls, false, "gt:");
       dump(tree->left, prefix + ls, true, "lt:");
@@ -356,6 +369,12 @@ swap(Tree<T, C> &first, Tree<T, C> &second) noexcept {
   swap(first.root, second.root);
 } // bst::swap()
 
+//=====================================
+
+template <typename T, typename C, typename F>
+void
+for_each(const Tree<T, C> &self, F f) noexcept {
+}
 //=====================================
 
 } // namespace bst
