@@ -71,6 +71,12 @@ greedy algorithm that finds a minimum spanning tree for a weighted undirected
 graph
 
 ## Dijkstra
+The process that underlies Dijkstra's algorithm is similar to the greedy process
+used in Prim's algorithm. Prim's purpose is to find a minimum spanning tree that
+connects all nodes in the graph; Dijkstra is concerned with only two nodes.
+Prim's does not evaluate the total weight of the path from the starting node,
+only the individual edges.
+
 
 ## Bellman–Ford algorithm
 "https://en.wikipedia.org/wiki/Bellman–Ford_algorithm"
@@ -80,3 +86,6 @@ in a weighted digraph
 # Consensus
 - paxos
 - raft
+
+# Heap
+- Fibonacci

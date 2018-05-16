@@ -42,7 +42,7 @@ bool
 permutations(const T *pool, std::size_t length, F out) noexcept;
 
 std::size_t
-number_of_permutations(std::size_t pool, std::size_t res) noexcept;
+permutations_of(std::size_t pool, std::size_t res_length) noexcept;
 
 //=====================================
 /*
@@ -53,6 +53,9 @@ number_of_permutations(std::size_t pool, std::size_t res) noexcept;
 template <typename T, typename F, std::size_t n = 64>
 bool
 combinations(const T *pool, std::size_t length, F out) noexcept;
+
+std::size_t
+combinations_of(std::size_t) noexcept;
 
 //=====================================
 /*
@@ -105,7 +108,7 @@ permutations(const sp::Array<const T> &pool, sp::Array<const T *> &result,
 
   return true;
 }
-}
+} // namespace impl
 
 template <typename F>
 bool
@@ -124,7 +127,7 @@ permutations(const char *pool, std::size_t length, F out) noexcept {
   return permutations(pool, length, res_length, out);
 }
 
-template <typename T, typename F, std::size_t n = 64>
+template <typename T, typename F, std::size_t n>
 bool
 permutations(const T *pool, std::size_t length, std::size_t res_length,
              F out) noexcept {
@@ -139,11 +142,12 @@ permutations(const T *pool, std::size_t length, std::size_t res_length,
   return impl::permutations(apool, result, res_length, 0, out);
 }
 
-template <typename T, typename F, std::size_t n = 64>
+template <typename T, typename F, std::size_t n>
 bool
 permutations(const T *pool, std::size_t length, F out) noexcept {
   return permutations<T, F, n>(pool, length, length, out);
 }
+
 
 //=====================================
 namespace impl {
@@ -215,7 +219,7 @@ optionals(const sp::StaticArray<const T *, len> &pool, std::size_t pool_idx,
 
   return true;
 }
-}
+} // namespace impl
 
 template <typename T, typename F, std::size_t len>
 bool
@@ -232,7 +236,7 @@ optionals(const T *pool, std::size_t length, F out) noexcept {
 }
 
 //=====================================
-} // namespace sp::rec
+} // namespace rec
 } // namespace sp
 
 #endif

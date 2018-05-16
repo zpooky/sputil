@@ -36,20 +36,19 @@ TEST(permutationTest, perm_test3_3) {
 
 TEST(permutationTest, combination_test) {
   std::size_t res = 0;
-  const char *in = "01";
+  const char *in = "01234";
   ASSERT_TRUE(sp::rec::combinations(in, strlen(in), [&res](const auto &str) {
-    for_each(str, [](const char *c) {
-      /**/
-      printf("%c", *c);
-    });
+    // for_each(str, [](const char *c) {
+    //   #<{(||)}>#
+    //   printf("%c", *c);
+    // });
 
-    printf("\n");
-    /**/
-    // printf("%s\n", str);
+    // printf("\n");
     ++res;
     return true;
   }));
-  ASSERT_EQ(std::size_t(2), res);
+  ASSERT_EQ(std::size_t(120), res);
+  ASSERT_EQ(sp::rec::combinations_of(strlen(in)), res);
 }
 
 TEST(permutationTest, optionals_rwx) {
@@ -66,7 +65,7 @@ TEST(permutationTest, optionals_rwx) {
     ++res;
     return true;
   }));
-  // ASSERT_EQ(std::size_t(2), res);
+  ASSERT_EQ(std::size_t(8), res);
 }
 
 TEST(permutationTest, rwx) {
@@ -85,9 +84,10 @@ TEST(permutationTest, rwx) {
   }));
 
   std::size_t combs = 0;
-  sp::rec::permutations(access.data(), length(access), 3,
+  std::size_t res_length = 3;
+  sp::rec::permutations(access.data(), length(access), res_length,
                         [&combs](const auto &str) {
-                        (void)str;
+                          (void)str;
                           // const char prefix[] = {'u', 'g', 'o'};
                           // const char *pit = prefix;
                           //
@@ -105,6 +105,7 @@ TEST(permutationTest, rwx) {
 
                           return true;
                         });
-  printf("%zu combinations\n", combs);
+  // printf("%zu combinations\n", combs);
+  ASSERT_EQ(combs, sp::rec::permutations_of(length(access), res_length));
   // ASSERT_EQ(std::size_t(2), res);
 }
