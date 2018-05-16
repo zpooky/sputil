@@ -11,6 +11,26 @@
 
 // TODO mix of hash to avoid identity 1 -> 1 hash problem
 // TODO try use avl/red-black
+// TODO remove(set,key)
+// TODO dynamic node size, not template size look at sparse bitset?
+
+// http://hg.openjdk.java.net/jdk7/jdk7/jdk/file/9b8c96f96a0f/src/share/classes/java/util/HashMap.java
+/**
+ * Applies a supplemental hash function to a given hashCode, which
+ * defends against poor quality hash functions.  This is critical
+ * because HashMap uses power-of-two length hash tables, that
+ * otherwise encounter collisions for hashCodes that do not differ
+ * in lower bits. Note: Null keys always map to hash 0, thus index 0.
+ */
+/*
+ * static int hash(int h) {
+ *     // This function ensures that hashCodes that differ only by
+ *     // constant multiples at each bit position have a bounded
+ *     // number of collisions (approximately 8 at default load factor).
+ *     h ^= (h >>> 20) ^ (h >>> 12);
+ *     return h ^ (h >>> 7) ^ (h >>> 4);
+ * }
+ */
 namespace sp {
 namespace impl {
 //=====================================
@@ -393,8 +413,6 @@ rehash(HashSet<T, h> &self, HSNode<T, cap> &source) noexcept {
   assertx(verify(self.tree));
 
   if (other) {
-    const std::size_t before = source.entries;
-
     for (std::size_t i = 0; i < source.capacity; ++i) {
       migrate<T, h, cap>(source, source.buckets[i], *other);
     }

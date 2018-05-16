@@ -5,16 +5,81 @@
 #include <util/Bitset.h>
 #include <utility>
 
-TEST(graphTest, test) {
-  graph::Undirected<int> first(1);
+struct StrictGraphTest {
+  static std::int64_t active;
+  const std::size_t data;
+
+  explicit StrictGraphTest(std::size_t d)
+      : data(d) {
+    // printf("\nctor %p\n", this);
+    assertxs(active >= 0, active);
+    ++active;
+  }
+
+  StrictGraphTest(const StrictGraphTest &) = delete;
+  StrictGraphTest(StrictGraphTest &&o)
+      : data(o.data) {
+    // printf("\nmove ctor %p <- %p\n", this, &o);
+    assertxs(active >= 0, active);
+    ++active;
+  }
+
+  StrictGraphTest &
+  operator=(const StrictGraphTest &&) = delete;
+  StrictGraphTest &
+  operator=(const StrictGraphTest &) = delete;
+
+  bool
+  operator==(std::size_t o) const noexcept {
+    return data == o;
+  }
+
+  // bool
+  // operator>(const StrictGraphTest &o) const noexcept {
+  //   return data > o.data;
+  // }
+
+  operator std::size_t() const noexcept {
+    return data;
+  }
+
+  ~StrictGraphTest() {
+    // printf("dtor %p\n", this);
+    assertxs(active > 0, active);
+    --active;
+  }
+};
+
+std::int64_t StrictGraphTest::active = 0;
+
+/*Parametrized Fixture*/
+class GraphTest : public ::testing::Test {
+public:
+  GraphTest() {
+  }
+
+  virtual void
+  SetUp() {
+    ASSERT_EQ(std::int64_t(0), StrictGraphTest::active);
+  }
+
+  virtual void
+  TearDown() {
+    ASSERT_EQ(std::int64_t(0), StrictGraphTest::active);
+  }
+};
+
+TEST_F(GraphTest, test) {
+  using TT = StrictGraphTest;
+  graph::Undirected<TT> first(1);
   auto *second = add_vertex(first, 2);
   {
     ASSERT_TRUE(second);
-    ASSERT_EQ(second->value, 2);
+    ASSERT_EQ(second->value, std::size_t(2));
     ASSERT_TRUE(is_adjacent(first, *second));
     ASSERT_TRUE(is_adjacent(*second, first));
   }
-  graph::Undirected<int> third(3);
+  graph::Undirected<TT> third(3);
   {
     ASSERT_FALSE(is_adjacent(first, third));
     ASSERT_FALSE(is_adjacent(*second, third));
@@ -25,7 +90,7 @@ TEST(graphTest, test) {
     ASSERT_FALSE(is_adjacent(third, *second));
   }
   {
-    graph::Undirected<int> dummy(0);
+    graph::Undirected<TT> dummy(0);
     ASSERT_FALSE(is_adjacent(first, dummy));
     ASSERT_FALSE(is_adjacent(*second, dummy));
     ASSERT_FALSE(is_adjacent(third, dummy));
@@ -34,7 +99,6 @@ TEST(graphTest, test) {
     ASSERT_FALSE(remove_edge(*second, &dummy));
     ASSERT_FALSE(remove_edge(third, &dummy));
   }
-  printf("--\n");
   {
     ASSERT_TRUE(is_adjacent(*second, first));
     ASSERT_TRUE(is_adjacent(first, *second));
@@ -47,7 +111,6 @@ TEST(graphTest, test) {
     ASSERT_FALSE(remove_edge(first, second));
     ASSERT_FALSE(remove_edge(*second, &first));
   }
-  printf("--\n");
   {
     ASSERT_TRUE(is_adjacent(third, first));
     ASSERT_TRUE(is_adjacent(first, third));
@@ -60,7 +123,6 @@ TEST(graphTest, test) {
     ASSERT_FALSE(remove_edge(third, &first));
     ASSERT_FALSE(remove_edge(first, &third));
   }
-  printf("--\n");
 }
 
 template <typename T, std::size_t N>
@@ -92,55 +154,87 @@ is_all_adjacent(graph::Undirected<T, N> &c) {
   ASSERT_FALSE(fail);
 }
 
-TEST(graphTest, test_dtor) {
-  // not workign gc
-  using g_type = graph::Undirected<int, 1024>;
+TEST_F(GraphTest, test_dtor) {
+  using TT = StrictGraphTest;
+  using g_type = graph::Undirected<TT, 1024>;
+
   sp::UinStaticArray<g_type *, g_type::capacity> arr;
-  int a = 0;
+  std::size_t a = 0;
   g_type root(a++);
-  {
-    while (!is_full(arr)) {
-      g_type *c = add_vertex(root, a);
-      ASSERT_TRUE(c);
-      ASSERT_EQ(a, c->value);
-      ASSERT_TRUE(insert(arr, c));
-      ++a;
+
+  while (!is_full(arr)) {
+    g_type *c = add_vertex(root, a);
+    ASSERT_TRUE(c);
+    ASSERT_EQ(a, c->value);
+    ASSERT_TRUE(insert(arr, c));
+    ++a;
+  }
+  ASSERT_TRUE(is_full(root.edges));
+
+  ASSERT_EQ(a - 1, std::size_t(g_type::capacity));
+
+  for (std::size_t i = 0; i < length(root.edges); ++i) {
+    graph::Wrapper<TT, g_type::capacity> &current = root.edges[i];
+    ASSERT_TRUE(current.ptr);
+    ASSERT_TRUE(is_adjacent(root, *current.ptr));
+    ASSERT_TRUE(current.owner);
+    {
+      graph::Wrapper<TT, g_type::capacity> *his = bin_search(
+          current.ptr->edges, graph::Wrapper<TT, g_type::capacity>(&root));
+      ASSERT_TRUE(his);
+      ASSERT_EQ(*his, &root);
+      ASSERT_FALSE(his->owner);
     }
+
+    ASSERT_EQ(std::size_t(1), length(current.ptr->edges));
   }
-  for (std::size_t i = 0; i < length(arr); ++i) {
-    // auto &current = arr[i];
-    // printf("current[%d].length[%zu]\n", current->value,
-    // length(current->edges));
-  }
-  printf("--\n");
 
-  prng::xorshift32 r(1);
-  for (std::size_t i = 0; i < length(arr); ++i) {
-    auto &current = arr[i];
-    std::uint32_t n = uniform_dist(r, 0, std::min(std::size_t(5), length(arr)));
-    for (std::uint32_t k = 0; k < n; ++k) {
-      // is_all_adjacent(*current);
-      std::uint32_t idx = uniform_dist(r, 0, length(arr));
+  is_all_adjacent(root);
 
-      // printf("add_edge(current[%d], arr[idx[%u]]->value[%d])", arr[i]->value,
-      //        idx, arr[idx]->value);
-      const bool already = is_adjacent(*arr[idx], *current);
+  {
+    prng::xorshift32 r(1);
+    for (std::size_t i = 0; i < length(arr); ++i) {
+      g_type *current = arr[i];
+      const std::size_t max_number = std::min(std::size_t(5), length(arr));
+      const std::uint32_t number = uniform_dist(r, 0, max_number);
 
-      if (arr[idx] != current) { // do not try for self assignment
-        // is_all_adjacent(*current);
-        const auto res = add_edge(*current, arr[idx]);
+      std::size_t added = length(current->edges);
+      ASSERT_TRUE(added > 0);
+      for (std::uint32_t k = 0; k < number; ++k) {
+        const std::uint32_t which = uniform_dist(r, 0, length(arr));
+        const bool already = is_adjacent(*arr[which], *current);
 
-        // printf(" = %s", res ? "true" : "false");
-        // printf(" edges.length[%zu]\n", length(current->edges));
-        is_all_adjacent(*current);
-        ASSERT_EQ(res, !already); // test for no duplicate edges
-      } else {
-        // printf(" = self\n");
-        ASSERT_FALSE(already);
+        // do not try for self assignment
+        if (arr[which] != current) {
+          const std::size_t l = sp::length(current->edges);
+          const bool inserted = add_edge(*current, arr[which]);
+
+          is_all_adjacent(*current);
+
+          // test for no duplicate edges
+          ASSERT_EQ(inserted, !already);
+          if (inserted) {
+            ASSERT_EQ(l + 1, sp::length(current->edges));
+            ++added;
+          } else {
+            ASSERT_EQ(l, sp::length(current->edges));
+          }
+
+          ASSERT_TRUE(is_adjacent(*arr[which], *current));
+        } else {
+          ASSERT_FALSE(already);
+        }
+      }
+      ASSERT_EQ(added, sp::length(current->edges));
+
+      {
+        std::size_t l = sp::length(current->edges);
+        assertxs(l > 0, l);
       }
     }
-    // printf("--\n");
   }
+
+  ASSERT_TRUE(is_full(root.edges));
 
   {
     sp::StaticBitset<g_type::capacity> bits;
@@ -153,12 +247,13 @@ TEST(graphTest, test_dtor) {
       ++bfs_cnt;
     });
 
-    for (std::size_t i = 0; i < g_type::capacity; ++i) {
+    for (std::size_t i = 0; i < a; ++i) {
       ASSERT_TRUE(test(bits, i));
     }
 
-    ASSERT_EQ(bfs_cnt, length(arr));
+    ASSERT_EQ(bfs_cnt, a);
   }
+
   {
     sp::StaticBitset<g_type::capacity> bits;
     std::size_t dfs_cnt = 0;
@@ -170,12 +265,16 @@ TEST(graphTest, test_dtor) {
       ++dfs_cnt;
     });
 
-    for (std::size_t i = 0; i < g_type::capacity; ++i) {
+    for (std::size_t i = 0; i < a; ++i) {
       ASSERT_TRUE(test(bits, i));
     }
 
-    ASSERT_EQ(dfs_cnt, length(arr));
+    ASSERT_EQ(dfs_cnt, a);
   }
+
+  ASSERT_TRUE(is_full(root.edges));
+
+  printf("dtor:s------------------\n");
 
   // ASSERT_TRUE(add_vertex(root, 1337));
 }

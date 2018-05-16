@@ -7,10 +7,10 @@
 #include <util/Bitset.h>
 #include <util/assert.h>
 
-static std::size_t
-identity(const std::size_t &in) {
-  return in;
-}
+// static std::size_t
+// identity(const std::size_t &in) {
+//   return in;
+// }
 
 static std::size_t
 identity(const std::uint32_t &in) {
@@ -77,9 +77,9 @@ TEST(HashSetTest, test) {
     for (std::size_t i = 0; i < 1024; ++i) {
       for (std::size_t a = 0; a < i; ++a) {
         {
-          if (i == 311 && a == 256) {
-            printf("");
-          }
+          // if (i == 311 && a == 256) {
+          //   printf("");
+          // }
           TType *res = insert(set, TType(a, 0));
           if (res) {
             printf("i[%zu] a[%zu] = res[%zu]\n", i, a, std::size_t(*res));
@@ -103,7 +103,7 @@ TEST(HashSetTest, test) {
       }
     }
   }
-  ASSERT_EQ(std::size_t(0), StrictHashSetTest::active);
+  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
 }
 
 TEST(HashSetTest, test_rand) {

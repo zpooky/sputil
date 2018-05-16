@@ -133,6 +133,7 @@ push(HeapStack<T, A> &stack, V &&value) noexcept {
 
   return push(*stack.head, std::forward<V>(value));
 }
+
 //=====================================
 template <typename T, template <typename> class A>
 T *
@@ -142,6 +143,7 @@ peek(HeapStack<T, A> &stack) noexcept {
   }
   return nullptr;
 }
+
 //=====================================
 template <typename T, template <typename> class A>
 const T *
@@ -151,6 +153,7 @@ peek(const HeapStack<T, A> &stack) noexcept {
   }
   return nullptr;
 }
+
 //=====================================
 template <typename T, template <typename> class A>
 bool
@@ -170,6 +173,7 @@ pop(HeapStack<T, A> &stack, T &out) noexcept {
 
   return false;
 }
+
 //=====================================
 template <typename T, template <typename> class A, typename F>
 void

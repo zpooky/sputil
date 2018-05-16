@@ -62,10 +62,49 @@ TEST(permutationTest, optionals_rwx) {
     });
 
     printf("\n");
-    /**/
-    // printf("%s\n", str);
+
     ++res;
     return true;
   }));
+  // ASSERT_EQ(std::size_t(2), res);
+}
+
+TEST(permutationTest, rwx) {
+  sp::UinStaticArray<std::string, 128> access;
+
+  const char *in = "rwx";
+  ASSERT_TRUE(sp::rec::optionals(in, strlen(in), [&access](const auto &str) {
+    std::string msg;
+    for_each(str, [&msg](const char *c) {
+      /**/
+      msg.push_back(*c);
+    });
+
+    insert(access, std::move(msg));
+    return true;
+  }));
+
+  std::size_t combs = 0;
+  sp::rec::permutations(access.data(), length(access), 3,
+                        [&combs](const auto &str) {
+                        (void)str;
+                          // const char prefix[] = {'u', 'g', 'o'};
+                          // const char *pit = prefix;
+                          //
+                          // for_each(str, [&pit, &prefix](const std::string *c)
+                          // {
+                          //   #<{(||)}>#
+                          //   if (pit != prefix) {
+                          //     printf(",");
+                          //   }
+                          //   printf("%c=", *pit++);
+                          //   printf("%s", c->c_str());
+                          // });
+                          // printf("\n");
+                          ++combs;
+
+                          return true;
+                        });
+  printf("%zu combinations\n", combs);
   // ASSERT_EQ(std::size_t(2), res);
 }

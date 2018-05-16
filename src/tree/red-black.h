@@ -85,7 +85,6 @@ inline Node<int>::operator std::string() const {
   s.append("|b:");
   s.append(colour == Colour::RED ? "RED" : "");
   s.append(colour == Colour::BLACK ? "BLACK" : "");
-  s.append(colour != Colour::BLACK && colour != Colour::RED ? "ERROR" : "");
   s.append("]");
   return s;
 }
@@ -98,7 +97,6 @@ Node<T>::operator std::string() const {
   s.append("|b:");
   s.append(colour == Colour::RED ? "RED" : "");
   s.append(colour == Colour::BLACK ? "BLACK" : "");
-  s.append(colour != Colour::BLACK && colour != Colour::RED ? "ERROR" : "");
   s.append("]");
   return s;
 }

@@ -213,10 +213,10 @@ block_for_insert(SparseBitset &b, std::size_t index) noexcept {
 
   return result;
 }
-/*
- * ==================================================================
- */
 
+//=====================================
+//====Implementation===================
+//=====================================
 Bitset::Bitset(std::uint64_t *b, std::size_t c) noexcept
     : buffer{b}
     , capacity{c} {
@@ -267,11 +267,12 @@ test(const SparseBitset &b, std::size_t abs_idx) noexcept {
 bool
 set(Bitset &b, std::size_t idx, bool v) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertx(wIdx < b.capacity);
+  assertxs(wIdx < b.capacity, wIdx, b.capacity);
 
-  const std::size_t bIdx = bit_index(idx);
   auto &word = b.buffer[wIdx];
   const auto old_word = word;
+
+  const std::size_t bIdx = bit_index(idx);
   set(word, bIdx, v);
 
   return test(old_word, bIdx);
@@ -279,12 +280,13 @@ set(Bitset &b, std::size_t idx, bool v) noexcept {
 
 bool
 set(SparseBitset &b, std::size_t abs_idx, bool v) noexcept {
-  assertx(abs_idx < bits(b));
+  assertxs(abs_idx < bits(b), abs_idx, bits(b));
 
   std::size_t block_idx = block_index(b, abs_idx);
   // printf("block_for_insert(b,block_idx[%zu])\n", block_idx);
-  SparseEntry *block = block_for_insert(b, block_idx);
+  SparseEntry *const block = block_for_insert(b, block_idx);
   if (block) {
+
     Bitset bblock(block->bitset(), b.block_size);
     std::size_t bits_offset = block->start() * bits(bblock);
     std::size_t idx(abs_idx - bits_offset);
@@ -300,7 +302,7 @@ set(SparseBitset &b, std::size_t abs_idx, bool v) noexcept {
 bool
 toggle(Bitset &b, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertx(wIdx < b.capacity);
+  assertxs(wIdx < b.capacity, wIdx, b.capacity);
 
   const std::size_t bIdx = bit_index(idx);
   auto &word = b.buffer[wIdx];
@@ -313,10 +315,10 @@ toggle(Bitset &b, std::size_t idx) noexcept {
 
 bool
 toggle(SparseBitset &b, std::size_t abs_idx) noexcept {
-  assertx(abs_idx < bits(b));
+  assertxs(abs_idx < bits(b), abs_idx, bits(b));
 
   std::size_t block_idx = block_index(b, abs_idx);
-  SparseEntry *block = block_for_insert(b, block_idx);
+  SparseEntry *const block = block_for_insert(b, block_idx);
   if (block) {
     Bitset bblock(block->bitset(), b.block_size);
     std::size_t bits_offset = block->start() * bits(bblock);
@@ -345,4 +347,6 @@ std::size_t
 bits(const SparseBitset &b) noexcept {
   return bits(capacity(b));
 }
+
+//=====================================
 }

@@ -63,3 +63,20 @@ lz77 - https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/sou
 Markov chains
 
 Minimum spanning tree
+
+# Graph
+## prim
+"https://en.wikipedia.org/wiki/Prim%27s_algorithm"
+greedy algorithm that finds a minimum spanning tree for a weighted undirected
+graph
+
+## Dijkstra
+
+## Bellman–Ford algorithm
+"https://en.wikipedia.org/wiki/Bellman–Ford_algorithm"
+computes shortest paths from a single source vertex to all of the other vertices
+in a weighted digraph
+
+# Consensus
+- paxos
+- raft

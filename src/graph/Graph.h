@@ -14,7 +14,7 @@
  *
  */
 namespace graph {
-// TODO make implicit converse to Unidrect work
+// TODO make implicit converse to Wrapper Unidrect work
 
 //=====================================
 template <typename T, std::size_t N>
@@ -27,62 +27,32 @@ struct Wrapper {
   edge_type *ptr;
   bool owner;
 
-  Wrapper(const edge_type *a) noexcept
-      : ptr((edge_type *)a)
-      , owner(false) {
-  }
-
-  Wrapper(Wrapper<T, N> &&o) noexcept
-      : ptr(o.ptr)
-      , owner(o.owner) {
-    o.owner = false;
-    o.ptr = nullptr;
-  }
+  explicit Wrapper(const edge_type *) noexcept;
+  Wrapper(Wrapper<T, N> &&) noexcept;
 
   Wrapper(const Wrapper<T, N> &) = delete;
   Wrapper<T, N> &
   operator=(const Wrapper<T, N> &) = delete;
 
   Wrapper<T, N> &
-  operator=(Wrapper<T, N> &&o) noexcept {
-    using std::swap;
-    swap(ptr, o.ptr);
-    swap(owner, o.owner);
-    return *this;
-  }
+  operator=(Wrapper<T, N> &&o) noexcept;
 
   bool
-  operator>(const Wrapper<T, N> &o) const noexcept {
-    return operator>(o.ptr);
-  }
+  operator>(const Wrapper<T, N> &) const noexcept;
 
   bool
-  operator>(const Wrapper<T, N> *o) const noexcept {
-    return operator>(o->ptr);
-  }
+  operator>(const Wrapper<T, N> *) const noexcept;
 
   bool
-  operator>(const edge_type *o) const noexcept {
-    uintptr_t first = reinterpret_cast<uintptr_t>(ptr);
-    uintptr_t second = reinterpret_cast<uintptr_t>(o);
-    return first > second;
-  }
+  operator>(const edge_type *) const noexcept;
 
   bool
-  operator>(const edge_type &o) const noexcept {
-    return operator>(o.ptr);
-  }
+  operator>(const edge_type &) const noexcept;
 
-  ~Wrapper() noexcept {
-    if (owner) {
-      assertx(ptr);
-      if (ptr) {
-        delete ptr;
-      }
-      owner = false;
-    }
-    ptr = nullptr;
-  }
+  bool
+  operator==(const edge_type *) const noexcept;
+
+  ~Wrapper() noexcept;
 };
 
 //=====================================
@@ -99,7 +69,7 @@ struct Undirected {
 
   T value;
   edges_type edges;
-  /**/
+
   template <typename A>
   Undirected(A &&) noexcept;
 
@@ -150,10 +120,13 @@ depth_first(const Undirected<T, N> &, F) noexcept;
 
 //=====================================
 // TODO emplace_vertex()
+
+//=====================================
 template <typename T, std::size_t N, typename A>
 Undirected<T, N> *
 add_vertex(Undirected<T, N> &, A &&) noexcept;
 
+//=====================================
 template <typename T, std::size_t N>
 bool
 add_edge(Undirected<T, N> &, Undirected<T, N> *, bool owner = false) noexcept;
@@ -169,21 +142,182 @@ bool
 is_adjacent(const Undirected<T, N> &, const Undirected<T, N> &) noexcept;
 
 //=====================================
+//====Implementation===================
+//=====================================
+template <typename T, std::size_t N>
+Wrapper<T, N>::Wrapper(const edge_type *a) noexcept
+    : ptr((edge_type *)a)
+    , owner(false) {
+}
+
+template <typename T, std::size_t N>
+Wrapper<T, N>::Wrapper(Wrapper<T, N> &&o) noexcept
+    : ptr(o.ptr)
+    , owner(o.owner) {
+  o.owner = false;
+  o.ptr = nullptr;
+}
+
+template <typename T, std::size_t N>
+Wrapper<T, N> &
+Wrapper<T, N>::operator=(Wrapper<T, N> &&o) noexcept {
+  using std::swap;
+  swap(ptr, o.ptr);
+  swap(owner, o.owner);
+  return *this;
+}
+
+template <typename T, std::size_t N>
+bool
+Wrapper<T, N>::operator>(const Wrapper<T, N> &o) const noexcept {
+  return operator>(o.ptr);
+}
+
+template <typename T, std::size_t N>
+bool
+Wrapper<T, N>::operator>(const Wrapper<T, N> *o) const noexcept {
+  assertx(o);
+  return operator>(o->ptr);
+}
+
+template <typename T, std::size_t N>
+bool
+Wrapper<T, N>::operator>(const edge_type *o) const noexcept {
+  assertx(o);
+  uintptr_t first = reinterpret_cast<uintptr_t>(ptr);
+  uintptr_t second = reinterpret_cast<uintptr_t>(o);
+  return first > second;
+}
+
+template <typename T, std::size_t N>
+bool
+Wrapper<T, N>::operator>(const edge_type &o) const noexcept {
+  return operator>(o.ptr);
+}
+
+template <typename T, std::size_t N>
+bool
+Wrapper<T, N>::operator==(const edge_type *o) const noexcept {
+  assertx(o);
+  return ptr == o;
+}
+
+template <typename T, std::size_t N>
+Wrapper<T, N>::~Wrapper() noexcept {
+  if (owner) {
+    assertx(ptr);
+    if (ptr) {
+      delete ptr;
+    }
+    owner = false;
+  }
+  ptr = nullptr;
+}
+
+//=====================================
 template <typename T, std::size_t N>
 template <typename A>
 Undirected<T, N>::Undirected(A &&arg) noexcept
     : value(std::forward<A>(arg)) {
 }
 
+namespace impl {
+template <typename T, std::size_t N>
+static bool
+change_owner(Wrapper<T, N> &subject, const Undirected<T, N> &owner) {
+  assertx(subject.ptr);
+  // printf("change_owner(subject[%p], owner[%p])\n", &subject, &owner);
+
+  auto &subject_edges = subject.ptr->edges;
+  assertx(length(subject_edges) > 0);
+
+  for (std::size_t i = 0; i < length(subject_edges); ++i) {
+    Wrapper<T, N> &edge = subject_edges[i];
+    assertx(edge.ptr);
+
+    if (!edge.owner) { // TODO <- document why
+      if (edge.ptr != &owner) {
+        Wrapper<T, N> *const s = bin_search(edge.ptr->edges, subject);
+        // assertx(s);//TODO <- document why
+
+        if (s) {
+          assertx(!s->owner);
+          printf("\nowner[%zu]->ownee[%zu]\n", std::size_t(edge.ptr->value),
+                 std::size_t(s->ptr->value));
+
+          s->owner = true;
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+template <typename T, std::size_t N>
+static void
+cleanup(Undirected<T, N> &self) noexcept {
+  std::size_t l = length(self.edges);
+  sp::UinStaticArray<Wrapper<T, N>, N> drain(std::move(self.edges));
+  assertxs(drain.length == l, drain.length, l);
+  assertxs(length(self.edges) == 0, length(self.edges));
+
+  // reseat all owner pointers if possible
+  remove_if(drain, [&self](Wrapper<T, N> &current) {
+    if (current.owner) {
+      if (impl::change_owner(current, self)) {
+        // there where another node, it's his problem now.
+        current.owner = false;
+      }
+    }
+
+    return !current.owner;
+  });
+  printf("%zu owner\n", length(drain));
+
+  // handle all remaining exclusively owned pointers
+  while (!is_empty(drain)) {
+    Wrapper<T, N> *const remote = last(drain);
+    assertx(remote);
+    assertx(remote->ptr);
+    assertx(remote->owner);
+
+    auto &remote_edges = remote->ptr->edges;
+
+    {
+      Wrapper<T, N> needle(&self);
+      Wrapper<T, N> *const currentToMe = bin_search(remote_edges, needle);
+      assertx(currentToMe);
+      assertx(currentToMe->ptr == &self);
+      assertx(currentToMe->owner == false);
+
+      currentToMe->owner = false;
+    }
+
+    {
+      std::size_t index = index_of(drain, remote);
+      assertx(index != capacity(drain));
+      std::size_t lbefore = length(drain);
+      {
+        printf("remove remote[%zu][\n", length(remote_edges));
+        bool res = remove(drain, index);
+        assertx(res);
+        printf("]\n");
+      }
+      assertxs(lbefore - 1 == length(drain), lbefore, length(drain));
+    }
+  }
+
+  assertx(length(drain) == 0);
+}
+
+} // namespace impl
+
 template <typename T, std::size_t N>
 Undirected<T, N>::~Undirected() noexcept {
-  printf("dtor[%d]", value);
-  while (!is_empty(edges)) {
-    std::size_t last = edges.length - 1;
-    auto res = remove_edge(*this, edges[last].ptr);
-    assertx(res);
-  }
-  printf("-end[%d]\n", value);
+  printf("dtor[%zu]", std::size_t(value));
+  impl::cleanup(*this);
+  printf("-end[%zu]\n", std::size_t(value));
 }
 
 //=====================================
@@ -248,6 +382,7 @@ depth_first(Undirected<T, N> &root, F f) noexcept {
     Undirected<T, N> *current = nullptr;
     pop(toVisit, current);
     assertx(current);
+
     f(*current);
 
     for (std::size_t i = 0; i < length(current->edges); ++i) {
@@ -341,30 +476,6 @@ add_edge(Undirected<T, N> &self, Undirected<T, N> *edge, bool owner) noexcept {
   return false;
 }
 //=====================================
-namespace impl {
-template <typename T, std::size_t N>
-bool
-change_owner(Wrapper<T, N> &subject, Undirected<T, N> &owner) {
-  // printf("change_owner(subject[%p], owner[%p])\n", &subject, &owner);
-  auto &subject_edges = subject.ptr->edges;
-  for (std::size_t i = 0; i < length(subject_edges); ++i) {
-    auto &current = subject_edges[i];
-    auto cur_ptr = current.ptr;
-    if (cur_ptr != &owner) {
-      auto s = bin_search(/*haystack*/ cur_ptr->edges, /*needle*/ subject);
-      assertx(s);
-      if (s) {
-        assertx(!s->owner);
-        s->owner = true;
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-} // namespace impl
-
 template <typename T, std::size_t N>
 bool
 remove_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
@@ -394,9 +505,8 @@ remove_edge(Undirected<T, N> &self, Undirected<T, N> *edge) noexcept {
       bool rres = bin_remove(self.edges, the_edge);
       assertx(rres);
     }
-    //
+
     return true;
-    // }
   }
 
   return false;
