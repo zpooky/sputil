@@ -266,6 +266,7 @@ namespace impl {
 template <typename T, typename V>
 static const Node<T> *
 find(const Node<T> *root, const V &needle) noexcept {
+  /*tailrec function*/
   if (root) {
     const T &value = root->value;
     if (needle > value) {
@@ -280,23 +281,123 @@ find(const Node<T> *root, const V &needle) noexcept {
 
   return nullptr;
 }
+
+template <typename T, typename V>
+static Node<T> *
+find(Node<T> *root, const V &needle) noexcept {
+  const Node<T> *const c_root = root;
+  return (Node<T> *)find(c_root, needle);
 }
+} // namespace avl::rec::impl
 
 template <typename T, typename V>
 T *
 find(Tree<T> &tree, const V &needle) noexcept {
-  const Node<T> *result = impl::find(tree.root, needle);
+  Node<T> *const result = impl::find(tree.root, needle);
   if (result) {
-    return (T *)&result->value;
+    return &result->value;
   }
 
   return nullptr;
 }
 
 //=====================================
+namespace impl {
+template <typename T>
+static Node<T> *
+find_min(Node<T> *root) noexcept {
+  /*tailrec function*/
+  assertx(root);
+  if (root->left) {
+    return find_min(root->left);
+  }
+
+  return root;
+}
+
+template <typename T, typename V>
+static Node<T> *
+unlink(Node<T> *, const V &, Node<T> *&, bool &) noexcept;
+
+template <typename T>
+static Node<T> *
+do_unlink(Node<T> *const root, bool &balance) noexcept {
+  assertx(root);
+
+  Node<T> *result = nullptr;
+  if (root->left && root->right) {
+    Node<T> *const heir = find_min(root->right);
+    assertx(heir);
+
+    {
+      Node<T> *out_min = nullptr;
+      heir->right = unlink(root->right, heir->value, out_min, balance);
+
+      assertx(out_min);
+      assertx(heir == out_min);
+    }
+
+    result = heir;
+    heir->left = root->left;
+  } else if (root->left) {
+    result = root->left;
+    balance = true;
+  } else if (root->right) {
+    result = root->right;
+    balance = true;
+  } else {
+    balance = true;
+  }
+
+  root->left = nullptr;
+  root->right = nullptr;
+
+  return result;
+}
+
+template <typename T, typename V>
+static Node<T> *
+unlink(Node<T> *root, const V &needle, Node<T> *&out, bool &balance) noexcept {
+  if (root) {
+    const T &value = root->value;
+    if (needle > value) {
+      root->right = unlink(root->right, needle, out, balance);
+      if (balance) {
+        --root->balance;
+      }
+
+      return rebalance(root, balance);
+    } else if (value > needle) {
+      root->left = unlink(root->left, needle, out, balance);
+      if (balance) {
+        ++root->balance;
+      }
+
+      return rebalance(root, balance);
+    }
+
+    out = root;
+    return do_unlink(root, balance);
+  }
+
+  out = nullptr;
+  balance = false;
+  return nullptr;
+}
+} // namespace avl::rec::impl
+
 template <typename T, typename V>
 bool
-remove(Tree<T> &, const V &) noexcept {
+remove(Tree<T> &self, const V &needle) noexcept {
+  Node<T> *result = nullptr;
+  bool balance = true;
+  self.root = impl::unlink(self.root, needle, result, balance);
+
+  if (result) {
+    delete result;
+    return true;
+  }
+
   return false;
 }
 

@@ -50,6 +50,7 @@ struct StaticArray : public Array<T> {
   static constexpr std::size_t storage_capacity = cap;
 
   StaticArray() noexcept;
+  StaticArray(std::initializer_list<T>) noexcept;
 };
 
 //=====================================
@@ -472,6 +473,14 @@ template <typename T, std::size_t c>
 StaticArray<T, c>::StaticArray() noexcept
     : Array<T>(raw)
     , raw{} {
+}
+
+template <typename T, std::size_t c>
+StaticArray<T, c>::StaticArray(std::initializer_list<T> l) noexcept
+    : StaticArray() {
+  assertx(l.size() <= capacity(*this));
+  bool result = insert_all(*this, l.begin(), l.size());
+  assertx(result);
 }
 
 //=====================================

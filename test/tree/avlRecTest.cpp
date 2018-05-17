@@ -1,3 +1,4 @@
+#include <collection/Array.h>
 #include <gtest/gtest.h>
 #include <tree/avl_rec.h>
 
@@ -505,9 +506,39 @@ TEST(avlRecTest, test) {
     }
   }
   // MNOL-KQPH-IA
-  for (char needle : {'M', 'N', 'O', 'L', 'K', 'Q', 'P', 'H', 'I', 'A'}) {
+  sp::StaticArray<char, 64> present = {'M', 'N', 'O', 'L', 'K',
+                                       'Q', 'P', 'H', 'I', 'A'};
+  ASSERT_EQ(std::size_t(10), length(present));
+  std::size_t its = 0;
+  for_each(present, [&tree, &its](char needle) {
     char *result = find(tree, needle);
     ASSERT_TRUE(result);
     ASSERT_EQ(*result, needle);
+    ++its;
+  });
+  ASSERT_EQ(its, length(present));
+
+  for (std::size_t i = 0; i < length(present); ++i) {
+    // printf("i[%zu]\n", i);
+    for (std::size_t a = 0; a < i; ++a) {
+      char *result = find(tree, present[a]);
+      ASSERT_FALSE(result);
+    }
+    for (std::size_t a = i; a < length(present); ++a) {
+      // printf("find(tree,'%c')\n", present[a]);
+      char *result = find(tree, present[a]);
+      ASSERT_TRUE(result);
+      ASSERT_EQ(*result, present[a]);
+    }
+
+    printf("remove(tree,'%c')\n", present[i]);
+    bool res = remove(tree, present[i]);
+    ASSERT_TRUE(res);
+    dump(tree);
   }
+
+  for_each(present, [&tree](char needle) {
+    char *result = find(tree, needle);
+    ASSERT_FALSE(result);
+  });
 }

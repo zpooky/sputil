@@ -8,6 +8,7 @@
 #include <tree/bst.h>
 #include <tree/bst_extra.h>
 #include <tree/red-black.h>
+#include <list/SkipList.h>
 
 // TODO mix of hash to avoid identity 1 -> 1 hash problem
 // TODO try use avl/red-black
@@ -91,6 +92,7 @@ template <typename T, sp::Hasher<T>>
 struct HashSet {
 
   binary::Tree<impl::HSNode<T>> tree;
+  // sp::SkipList<impl::HSNode<T>, 8> tree;
 
   HashSet() noexcept;
 };
