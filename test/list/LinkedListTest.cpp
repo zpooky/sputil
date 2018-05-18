@@ -179,14 +179,14 @@ TEST(LinkedListTest, test_speed_stack_alloc) {
 TEST(LinkedListTest, test_remove_if) {
   sp::LinkedList<std::uint64_t> l;
   {
-    ASSERT_EQ(0, remove_if(l, [](auto) {
+    ASSERT_EQ(std::size_t(0), remove_if(l, [](auto) {
                 /**/
                 return true;
               }));
   }
   {
     insert(l, 1);
-    ASSERT_EQ(0, remove_if(l, [](auto) {
+    ASSERT_EQ(std::size_t(0), remove_if(l, [](auto) {
                 /**/
                 return false;
               }));
@@ -197,7 +197,7 @@ TEST(LinkedListTest, test_remove_if) {
   }
   {
     ASSERT_EQ(false, is_empty(l));
-    ASSERT_EQ(1, remove_if(l, [](auto c) {
+    ASSERT_EQ(std::size_t(1), remove_if(l, [](auto c) {
                 /**/
                 return c == 1;
               }));

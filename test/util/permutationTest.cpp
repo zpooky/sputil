@@ -37,7 +37,7 @@ TEST(permutationTest, perm_test3_3) {
 TEST(permutationTest, combination_test) {
   std::size_t res = 0;
   const char *in = "01234";
-  ASSERT_TRUE(sp::rec::combinations(in, strlen(in), [&res](const auto &str) {
+  ASSERT_TRUE(sp::rec::combinations(in, strlen(in), [&res](const auto &) {
     // for_each(str, [](const char *c) {
     //   #<{(||)}>#
     //   printf("%c", *c);

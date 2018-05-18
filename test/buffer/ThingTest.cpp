@@ -152,7 +152,7 @@ TEST(ThingTest, test_autofill) {
     unsigned char cmp = 0;
     for (std::size_t i = 0; i < 768; ++i) {
       unsigned char out = 255;
-      ASSERT_EQ(1, pop_front(thing, out));
+      ASSERT_EQ(std::size_t(1), pop_front(thing, out));
       ASSERT_EQ(cmp++, out);
     }
     for (std::size_t i = 0; i < 768; ++i) {
@@ -746,7 +746,7 @@ TEST(ThingTest, test_marked_rand_nested) {
   unsigned char cmp = 0;
 
   prng::xorshift32 r(1);
-  std::size_t it = 0;
+  // std::size_t it = 0;
   // while (it++ < 500) {
   rec_pop(thing, cmp, false, r, 0);
   // }

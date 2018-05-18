@@ -14,7 +14,7 @@ struct Node {
   T value;
   Node<T> *left;
   Node<T> *right;
-  int balance;
+  std::size_t height;
 
   template <typename V>
   explicit Node(V &&) noexcept;
@@ -61,7 +61,7 @@ Node<T>::Node(V &&val) noexcept
     : value(std::forward<V>(val))
     , left{nullptr}
     , right{nullptr}
-    , balance{0} {
+    , height{1} {
 }
 
 template <typename T>
@@ -83,16 +83,33 @@ Tree<T>::~Tree() noexcept {
 namespace impl {
 //=====================================
 template <typename T>
+static std::size_t
+height(const Node<T> *node) noexcept {
+  return node ? node->height : 0;
+}
+
+template <typename T>
 static int
 balance(const Node<T> *node) noexcept {
-  return node ? node->balance : 0;
+  assertx(node);
+  return -height(node->left) + height(node->right);
 } // avl::rec::impl::balance()
+
+//=====================================
+template <typename T>
+static std::size_t
+calc_height(Node<T> *node) noexcept {
+  assertx(node);
+  node->height = std::max(height(node->left), height(node->right)) + 1;
+  return node->height;
+}
 
 //=====================================
 template <typename T>
 static Node<T> *
 rotate_left(Node<T> *const A) noexcept {
-  // printf("\trotate_left(%s)\n", std::string(*A).c_str());
+  // printf("rotate_left([%c|b:%d|h:%zu])\n", char(A->value), balance(A),
+  //        height(A));
   /*
    * <_
    *   \
@@ -109,27 +126,16 @@ rotate_left(Node<T> *const A) noexcept {
   // B is optional therefore it can be null
   Node<T> *const B = A->right;
   Node<T> *const x1 = B ? B->left : nullptr;
+
   if (B) {
     B->left = A;
     A->right = x1;
   }
 
-  // #if 0
-  //#Update Balance
-  /*We do not rebalance C since its children has not been altered*/
-
-  // TODO this needs to be documented
-  A->balance -= 1;
-  if (balance(B) > 0) {
-    A->balance -= B->balance;
-  }
+  calc_height(A);
   if (B) {
-    B->balance -= 1;
-    if (balance(A) < 0) {
-      B->balance -= -A->balance;
-    }
+    calc_height(B);
   }
-  // #endif
 
   return B ? B : A;
 } // avl::rec::impl::rotate_light()
@@ -138,7 +144,8 @@ rotate_left(Node<T> *const A) noexcept {
 template <typename T>
 static Node<T> *
 rotate_right(Node<T> *const C) noexcept {
-  // printf("\trotate_right(%s)\n", std::string(*C).c_str());
+  // printf("rotate_right([%c|b:%d|h:%zu])\n", char(C->value), balance(C),
+  //        height(C));
   /*
    *B_.
    *   \
@@ -158,21 +165,9 @@ rotate_right(Node<T> *const C) noexcept {
   B->right = C;
   C->left = x1;
 
-  // #if 0
-  // TODO this needs to be documented
-  C->balance += 1;
-  if (balance(B) < 0) {
-    C->balance += -B->balance;
-  }
+  calc_height(C);
+  calc_height(B);
 
-  if (B) {
-    B->balance += 1;
-    if (balance(C) > 0) {
-      B->balance += C->balance;
-    }
-  }
-
-  // #endif
   return B;
 } // avl::rec::impl::rotate_right()
 
@@ -182,11 +177,13 @@ static Node<T> *
 rebalance(Node<T> *const root, bool &do_balance) noexcept {
   assertx(root);
 
-  if (do_balance == false) {
+  if (!do_balance) {
     return root;
   }
 
-  if (root->balance == 0) {
+  calc_height(root);
+
+  if (balance(root) == 0) {
     do_balance = false;
     return root;
   }
@@ -222,16 +219,10 @@ insert(Node<T> *root, V &&val, T *&out, bool &balance) noexcept {
     const T &value = root->value;
     if (val > value) {
       root->right = insert(root->right, std::forward<V>(val), out, balance);
-      if (balance) {
-        ++root->balance;
-      }
 
       return rebalance(root, balance);
     } else if (value > val) {
       root->left = insert(root->left, std::forward<V>(val), out, balance);
-      if (balance) {
-        --root->balance;
-      }
 
       return rebalance(root, balance);
     }
@@ -242,11 +233,15 @@ insert(Node<T> *root, V &&val, T *&out, bool &balance) noexcept {
     return root;
   }
 
+  out = nullptr;
+  balance = false;
+
   auto result = new (std::nothrow) Node<T>(std::forward<V>(val));
   if (result) {
     out = &result->value;
     balance = true;
   }
+
   return result;
 }
 
@@ -303,6 +298,7 @@ find(Tree<T> &tree, const V &needle) noexcept {
 
 //=====================================
 namespace impl {
+
 template <typename T>
 static Node<T> *
 find_min(Node<T> *root) noexcept {
@@ -337,15 +333,16 @@ do_unlink(Node<T> *const root, bool &balance) noexcept {
       assertx(heir == out_min);
     }
 
-    result = heir;
     heir->left = root->left;
+    calc_height(heir);
+    result = heir;
   } else if (root->left) {
     result = root->left;
     balance = true;
   } else if (root->right) {
     result = root->right;
     balance = true;
-  } else {
+  } else /*0 children*/ {
     balance = true;
   }
 
@@ -362,16 +359,10 @@ unlink(Node<T> *root, const V &needle, Node<T> *&out, bool &balance) noexcept {
     const T &value = root->value;
     if (needle > value) {
       root->right = unlink(root->right, needle, out, balance);
-      if (balance) {
-        --root->balance;
-      }
 
       return rebalance(root, balance);
     } else if (value > needle) {
       root->left = unlink(root->left, needle, out, balance);
-      if (balance) {
-        ++root->balance;
-      }
 
       return rebalance(root, balance);
     }
@@ -408,7 +399,8 @@ dump(Node<char> *tree, std::string prefix = "", bool isTail = true,
      const char *ctx = "") noexcept {
   if (tree) {
     char name[256] = {0};
-    sprintf(name, "%s[%c|b:%d]", ctx, tree->value, tree->balance);
+    sprintf(name, "%s[%c|b:%d|h:%zu]", ctx, tree->value, balance(tree),
+            height(tree));
 
     printf("%s%s%s\n", prefix.c_str(), (isTail ? "└──" : "├──"), name);
     const char *ls = (isTail ? "   " : "│  ");

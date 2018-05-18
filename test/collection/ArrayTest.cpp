@@ -240,7 +240,7 @@ TEST(ArrayTest, test_binary_insert) {
         ASSERT_FALSE(bin_remove(next, ins));
       }
       ASSERT_TRUE(is_empty(next));
-      ASSERT_EQ(length(next), 0);
+      ASSERT_EQ(length(next), std::size_t(0));
     }
   }
   // }

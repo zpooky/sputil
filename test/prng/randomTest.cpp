@@ -76,8 +76,7 @@ TEST(randomTest, test_xorshift32_uni3) {
   for (std::size_t i = 0; i < 90000; ++i) {
     std::uint32_t res = prng::uniform_dist(r, 0, 3);
     // printf("uni(%u,%u): %u\n", strt, end, res);
-    ASSERT_TRUE(res >= 0);
-    ASSERT_TRUE(res < 3);
+    ASSERT_TRUE(res < std::uint32_t(3));
   }
 }
 

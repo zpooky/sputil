@@ -74,7 +74,7 @@ TEST(HeapStackTest, test) {
 
   int it = target;
   while (!is_empty(stack)) {
-    ASSERT_EQ(it, length(stack));
+    ASSERT_EQ(std::size_t(it), length(stack));
     --it;
 
     int *pe = peek(stack);

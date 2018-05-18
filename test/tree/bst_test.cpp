@@ -33,7 +33,7 @@ TEST(bstTest, test_height_and_other) {
     ASSERT_EQ(std::size_t(0), binary::rec::height(t));
     for (std::size_t i = 0; i < 10; ++i) {
       ASSERT_EQ(i, binary::rec::height(t));
-      ASSERT_TRUE(std::get<1>(insert(t, i)));
+      ASSERT_TRUE(std::get<1>(insert(t, int(i))));
     }
   }
   {
