@@ -131,8 +131,7 @@ template <typename T, typename V, typename Comparator = sp::greater>
 T *
 bin_insert(Array<T> &, V &&) noexcept;
 
-template <typename T, std::size_t c, typename V,
-          typename Comparator = sp::greater>
+template <typename T, std::size_t c, typename V, typename C = sp::greater>
 T *
 bin_insert(UinStaticArray<T, c> &, V &&) noexcept;
 //=====================================
@@ -140,8 +139,7 @@ template <typename T, typename V, typename Comparator = sp::greater>
 T *
 bin_insert_unique(Array<T> &, V &&) noexcept;
 
-template <typename T, std::size_t c, typename V,
-          typename Comparator = sp::greater>
+template <typename T, std::size_t c, typename V, typename C = sp::greater>
 T *
 bin_insert_unique(UinStaticArray<T, c> &, V &&) noexcept;
 
@@ -155,19 +153,16 @@ template <typename T, typename K, typename Comparator = sp::greater>
 T *
 bin_search(Array<T> &, const K &) noexcept;
 
-template <typename T, std::size_t c, typename K,
-          typename Comparator = sp::greater>
+template <typename T, std::size_t c, typename K, typename C = sp::greater>
 const T *
 bin_search(const UinStaticArray<T, c> &, const K &) noexcept;
 
-template <typename T, std::size_t c, typename K,
-          typename Comparator = sp::greater>
+template <typename T, std::size_t c, typename K, typename C = sp::greater>
 T *
 bin_search(UinStaticArray<T, c> &, const K &) noexcept;
 //=====================================
 
-template <typename T, std::size_t c, typename K,
-          typename Comparator = sp::greater>
+template <typename T, std::size_t c, typename K, typename C = sp::greater>
 bool
 bin_remove(UinStaticArray<T, c> &, const K &) noexcept;
 
@@ -783,8 +778,8 @@ bin_search(UinStaticArray<T, c> &self, const K &needle) noexcept {
   const UinStaticArray<T, c> &c_self = self;
   return (T *)bin_search<T, c, K, Comparator>(c_self, needle);
 }
-//=====================================
 
+//=====================================
 template <typename T, std::size_t c, typename K, typename Comparator>
 bool
 bin_remove(UinStaticArray<T, c> &self, const K &needle) noexcept {
