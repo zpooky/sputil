@@ -3,6 +3,7 @@
 
 #include <queue/Queue.h>
 #include <stack/HeapStack.h>
+#include <tree/avl2.h>
 #include <tree/bst.h>
 
 // maybe should be generic bst
@@ -98,7 +99,7 @@ delete_self(Tree<T, C> &tree) noexcept {
 namespace impl {
 template <typename T, typename F>
 void
-inorder(const Node<T> *tree, F f) noexcept {
+inorder(const T *tree, F f) noexcept {
   if (tree) {
     inorder(tree->left, f);
     f(tree->value);
@@ -107,10 +108,15 @@ inorder(const Node<T> *tree, F f) noexcept {
 }
 }
 
-/*walker*/
 template <typename T, typename C, typename F>
 void
 inorder(const Tree<T, C> &tree, F f) noexcept {
+  return impl::inorder(tree.root, f);
+}
+
+template <typename T, typename C, typename F>
+void
+inorder(const avl2::Tree<T, C> &tree, F f) noexcept {
   return impl::inorder(tree.root, f);
 }
 

@@ -33,7 +33,7 @@ struct Node {
 };
 
 template <typename T, typename Comparator = sp::greater>
-using Tree = bst::Tree<avl::Node<T>, Comparator>;
+using Tree = bst::Tree<Node<T>, Comparator>;
 
 //=====================================
 template <typename T, typename C, typename K>

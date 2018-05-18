@@ -298,7 +298,6 @@ find(Tree<T> &tree, const V &needle) noexcept {
 
 //=====================================
 namespace impl {
-
 template <typename T>
 static Node<T> *
 find_min(Node<T> *root) noexcept {

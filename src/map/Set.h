@@ -4,11 +4,11 @@
 #include <hash/util.h>
 #include <limits>
 #include <sstream> //debug
-#include <tree/avl.h>
-#include <tree/bst.h>
+#include <tree/avl2.h>
+// #include <tree/bst.h>
 #include <tree/bst_extra.h>
-#include <tree/red-black.h>
-#include <list/SkipList.h>
+// #include <tree/red-black.h>
+// #include <list/SkipList.h>
 
 // TODO mix of hash to avoid identity 1 -> 1 hash problem
 // TODO try use avl/red-black
@@ -91,7 +91,8 @@ struct HashKey {
 template <typename T, sp::Hasher<T>>
 struct HashSet {
 
-  binary::Tree<impl::HSNode<T>> tree;
+  // binary::Tree<impl::HSNode<T>> tree;
+  avl2::Tree<impl::HSNode<T>> tree;
   // sp::SkipList<impl::HSNode<T>, 8> tree;
 
   HashSet() noexcept;
@@ -572,7 +573,7 @@ bool
 verify(const sp::HashSet<T, h> &self) noexcept {
   using namespace impl;
 
-  assertx(binary::verify(self.tree));
+  assertx(verify(self.tree));
 
   binary::rec::inorder(self.tree, [](const auto &node) {
     for_each(node, [&node](const auto &buckets) {

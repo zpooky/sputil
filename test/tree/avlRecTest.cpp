@@ -1,28 +1,57 @@
 #include <collection/Array.h>
 #include <gtest/gtest.h>
+#include <tree/avl2.h>
 #include <tree/avl_rec.h>
 #include <util/assert.h>
 
 template <typename T>
-static void
+static T *
 a_insert(avl::rec::Tree<T> &tree, T val) {
-  printf("insert(tree,'%c')\n", char(val));
+  // printf("insert(tree,'%c')\n", char(val));
   T *res = insert(tree, val);
-  dump(tree);
+  // dump(tree);
 
-  ASSERT_TRUE(res);
-  ASSERT_EQ(*res, val);
+  assertx(res);
+  assertx(*res == val);
 
   T *fres = find(tree, val);
-  ASSERT_TRUE(fres);
-  ASSERT_EQ(*fres, val);
+  assertx(fres);
+  assertx(*fres == val);
   // return res;
   {
     /**/
-    ASSERT_TRUE(tree.root);
+    assertx(tree.root);
   }
 
-  printf("\n");
+  // printf("\n");
+  return res;
+}
+
+template <typename T>
+static T *
+a_insert(avl2::Tree<T> &tree, T val) {
+  // printf("insert(tree,'%c')\n", char(val));
+  std::tuple<T *, bool> ins = insert(tree, val);
+
+  assertx(std::get<1>(ins));
+
+  T *res = std::get<0>(ins);
+  // dump(tree);
+
+  assertx(res);
+  assertx(*res == val);
+
+  T *fres = find(tree, val);
+  assertx(fres);
+  assertx(*fres == val);
+  // return res;
+  {
+    /**/
+    assertx(tree.root);
+  }
+
+  // printf("\n");
+  return res;
 }
 
 template <typename T>
@@ -32,11 +61,16 @@ bal(avl::rec::Node<T> *node) {
   return avl::rec::impl::balance(node);
 }
 
-TEST(avlRecTest, test) {
-  using TT = char;
-  using namespace avl::rec;
+template <typename T>
+static int
+bal(avl2::Node<T> *node) {
+  assertx(node);
+  return avl2::impl::balance(node);
+}
 
-  Tree<TT> tree;
+template <typename Tree>
+static void
+wiki_test(Tree &tree) {
 
   {
     /*
@@ -44,7 +78,7 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'M');
 
-    Node<TT> *M = tree.root;
+    auto *M = tree.root;
     ASSERT_EQ(M->value, 'M');
     ASSERT_EQ(bal(M), 0);
     ASSERT_EQ(M->height, std::size_t(1));
@@ -59,7 +93,7 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'N');
 
-    Node<TT> *M = tree.root;
+    auto *M = tree.root;
     ASSERT_EQ(M->value, 'M');
     ASSERT_EQ(bal(M), 1);
     ASSERT_EQ(M->height, std::size_t(2));
@@ -68,7 +102,7 @@ TEST(avlRecTest, test) {
       ASSERT_EQ(nullptr, M->left);
     }
     {
-      Node<TT> *N = M->right;
+      auto *N = M->right;
       ASSERT_TRUE(N);
       ASSERT_EQ(N->value, 'N');
       ASSERT_EQ(bal(N), 0);
@@ -85,12 +119,12 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'O');
 
-    Node<TT> *N = tree.root;
+    auto *N = tree.root;
     ASSERT_EQ(N->value, 'N');
     ASSERT_EQ(bal(N), 0);
     ASSERT_EQ(N->height, std::size_t(2));
     {
-      Node<TT> *M = N->left;
+      auto *M = N->left;
       ASSERT_TRUE(M);
       ASSERT_EQ(M->value, 'M');
       ASSERT_EQ(bal(M), 0);
@@ -99,7 +133,7 @@ TEST(avlRecTest, test) {
       ASSERT_EQ(nullptr, M->right);
     }
     {
-      Node<TT> *O = N->right;
+      auto *O = N->right;
       ASSERT_TRUE(O);
       ASSERT_EQ(O->value, 'O');
       ASSERT_EQ(bal(O), 0);
@@ -118,18 +152,18 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'L');
 
-    Node<TT> *N = tree.root;
+    auto *N = tree.root;
     ASSERT_EQ(N->value, 'N');
     ASSERT_EQ(bal(N), -1);
     ASSERT_EQ(N->height, std::size_t(3));
     {
-      Node<TT> *M = N->left;
+      auto *M = N->left;
       ASSERT_TRUE(M);
       ASSERT_EQ(M->value, 'M');
       ASSERT_EQ(bal(M), -1);
       ASSERT_EQ(M->height, std::size_t(2));
       {
-        Node<TT> *L = M->left;
+        auto *L = M->left;
         ASSERT_TRUE(L);
         ASSERT_EQ(L->value, 'L');
         ASSERT_EQ(bal(L), 0);
@@ -140,7 +174,7 @@ TEST(avlRecTest, test) {
       ASSERT_EQ(nullptr, M->right);
     }
     {
-      Node<TT> *O = N->right;
+      auto *O = N->right;
       ASSERT_TRUE(O);
       ASSERT_EQ(O->value, 'O');
       ASSERT_EQ(bal(O), 0);
@@ -159,18 +193,18 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'K');
 
-    Node<TT> *N = tree.root;
+    auto *N = tree.root;
     ASSERT_EQ(N->value, 'N');
     ASSERT_EQ(bal(N), -1);
     ASSERT_EQ(N->height, std::size_t(3));
     {
-      Node<TT> *L = N->left;
+      auto *L = N->left;
       ASSERT_TRUE(L);
       ASSERT_EQ(L->value, 'L');
       ASSERT_EQ(bal(L), 0);
       ASSERT_EQ(L->height, std::size_t(2));
       {
-        Node<TT> *K = L->left;
+        auto *K = L->left;
         ASSERT_TRUE(K);
         ASSERT_EQ(K->value, 'K');
         ASSERT_EQ(bal(K), 0);
@@ -179,7 +213,7 @@ TEST(avlRecTest, test) {
         ASSERT_EQ(nullptr, K->right);
       }
       {
-        Node<TT> *M = L->right;
+        auto *M = L->right;
         ASSERT_TRUE(M);
         ASSERT_EQ(M->value, 'M');
         ASSERT_EQ(bal(M), 0);
@@ -189,7 +223,7 @@ TEST(avlRecTest, test) {
       }
     }
     {
-      Node<TT> *O = N->right;
+      auto *O = N->right;
       ASSERT_TRUE(O);
       ASSERT_EQ(O->value, 'O');
       ASSERT_EQ(bal(O), 0);
@@ -209,18 +243,18 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'Q');
 
-    Node<TT> *N = tree.root;
+    auto *N = tree.root;
     ASSERT_EQ(N->value, 'N');
     ASSERT_EQ(bal(N), 0);
     ASSERT_EQ(N->height, std::size_t(3));
     {
-      Node<TT> *L = N->left;
+      auto *L = N->left;
       ASSERT_TRUE(L);
       ASSERT_EQ(L->value, 'L');
       ASSERT_EQ(bal(L), 0);
       ASSERT_EQ(L->height, std::size_t(2));
       {
-        Node<TT> *K = L->left;
+        auto *K = L->left;
         ASSERT_TRUE(K);
         ASSERT_EQ(K->value, 'K');
         ASSERT_EQ(bal(K), 0);
@@ -229,7 +263,7 @@ TEST(avlRecTest, test) {
         ASSERT_EQ(nullptr, K->right);
       }
       {
-        Node<TT> *M = L->right;
+        auto *M = L->right;
         ASSERT_TRUE(M);
         ASSERT_EQ(M->value, 'M');
         ASSERT_EQ(bal(M), 0);
@@ -239,14 +273,14 @@ TEST(avlRecTest, test) {
       }
     }
     {
-      Node<TT> *O = N->right;
+      auto *O = N->right;
       ASSERT_TRUE(O);
       ASSERT_EQ(O->value, 'O');
       ASSERT_EQ(bal(O), 1);
       ASSERT_EQ(O->height, std::size_t(2));
       ASSERT_EQ(nullptr, O->left);
       {
-        Node<TT> *Q = O->right;
+        auto *Q = O->right;
         ASSERT_TRUE(Q);
         ASSERT_EQ(Q->value, 'Q');
         ASSERT_EQ(bal(Q), 0);
@@ -266,18 +300,18 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'P');
 
-    Node<TT> *N = tree.root;
+    auto *N = tree.root;
     ASSERT_EQ(N->value, 'N');
     ASSERT_EQ(bal(N), 0);
     ASSERT_EQ(N->height, std::size_t(3));
     {
-      Node<TT> *L = N->left;
+      auto *L = N->left;
       ASSERT_TRUE(L);
       ASSERT_EQ(L->value, 'L');
       ASSERT_EQ(bal(L), 0);
       ASSERT_EQ(L->height, std::size_t(2));
       {
-        Node<TT> *K = L->left;
+        auto *K = L->left;
         ASSERT_TRUE(K);
         ASSERT_EQ(K->value, 'K');
         ASSERT_EQ(bal(K), 0);
@@ -286,7 +320,7 @@ TEST(avlRecTest, test) {
         ASSERT_EQ(nullptr, K->right);
       }
       {
-        Node<TT> *M = L->right;
+        auto *M = L->right;
         ASSERT_TRUE(M);
         ASSERT_EQ(M->value, 'M');
         ASSERT_EQ(bal(M), 0);
@@ -296,13 +330,13 @@ TEST(avlRecTest, test) {
       }
     }
     {
-      Node<TT> *P = N->right;
+      auto *P = N->right;
       ASSERT_TRUE(P);
       ASSERT_EQ(P->value, 'P');
       ASSERT_EQ(bal(P), 0);
       ASSERT_EQ(P->height, std::size_t(2));
       {
-        Node<TT> *O = P->left;
+        auto *O = P->left;
         ASSERT_TRUE(O);
         ASSERT_EQ(O->value, 'O');
         ASSERT_EQ(bal(O), 0);
@@ -311,7 +345,7 @@ TEST(avlRecTest, test) {
         ASSERT_EQ(nullptr, O->right);
       }
       {
-        Node<TT> *Q = P->right;
+        auto *Q = P->right;
         ASSERT_TRUE(Q);
         ASSERT_EQ(Q->value, 'Q');
         ASSERT_EQ(bal(Q), 0);
@@ -333,24 +367,24 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'H');
 
-    Node<TT> *N = tree.root;
+    auto *N = tree.root;
     ASSERT_EQ(N->value, 'N');
     ASSERT_EQ(bal(N), -1);
     ASSERT_EQ(N->height, std::size_t(4));
     {
-      Node<TT> *L = N->left;
+      auto *L = N->left;
       ASSERT_TRUE(L);
       ASSERT_EQ(L->value, 'L');
       ASSERT_EQ(bal(L), -1);
       ASSERT_EQ(L->height, std::size_t(3));
       {
-        Node<TT> *K = L->left;
+        auto *K = L->left;
         ASSERT_TRUE(K);
         ASSERT_EQ(K->value, 'K');
         ASSERT_EQ(bal(K), -1);
         ASSERT_EQ(K->height, std::size_t(2));
         {
-          Node<TT> *H = K->left;
+          auto *H = K->left;
           ASSERT_TRUE(H);
           ASSERT_EQ(H->value, 'H');
           ASSERT_EQ(bal(H), 0);
@@ -361,7 +395,7 @@ TEST(avlRecTest, test) {
         ASSERT_EQ(nullptr, K->right);
       }
       {
-        Node<TT> *M = L->right;
+        auto *M = L->right;
         ASSERT_TRUE(M);
         ASSERT_EQ(M->value, 'M');
         ASSERT_EQ(bal(M), 0);
@@ -371,13 +405,13 @@ TEST(avlRecTest, test) {
       }
     }
     {
-      Node<TT> *P = N->right;
+      auto *P = N->right;
       ASSERT_TRUE(P);
       ASSERT_EQ(P->value, 'P');
       ASSERT_EQ(bal(P), 0);
       ASSERT_EQ(P->height, std::size_t(2));
       {
-        Node<TT> *O = P->left;
+        auto *O = P->left;
         ASSERT_TRUE(O);
         ASSERT_EQ(O->value, 'O');
         ASSERT_EQ(bal(O), 0);
@@ -386,7 +420,7 @@ TEST(avlRecTest, test) {
         ASSERT_EQ(nullptr, O->right);
       }
       {
-        Node<TT> *Q = P->right;
+        auto *Q = P->right;
         ASSERT_TRUE(Q);
         ASSERT_EQ(Q->value, 'Q');
         ASSERT_EQ(bal(Q), 0);
@@ -408,24 +442,24 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'I');
 
-    Node<TT> *N = tree.root;
+    auto *N = tree.root;
     ASSERT_EQ(N->value, 'N');
     ASSERT_EQ(bal(N), -1);
     ASSERT_EQ(N->height, std::size_t(4));
     {
-      Node<TT> *L = N->left;
+      auto *L = N->left;
       ASSERT_TRUE(L);
       ASSERT_EQ(L->value, 'L');
       ASSERT_EQ(bal(L), -1);
       ASSERT_EQ(L->height, std::size_t(3));
       {
-        Node<TT> *I = L->left;
+        auto *I = L->left;
         ASSERT_TRUE(I);
         ASSERT_EQ(I->value, 'I');
         ASSERT_EQ(bal(I), 0);
         ASSERT_EQ(I->height, std::size_t(2));
         {
-          Node<TT> *H = I->left;
+          auto *H = I->left;
           ASSERT_TRUE(H);
           ASSERT_EQ(H->value, 'H');
           ASSERT_EQ(bal(H), 0);
@@ -434,7 +468,7 @@ TEST(avlRecTest, test) {
           ASSERT_EQ(nullptr, H->right);
         }
         {
-          Node<TT> *K = I->right;
+          auto *K = I->right;
           ASSERT_TRUE(K);
           ASSERT_EQ(K->value, 'K');
           ASSERT_EQ(K->height, std::size_t(1));
@@ -444,7 +478,7 @@ TEST(avlRecTest, test) {
         }
       }
       {
-        Node<TT> *M = L->right;
+        auto *M = L->right;
         ASSERT_TRUE(M);
         ASSERT_EQ(M->value, 'M');
         ASSERT_EQ(bal(M), 0);
@@ -454,13 +488,13 @@ TEST(avlRecTest, test) {
       }
     }
     {
-      Node<TT> *P = N->right;
+      auto *P = N->right;
       ASSERT_TRUE(P);
       ASSERT_EQ(P->value, 'P');
       ASSERT_EQ(bal(P), 0);
       ASSERT_EQ(P->height, std::size_t(2));
       {
-        Node<TT> *O = P->left;
+        auto *O = P->left;
         ASSERT_TRUE(O);
         ASSERT_EQ(O->value, 'O');
         ASSERT_EQ(bal(O), 0);
@@ -469,7 +503,7 @@ TEST(avlRecTest, test) {
         ASSERT_EQ(nullptr, O->right);
       }
       {
-        Node<TT> *Q = P->right;
+        auto *Q = P->right;
         ASSERT_TRUE(Q);
         ASSERT_EQ(Q->value, 'Q');
         ASSERT_EQ(bal(Q), 0);
@@ -491,24 +525,24 @@ TEST(avlRecTest, test) {
      */
     a_insert(tree, 'A');
 
-    Node<TT> *N = tree.root;
+    auto *N = tree.root;
     ASSERT_EQ(N->value, 'N');
     ASSERT_EQ(bal(N), -1);
     ASSERT_EQ(N->height, std::size_t(4));
     {
-      Node<TT> *I = N->left;
+      auto *I = N->left;
       ASSERT_TRUE(I);
       ASSERT_EQ(I->value, 'I');
       ASSERT_EQ(bal(I), 0);
       ASSERT_EQ(I->height, std::size_t(3));
       {
-        Node<TT> *H = I->left;
+        auto *H = I->left;
         ASSERT_TRUE(H);
         ASSERT_EQ(H->value, 'H');
         ASSERT_EQ(bal(H), -1);
         ASSERT_EQ(H->height, std::size_t(2));
         {
-          Node<TT> *A = H->left;
+          auto *A = H->left;
           ASSERT_TRUE(A);
           ASSERT_EQ(A->value, 'A');
           ASSERT_EQ(bal(A), 0);
@@ -519,13 +553,13 @@ TEST(avlRecTest, test) {
         ASSERT_EQ(nullptr, H->right);
       }
       {
-        Node<TT> *L = I->right;
+        auto *L = I->right;
         ASSERT_TRUE(L);
         ASSERT_EQ(L->value, 'L');
         ASSERT_EQ(bal(L), 0);
         ASSERT_EQ(L->height, std::size_t(2));
         {
-          Node<TT> *K = L->left;
+          auto *K = L->left;
           ASSERT_TRUE(K);
           ASSERT_EQ(K->value, 'K');
           ASSERT_EQ(bal(K), 0);
@@ -534,7 +568,7 @@ TEST(avlRecTest, test) {
           ASSERT_EQ(nullptr, K->right);
         }
         {
-          Node<TT> *M = L->right;
+          auto *M = L->right;
           ASSERT_TRUE(M);
           ASSERT_EQ(M->value, 'M');
           ASSERT_EQ(bal(M), 0);
@@ -545,13 +579,13 @@ TEST(avlRecTest, test) {
       }
     }
     {
-      Node<TT> *P = N->right;
+      auto *P = N->right;
       ASSERT_TRUE(P);
       ASSERT_EQ(P->value, 'P');
       ASSERT_EQ(bal(P), 0);
       ASSERT_EQ(P->height, std::size_t(2));
       {
-        Node<TT> *O = P->left;
+        auto *O = P->left;
         ASSERT_TRUE(O);
         ASSERT_EQ(O->value, 'O');
         ASSERT_EQ(bal(O), 0);
@@ -560,7 +594,7 @@ TEST(avlRecTest, test) {
         ASSERT_EQ(nullptr, O->right);
       }
       {
-        Node<TT> *Q = P->right;
+        auto *Q = P->right;
         ASSERT_TRUE(Q);
         ASSERT_EQ(Q->value, 'Q');
         ASSERT_EQ(bal(Q), 0);
@@ -611,18 +645,26 @@ TEST(avlRecTest, test) {
   ASSERT_FALSE(tree.root);
 }
 
-TEST(avlRecTest, test2) {
+TEST(avlRecTest, acl_rec_wiki_test) {
+  avl::rec::Tree<char> tree;
+  wiki_test(tree);
+}
+
+TEST(avlRecTest, acl2_wiki_test) {
+  avl2::Tree<char> tree;
+  // wiki_test(tree);
+}
+
+template <typename Tree>
+static void
+az_test(Tree &tree) {
   const char start = '0';
   const char end = 'z' + 1;
 
-  using TT = char;
-  using namespace avl::rec;
-
-  Tree<TT> tree;
   {
     char it = start;
     while (it != end) {
-      char *res = insert(tree, it);
+      char *res = a_insert(tree, it);
       ASSERT_TRUE(res);
       ASSERT_EQ(it, *res);
       it++;
@@ -630,23 +672,33 @@ TEST(avlRecTest, test2) {
   }
   dump(tree);
 
-  {
-    char it = start;
-    while (it != end) {
-      for (char a = start; a < it; ++a) {
-        char *result = find(tree, a);
-        ASSERT_FALSE(result);
-      }
-      for (char a = it; a < end; ++a) {
-        char *result = find(tree, a);
-        ASSERT_TRUE(result);
-        ASSERT_EQ(*result, a);
-      }
-
-      bool res = remove(tree, it++);
-      ASSERT_TRUE(res);
-    }
+  // {
+  char it = start;
+  //   while (it != end) {
+  //     for (char a = start; a < it; ++a) {
+  //       char *result = find(tree, a);
+  //       ASSERT_FALSE(result);
+  //     }
+  for (char a = it; a < end; ++a) {
+    char *result = find(tree, a);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(*result, a);
   }
+  //
+  //     bool res = remove(tree, it++);
+  //     ASSERT_TRUE(res);
+  //   }
+  // }
+  //
+  // ASSERT_FALSE(tree.root);
+}
 
-  ASSERT_FALSE(tree.root);
+TEST(avlRecTest, rec_test) {
+  avl::rec::Tree<char> tree;
+  az_test(tree);
+}
+
+TEST(avlRecTest, avl2_az_test) {
+  avl2::Tree<char> tree;
+  az_test(tree);
 }
