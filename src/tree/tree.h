@@ -88,6 +88,7 @@ doubly_linked(T *n) noexcept {
 
     return l && r;
   }
+
   return true;
 }
 

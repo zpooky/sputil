@@ -11,7 +11,6 @@
 // #include <list/SkipList.h>
 
 // TODO mix of hash to avoid identity 1 -> 1 hash problem
-// TODO try use avl/red-black
 // TODO remove(set,key)
 // TODO dynamic node size, not template size look at sparse bitset?
 
@@ -93,7 +92,6 @@ struct HashSet {
 
   // binary::Tree<impl::HSNode<T>> tree;
   avl2::Tree<impl::HSNode<T>> tree;
-  // sp::SkipList<impl::HSNode<T>, 8> tree;
 
   HashSet() noexcept;
 };
@@ -309,18 +307,22 @@ split(HashSet<T, hash> &self, HSNode<T, cap> &source) noexcept {
   if (split >= source.capacity) {
     const std::size_t start(source.start + split);
     const std::size_t before = source.length;
-    source.length -= split;
-    auto status = emplace(self.tree, start, split);
-    if (!verify(self.tree)) { // TODO debug
+    if (!verify(self.tree)) {
       dump(self.tree);
       assertx(false);
     }
-    // printf("emplace(self.tree, start[%zu], split[%zu])\n", start, split);
+
+    source.length -= split;
+    auto status = emplace(self.tree, start, split);
+    if (!verify(self.tree)) {
+      dump(self.tree);
+      verify(self.tree);
+      assertx(false);
+    }
 
     bool created = std::get<1>(status);
     assertx(created);
     HSNode<T, cap> *const result = std::get<0>(status);
-    // assertx(result != nullptr);
     if (result) {
       assertx(result->start == start);
       assertx(result->length == split);

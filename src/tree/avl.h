@@ -884,6 +884,7 @@ insert(Tree<T, C> &tree, K &&value) noexcept {
     set_root(rebalance(node, [](Node<T> *child) { //
       return insert_parent_balance(child);
     }));
+    assertx(tree.root->parent == nullptr);
   }
 
   T *insval = nullptr;

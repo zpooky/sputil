@@ -5,6 +5,7 @@
 #include <tree/tree.h>
 #include <tuple>
 #include <util/assert.h>
+#include <util/comparator.h>
 #include <utility>
 
 namespace avl2 {
@@ -97,7 +98,7 @@ balance(const Node<T> *node) noexcept {
   assertx(node);
   return -height(node->left) + height(node->right);
 } // avl::rec::impl::balance()
-}
+} // namespace impl
 
 template <>
 inline Node<int>::operator std::string() const {
@@ -155,7 +156,7 @@ Node<T>::~Node() noexcept {
 namespace impl {
 template <typename T>
 static std::size_t
-calc_height(Node<T> *node) noexcept {
+calc_height(Node<T> *const node) noexcept {
   assertx(node);
   node->height = std::max(height(node->left), height(node->right)) + 1;
   return node->height;
@@ -187,7 +188,6 @@ rotate_left(Node<T> *const A) noexcept {
   //#Rotate
   A->parent = B;
   A->right = x1;
-
   if (x1) {
     x1->parent = A;
   }
@@ -195,6 +195,8 @@ rotate_left(Node<T> *const A) noexcept {
   if (B) {
     B->parent = A_parent;
     B->left = A;
+  } else {
+    A->parent = A_parent;
   }
 
   calc_height(A);
@@ -270,6 +272,7 @@ set(Node<T> *&child) noexcept {
   }
 
   if (parent->left == child) {
+    assertx(parent->right != child);
     return parent->left;
   }
 
@@ -296,19 +299,28 @@ rebalance(Node<T> *root) noexcept {
     if (balance(root) == -2) {
       if (balance(root->left) == 1) {
         root->left = rotate_left(root->left);
+        assertx(bst::impl::doubly_linked(root->left));
+        assertx(bst::impl::doubly_linked(root));
       }
 
       // update parent with new child
-      set(root) = rotate_right(root);
+      auto &s = set(root);
+      s = rotate_right(root);
+      assertx(bst::impl::doubly_linked(root));
       return root;
     }
     /* Right Heavy */
     else if (balance(root) == 2) {
       if (balance(root->right) == -1) {
         root->right = rotate_right(root->right);
+        assertx(bst::impl::doubly_linked(root->right));
+        assertx(bst::impl::doubly_linked(root));
       }
 
-      set(root) = rotate_left(root);
+      auto &s = set(root);
+      s = rotate_left(root);
+
+      assertx(bst::impl::doubly_linked(root));
       return root;
     }
 
@@ -318,8 +330,40 @@ rebalance(Node<T> *root) noexcept {
 
   return atleast;
 }
+#if 0
+template <typename T>
+static bool
+assert_no_cycle(Node<T> *tree, binary::Tree<Node<T> *> &visited) {
+  if (tree) {
+    if (find(visited, tree)) {
+      return false;
+    }
 
-} // namespace avl::rec::impl
+    auto res = insert(visited, tree);
+    assertx(std::get<1>(res));
+
+    if (!assert_no_cycle(tree->left, visited)) {
+      return false;
+    }
+
+    if (!assert_no_cycle(tree->right, visited)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+template <typename T>
+static bool
+assert_no_cycle(Node<T> *tree) {
+  binary::Tree<Node<T> *> visited;
+  return assert_no_cycle(tree, visited);
+  // return true;
+}
+#endif
+
+} // namespace impl
 
 template <typename T, typename C, typename V>
 std::tuple<T *, bool>
@@ -332,12 +376,20 @@ insert(Tree<T, C> &self, V &&value) noexcept {
   if (inserted) {
     assertx(node);
 
-    Node<T> *const root = impl::rebalance(node);
+    Node<T> *root = impl::rebalance(node);
     assertx(root);
 
-    if (!root->parent) {
+    // TODO fix
+    // while (root->parent) {
+    //   root = root->parent;
+    // }
+    // self.root = root;
+    if (root->parent == nullptr) {
       self.root = root;
     }
+
+    // assertx(impl::assert_no_cycle(self.root));
+    assertx(self.root->parent == nullptr);
   }
 
   T *insval = nullptr;
@@ -396,7 +448,7 @@ remove(Node<T> *node) noexcept {
 
   return nullptr;
 }
-}
+} // namespace impl
 
 template <typename T, typename C, typename K>
 bool
@@ -487,7 +539,7 @@ verify(const Node<T> *parent, const Node<T> *tree,
   }
   return true;
 } // avl::impl::verify()
-}
+} // namespace impl
 
 template <typename T, typename C>
 bool
@@ -504,6 +556,6 @@ is_empty(const Tree<T, C> &self) noexcept {
 }
 
 //=====================================
-}
+} // namespace avl2
 
 #endif

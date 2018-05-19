@@ -664,13 +664,26 @@ az_test(Tree &tree) {
   {
     char it = start;
     while (it != end) {
-      char *res = a_insert(tree, it);
-      ASSERT_TRUE(res);
-      ASSERT_EQ(it, *res);
+      for (char a = it; a < end; ++a) {
+        char *result = find(tree, a);
+        ASSERT_FALSE(result);
+      }
+
+      for (char a = start; a < it; ++a) {
+        char *result = find(tree, a);
+        ASSERT_TRUE(result);
+        ASSERT_EQ(*result, a);
+      }
+
+      {
+        char *res = a_insert(tree, it);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(it, *res);
+      }
       it++;
     }
   }
-  dump(tree);
+  // dump(tree);
 
   // {
   char it = start;
