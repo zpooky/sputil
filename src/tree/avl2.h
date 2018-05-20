@@ -286,6 +286,10 @@ rebalance(Node<T> *root) noexcept {
   assertx(root);
 
   Node<T> *atleast = root;
+  {
+    const auto before = atleast->height;
+    assertx(before == calc_height(atleast));
+  }
   root = root->parent;
 
   while (root) {
@@ -330,6 +334,7 @@ rebalance(Node<T> *root) noexcept {
 
   return atleast;
 }
+
 #if 0
 template <typename T>
 static bool
@@ -423,47 +428,163 @@ find(Tree<T, C> &self, const K &needle) noexcept {
 
 //=====================================
 namespace impl {
+
 template <typename T>
 static Node<T> *
-unlink(Node<T> *node) noexcept {
+find_min(Node<T> *node) noexcept {
+  assertx(node);
+  while (node->left) {
+    node = node->left;
+  }
+  return node;
+}
+
+template <typename T>
+static Node<T> *
+reb(Node<T> *root) noexcept {
+  auto atleast = root;
+  while (root) {
+    calc_height(root);
+
+    // if (balance(root) == 0) {
+    // }
+
+    /* Left Heavy */
+    if (balance(root) == -2) {
+      if (balance(root->left) == 1) {
+        root->left = rotate_left(root->left);
+        assertx(bst::impl::doubly_linked(root->left));
+        assertx(bst::impl::doubly_linked(root));
+      }
+
+      // update parent with new child
+      auto &s = set(root);
+      s = rotate_right(root);
+      assertx(bst::impl::doubly_linked(root));
+    }
+    /* Right Heavy */
+    else if (balance(root) == 2) {
+      if (balance(root->right) == -1) {
+        root->right = rotate_right(root->right);
+        assertx(bst::impl::doubly_linked(root->right));
+        assertx(bst::impl::doubly_linked(root));
+      }
+
+      auto &s = set(root);
+      s = rotate_left(root);
+
+      assertx(bst::impl::doubly_linked(root));
+    }
+
+    atleast = root;
+    root = atleast->parent;
+  }
+
+  assertx(atleast);
+  return atleast;
+}
+
+template <typename T, typename C>
+static void
+take(Tree<T, C> &, Node<T> *) noexcept;
+
+template <typename T, typename C>
+static Node<T> *
+unlink(Tree<T, C> &self, Node<T> *node) noexcept {
+  auto xxx = [](Node<T> *parent, Node<T> *priv, Node<T> *subject) {
+    if (parent) {
+      if (parent->left == priv) {
+        assertx(parent->right != priv);
+        parent->left = subject;
+      } else {
+        assertx(parent->right == priv);
+        parent->right = subject;
+      }
+    }
+    if (subject)
+      subject->parent = parent;
+  };
+
   assertx(node);
   if (node->left && node->right) {
+    auto hier = find_min(node->right);
+    assertx(hier);
+    take(self, hier);
 
+    xxx(node->parent, node, hier);
+    hier->left = node->left;
+    if (hier->left) {
+      hier->left->parent = hier;
+    }
+
+    hier->right = node->right;
+    if (hier->right) {
+      hier->right->parent = hier;
+    }
+
+    calc_height(hier);
+
+    return reb(hier);
   } else if (node->left) {
-
+    auto hier = node->left;
+    xxx(node->parent, node, hier);
+    return reb(hier);
   } else if (node->right) {
+    auto hier = node->right;
+    xxx(node->parent, node, hier);
+    return reb(hier);
+  }
+  // assertx(false);
 
-  } else {
-
-    return node->parent;
+  auto parent = node->parent;
+  xxx(parent, node, nullptr);
+  if (parent) {
+    return reb(parent);
   }
 
   return nullptr;
 }
 
-template <typename T>
-static Node<T> *
-remove(Node<T> *node) noexcept {
-  Node<T> *hier = unlink(node);
+template <typename T, typename C>
+static void
+take(Tree<T, C> &self, Node<T> *node) noexcept {
+  Node<T> *const root = unlink(self, node);
+  if (root) {
+    if (!root->parent) {
+      self.root = root;
+    }
+    assertx(self.root->parent == nullptr);
+    if (!verify(self)) {
+      // printf("\nunlink(%s) before:\n", std::string(*node).c_str());
+      printf("take-failed:\n");
+      dump(self);
+      assertx(verify(self));
+    }
+  } else {
+    self.root = nullptr;
+  }
 
-  return nullptr;
+  {
+    node->left = nullptr;
+    node->right = nullptr;
+    node->parent = nullptr;
+  }
 }
+
 } // namespace impl
 
 template <typename T, typename C, typename K>
 bool
-remove(Tree<T, C> &self, const K &k) noexcept {
-  Node<T> *const node = bst::impl::find_node(self, k);
+remove(Tree<T, C> &self, const K &needle) noexcept {
+  Node<T> *const node = bst::impl::find_node(self, needle);
   if (node) {
+    impl::take(self, node);
 
-    Node<T> *const root = impl::remove(node);
-    if (root) {
-      if (!root->parent) {
-        self.root = root;
-      }
-    } else {
-      self.root = nullptr;
-    }
+    // TODO
+    // printf("%p");
+    // assertx(node->left);
+    // assertx(node->right);
+    // delete node;
 
     return true;
   }
@@ -482,15 +603,14 @@ dump(Tree<T, C> &tree, std::string prefix) noexcept {
 namespace impl {
 template <typename T>
 static bool
-verify(const Node<T> *parent, const Node<T> *tree,
-       std::uint32_t &result) noexcept {
+verify(const Node<T> *parent, const Node<T> *tree, int &result) noexcept {
   result = 0;
   if (tree) {
     if (tree->parent != parent) {
       return false;
     }
 
-    std::uint32_t left = 0;
+    int left = 0;
     if (tree->left) {
       if (!(tree->value > tree->left->value)) {
         return false;
@@ -500,7 +620,7 @@ verify(const Node<T> *parent, const Node<T> *tree,
       }
     }
 
-    std::uint32_t right = 0;
+    int right = 0;
     if (tree->right) {
       if (!(tree->value < tree->right->value)) {
         return false;
@@ -512,19 +632,20 @@ verify(const Node<T> *parent, const Node<T> *tree,
 
     result++;
 
-    std::int64_t bl = std::int64_t(right) - std::int64_t(left);
-    std::int8_t b = bl;
-    if (balance(tree) != b) {
+    int bl = int(right) - int(left);
+    const int h = std::max(right, left) + 1;
+    if (h != tree->height) {
+      // printf("height[%d] != tree->height[%d]\n", h, tree->height);
+      return false;
+    }
+
+    if (balance(tree) != bl) {
       std::cout << "right: " << right << "|";
       std::cout << "left: " << left << "|";
       // std::cout << "bl: " << bl << "|";
-      std::cout << "b: " << int(b) << "|";
+      std::cout << "bl: " << int(bl) << "|";
       std::cout << "tree: " << std::string(*tree) << "|";
       std::cout << "\n";
-    }
-
-    assertx(bl == b);
-    if (balance(tree) != b) {
       return false;
     }
 
@@ -544,8 +665,8 @@ verify(const Node<T> *parent, const Node<T> *tree,
 template <typename T, typename C>
 bool
 verify(const Tree<T, C> &self) noexcept {
-  std::uint32_t balance = 0;
-  return impl::verify((Node<T> *)nullptr, self.root, balance);
+  int balance = 0;
+  return impl::verify<T>((Node<T> *)nullptr, self.root, balance);
 } // avl::verify()
 
 //=====================================

@@ -245,7 +245,7 @@ insert(Node<T> *root, V &&val, T *&out, bool &balance) noexcept {
   return result;
 }
 
-} // namespace avl::rec::impl
+} // namespace impl
 
 template <typename T, typename V>
 T *
@@ -283,7 +283,7 @@ find(Node<T> *root, const V &needle) noexcept {
   const Node<T> *const c_root = root;
   return (Node<T> *)find(c_root, needle);
 }
-} // namespace avl::rec::impl
+} // namespace impl
 
 template <typename T, typename V>
 T *
@@ -335,13 +335,12 @@ do_unlink(Node<T> *const root, bool &balance) noexcept {
     heir->left = root->left;
     calc_height(heir);
     result = heir;
-  } else if (root->left) {
-    result = root->left;
-    balance = true;
-  } else if (root->right) {
-    result = root->right;
-    balance = true;
-  } else /*0 children*/ {
+  } else {
+    if (root->left) {
+      result = root->left;
+    } else if (root->right) {
+      result = root->right;
+    }
     balance = true;
   }
 
@@ -374,13 +373,13 @@ unlink(Node<T> *root, const V &needle, Node<T> *&out, bool &balance) noexcept {
   balance = false;
   return nullptr;
 }
-} // namespace avl::rec::impl
+} // namespace impl
 
 template <typename T, typename V>
 bool
 remove(Tree<T> &self, const V &needle) noexcept {
   Node<T> *result = nullptr;
-  bool balance = true;
+  bool balance = false;
   self.root = impl::unlink(self.root, needle, result, balance);
 
   if (result) {
@@ -415,7 +414,7 @@ dump(Node<char> *tree, std::string prefix = "", bool isTail = true,
     }
   }
 }
-} // namespace avl::rec::impl
+} // namespace impl
 
 template <typename T>
 void
@@ -424,7 +423,7 @@ dump(const Tree<T> &self) noexcept {
 }
 
 //=====================================
-} // namespace avl::rec
+} // namespace rec
 } // namespace avl
 
 #endif

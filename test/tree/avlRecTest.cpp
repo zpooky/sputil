@@ -621,6 +621,10 @@ wiki_test(Tree &tree) {
     // printf("i[%zu]\n", i);
     for (std::size_t a = 0; a < i; ++a) {
       char *result = find(tree, present[a]);
+      if (result) {
+        printf("find(tree,'%c')\n", present[a]);
+        dump(tree);
+      }
       ASSERT_FALSE(result);
     }
     for (std::size_t a = i; a < length(present); ++a) {
@@ -652,7 +656,7 @@ TEST(avlRecTest, acl_rec_wiki_test) {
 
 TEST(avlRecTest, acl2_wiki_test) {
   avl2::Tree<char> tree;
-  // wiki_test(tree);
+  wiki_test(tree);
 }
 
 template <typename Tree>
@@ -685,25 +689,25 @@ az_test(Tree &tree) {
   }
   // dump(tree);
 
-  // {
-  char it = start;
-  //   while (it != end) {
-  //     for (char a = start; a < it; ++a) {
-  //       char *result = find(tree, a);
-  //       ASSERT_FALSE(result);
-  //     }
-  for (char a = it; a < end; ++a) {
-    char *result = find(tree, a);
-    ASSERT_TRUE(result);
-    ASSERT_EQ(*result, a);
+  {
+    char it = start;
+    while (it != end) {
+      for (char a = start; a < it; ++a) {
+        char *result = find(tree, a);
+        ASSERT_FALSE(result);
+      }
+      for (char a = it; a < end; ++a) {
+        char *result = find(tree, a);
+        ASSERT_TRUE(result);
+        ASSERT_EQ(*result, a);
+      }
+
+      bool res = remove(tree, it++);
+      ASSERT_TRUE(res);
+    }
   }
-  //
-  //     bool res = remove(tree, it++);
-  //     ASSERT_TRUE(res);
-  //   }
-  // }
-  //
-  // ASSERT_FALSE(tree.root);
+
+  ASSERT_FALSE(tree.root);
 }
 
 TEST(avlRecTest, rec_test) {

@@ -1,9 +1,9 @@
-#include <tree/avl.h>
+#include <tree/avl2.h>
 #include <tree/bst.h>
 #include <tree/bst_extra.h>
 #include <tree/red-black.h>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include <cstring>
 #include <random>
 
@@ -34,7 +34,7 @@ random_insert_delete(std::size_t goal) {
   std::mt19937 g(0);
 
   while (counter < goal) {
-    if (counter > 0 && counter % 10 == 0) {
+    if (counter > 0 && counter % 100 == 0) {
       printf("cnt: %zu\n", counter);
     }
     Tree_t tree;
@@ -69,7 +69,7 @@ random_insert_delete(std::size_t goal) {
         ASSERT_TRUE(false);
       }
     }
-    dump(tree, "");
+    // dump(tree, "");
 
     std::shuffle(in, in + in_size, g);
     for (int i = 0; i < in_size; ++i) {
@@ -151,7 +151,7 @@ random_insert(std::size_t goal) {
 }
 
 TEST(treeTest, test_insert_delete_bst) {
-  random_insert_delete<binary::Tree<int>>(10);
+  random_insert_delete<binary::Tree<int>>(100);
 }
 
 TEST(treeTest, test_insert_bst) {
@@ -159,11 +159,11 @@ TEST(treeTest, test_insert_bst) {
 }
 
 TEST(treeTest, test_insert_avl) {
-  random_insert<avl::Tree<int>>(10);
+  random_insert<avl2::Tree<int>>(10);
 }
 
 TEST(treeTest, test_inser_remove_avl) {
-  random_insert_delete<avl::Tree<int>>(100);
+  random_insert_delete<avl2::Tree<int>>(100);
 }
 
 TEST(treeTest, test_insert_remove_red_black) {
