@@ -2,82 +2,84 @@
 #include <random>
 #include <util/Bitset.h>
 
-#define BITSET_TEST_RAND(b, bits)                                              \
-  do {                                                                         \
-    for (std::size_t i = 0; i < bits; ++i) {                                   \
-      ASSERT_FALSE(test(b, i));                                                \
-    }                                                                          \
-                                                                               \
-    auto in = new std::size_t[bits]{0};                                        \
-    for (std::size_t i = 0; i < bits; ++i) {                                   \
-      in[i] = i;                                                               \
-    }                                                                          \
-    std::mt19937 g(0);                                                         \
-    std::shuffle(in, in + bits, g);                                            \
-                                                                               \
-    for (std::size_t i = 0; i < bits; ++i) {                                   \
-      for (std::size_t a = i; a < bits; ++a) {                                 \
-        ASSERT_FALSE(test(b, in[a]));                                          \
-      }                                                                        \
-                                                                               \
-      std::size_t testIdx = in[i];                                             \
-      {                                                                        \
-        ASSERT_FALSE(test(b, testIdx));                                        \
-        bool old = set(b, testIdx, true);                                      \
-        ASSERT_FALSE(old);                                                     \
-        ASSERT_TRUE(test(b, testIdx));                                         \
-      }                                                                        \
-      {                                                                        \
-        bool old = set(b, testIdx, false);                                     \
-        ASSERT_TRUE(old);                                                      \
-        ASSERT_FALSE(test(b, testIdx));                                        \
-      }                                                                        \
-      {                                                                        \
-        bool newv = toggle(b, testIdx);                                        \
-        ASSERT_TRUE(newv);                                                     \
-        ASSERT_TRUE(test(b, testIdx));                                         \
-      }                                                                        \
-                                                                               \
-      for (std::size_t a = 0; a <= i; ++a) {                                   \
-        ASSERT_TRUE(test(b, in[a]));                                           \
-      }                                                                        \
-    }                                                                          \
-                                                                               \
-    for (std::size_t i = 0; i < bits; ++i) {                                   \
-      ASSERT_TRUE(test(b, i));                                                 \
-    }                                                                          \
-    delete[] in;                                                               \
-  } while (0)
+template <typename Bits>
+static void
+BITSET_TEST_RAND(Bits &b, std::size_t bits) {
+  for (std::size_t i = 0; i < bits; ++i) {
+    ASSERT_FALSE(test(b, i));
+  }
 
-#define BITSET_TEST_SEQUENCE(b)                                                \
-  do {                                                                         \
-    for (std::size_t i = 0; i < bits(b); ++i) {                                \
-      ASSERT_FALSE(test(b, i));                                                \
-    }                                                                          \
-                                                                               \
-    for (std::size_t testIdx = 0; testIdx < bits(b); ++testIdx) {              \
-      {                                                                        \
-        ASSERT_FALSE(test(b, testIdx));                                        \
-        bool old = set(b, testIdx, true);                                      \
-        ASSERT_FALSE(old);                                                     \
-        ASSERT_TRUE(test(b, testIdx));                                         \
-      }                                                                        \
-      {                                                                        \
-        bool old = set(b, testIdx, false);                                     \
-        ASSERT_TRUE(old);                                                      \
-        ASSERT_FALSE(test(b, testIdx));                                        \
-      }                                                                        \
-      {                                                                        \
-        bool newv = toggle(b, testIdx);                                        \
-        ASSERT_TRUE(newv);                                                     \
-        ASSERT_TRUE(test(b, testIdx));                                         \
-      }                                                                        \
-    }                                                                          \
-                                                                               \
-    for (std::size_t i = 0; i < bits(b); ++i) {                                \
-      ASSERT_TRUE(test(b, i));                                                 \
-    }                                                                          \
-  } while (0)
+  auto in = new std::size_t[bits]{0};
+  for (std::size_t i = 0; i < bits; ++i) {
+    in[i] = i;
+  }
+  std::mt19937 g(0);
+  std::shuffle(in, in + bits, g);
+
+  for (std::size_t i = 0; i < bits; ++i) {
+    for (std::size_t a = i; a < bits; ++a) {
+      ASSERT_FALSE(test(b, in[a]));
+    }
+
+    std::size_t testIdx = in[i];
+    {
+      ASSERT_FALSE(test(b, testIdx));
+      bool old = set(b, testIdx, true);
+      ASSERT_FALSE(old);
+      ASSERT_TRUE(test(b, testIdx));
+    }
+    {
+      bool old = set(b, testIdx, false);
+      ASSERT_TRUE(old);
+      ASSERT_FALSE(test(b, testIdx));
+    }
+    {
+      bool newv = toggle(b, testIdx);
+      ASSERT_TRUE(newv);
+      ASSERT_TRUE(test(b, testIdx));
+    }
+
+    for (std::size_t a = 0; a <= i; ++a) {
+      ASSERT_TRUE(test(b, in[a]));
+    }
+  }
+
+  for (std::size_t i = 0; i < bits; ++i) {
+    ASSERT_TRUE(test(b, i));
+  }
+  delete[] in;
+}
+
+template <typename Bits>
+static void
+BITSET_TEST_SEQUENCE(Bits &b) {
+  for (std::size_t i = 0; i < bits(b); ++i) {
+    ASSERT_FALSE(test(b, i));
+  }
+
+  for (std::size_t testIdx = 0; testIdx < bits(b); ++testIdx) {
+    {
+      ASSERT_FALSE(test(b, testIdx));
+      bool old = set(b, testIdx, true);
+      ASSERT_FALSE(old);
+      ASSERT_TRUE(test(b, testIdx));
+    }
+    {
+      bool old = set(b, testIdx, false);
+      ASSERT_TRUE(old);
+      ASSERT_FALSE(test(b, testIdx));
+    }
+    {
+      bool newv = toggle(b, testIdx);
+      ASSERT_TRUE(newv);
+      ASSERT_TRUE(test(b, testIdx));
+    }
+  }
+
+  for (std::size_t i = 0; i < bits(b); ++i) {
+    ASSERT_TRUE(test(b, i));
+  }
+}
 
 static constexpr std::size_t t_len = 24;
 static constexpr std::size_t t_bits = t_len * sizeof(std::uint64_t) * 8;

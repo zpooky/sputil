@@ -1,10 +1,13 @@
+#include <prng/util.h>
+#include <prng/xorshift.h>
 #include <tree/avl2.h>
 #include <tree/bst.h>
 #include <tree/bst_extra.h>
 #include <tree/red-black.h>
+#include <util/Bitset.h>
 
-#include <gtest/gtest.h>
 #include <cstring>
+#include <gtest/gtest.h>
 #include <random>
 
 template <class Tree_t, typename T, std::size_t in_size>
@@ -177,3 +180,110 @@ TEST(treeTest, test_insert_red_black) {
 // TEST(treeTest, test_insert_StaticTree) {
 //   random_insert<bst::StaticTree<int>>(10);
 // }
+
+template <class Tree_t>
+static void
+random_insert_random_delete() {
+  prng::xorshift32 r(1);
+  std::uint64_t raw[256] = {0};
+  sp::Bitset bset(raw);
+  constexpr std::uint32_t max(sizeof(raw) * 8);
+  std::size_t i = 0;
+  Tree_t tree;
+  std::size_t balance = 0;
+  while (i++ < max) {
+    {
+      const auto in = uniform_dist(r, 0, max);
+      if (test(bset, std::size_t(in))) {
+        auto res = find(tree, in);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, in);
+      } else {
+        {
+          auto res = find(tree, in);
+          ASSERT_FALSE(res);
+        }
+        {
+          std::tuple<int *, bool> tres = insert(tree, in);
+          ASSERT_TRUE(std::get<1>(tres));
+          int *p = std::get<0>(tres);
+          ASSERT_TRUE(p);
+          ASSERT_EQ(*p, in);
+        }
+        ++balance;
+
+        ASSERT_FALSE(set(bset, std::size_t(in), true));
+        {
+          auto res = find(tree, in);
+          ASSERT_TRUE(res);
+          ASSERT_EQ(*res, in);
+        }
+      }
+    }
+
+    {
+      const auto del = uniform_dist(r, 0, 10);
+      for (std::size_t i = 0; i < del; ++i) {
+        const auto in = uniform_dist(r, 0, max);
+        if (test(bset, std::size_t(in))) {
+          {
+            auto res = find(tree, in);
+            ASSERT_TRUE(res);
+            ASSERT_EQ(*res, in);
+          }
+          ASSERT_TRUE(remove(tree, in));
+          ASSERT_TRUE(set(bset, std::size_t(in), false));
+          {
+            auto res = find(tree, in);
+            ASSERT_FALSE(res);
+          }
+          ASSERT_TRUE(balance > 0);
+          --balance;
+        } else {
+          {
+            auto res = find(tree, in);
+            ASSERT_FALSE(res);
+          }
+          ASSERT_FALSE(remove(tree, in));
+        }
+      }
+    }
+  }
+
+  for_each(bset, [&tree, &balance](auto idx, bool set) {
+    // printf("idx[%zu]\n", idx);
+    if (set) {
+      {
+        auto res = find(tree, idx);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, idx);
+      }
+      {
+        ASSERT_TRUE(remove(tree, idx));
+        ASSERT_TRUE(balance > 0);
+        --balance;
+      }
+      {
+        auto res = find(tree, idx);
+        ASSERT_FALSE(res);
+      }
+    } else {
+      { ASSERT_FALSE(remove(tree, idx)); }
+      {
+        auto res = find(tree, idx);
+        ASSERT_FALSE(res);
+      }
+    }
+  });
+
+  ASSERT_EQ(std::size_t(0), balance);
+  ASSERT_TRUE(is_empty(tree));
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_bst) {
+  random_insert_random_delete<binary::Tree<int>>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_avl) {
+  random_insert_random_delete<avl2::Tree<int>>();
+}
