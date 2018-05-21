@@ -161,14 +161,14 @@ template <typename T, std::size_t c>
 bool
 HSNode<T, c>::operator>(const HashKey &o) const noexcept {
   const bool res = (start + length) > o.hash;
-  if (o.hash == 256) {
+  // if (o.hash == 256) {
     // printf("HSNode[%zu,%zu]>HashKey[%zu] in_range = %s gt=%s\n", start,
     // length,
     //        o.hash //
     //        ,
     //        in_range(*this, o) ? "true" : "false", //
     //        res ? "true" : "false");
-  }
+  // }
 
   if (in_range(*this, o)) {
     return false;

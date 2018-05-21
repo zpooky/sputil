@@ -25,8 +25,6 @@ is_sorted(T *, std::size_t) noexcept;
 template <typename T, typename Comparator>
 bool
 is_sorted(T *const in, std::size_t length) noexcept {
-  Comparator cmp;
-
   const T *it = in;
   const T *const end = in + length;
   while (it != end) {
@@ -44,6 +42,6 @@ is_sorted(T *const in, std::size_t length) noexcept {
 }
 
 //=====================================
-}
+} // namespace sp
 
 #endif
