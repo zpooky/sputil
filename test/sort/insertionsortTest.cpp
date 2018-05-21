@@ -4,12 +4,26 @@
 #include <sort/insertionsort.h>
 #include <sort/util.h>
 
+template <typename T>
+static void
+print_arr(T &arr, std::size_t length, std::size_t idx = ~std::size_t(0)) {
+  for (std::size_t i = 0; i < length; ++i) {
+    if (i == idx) {
+      printf("\033[92m%d\033[0m, ", arr[i]);
+    } else {
+      printf("%d, ", arr[i]);
+    }
+  }
+  printf("\n");
+}
+
 template <typename T, typename Comparator>
 static void
 check(T *arr, std::size_t length) {
   sp::insertionsort<T, Comparator>(arr, length);
 
   bool res = sp::is_sorted<T, Comparator>(arr, length);
+  // print_arr(arr, length);
   ASSERT_TRUE(res);
 }
 

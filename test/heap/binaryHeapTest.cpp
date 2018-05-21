@@ -1,4 +1,4 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <collection/Array.h>
 #include <heap/binary.h>
@@ -417,6 +417,55 @@ TEST(BinaryHeapTest, MaxHeap_eager_rand) {
   }
 }
 
+TEST(BinaryHeapTest, MaxHeap_eager_full) {
+  constexpr int size = 10;
+
+  heap::StaticMaxBinary<int, std::size_t(size)> heap;
+  for (std::size_t i = 0; i < size; ++i) {
+
+    auto res = insert_eager(heap, 10);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, 10);
+  }
+  ASSERT_TRUE(is_full(heap));
+
+  {
+    auto res = insert_eager(heap, 10);
+    ASSERT_FALSE(res);
+  }
+  ASSERT_TRUE(is_full(heap));
+
+  {
+    int out = 9999999;
+    ASSERT_TRUE(take_head(heap, out));
+    ASSERT_EQ(out, 10);
+  }
+  ASSERT_FALSE(is_full(heap));
+  {
+    auto res = insert_eager(heap, 9);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, 9);
+  }
+  ASSERT_TRUE(is_full(heap));
+  {
+    auto res = insert_eager(heap, 10);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, 10);
+  }
+  ASSERT_TRUE(is_full(heap));
+
+  const std::size_t l = length(heap);
+  std::size_t cmp = 0;
+  while (!is_empty(heap)) {
+    int out = 999999999;
+    ASSERT_TRUE(take_head(heap, out));
+    ASSERT_EQ(out, 10);
+    ++cmp;
+  }
+  ASSERT_EQ(l, cmp);
+  ASSERT_TRUE(is_empty(heap));
+}
+
 TEST(BinaryHeapTest, MaxHeap_last) {
   constexpr std::size_t size = 1024;
   heap::StaticMaxBinary<std::size_t, size> heap;
@@ -495,5 +544,34 @@ TEST(BinaryHeapTest, MaxHeap_last_rand) {
       }
     }
     ASSERT_EQ(capacity(heap), length(heap));
+  }
+}
+
+TEST(BinaryHeapTest, heapify) {
+  prng::xorshift32 r(1);
+  {
+    constexpr std::size_t size = 1024;
+    sp::StaticArray<std::size_t, size> in;
+    std::size_t i = 0;
+    for (; i < size; ++i) {
+      auto res = insert(in, i);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, i);
+    }
+    shuffle(r, in);
+    ASSERT_TRUE(is_full(in));
+    auto heap = heap::heapify<std::size_t, sp::greater>(in.data(), length(in));
+    ASSERT_TRUE(is_full(heap));
+    ASSERT_EQ(size, length(heap));
+
+    while (!is_empty(heap)) {
+      std::size_t out = 9999999;
+      auto res = take_head(heap, out);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(--i, out);
+      // printf("%zu\n", out);
+    }
+    ASSERT_EQ(std::size_t(0), i);
+    ASSERT_TRUE(is_empty(heap));
   }
 }

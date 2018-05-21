@@ -36,6 +36,12 @@ struct Array {
 
   T &operator[](std::size_t idx) noexcept;
   const T &operator[](std::size_t idx) const noexcept;
+
+  T *
+  data() noexcept;
+
+  const T *
+  data() const noexcept;
 };
 
 //=====================================
@@ -461,6 +467,18 @@ template <typename T>
 const T &Array<T>::operator[](std::size_t idx) const noexcept {
   assertxs(idx < length, idx, length);
   return buffer[idx];
+}
+
+template <typename T>
+T *
+Array<T>::data() noexcept {
+  return buffer;
+}
+
+template <typename T>
+const T *
+Array<T>::data() const noexcept {
+  return buffer;
 }
 
 //=====================================

@@ -15,6 +15,8 @@ void
 quicksort(T *, std::size_t) noexcept;
 
 //=====================================
+//====Implementation===================
+//=====================================
 namespace impl {
 
 /*

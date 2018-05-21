@@ -4,28 +4,45 @@
 #include <cstddef>
 #include <util/comparator.h>
 
+/*
+ * # Decending
+ * int numbers[]={20,40,50,10,30};
+ * std::sort (numbers, numbers+5, std::greater<int>());
+ * out: 50 40 30 20 10
+ *
+ * # Ascending
+ * int foo[]={10,20,5,15,25};
+ * std::sort (foo, foo+5, std::less<int>());
+ * out: 5 10 15 20 25
+ */
 namespace sp {
 //=====================================
-template <typename T, typename Comparator = sp::greater>
+template <typename T, typename Comparator = sp::less>
 bool
 is_sorted(T *, std::size_t) noexcept;
-//=====================================
 
+//=====================================
 template <typename T, typename Comparator>
 bool
-is_sorted(T *arr, std::size_t length) noexcept {
+is_sorted(T *const in, std::size_t length) noexcept {
   Comparator cmp;
 
-  T *priv = arr;
-  for (std::size_t i = 1; i < length; ++i) {
-    if (!cmp(arr[i], *priv)) {
-      return false;
+  const T *it = in;
+  const T *const end = in + length;
+  while (it != end) {
+    const T *const next = it + 1;
+    if (next != end) {
+      Comparator cmp;
+      if (!cmp(*it, *next)) {
+        return false;
+      }
     }
-    priv = arr + i;
+    ++it;
   }
 
   return true;
 }
+
 //=====================================
 }
 

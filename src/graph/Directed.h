@@ -4,6 +4,7 @@
 #include <cstddef>
 
 namespace graph {
+// TODO is_DAG?
 
 //=====================================
 /*

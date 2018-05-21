@@ -7,7 +7,7 @@
 
 namespace sp {
 //=====================================
-template <typename T, typename Comparator = sp::greater>
+template <typename T, typename Comparator = sp::less>
 void
 insertionsort(T *, std::size_t) noexcept;
 
