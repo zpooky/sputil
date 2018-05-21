@@ -1,8 +1,8 @@
 #ifndef SP_UTIL_TREE_BINARY_SEARCH_TREE_H
 #define SP_UTIL_TREE_BINARY_SEARCH_TREE_H
 
-#include <tree/tree.h>
 #include <string>
+#include <tree/tree.h>
 
 namespace binary {
 //=====================================
@@ -92,12 +92,13 @@ Node<T>::~Node() noexcept {
   // TODO this is recursive
   if (left) {
     delete left;
-    left = nullptr;
   }
+  left = nullptr;
+
   if (right) {
     delete right;
-    right = nullptr;
   }
+  right = nullptr;
 }
 
 //=====================================

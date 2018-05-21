@@ -6,8 +6,8 @@
 #include <util/comparator.h>
 
 namespace binary {
-template <typename T, typename Comparator = sp::greater,
-          typename Present = sp::present>
+//=====================================
+template <typename T, typename C = sp::greater, typename Present = sp::present>
 struct StaticTree {
   T *buffer;
   const std::size_t capacity;
@@ -18,10 +18,12 @@ struct StaticTree {
   explicit StaticTree(T (&)[SIZE]) noexcept;
 };
 
+//=====================================
 template <typename T, typename C, typename P, typename V>
 std::tuple<T *, bool>
 insert(StaticTree<T, C, P> &, V &&) noexcept;
 
+//=====================================
 template <typename T, typename C, typename P, typename K>
 const T *
 find(const StaticTree<T, C, P> &, const K &) noexcept;
@@ -30,18 +32,24 @@ template <typename T, typename C, typename P, typename K>
 const T *
 find(StaticTree<T, C, P> &, const K &) noexcept;
 
+//=====================================
 template <typename T, typename C, typename P, typename K>
 bool
 remove(StaticTree<T, C, P> &, const K &) noexcept;
 
+//=====================================
 template <typename T, typename C, typename P>
 bool
 verify(StaticTree<T, C, P> &) noexcept;
 
+//=====================================
 template <typename C, typename P>
 void
 dump(const StaticTree<int, C, P> &, const std::string & = "") noexcept;
-//==================
+
+//=====================================
+//====Implementation===================
+//=====================================
 namespace impl {
 namespace StaticTree {
 
@@ -200,6 +208,7 @@ dump(const binary::StaticTree<int, C, P> &tree, std::size_t idx,
 } // namespace StaticTree
 } // namespace impl
 
+//=====================================
 template <typename T, typename C, typename P>
 StaticTree<T, C, P>::StaticTree(T *b, std::size_t l) noexcept
     : buffer(b)
@@ -212,6 +221,7 @@ StaticTree<T, C, P>::StaticTree(T (&b)[SIZE]) noexcept
     : StaticTree(b, SIZE) {
 }
 
+//=====================================
 template <typename T, typename C, typename P, typename V>
 std::tuple<T *, bool>
 insert(StaticTree<T, C, P> &tree, V &&v) noexcept {
@@ -241,6 +251,7 @@ Lit:
   return std::make_tuple(nullptr, false);
 } // binary::insert()
 
+//=====================================
 template <typename T, typename C, typename P, typename K>
 const T *
 find(const StaticTree<T, C, P> &tree, const K &search) noexcept {
@@ -253,6 +264,7 @@ find(const StaticTree<T, C, P> &tree, const K &search) noexcept {
   return nullptr;
 }
 
+//=====================================
 template <typename T, typename C, typename P, typename K>
 const T *
 find(StaticTree<T, C, P> &tree, const K &key) noexcept {
@@ -260,6 +272,7 @@ find(StaticTree<T, C, P> &tree, const K &key) noexcept {
   return find(c_tree, key);
 }
 
+//=====================================
 // TODO the recursive balance does not work in remove(tree,idx,bool)
 template <typename T, typename C, typename P, typename K>
 bool
@@ -275,6 +288,7 @@ remove(StaticTree<T, C, P> &tree, const K &search) noexcept {
   return false;
 }
 
+//=====================================
 template <typename T, typename C, typename P, typename F>
 void
 in_order_for_each(StaticTree<T, C, P> &tree, F f) {
@@ -340,12 +354,14 @@ Lit:
   }
 }
 
+//=====================================
 template <typename T, typename C, typename P>
 bool
 verify(StaticTree<T, C, P> &) noexcept {
   return true;
 }
 
+//=====================================
 template <typename C, typename P>
 void
 dump(const StaticTree<int, C, P> &tree, const std::string &prefix) noexcept {
@@ -353,6 +369,7 @@ dump(const StaticTree<int, C, P> &tree, const std::string &prefix) noexcept {
   dump(tree, 0, prefix);
 }
 
+//=====================================
 } // namespace binary
 
 #endif

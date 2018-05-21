@@ -3,7 +3,7 @@
 
 #include <queue/Queue.h>
 #include <stack/HeapStack.h>
-#include <tree/avl2.h>
+#include <tree/avl.h>
 #include <tree/bst.h>
 
 // maybe should be generic bst
@@ -116,7 +116,7 @@ inorder(const Tree<T, C> &tree, F f) noexcept {
 
 template <typename T, typename C, typename F>
 void
-inorder(const avl2::Tree<T, C> &tree, F f) noexcept {
+inorder(const avl::Tree<T, C> &tree, F f) noexcept {
   return impl::inorder(tree.root, f);
 }
 

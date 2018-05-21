@@ -1,6 +1,7 @@
 #include <prng/util.h>
 #include <prng/xorshift.h>
-#include <tree/avl2.h>
+#include <tree/avl.h>
+#include <tree/avl_rec.h>
 #include <tree/bst.h>
 #include <tree/bst_extra.h>
 #include <tree/red-black.h>
@@ -162,11 +163,11 @@ TEST(treeTest, test_insert_bst) {
 }
 
 TEST(treeTest, test_insert_avl) {
-  random_insert<avl2::Tree<int>>(10);
+  random_insert<avl::Tree<int>>(10);
 }
 
 TEST(treeTest, test_inser_remove_avl) {
-  random_insert_delete<avl2::Tree<int>>(100);
+  random_insert_delete<avl::Tree<int>>(100);
 }
 
 TEST(treeTest, test_insert_remove_red_black) {
@@ -181,10 +182,48 @@ TEST(treeTest, test_insert_red_black) {
 //   random_insert<bst::StaticTree<int>>(10);
 // }
 
+template <typename T, typename A>
+static void
+a_insert(avl::rec::Tree<T> &tree, A in) {
+  T *p = insert(tree, in);
+  ASSERT_TRUE(p);
+  ASSERT_EQ(*p, in);
+
+  const bool res = verify(tree);
+  if (!res) {
+    printf("failed: \n");
+    dump(tree);
+  }
+  ASSERT_TRUE(res);
+}
+
+template <typename T, typename A, typename C>
+static void
+a_insert(binary::Tree<T, C> &tree, A in) {
+  std::tuple<T *, bool> tres = insert(tree, in);
+  ASSERT_TRUE(std::get<1>(tres));
+  int *p = std::get<0>(tres);
+  ASSERT_TRUE(p);
+  ASSERT_EQ(*p, in);
+  ASSERT_TRUE(verify(tree));
+}
+
+template <typename T, typename A, typename C>
+static void
+a_insert(avl::Tree<T, C> &tree, A in) {
+  std::tuple<T *, bool> tres = insert(tree, in);
+  ASSERT_TRUE(std::get<1>(tres));
+  int *p = std::get<0>(tres);
+  ASSERT_TRUE(p);
+  ASSERT_EQ(*p, in);
+
+  ASSERT_TRUE(verify(tree));
+}
+
 template <class Tree_t>
 static void
 random_insert_random_delete() {
-  prng::xorshift32 r(1);
+  prng::xorshift32 r(5);
   std::uint64_t raw[256] = {0};
   sp::Bitset bset(raw);
   constexpr std::uint32_t max(sizeof(raw) * 8);
@@ -203,13 +242,7 @@ random_insert_random_delete() {
           auto res = find(tree, in);
           ASSERT_FALSE(res);
         }
-        {
-          std::tuple<int *, bool> tres = insert(tree, in);
-          ASSERT_TRUE(std::get<1>(tres));
-          int *p = std::get<0>(tres);
-          ASSERT_TRUE(p);
-          ASSERT_EQ(*p, in);
-        }
+        { a_insert(tree, in); }
         ++balance;
 
         ASSERT_FALSE(set(bset, std::size_t(in), true));
@@ -231,7 +264,19 @@ random_insert_random_delete() {
             ASSERT_TRUE(res);
             ASSERT_EQ(*res, in);
           }
+
+          // if (in == 9) {
+          //   printf("\n\n========\n");
+          //   printf("before: remove(%d)\n", in);
+          //   dump(tree);
+          // }
           ASSERT_TRUE(remove(tree, in));
+          const bool v = verify(tree);
+          if (!v) {
+            printf("failed: remove(%d)\n", in);
+            dump(tree);
+          }
+          ASSERT_TRUE(v);
           ASSERT_TRUE(set(bset, std::size_t(in), false));
           {
             auto res = find(tree, in);
@@ -260,6 +305,7 @@ random_insert_random_delete() {
       }
       {
         ASSERT_TRUE(remove(tree, idx));
+        ASSERT_TRUE(verify(tree));
         ASSERT_TRUE(balance > 0);
         --balance;
       }
@@ -269,6 +315,11 @@ random_insert_random_delete() {
       }
     } else {
       { ASSERT_FALSE(remove(tree, idx)); }
+      const bool v = verify(tree);
+      if (!v) {
+        dump(tree);
+      }
+      ASSERT_TRUE(v);
       {
         auto res = find(tree, idx);
         ASSERT_FALSE(res);
@@ -285,5 +336,9 @@ TEST(treeTest, test_rand_ins_rand_remove_bst) {
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_avl) {
-  random_insert_random_delete<avl2::Tree<int>>();
+  random_insert_random_delete<avl::Tree<int>>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_avl) {
+  random_insert_random_delete<avl::rec::Tree<int>>();
 }

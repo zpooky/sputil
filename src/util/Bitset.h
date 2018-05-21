@@ -96,7 +96,7 @@ for_each(const SparseBitset &, F) noexcept;
 template <std::size_t SIZE>
 Bitset::Bitset(std::uint64_t (&b)[SIZE]) noexcept
     : buffer(b)
-    , capacity(SIZE * sizeof(std::uint64_t) * 8) {
+    , capacity(SIZE) {
   // for (std::size_t i = 0; i < capacity; ++i) {
   //   assert(buffer[i] == 0);
   // }
@@ -113,7 +113,7 @@ StaticBitset<c>::StaticBitset() noexcept
 template <typename F>
 void
 for_each(const Bitset &self, F f) noexcept {
-  for (std::size_t idx = 0; idx < self.capacity; ++idx) {
+  for (std::size_t idx = 0; idx < bits(self); ++idx) {
     bool v = test(self, idx);
     f(idx, v);
   }

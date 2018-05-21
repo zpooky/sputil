@@ -4,7 +4,7 @@
 #include <hash/util.h>
 #include <limits>
 #include <sstream> //debug
-#include <tree/avl2.h>
+#include <tree/avl.h>
 // #include <tree/bst.h>
 #include <tree/bst_extra.h>
 // #include <tree/red-black.h>
@@ -91,7 +91,7 @@ template <typename T, sp::Hasher<T>>
 struct HashSet {
 
   // binary::Tree<impl::HSNode<T>> tree;
-  avl2::Tree<impl::HSNode<T>> tree;
+  avl::Tree<impl::HSNode<T>> tree;
 
   HashSet() noexcept;
 };

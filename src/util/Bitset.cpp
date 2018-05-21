@@ -221,7 +221,7 @@ block_for_insert(SparseBitset &self, std::size_t index) noexcept {
 //=====================================
 Bitset::Bitset(std::uint64_t *b, std::size_t c) noexcept
     : buffer{b}
-    , capacity{c * 8 * sizeof(*b)} {
+    , capacity{c} {
 }
 
 SparseBitset::SparseBitset(std::size_t bs, std::size_t c) noexcept
@@ -240,7 +240,7 @@ SparseBitset::~SparseBitset() noexcept {
 bool
 test(const Bitset &self, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertxs(wIdx < self.capacity, wIdx, self.capacity);
+  assertxs(wIdx < bits(self), wIdx, bits(self));
 
   std::size_t bIdx = bit_index(idx);
   auto word = self.buffer[wIdx];
@@ -269,7 +269,7 @@ test(const SparseBitset &self, std::size_t abs_idx) noexcept {
 bool
 set(Bitset &self, std::size_t idx, bool v) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertxs(wIdx < self.capacity, wIdx, self.capacity);
+  assertxs(wIdx < bits(self), wIdx, bits(self));
 
   auto &word = self.buffer[wIdx];
   const auto old_word = word;
@@ -304,7 +304,7 @@ set(SparseBitset &self, std::size_t abs_idx, bool v) noexcept {
 bool
 toggle(Bitset &self, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertxs(wIdx < self.capacity, wIdx, self.capacity);
+  assertxs(wIdx < bits(self), wIdx, bits(self));
 
   const std::size_t bIdx = bit_index(idx);
   auto &word = self.buffer[wIdx];

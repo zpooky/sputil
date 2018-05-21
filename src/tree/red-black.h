@@ -129,8 +129,7 @@ template <typename T>
 static Node<T> *
 grandparent(Node<T> *n) {
   Node<T> *p = parent(n);
-  if (!bst::impl::doubly_linked(p))
-    assertx(bst::impl::doubly_linked(p));
+  assertx(bst::impl::doubly_linked(p));
   return p ? parent(p) : nullptr;
 }
 

@@ -1,6 +1,6 @@
 #include <collection/Array.h>
 #include <gtest/gtest.h>
-#include <tree/avl2.h>
+#include <tree/avl.h>
 #include <tree/avl_rec.h>
 #include <util/assert.h>
 
@@ -29,7 +29,7 @@ a_insert(avl::rec::Tree<T> &tree, T val) {
 
 template <typename T>
 static T *
-a_insert(avl2::Tree<T> &tree, T val) {
+a_insert(avl::Tree<T> &tree, T val) {
   // printf("insert(tree,'%c')\n", char(val));
   std::tuple<T *, bool> ins = insert(tree, val);
 
@@ -63,9 +63,9 @@ bal(avl::rec::Node<T> *node) {
 
 template <typename T>
 static int
-bal(avl2::Node<T> *node) {
+bal(avl::Node<T> *node) {
   assertx(node);
-  return avl2::impl::balance(node);
+  return avl::impl::balance(node);
 }
 
 template <typename Tree>
@@ -655,7 +655,7 @@ TEST(avlRecTest, acl_rec_wiki_test) {
 }
 
 TEST(avlRecTest, acl2_wiki_test) {
-  avl2::Tree<char> tree;
+  avl::Tree<char> tree;
   wiki_test(tree);
 }
 
@@ -715,7 +715,7 @@ TEST(avlRecTest, rec_test) {
   az_test(tree);
 }
 
-TEST(avlRecTest, avl2_az_test) {
-  avl2::Tree<char> tree;
+TEST(avlRecTest, avl_az_test) {
+  avl::Tree<char> tree;
   az_test(tree);
 }

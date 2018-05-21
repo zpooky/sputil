@@ -49,8 +49,18 @@ remove(Tree<T> &, const V &) noexcept;
 
 //=====================================
 template <typename T>
+bool
+is_empty(const Tree<T> &) noexcept;
+
+//=====================================
+template <typename T>
 void
 dump(const Tree<T> &) noexcept;
+
+//=====================================
+template <typename T>
+bool
+verify(const Tree<T> &) noexcept;
 
 //=====================================
 //====Implementation===================
@@ -66,7 +76,14 @@ Node<T>::Node(V &&val) noexcept
 
 template <typename T>
 Node<T>::~Node() noexcept {
-  // TODO
+  if (left) {
+    delete left;
+  }
+  left = nullptr;
+  if (right) {
+    delete right;
+  }
+  right = nullptr;
 }
 
 //=====================================
@@ -77,7 +94,10 @@ Tree<T>::Tree() noexcept
 
 template <typename T>
 Tree<T>::~Tree() noexcept {
-  // TODO
+  if (root) {
+    delete root;
+  }
+  root = nullptr;
 }
 
 namespace impl {
@@ -326,14 +346,13 @@ do_unlink(Node<T> *const root, bool &balance) noexcept {
 
     {
       Node<T> *out_min = nullptr;
+      // TODO maybe unlink /hier/Node instead of hier->value
       heir->right = unlink(root->right, heir->value, out_min, balance);
-
       assertx(out_min);
       assertx(heir == out_min);
     }
 
     heir->left = root->left;
-    calc_height(heir);
     result = heir;
   } else {
     if (root->left) {
@@ -357,16 +376,21 @@ unlink(Node<T> *root, const V &needle, Node<T> *&out, bool &balance) noexcept {
     const T &value = root->value;
     if (needle > value) {
       root->right = unlink(root->right, needle, out, balance);
-
-      return rebalance(root, balance);
     } else if (value > needle) {
       root->left = unlink(root->left, needle, out, balance);
-
-      return rebalance(root, balance);
+    } else {
+      out = root;
+      balance = true;
+      root = do_unlink(root, balance);
+      if (root == nullptr)
+        return root;
     }
 
-    out = root;
-    return do_unlink(root, balance);
+    /* on remove() we should not stop after first rebalance as we do for
+     * insert()
+     */
+    bool before = balance;
+    return rebalance(root, before);
   }
 
   out = nullptr;
@@ -391,14 +415,35 @@ remove(Tree<T> &self, const V &needle) noexcept {
 }
 
 //=====================================
+template <typename T>
+bool
+is_empty(const Tree<T> &self) noexcept {
+  return self.root == nullptr;
+}
+
+//=====================================
 namespace impl {
-inline void
-dump(Node<char> *tree, std::string prefix = "", bool isTail = true,
+template <std::size_t n>
+static void
+format_node(const Node<char> *tree, const char *ctx, char (&name)[n]) noexcept {
+  sprintf(name, "%s[%c|b:%d|h:%zu]", ctx, tree->value, balance(tree),
+          height(tree));
+}
+
+template <std::size_t n>
+static void
+format_node(const Node<int> *tree, const char *ctx, char (&name)[n]) noexcept {
+  sprintf(name, "%s[%d|b:%d|h:%zu]", ctx, tree->value, balance(tree),
+          height(tree));
+}
+
+template <typename T>
+static void
+dump(Node<T> *tree, std::string prefix = "", bool isTail = true,
      const char *ctx = "") noexcept {
   if (tree) {
     char name[256] = {0};
-    sprintf(name, "%s[%c|b:%d|h:%zu]", ctx, tree->value, balance(tree),
-            height(tree));
+    format_node(tree, ctx, name);
 
     printf("%s%s%s\n", prefix.c_str(), (isTail ? "└──" : "├──"), name);
     const char *ls = (isTail ? "   " : "│  ");
@@ -414,6 +459,7 @@ dump(Node<char> *tree, std::string prefix = "", bool isTail = true,
     }
   }
 }
+
 } // namespace impl
 
 template <typename T>
@@ -421,6 +467,72 @@ void
 dump(const Tree<T> &self) noexcept {
   return impl::dump(self.root);
 }
+
+//=====================================
+namespace impl {
+template <typename T>
+static bool
+verify(const Node<T> *tree, int &result) noexcept {
+  result = 0;
+  if (tree) {
+    int left = 0;
+    if (tree->left) {
+      if (!(tree->value > tree->left->value)) {
+        return false;
+      }
+      if (!verify(tree->left, left)) {
+        return false;
+      }
+    }
+
+    int right = 0;
+    if (tree->right) {
+      if (!(tree->value < tree->right->value)) {
+        return false;
+      }
+      if (!verify(tree->right, right)) {
+        return false;
+      }
+    }
+
+    result++;
+
+    int bl = int(right) - int(left);
+    const int h = std::max(right, left) + 1;
+    if (h != tree->height) {
+      // printf("height[%d] != tree->height[%d]\n", h, tree->height);
+      return false;
+    }
+
+    if (balance(tree) != bl) {
+      std::cout << "right: " << right << "|";
+      std::cout << "left: " << left << "|";
+      // std::cout << "bl: " << bl << "|";
+      std::cout << "bl: " << int(bl) << "|";
+      // std::cout << "tree: " << std::string(*tree) << "|";
+      std::cout << "\n";
+      return false;
+    }
+
+    if (balance(tree) > 1) {
+      return false;
+    }
+    if (balance(tree) < -1) {
+      return false;
+    }
+
+    result += std::max(left, right);
+  }
+  return true;
+} // avl::impl::verify()
+} // namespace impl
+
+template <typename T>
+bool
+verify(const Tree<T> &self) noexcept {
+  int balance = 0;
+  return impl::verify<T>(self.root, balance);
+} // avl::verify()
 
 //=====================================
 } // namespace rec
