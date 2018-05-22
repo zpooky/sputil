@@ -332,6 +332,7 @@ max_width(const Tree<T, C> &tree) noexcept {
 } // namespace binary::rec
 
 //=====================================
+namespace rec {} // namespace binary::rec
 template <typename T, typename C>
 void
 print_cousin_nodes(const Tree<T, C> &) noexcept {
@@ -339,6 +340,7 @@ print_cousin_nodes(const Tree<T, C> &) noexcept {
 }
 
 //=====================================
+namespace rec {} // namespace binary::rec
 template <typename T, typename C>
 void
 mirror(const Tree<T, C> &) noexcept {
@@ -346,6 +348,7 @@ mirror(const Tree<T, C> &) noexcept {
 }
 
 //=====================================
+namespace rec {} // namespace binary::rec
 template <typename T, typename C>
 void
 lowest_common_ancestor(const Tree<T, C> &) noexcept {
@@ -353,6 +356,7 @@ lowest_common_ancestor(const Tree<T, C> &) noexcept {
 }
 
 //=====================================
+namespace rec {} // namespace binary::rec
 template <typename T, typename C, typename F>
 void
 level_first_left(const Tree<T, C> &, F) noexcept {
@@ -360,20 +364,43 @@ level_first_left(const Tree<T, C> &, F) noexcept {
 }
 
 //=====================================
+namespace impl {} // namespace binary::impl
 // Unbalanced Tree -> Balanced Tree
 template <typename T, typename C>
-bool
-balance(Tree<T, C> &) noexcept;
-
-//=====================================
-template <typename T, typename C>
-bool
-reverse(Tree<T, C> &) noexcept;
+void
+balance(Tree<T, C> &) noexcept {
+  // https://dzone.com/articles/algorithm-week-balancing
+}
 
 //=====================================
 namespace rec {} // namespace binary::rec
+// Unbalanced Tree -> Balanced Tree
+template <typename T, typename C>
+Tree<T, C>
+construct_perfect(T *in, std::size_t) noexcept {
+  // ctor perfect from sorted input
+  return {};
+}
 
 //=====================================
+namespace impl {
+template <typename T>
+void
+reverse(Node<T> *tree) noexcept {
+  if (tree) {
+    using std::swap;
+    swap(tree->left, tree->right);
+    reverse(tree->left);
+    reverse(tree->right);
+  }
+}
+
+} // namespace binary::impl
+template <typename T, typename C>
+void
+reverse(Tree<T, C> &tree) noexcept {
+  reverse(tree.root); // TODO test
+}
 
 //============================================================
 //===Itterative===============================================

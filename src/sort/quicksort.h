@@ -3,38 +3,44 @@
 
 #include <cstddef>
 #include <util/assert.h>
-// #include <util/comparator.h>
-// TODO use comparator
+#include <util/comparator.h>
 
 namespace sp {
 namespace rec {
+/*
+ * TODO median of three pivot selection to be used be the partition algh
+ * https://www.geeksforgeeks.org/know-your-sorting-algorithm-set-2-introsort-cs-sorting-weapon/
+ */
 
 //=====================================
-template <typename T>
+template <typename T, typename C = sp::less>
 void
 quicksort(T *, std::size_t) noexcept;
 
 //=====================================
 //====Implementation===================
 //=====================================
-namespace impl {
+namespace quick {
 
 /*
  * Hoare partition scheme
  */
-template <typename T>
+template <typename T, typename C>
 std::size_t
-partition(T *arr, std::size_t length) noexcept {
+partition(T *in, std::size_t length) noexcept {
   std::size_t head = 0;
   std::size_t tail = length - 1;
 
   std::size_t pivot = tail;
 
+  C cmp;
   while (true) {
-    while (head < length && (arr[head] < arr[pivot])) {
+    while (head < length && cmp(in[head], /*<*/ in[pivot])) {
+      // aka: head < pivot
       head++;
     }
-    while (tail > 0 && (arr[tail] > arr[pivot])) {
+    while (tail > 0 && cmp(in[pivot], /*<*/ in[tail])) {
+      // aka: tail > pivot
       tail--;
     }
 
@@ -55,14 +61,16 @@ partition(T *arr, std::size_t length) noexcept {
       pivot = head;
     }
 
-    std::swap(arr[head], arr[tail]);
+    using std::swap;
+    swap(in[head], in[tail]);
+
     head++;
     tail--;
   }
 
   return head;
 }
-} // namespace impl
+} // namespace quick
 //=====================================
 /*
  * 1. Pick an element, called a pivot, from the array.
@@ -75,15 +83,15 @@ partition(T *arr, std::size_t length) noexcept {
  *    smaller values and separately to the sub-array of elements with greater
  *    values.
  */
-template <typename T>
+template <typename T, typename C>
 void
-quicksort(T *arr, std::size_t length) noexcept {
+quicksort(T *in, std::size_t length) noexcept {
   if (length > 1) {
-    assertx(arr);
+    assertx(in);
 
-    std::size_t pivot = impl::partition(arr, length);
-    quicksort(arr, pivot);
-    quicksort(arr + pivot, length - pivot);
+    std::size_t pivot = quick::partition<T, C>(in, length);
+    quicksort<T, C>(in, pivot);
+    quicksort<T, C>(in + pivot, length - pivot);
   }
 }
 

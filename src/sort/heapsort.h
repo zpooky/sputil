@@ -43,5 +43,7 @@ heapsort(T *const in, std::size_t length) noexcept {
     --heap.length;
   }
 }
+
+//=====================================
 }
 #endif

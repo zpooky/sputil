@@ -23,7 +23,7 @@ struct Tree {
   Tree() noexcept;
 
   Tree(const Tree<T, Comparator> &) = delete;
-  Tree(const Tree<T, Comparator> &&) = delete;
+  Tree(Tree<T, Comparator> &&) noexcept;
 
   Tree &
   operator=(const Tree<T, Comparator> &) = delete;
@@ -63,6 +63,12 @@ Tree<T, C>::Tree(T *r) noexcept
 template <typename T, typename C>
 Tree<T, C>::Tree() noexcept
     : Tree(nullptr) {
+}
+
+template <typename T, typename C>
+Tree<T, C>::Tree(Tree<T, C> &&o) noexcept
+    : Tree(nullptr) {
+  swap(*this, o);
 }
 
 template <typename T, typename C>

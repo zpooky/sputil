@@ -1,7 +1,7 @@
 #include "concurrent/Barrier.h"
 #include "tree/bst.h"
 #include <collection/Array.h>
-#include <map/Set.h>
+#include <map/HashSet.h>
 #include <prng/xorshift.h>
 #include <util/Bitset.h>
 

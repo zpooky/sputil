@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <hash/fnv.h>
 #include <list/SkipList.h>
-#include <map/Set.h>
+#include <map/HashSet.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
 #include <util/Bitset.h>

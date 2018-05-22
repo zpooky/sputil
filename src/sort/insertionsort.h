@@ -20,17 +20,20 @@ insertionsort(T *const arr, std::size_t length) noexcept {
     assertx(arr);
     T *current = arr + i;
     std::size_t j = i;
+
     while (j-- > 0) {
-      if (cmp(arr[j], *current)) {
+      if (cmp(*current, arr[j])) {
         using std::swap;
         swap(arr[j], *current);
         current = arr + j;
       } else {
         break;
       }
-    }
-  }
+    } // while
+  }   // for
 }
+
+//=====================================
 }
 
 #endif

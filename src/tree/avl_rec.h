@@ -6,6 +6,13 @@
 #include <util/assert.h>
 #include <utility>
 
+/*
+ * TODO
+ * https://en.wikipedia.org/wiki/AVL_tree#Set_operations_and_bulk_operations
+ * - union [http://www.cs.toronto.edu/~trebla/CSCB63-2018-Summer/03-avlunion-p1.pdf]
+ * - intersection
+ * - set difference.
+ */
 namespace avl {
 namespace rec {
 //=====================================

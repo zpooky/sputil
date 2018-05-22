@@ -4,7 +4,7 @@
 #include <collection/Array.h>
 #include <graph/Graph.h>
 #include <hash/fnv.h>
-#include <map/Set.h>
+#include <map/HashSet.h>
 #include <memory/StackPooledAllocator.h>
 #include <queue/Queue.h>
 #include <stack/HeapStack.h>

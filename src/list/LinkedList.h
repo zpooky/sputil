@@ -9,6 +9,7 @@
 // TODO emplace
 
 namespace sp {
+//=====================================
 namespace impl {
 namespace LinkedList {
 template <typename T>
@@ -26,6 +27,7 @@ struct LLNode { //
 } // namespace LinkedList
 } // namespace impl
 
+//=====================================
 template <typename T, template <typename> class Allocator = sp::Allocator>
 struct LinkedList {
   using value_type = T;

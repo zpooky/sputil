@@ -13,6 +13,8 @@
 // TODO mix of hash to avoid identity 1 -> 1 hash problem
 // TODO remove(set,key)
 // TODO dynamic node size, not template size look at sparse bitset?
+// TODO hash map based on this
+// TODO load factor?
 
 // http://hg.openjdk.java.net/jdk7/jdk7/jdk/file/9b8c96f96a0f/src/share/classes/java/util/HashMap.java
 /**
@@ -33,6 +35,23 @@
  */
 namespace sp {
 namespace impl {
+/*
+ * An HashSet implementation using separate chaining collision handling
+ * strategy. Meaning on hash collision we place the new entry in a linkedlist
+ * pointed to by the bucket.
+ *
+ * Buckets are split into nodes, which is a group of buckets. Each nodes are
+ * responsible for handling a range of hashes. Nodes are placed in an binary
+ * search tree and can are accessed by searching for them using a hash code.
+ *
+ * When a node element count exceed a threshold the node is split in two by
+ * dividing the hash range responsibility in two and creating a new node
+ * responsible for the second half of the divided hash range. The rehash
+ * operation of the original node is performed by for each element in node,
+ * calculate its hash value, determine if the hash falls in the domain of the
+ * original or the new nodes hash range, if element is supposed to be in the
+ * new node; then move it there. The new node is then inserted the node tree.
+ */
 //=====================================
 template <typename T>
 struct HSBucket {

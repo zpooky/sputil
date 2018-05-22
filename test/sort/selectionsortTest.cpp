@@ -1,7 +1,7 @@
 #include <collection/Array.h>
 #include <gtest/gtest.h>
 #include <prng/xorshift.h>
-#include <sort/heapsort.h>
+#include <sort/selectionsort.h>
 #include <sort/util.h>
 
 template <typename T>
@@ -21,7 +21,7 @@ template <typename T, typename Comparator>
 static void
 check(T *arr, std::size_t length) {
   // print_arr(arr, length);
-  sp::heapsort<T, Comparator>(arr, length);
+  sp::selectionsort<T, Comparator>(arr, length);
 
   // print_arr(arr, length);
 
@@ -31,7 +31,7 @@ check(T *arr, std::size_t length) {
   // printf("--\n");
 }
 
-TEST(HeapsortTest, test_greater) {
+TEST(selectionsortTest, test_greater) {
   prng::xorshift32 r(1);
   sp::StaticArray<int, 1024> arr;
   for (int i = 0; i < int(capacity(arr)); ++i) {
@@ -39,15 +39,15 @@ TEST(HeapsortTest, test_greater) {
   }
   ASSERT_EQ(capacity(arr), length(arr));
 
-  for (std::size_t a = 0; a < 512; ++a) {
+  for (std::size_t a = 0; a < 64; ++a) {
     shuffle(r, arr);
 
     check<int, sp::greater>(arr.raw, length(arr));
-    ASSERT_EQ(capacity(arr) - 1, arr[0]);
+    ASSERT_EQ(capacity(arr) - 1, std::size_t(arr[0]));
   }
 }
 
-TEST(HeapsortTest, test_lesser) {
+TEST(selectionsortTest, test_lesser) {
   prng::xorshift32 r(1);
   sp::StaticArray<int, 1024> arr;
   for (int i = 0; i < int(capacity(arr)); ++i) {
@@ -55,7 +55,7 @@ TEST(HeapsortTest, test_lesser) {
   }
   ASSERT_EQ(capacity(arr), length(arr));
 
-  for (std::size_t a = 0; a < 512; ++a) {
+  for (std::size_t a = 0; a < 64; ++a) {
     shuffle(r, arr);
 
     check<int, sp::less>(arr.raw, length(arr));
