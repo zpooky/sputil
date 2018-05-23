@@ -38,7 +38,7 @@ TEST(QuicksortTest, test_less) {
   }
   ASSERT_EQ(capacity(arr), length(arr));
 
-  for (std::size_t a = 0; a < 1024; ++a) {
+  for (std::size_t a = 0; a < 1024 /** 128*/; ++a) {
     shuffle(r, arr);
     // print_arr(arr, length(arr));
 
@@ -54,7 +54,7 @@ TEST(QuicksortTest, test_greater) {
   }
   ASSERT_EQ(capacity(arr), length(arr));
 
-  for (std::size_t a = 0; a < 1024; ++a) {
+  for (std::size_t a = 0; a < 1024 /** 1024*/; ++a) {
     shuffle(r, arr);
 
     check<int, sp::greater>(arr.raw, length(arr));

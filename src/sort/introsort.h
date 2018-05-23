@@ -16,7 +16,7 @@ namespace rec {
 /*
  * https://en.wikipedia.org/wiki/Introsort
  * Is an hybrid sorting algorithm, which means that it uses more than one
- * sorting algorithms as a routine.
+ * sorting algorithms
  *
  * quicksort & heapsort is not stable = therefore neither is introsort
  */
@@ -29,13 +29,16 @@ introsort(T *, std::size_t) noexcept;
 //=====================================
 namespace impl {
 template <typename T, typename Cmp>
-void
-introsort(T *in, std::size_t length, std::size_t depth) noexcept {
+static void
+introsort(T *const in, std::size_t length, std::size_t depth) noexcept {
   if (length <= 1) {
     return;
   }
+
   assertxs(in, in, length);
+
   if (length < 16) {
+    // insertionsort
     sp::insertionsort<T, Cmp>(in, length);
   } else if (depth > 0) {
     // quicksort
@@ -53,7 +56,7 @@ introsort(T *in, std::size_t length, std::size_t depth) noexcept {
 //=====================================
 template <typename T, typename Cmp>
 void
-introsort(T *in, std::size_t length) noexcept {
+introsort(T *const in, std::size_t length) noexcept {
   std::size_t depth = std::log(length) * 2;
   impl::introsort<T, Cmp>(in, length, depth);
 }

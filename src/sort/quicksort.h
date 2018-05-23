@@ -21,25 +21,73 @@ quicksort(T *, std::size_t) noexcept;
 //====Implementation===================
 //=====================================
 namespace quick {
+template <typename T>
+static const T *
+pivot(const T *in, std::size_t length) noexcept {
+  assertx(length > 0);
+  assertx(in);
+  return in + (length - 1);
+  // return in;//TODO verify this
+}
 
-/*
- * Hoare partition scheme
- */
+// A function that find the middle of the
+// values pointed by the pointers a, b, c
+// and return that pointer
+template <typename T>
+static const T *
+medianOfThree(const T *in, std::size_t length) {
+  if (length <= 2) {
+    return pivot(in, length);
+  }
+
+  const T *const beg = in;
+  const T *const mid = in + (length / 2);
+  const T *const lst = in + (length - 1);
+
+  if (*beg < *mid && *mid < *lst) {
+    return mid;
+  }
+
+  if (*beg < *lst && *lst <= *mid) {
+    return lst;
+  }
+
+  if (*mid <= *beg && *beg < *lst) {
+    return beg;
+  }
+
+  if (*mid < *lst && *lst <= *beg) {
+    return lst;
+  }
+
+  if (*lst <= *beg && *beg < *mid) {
+    return beg;
+  }
+
+  // if (*lst <= *mid && *mid <= *lst) {
+  return mid;
+  // }
+}
+
+/* Hoare partition scheme */
 template <typename T, typename C>
-std::size_t
-partition(T *in, std::size_t length) noexcept {
-  std::size_t head = 0;
-  std::size_t tail = length - 1;
+static std::size_t
+partition(T *const in, std::size_t length) noexcept {
+  T *head = in;
+  T *tail = in + (length - 1);
 
-  std::size_t pivot = tail;
+  const T *const start = in;
+  const T *const end = in + length;
+
+  const T *p = medianOfThree<T>(in, length);
 
   C cmp;
   while (true) {
-    while (head < length && cmp(in[head], /*<*/ in[pivot])) {
+    while (head != end && cmp(*head, /*<*/ *p)) {
       // aka: head < pivot
       head++;
     }
-    while (tail > 0 && cmp(in[pivot], /*<*/ in[tail])) {
+    while (tail != start && cmp(*p, /*<*/ *tail)) {
       // aka: tail > pivot
       tail--;
     }
@@ -48,27 +96,27 @@ partition(T *in, std::size_t length) noexcept {
       break;
     }
 
-    assertx(head < length);
-    assertx(tail < length);
-    assertx(tail > 0);
+    assertx(head < end);
+    assertx(tail > start);
 
-    /*
-     * Pivot needs to be the same even if its position gets swapped.
-     */
-    if (head == pivot) {
-      pivot = tail;
-    } else if (tail == pivot) {
-      pivot = head;
+    /* Pivot needs to be the same even if its position gets swapped. */
+    if (head == p) {
+      p = tail;
+    } else if (tail == p) {
+      p = head;
     }
 
     using std::swap;
-    swap(in[head], in[tail]);
-
-    head++;
-    tail--;
+    swap(*head++, *tail--);
   }
 
-  return head;
+  assertx(head < end);
+  assertx(head >= start);
+
+  assertx(tail < end);
+  assertx(tail >= start);
+
+  return std::size_t(head - in);
 }
 } // namespace quick
 //=====================================
