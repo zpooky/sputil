@@ -77,6 +77,8 @@ struct UinStaticArray {
   UinStaticArray(const UinStaticArray &) = delete;
   UinStaticArray(UinStaticArray &&) noexcept;
 
+  ~UinStaticArray() noexcept;
+
   T *
   data() noexcept;
 
@@ -95,8 +97,8 @@ length(const Array<T> &) noexcept;
 template <typename T, std::size_t c>
 std::size_t
 length(const UinStaticArray<T, c> &) noexcept;
-//=====================================
 
+//=====================================
 template <typename T>
 std::size_t
 capacity(const Array<T> &) noexcept;
@@ -104,8 +106,8 @@ capacity(const Array<T> &) noexcept;
 template <typename T, std::size_t c>
 std::size_t
 capacity(const UinStaticArray<T, c> &) noexcept;
-//=====================================
 
+//=====================================
 template <typename T>
 std::size_t
 remaining_write(const Array<T> &) noexcept;
@@ -113,8 +115,8 @@ remaining_write(const Array<T> &) noexcept;
 template <typename T, std::size_t c>
 std::size_t
 remaining_write(const UinStaticArray<T, c> &) noexcept;
-//=====================================
 
+//=====================================
 template <typename T>
 bool
 is_empty(const Array<T> &) noexcept;
@@ -123,7 +125,6 @@ template <typename T, std::size_t c>
 bool
 is_empty(const UinStaticArray<T, c> &) noexcept;
 //=====================================
-
 template <typename T>
 bool
 is_full(const Array<T> &) noexcept;
@@ -131,8 +132,8 @@ is_full(const Array<T> &) noexcept;
 template <typename T, std::size_t c>
 bool
 is_full(const UinStaticArray<T, c> &) noexcept;
-//=====================================
 
+//=====================================
 template <typename T, typename V, typename Comparator = sp::greater>
 T *
 bin_insert(Array<T> &, V &&) noexcept;
@@ -140,6 +141,7 @@ bin_insert(Array<T> &, V &&) noexcept;
 template <typename T, std::size_t c, typename V, typename C = sp::greater>
 T *
 bin_insert(UinStaticArray<T, c> &, V &&) noexcept;
+
 //=====================================
 template <typename T, typename V, typename Comparator = sp::greater>
 T *
@@ -150,7 +152,6 @@ T *
 bin_insert_unique(UinStaticArray<T, c> &, V &&) noexcept;
 
 //=====================================
-
 template <typename T, typename K, typename Comparator = sp::greater>
 const T *
 bin_search(const Array<T> &, const K &) noexcept;
@@ -166,8 +167,8 @@ bin_search(const UinStaticArray<T, c> &, const K &) noexcept;
 template <typename T, std::size_t c, typename K, typename C = sp::greater>
 T *
 bin_search(UinStaticArray<T, c> &, const K &) noexcept;
-//=====================================
 
+//=====================================
 template <typename T, std::size_t c, typename K, typename C = sp::greater>
 bool
 bin_remove(UinStaticArray<T, c> &, const K &) noexcept;
@@ -205,8 +206,8 @@ insert(Array<T> &, V &&) noexcept;
 template <typename T, std::size_t c, typename V>
 T *
 insert(UinStaticArray<T, c> &, V &&) noexcept;
-//=====================================
 
+//=====================================
 template <typename T, typename From>
 bool
 insert_all(Array<T> &, const From &) noexcept;
@@ -222,8 +223,8 @@ insert_all(Array<T> &, const V *, std::size_t) noexcept;
 template <typename T, std::size_t c, typename V>
 bool
 insert_all(UinStaticArray<T, c> &, const V *, std::size_t) noexcept;
-//=====================================
 
+//=====================================
 /*
  * Insert the value at the specified index. Values already present at and after
  * the index will be shifted upwards. returns a pointer to the newly inserted
@@ -236,8 +237,8 @@ insert_at(Array<T> &, std::size_t, V &&) noexcept;
 template <typename T, std::size_t c, typename V>
 T *
 insert_at(UinStaticArray<T, c> &, std::size_t, V &&) noexcept;
-//=====================================
 
+//=====================================
 /*
  * Insert a value at a specific index, the index is required to be less than
  * Array.length. returns a pointer to the newly inserted value or nullptr if the
@@ -250,8 +251,8 @@ set(Array<T> &, std::size_t, V &&) noexcept;
 template <typename T, std::size_t c, typename V>
 T *
 set(UinStaticArray<T, c> &, std::size_t, V &&) noexcept;
-//=====================================
 
+//=====================================
 /*
  * Insert a value at a specific index, the index is required to be less than
  * Array.length. the old existing value will be swap():ed with the new value.
@@ -265,8 +266,8 @@ exchange(Array<T> &, std::size_t, /*IN/OUT*/ V &) noexcept;
 template <typename T, std::size_t c, typename V>
 T *
 exchange(UinStaticArray<T, c> &, std::size_t, /*IN/OUT*/ V &) noexcept;
-//=====================================
 
+//=====================================
 /*
  * Takes the in pointer and calculates a index based on the head of the array.
  * if the pointer is out of bounds[Array.buffer-Array.length] Array.capacity is
@@ -279,6 +280,7 @@ index_of(const Array<T> &, const T *) noexcept;
 template <typename T, std::size_t c>
 std::size_t
 index_of(const UinStaticArray<T, c> &, const T *) noexcept;
+
 //=====================================
 template <typename T>
 bool
@@ -300,7 +302,6 @@ remove_if(UinStaticArray<T, c> &, Predicate) noexcept;
 //=====================================
 // TODO stable remove <- shifting everything after left
 //=====================================
-
 /*
  * Take element at $index and swap it with $out, then swap():ed element at
  * $index again with the last element in the Array and decrement Array.length.
@@ -312,6 +313,7 @@ take(Array<T> &, std::size_t, /*OUT*/ T &) noexcept;
 template <typename T, std::size_t c>
 bool
 take(UinStaticArray<T, c> &, std::size_t, /*OUT*/ T &) noexcept;
+
 //=====================================
 template <typename T>
 const T *
@@ -337,8 +339,8 @@ shuffle(Random &, Array<T> &) noexcept;
 template <typename Random, typename T, std::size_t c>
 void
 shuffle(Random &, UinStaticArray<T, c> &) noexcept;
-//=====================================
 
+//=====================================
 template <typename T>
 void
 clear(Array<T> &) noexcept;
@@ -346,8 +348,8 @@ clear(Array<T> &) noexcept;
 template <typename T, std::size_t c>
 void
 clear(UinStaticArray<T, c> &) noexcept;
-//=====================================
 
+//=====================================
 template <typename T>
 void
 drop_back(Array<T> &, std::size_t) noexcept;
@@ -355,13 +357,13 @@ drop_back(Array<T> &, std::size_t) noexcept;
 template <typename T, std::size_t c>
 void
 drop_back(UinStaticArray<T, c> &, std::size_t) noexcept;
-//=====================================
 
+//=====================================
 template <typename T>
 void
 swap(Array<T> &, Array<T> &) noexcept;
-//=====================================
 
+//=====================================
 template <typename T, typename F>
 void
 for_each(Array<T> &, F) noexcept;
@@ -377,8 +379,8 @@ for_each(const Array<T> &, F) noexcept;
 template <typename T, std::size_t c, typename F>
 void
 for_each(const UinStaticArray<T, c> &, F) noexcept;
-//=====================================
 
+//=====================================
 template <typename T, typename F>
 bool
 for_all(Array<T> &, F) noexcept;
@@ -508,8 +510,8 @@ UinStaticArray<T, c>::UinStaticArray(UinStaticArray &&o) noexcept
     : UinStaticArray() {
   for (std::size_t i = 0; i < sp::length(o); ++i) {
     auto res = insert(*this, std::move(o[i]));
-    // TODO dtor o
     assertx(res);
+    o[i].~T();
   }
   o.length = 0;
 }
@@ -536,6 +538,14 @@ template <typename T, std::size_t c>
 const T &UinStaticArray<T, c>::operator[](std::size_t idx) const noexcept {
   assertxs(idx < length, idx, length);
   return data()[idx];
+}
+
+template <typename T, std::size_t c>
+UinStaticArray<T, c>::~UinStaticArray() noexcept {
+  for (std::size_t i = 0; i < length; ++i) {
+    this->operator[](i).~T();
+  }
+  length = 0;
 }
 
 //=====================================
@@ -610,8 +620,8 @@ bin_insert(Array<T> &, V &&) noexcept {
 }
 
 template <typename T, std::size_t c, typename K, typename Comparator>
-T *
-bin_find_gte(UinStaticArray<T, c> &self, const K &needle) noexcept {
+static const T *
+bin_find_gte(const UinStaticArray<T, c> &self, const K &needle) noexcept {
   if (self.length == 0) {
     return nullptr;
   }
@@ -622,13 +632,13 @@ bin_find_gte(UinStaticArray<T, c> &self, const K &needle) noexcept {
   };
 
   std::size_t length = self.length;
-  T *p = self.data();
+  const T *p = self.data();
   const T *const end = p + length;
 Lit : {
   const std::size_t mid = middle(length);
   // printf("%zu-[%zu]-%zu", p[0], p[mid], p[length - 1]);
   Comparator cmp;
-  if /*needle < mid*/ (cmp(p[mid], /*<*/ needle)) {
+  if /*needle < mid*/ (cmp(p[mid], /*>*/ needle)) {
     // printf("|mid[idx%zu] > needle[v%zu]|len:%zu\n", mid, needle, length);
     if (length == 0) {
       return p;
@@ -660,10 +670,17 @@ Lit : {
   return nullptr;
 }
 
+template <typename T, std::size_t c, typename K, typename Comparator>
+static T *
+bin_find_gte(UinStaticArray<T, c> &self, const K &needle) noexcept {
+  const auto &c_self = self;
+  return (T *)bin_find_gte<T, c, K, Comparator>(c_self, needle);
+}
+
 template <typename T, std::size_t c, typename V, typename Comparator>
 T *
 bin_insert(UinStaticArray<T, c> &self, V &&val) noexcept {
-  if (self.length < self.capacity) {
+  if (!is_full(self)) {
     T *const first = bin_find_gte<T, c, V, Comparator>(/*>=*/self, val);
     // printf("------\n");
     T *it = insert(self, std::forward<V>(val));
@@ -958,6 +975,10 @@ insert_at(Array<T> &, std::size_t, V &&) noexcept {
 template <typename T, std::size_t c, typename V>
 T *
 insert_at(UinStaticArray<T, c> &self, std::size_t idx, V &&v) noexcept {
+  if (is_full(self)) {
+    return nullptr;
+  }
+
   if (idx <= self.length) {
     auto ins = insert(self, std::forward<V>(v));
     assertx(ins);
@@ -973,6 +994,7 @@ insert_at(UinStaticArray<T, c> &self, std::size_t idx, V &&v) noexcept {
       return self.data() + idx;
     }
   }
+
   assertx(false);
   return nullptr;
 }
@@ -1136,9 +1158,12 @@ take(Array<T> &self, std::size_t idx, /*OUT*/ T &out) noexcept {
     using std::swap;
     swap(out, self.buffer[idx]);
 
-    assertx(remove(self, idx));
+    bool res = remove(self, idx);
+    assertx(res);
+
     return true;
   }
+
   return false;
 }
 
@@ -1149,9 +1174,12 @@ take(UinStaticArray<T, c> &self, std::size_t idx, /*OUT*/ T &out) noexcept {
     using std::swap;
     swap(out, self.data()[idx]);
 
-    assertx(remove(self, idx));
+    bool res = remove(self, idx);
+    assertx(res);
+
     return true;
   }
+
   return false;
 }
 

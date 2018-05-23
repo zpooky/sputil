@@ -36,9 +36,7 @@ Left l(failure);
 Right r(value);
 ```
 
-## sort !
-- selction
-- heap sort
+## sort
 - radix sort -https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/source/rxsort.c
 
 ## Diffie Hellman
