@@ -191,8 +191,8 @@ median(const sp::UinStaticArray<T, keys> &elements, const T *extra) noexcept {
     bool res = sp::bin_insert(ptrs, *extra, cmp);
     assertx(res);
   }
-  std::size_t mid = length(elements) / 2;
-  const T &needle = elements[mid];
+  std::size_t mid = length(ptrs) / 2;
+  const T &needle = ptrs[mid];
 
   const T *const result = sp::bin_search(elements, needle, cmp);
   if (result) {
@@ -371,6 +371,7 @@ fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
     // XXX: assert $m is last in $tree
     Cmp cmp;
     T *res = nullptr;
+    // TODO!! this insert will invalidate $med
     if (cmp(*bubble, /*>*/ *med)) {
       res = bin_insert(*right, std::move(*bubble), greater);
     } else {
@@ -386,7 +387,7 @@ fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
 
   return std::make_tuple(bubble, right);
 }
-} // namespace sp::rec::impl
+} // namespace impl
 
 // TODO what is the log(order,elements) forumla to get the height?
 
@@ -459,7 +460,7 @@ find(const BTNode<T, keys, Cmp> *const tree, const Key &needle) noexcept {
   assertxs(child, length(children));
   return find(*child, needle);
 }
-}
+} // namespace impl
 
 template <typename T, std::size_t keys, typename Comparator, typename Key>
 const T *
@@ -475,7 +476,7 @@ find(BTree<T, keys, Comparator> &self, const Key &needle) noexcept {
 }
 
 //=====================================
-}
-}
+} // namespace rec
+} // namespace sp
 
 #endif

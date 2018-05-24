@@ -10,6 +10,8 @@ static T *
 a_insert(sp::rec::BTree<T, n, Cmp> &tree, V v) {
   printf("insert(%d)\n", v);
   T *res = insert(tree, v);
+  btree::impl::btree::dump(tree.root);
+  printf("=============\n");
   assertx(res);
   assertxs(*res == v, *res, v);
   {
@@ -75,24 +77,16 @@ TEST(btree_recTest, test_order321) {
   sp::rec::BTree<int, 2, sp::greater> tree;
   a_insert(tree, 3);
   { /**/
-    btree::impl::btree::dump(tree.root);
-    printf("=============\n");
 
     ASSERT_EQ(tree.root->elements[0], 3);
   }
   a_insert(tree, 2);
   {
-    btree::impl::btree::dump(tree.root);
-    printf("=============\n");
-
     ASSERT_EQ(tree.root->elements[0], 2);
     ASSERT_EQ(tree.root->elements[1], 3);
   }
   a_insert(tree, 1);
   {
-    btree::impl::btree::dump(tree.root);
-    printf("=============\n");
-
     ASSERT_EQ(tree.root->elements[0], 2);
     {
       ASSERT_EQ(tree.root->children[0]->elements[0], 1);
