@@ -17,10 +17,11 @@ namespace btree {
  * children = [2*t]
  */
 //=====================================
-template <typename T, std::size_t keys>
+template <typename T, std::size_t k>
 struct BTNode {
   using value_type = T;
-  static constexpr std::size_t no_keys = keys;
+  static constexpr std::size_t keys = k;
+  static constexpr std::size_t order = keys + 1;
 
   BTNode<T, keys> *parent;
   sp::UinStaticArray<T, keys> elements;

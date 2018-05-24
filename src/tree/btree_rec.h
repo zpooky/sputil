@@ -9,8 +9,9 @@
 namespace sp {
 namespace rec {
 //=====================================
-template <typename T, std::size_t keys, typename Comparator>
+template <typename T, std::size_t k, typename Comparator>
 struct BTNode {
+  static constexpr std::size_t keys = k;
   static constexpr std::size_t order = keys + 1;
 
   sp::UinStaticArray<T, keys> elements;
@@ -31,7 +32,7 @@ struct BTNode {
 //=====================================
 template <typename T, std::size_t keys, typename Comparator = sp::greater>
 struct BTree {
-  static_assert(keys > 1, "");
+  static_assert(keys >= 2, "");
 
   BTNode<T, keys, Comparator> *root;
 
@@ -73,7 +74,9 @@ BTNode<T, keys, Comparator>::BTNode() noexcept
 template <typename T, std::size_t keys, typename Comparator>
 BTNode<T, keys, Comparator>::~BTNode() noexcept {
   for (std::size_t i = 0; i < length(children); ++i) {
-    delete children[i];
+    if (children[i]) {
+      delete children[i];
+    }
   }
 }
 
@@ -107,12 +110,28 @@ is_full(const BTNode<T, keys, Cmp> &node) noexcept {
   return false;
 }
 
+template <typename T, std::size_t keys, typename Cmp>
+static bool
+is_empty(const BTNode<T, keys, Cmp> &node) noexcept {
+  auto elems = length(node.elements);
+  auto children = length(node.children);
+
+  if (is_empty(node.elements)) {
+    assertxs(is_empty(node.children), elems, children);
+    return true;
+  }
+
+  assertxs(elems + 1 == children, elems, children);
+  return false;
+}
+
 template <typename T, std::size_t keys, typename Cmp, typename Key>
 static T *
 bin_insert(BTNode<T, keys, Cmp> &dest, Key &&value,
            BTNode<T, keys, Cmp> *greater) noexcept {
   auto &children = dest.children;
   auto &elements = dest.elements;
+
   if (is_empty(children)) {
     assertxs(is_empty(elements), length(elements));
     BTNode<T, keys, Cmp> *less = nullptr;
@@ -121,8 +140,10 @@ bin_insert(BTNode<T, keys, Cmp> &dest, Key &&value,
     assertx(*res == less);
   }
 
-  T *const result = bin_insert(elements, std::forward<Key>(value));
-  assertx(result);
+  Cmp cmp;
+  T *result = bin_insert(elements, std::forward<Key>(value), cmp);
+  assertxs(result, length(elements), capacity(elements), length(children),
+           capacity(children));
   const std::size_t index = index_of(elements, result);
   assertxs(index != capacity(elements), index, length(elements),
            capacity(elements));
@@ -134,17 +155,53 @@ bin_insert(BTNode<T, keys, Cmp> &dest, Key &&value,
 }
 
 template <typename T, std::size_t keys, typename Cmp>
-static T *
+static const T *
 median(const sp::UinStaticArray<T, keys> &elements, const T *extra) noexcept {
+#if 0
+  // 0,1,2,3|4
   std::size_t mid = (length(elements) + 1) / 2;
   assertxs(mid < length(elements), mid);
-  if (elements[mid] > *extra) {
-    //...
-  } else {
-    //...
+  assertxs(mid > 0, mid);
+
+  Cmp cmp;
+  if (cmp(*extra, /*>*/ elements[mid])) {
+    return elements.data() + mid;
   }
-  // TODO
-  return nullptr;
+
+  ++mid;
+  if (mid < length(elements)) {
+    return elements.data() + mid;
+  }
+
+  return extra;
+#endif
+  // XXX:
+  constexpr std::size_t max = keys + 1;
+  sp::UinStaticArray<T, max> ptrs;
+  Cmp cmp;
+  {
+    for (std::size_t i = 0; i < length(elements); ++i) {
+      T *res = bin_insert(ptrs, elements[i], cmp);
+      assertx(res);
+    }
+    // bool res = insert_all(ptrs, elements);
+    assertxs(length(ptrs) == length(elements), length(ptrs), length(elements));
+  }
+  {
+    bool res = sp::bin_insert(ptrs, *extra, cmp);
+    assertx(res);
+  }
+  std::size_t mid = length(elements) / 2;
+  const T &needle = elements[mid];
+
+  const T *const result = sp::bin_search(elements, needle, cmp);
+  if (result) {
+    assertxs(!cmp(needle, *result) && !cmp(*result, needle), needle, *result);
+    return result;
+  }
+  assertxs(!cmp(needle, *extra) && !cmp(*extra, needle), needle, *extra);
+
+  return extra;
 }
 
 template <typename T, std::size_t keys, typename Cmp>
@@ -190,6 +247,31 @@ partition(BTNode<T, keys, Cmp> &from, const T *pivot,
 }
 
 template <typename T, std::size_t keys, typename Cmp>
+static void
+extract(BTNode<T, keys, Cmp> &tree, const T *needle, T &dest,
+        BTNode<T, keys, Cmp> &right) noexcept {
+  assertx(needle);
+
+  auto &elements = tree.elements;
+  const std::size_t idx = index_of(elements, needle);
+  assertxs(idx != capacity(elements), idx, length(elements));
+
+  {
+    bool res = stable_take(elements, idx, dest);
+    assertx(res);
+  }
+
+  BTNode<T, keys, Cmp> *gt = nullptr;
+  bool res = stable_take(tree.children, idx + 1, gt);
+  assertx(res);
+
+  // should be placed first in the right tree
+  assertxs(length(right.children) >= 1, length(right.children));
+  assertx(right.children[0] == nullptr);
+  right.children[0] = gt;
+}
+
+template <typename T, std::size_t keys, typename Cmp>
 static std::tuple<T *, BTNode<T, keys, Cmp> *>
 empty() noexcept {
   T *p = nullptr;
@@ -197,9 +279,14 @@ empty() noexcept {
   return std::make_tuple(p, r);
 }
 
+template <typename T, std::size_t keys, typename Cmp>
+static std::tuple<T *, BTNode<T, keys, Cmp> *>
+fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
+      BTNode<T, keys, Cmp> *const greater, T *&out) noexcept;
+
 template <typename T, std::size_t keys, typename Cmp, typename Key>
 static std::tuple<T *, BTNode<T, keys, Cmp> *>
-insert(BTNode<T, keys, Cmp> *tree, Key &&needle, T *&out) noexcept {
+insert(BTNode<T, keys, Cmp> *const tree, Key &&needle, T *&out) noexcept {
   if (tree == nullptr) {
     auto bubble = new T(std::forward<Key>(needle));
     BTNode<T, keys, Cmp> *greater = nullptr;
@@ -210,77 +297,129 @@ insert(BTNode<T, keys, Cmp> *tree, Key &&needle, T *&out) noexcept {
   auto &children = tree->children;
   auto &elements = tree->elements;
 
+  /* 1. Traverse down */
   auto result = empty<T, keys, Cmp>();
-  T *const gte = bin_find_gte<T, keys, Key, Cmp>(elements, needle);
+  Cmp cmp;
+  T *const gte = bin_find_gte(elements, needle, cmp);
   if (gte) {
-    Cmp cmp;
     if (!cmp(needle, *gte) && !cmp(*gte, needle)) {
       /* equal */
       out = gte;
       return empty<T, keys, Cmp>();
     }
 
+    /* go down less-than $gte child */
     std::size_t index = index_of(elements, gte);
     assertxs(index != capacity(elements), index, capacity(elements));
 
     const auto child = children[index];
     result = insert(child, std::forward<Key>(needle), out);
   } else {
-    assertxs(!is_empty(elements), length(elements));
-    assertxs(!is_empty(children), length(children));
+    if (is_empty(*tree)) {
+      /* should only get here on first invocation */
+      BTNode<T, keys, Cmp> *gt = nullptr;
+      out = impl::bin_insert(*tree, std::forward<Key>(needle), gt);
+      assertx(out);
+      return empty<T, keys, Cmp>();
+    }
 
+    /* go down the greater */
     auto child = last(children);
     assertxs(child, length(children));
     result = insert(*child, std::forward<Key>(needle), out);
   }
 
+  /* 2. Fixup */
   T *const bubble = std::get<0>(result);
   if (bubble) {
-    if (!is_full(*tree)) {
-      BTNode<T, keys, Cmp> *greater = std::get<1>(result);
-      T *res = bin_insert(*tree, std::move(*bubble), greater);
-      assertx(res);
-
-      delete bubble;
-      return empty<T, keys, Cmp>();
-    }
-    const T *const m = median<T, keys, Cmp>(elements, bubble);
-    assertx(m);
-
-    auto right = new BTNode<T, keys, Cmp>;
-    assertx(right); // TODO
-    partition(*tree, m, *right);
-    if (m != bubble) {
-      // TODO assert $m is last in $tree
-      // TODO insert $bubble in either $tree or $right
-      // TODO move m from $tree -> $bubble
-    }
-
-    return std::make_tuple(bubble, right);
+    BTNode<T, keys, Cmp> *gt = std::get<1>(result);
+    return fixup(tree, bubble, gt, out);
   }
 
   return empty<T, keys, Cmp>();
 }
+
+template <typename T, std::size_t keys, typename Cmp>
+static std::tuple<T *, BTNode<T, keys, Cmp> *>
+fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
+      BTNode<T, keys, Cmp> *const greater, T *&out) noexcept {
+  assertx(bubble);
+
+  if (!is_full(*tree)) {
+    T *res = bin_insert(*tree, std::move(*bubble), greater);
+    assertx(res);
+
+    if (!out) {
+      out = res;
+    }
+
+    delete bubble;
+    return empty<T, keys, Cmp>();
+  }
+
+  /* split tree into two */
+  auto &elements = tree->elements;
+  const T *const med = median<T, keys, Cmp>(elements, bubble);
+  assertx(med);
+
+  auto right = new BTNode<T, keys, Cmp>;
+  assertx(right); // XXX
+
+  partition(*tree, med, *right);
+
+  if (med != bubble) {
+    // XXX: assert $m is last in $tree
+    Cmp cmp;
+    T *res = nullptr;
+    if (cmp(*bubble, /*>*/ *med)) {
+      res = bin_insert(*right, std::move(*bubble), greater);
+    } else {
+      res = bin_insert(*tree, std::move(*bubble), greater);
+    }
+    assertx(res);
+    if (!out) {
+      out = res;
+    }
+
+    extract(*tree, /*src*/ med, /*dest*/ *bubble, *right);
+  }
+
+  return std::make_tuple(bubble, right);
 }
+} // namespace sp::rec::impl
+
 // TODO what is the log(order,elements) forumla to get the height?
 
-template <typename T, std::size_t keys, typename Comparator, typename Key>
+template <typename T, std::size_t keys, typename Cmp, typename Key>
 T *
-insert(BTree<T, keys, Comparator> &self, Key &&value) noexcept {
+insert(BTree<T, keys, Cmp> &self, Key &&value) noexcept {
+  // if (!self.root) {
+  //   self.root = new BTNode<T, keys, Cmp>;
+  //   if (!self.root) {
+  //     return nullptr;
+  //   }
+  // }
+
   T *out = nullptr;
   auto result = impl::insert(self.root, std::forward<Key>(value), out);
   T *const bubble = std::get<0>(result);
   if (bubble) {
-    if (self.root) {
-      // TODO ...
-    } else {
-      self.root = new BTNode<T, keys, Comparator>;
-      if (self.root) {
-        BTNode<T, keys, Comparator> *greater = std::get<1>(result);
-        T *res = impl::bin_insert(*self.root, std::move(*bubble), greater);
-        assertx(res);
-      }
+    BTNode<T, keys, Cmp> *const left = self.root;
+    BTNode<T, keys, Cmp> *const right = std::get<1>(result);
+
+    self.root = new BTNode<T, keys, Cmp>;
+    assertx(self.root); // XXX
+    {
+      auto res = insert(self.root->children, left);
+      assertx(res);
     }
+
+    T *const res = impl::bin_insert(*self.root, std::move(*bubble), right);
+    assertx(res);
+    if (!out) {
+      out = res;
+    }
+
     delete bubble;
   }
 
@@ -299,9 +438,9 @@ find(const BTNode<T, keys, Cmp> *const tree, const Key &needle) noexcept {
   const auto &children = tree->children;
   const auto &elements = tree->elements;
 
-  const T *const gte = bin_find_gte<T, keys, Key, Cmp>(elements, needle);
+  Cmp cmp;
+  const T *const gte = bin_find_gte<T, keys, Key, Cmp>(elements, needle, cmp);
   if (gte) {
-    Cmp cmp;
     if (!cmp(needle, *gte) && !cmp(*gte, needle)) {
       /* equal */
       return gte;
