@@ -13,6 +13,7 @@ template <typename T, std::size_t k, typename Comparator>
 struct BTNode {
   static constexpr std::size_t keys = k;
   static constexpr std::size_t order = keys + 1;
+  using value_type = T;
 
   sp::UinStaticArray<T, keys> elements;
   sp::UinStaticArray<BTNode<T, keys, Comparator> *, order> children;
@@ -33,6 +34,7 @@ struct BTNode {
 template <typename T, std::size_t keys, typename Comparator = sp::greater>
 struct BTree {
   static_assert(keys >= 2, "");
+  using value_type = T;
 
   BTNode<T, keys, Comparator> *root;
 
@@ -141,7 +143,7 @@ bin_insert(BTNode<T, keys, Cmp> &dest, Key &&value,
   }
 
   Cmp cmp;
-  T *result = bin_insert(elements, std::forward<Key>(value), cmp);
+  T *const result = bin_insert(elements, std::forward<Key>(value), cmp);
   assertxs(result, length(elements), capacity(elements), length(children),
            capacity(children));
   const std::size_t index = index_of(elements, result);
@@ -219,7 +221,8 @@ partition(BTNode<T, keys, Cmp> &from, const T *pivot,
   if (idx != capacity(source)) {
     assertx(&source[idx] == pivot);
     for (std::size_t i = idx + 1; i < length(source); ++i) {
-      T *res = bin_insert(to, std::move(source[i]), source_child[i + 1]);
+      auto src_gt = source_child[i + 1];
+      T *const res = bin_insert(to, std::move(source[i]), src_gt);
       assertx(res);
       // XXX: assert $res is the last in $to
       ++drop;
@@ -239,6 +242,7 @@ partition(BTNode<T, keys, Cmp> &from, const T *pivot,
         assertx(!move);
       }
     } // for
+    assertx(move);
   }
 
   // drop last X moved elements & children
@@ -248,8 +252,10 @@ partition(BTNode<T, keys, Cmp> &from, const T *pivot,
 
 template <typename T, std::size_t keys, typename Cmp>
 static void
-extract(BTNode<T, keys, Cmp> &tree, const T *needle, T &dest,
+extract(BTNode<T, keys, Cmp> &tree, const T &mid, T &dest,
         BTNode<T, keys, Cmp> &right) noexcept {
+  Cmp cmp;
+  const T *needle = bin_search(tree.elements, mid, cmp);
   assertx(needle);
 
   auto &elements = tree.elements;
@@ -368,11 +374,11 @@ fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
   partition(*tree, med, *right);
 
   if (med != bubble) {
+    T med_copy = *med; // TODO fix this[insert will invalidate $med]
     // XXX: assert $m is last in $tree
     Cmp cmp;
     T *res = nullptr;
-    // TODO!! this insert will invalidate $med
-    if (cmp(*bubble, /*>*/ *med)) {
+    if (cmp(*bubble, /*>*/ med_copy)) {
       res = bin_insert(*right, std::move(*bubble), greater);
     } else {
       res = bin_insert(*tree, std::move(*bubble), greater);
@@ -382,7 +388,10 @@ fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
       out = res;
     }
 
-    extract(*tree, /*src*/ med, /*dest*/ *bubble, *right);
+    extract(*tree, /*src*/ med_copy, /*dest*/ *bubble, *right);
+  } else {
+    assertx(right->children[0] == nullptr);
+    right->children[0] = greater;
   }
 
   return std::make_tuple(bubble, right);
@@ -390,19 +399,12 @@ fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
 } // namespace impl
 
 // TODO what is the log(order,elements) forumla to get the height?
-
 template <typename T, std::size_t keys, typename Cmp, typename Key>
 T *
 insert(BTree<T, keys, Cmp> &self, Key &&value) noexcept {
-  // if (!self.root) {
-  //   self.root = new BTNode<T, keys, Cmp>;
-  //   if (!self.root) {
-  //     return nullptr;
-  //   }
-  // }
-
   T *out = nullptr;
   auto result = impl::insert(self.root, std::forward<Key>(value), out);
+
   T *const bubble = std::get<0>(result);
   if (bubble) {
     BTNode<T, keys, Cmp> *const left = self.root;

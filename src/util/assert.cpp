@@ -155,6 +155,7 @@ assert_func(const char *file, int line, const char * /*function prototype*/,
   { // gdb breakpoint
     std::raise(SIGINT);
     std::raise(SIGABRT);
+    std::abort();
   }
 
   std::terminate();

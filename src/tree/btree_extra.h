@@ -47,9 +47,47 @@ column_count_for(std::size_t children, std::size_t level) {
   }
 }
 
+template <typename T>
 inline void
+fill_width(char);
+// {
+//   static_assert(false, "wrong");
+// }
+
+template <>
+inline void
+fill_width<char>(char filler) {
+  printf("%c", filler);
+}
+
+template <>
+inline void
+fill_width<int>(char filler) {
+  printf("%c%c", filler, filler);
+}
+
+template <>
+inline void
+fill_width<std::size_t>(char filler) {
+  for (std::size_t i = 0; i < 5; ++i) {
+    printf("%c", filler);
+  }
+}
+
+template <std::size_t values, typename T>
+void
 print_null_column() {
-  printf("[XXXXX]");
+  bool first = true;
+  printf("[");
+  for (std::size_t i = 0; i < values; ++i) {
+    // printf("[XXXXX]");
+    if (!first) {
+      printf("%c", 'X');
+    }
+    fill_width<T>('X');
+    first = false;
+  }
+  printf("]");
 }
 
 inline void
@@ -59,7 +97,7 @@ print_value(int v) {
 
 inline void
 print_value(std::size_t v) {
-  printf("%02zu", v);
+  printf("%05zu", v);
 }
 
 inline void
@@ -78,12 +116,28 @@ print_column(Node *root) noexcept {
     if (i < length(root->elements)) {
       print_value(root->elements[i]);
     } else {
-      printf("__");
+      fill_width<typename Node::value_type>('_');
     }
   }
   printf("]");
 }
 
+template <std::size_t values, typename T>
+void
+print_background() {
+  bool first = true;
+  printf(" ");
+  for (std::size_t i = 0; i < values; ++i) {
+    if (!first) {
+      printf("%c", ' ');
+    }
+    fill_width<T>(' ');
+    first = false;
+  }
+  printf(" ");
+}
+
+#if 0
 inline std::size_t
 max_node_children(std::size_t children, std::size_t level) {
   if (level == 0) {
@@ -91,10 +145,11 @@ max_node_children(std::size_t children, std::size_t level) {
   }
   return children * max_node_children(children, level - 1);
 }
+#endif
 
 template <typename Node, typename Result>
 inline void
-dump_do_add_children(Node *root, Result &result) {
+copy_all_children(Node *root, Result &result) {
   auto &children = root->children;
   std::size_t i = 0;
   for (; i < length(children); ++i) {
@@ -109,28 +164,28 @@ dump_do_add_children(Node *root, Result &result) {
 
 template <typename Node, typename Result>
 void
-columns_for_level(Node *root, std::size_t level, Result &result,
-                  std::size_t orig_level) {
+columns_for_level(Node *root, std::size_t lvl, Result &out, std::size_t orig) {
 
   if (root == nullptr) {
-    std::size_t empties = max_node_children(Node::order, orig_level);
-    for (std::size_t i = 0; i < empties; ++i) {
-      // while (length(result) < empties) {
-      auto res = insert(result, nullptr);
+    /* There is no $orig level in this branch, add all null children */
+    for (std::size_t i = 0; i < Node::order; ++i) {
+      // while (length(out) < empties) {
+      auto res = insert(out, nullptr);
       assertx(res);
     }
-    // assertxs(length(result) == empties, length(result), empties);
-  } else if (level == 0) {
-    dump_do_add_children(root, result);
+    // assertxs(length(out) == empties, length(out), empties);
+  } else if (lvl == 0) {
+    /* we hit target level, add all children */
+    copy_all_children(root, out);
   } else {
     auto &children = root->children;
     std::size_t i = 0;
     for (; i < length(children); ++i) {
-      columns_for_level(children[i], level - 1, result, orig_level);
+      columns_for_level(children[i], lvl - 1, out, orig);
     }
     for (; i < capacity(children); ++i) {
       Node *tmp = nullptr;
-      columns_for_level(tmp, std::size_t(level - 1), result, orig_level);
+      columns_for_level(tmp, std::size_t(lvl - 1), out, orig);
     }
   }
 }
@@ -142,17 +197,17 @@ calc_width(std::size_t elements, std::size_t max_elements) {
   return (max_elements / elements);
 }
 
-template <typename F>
+template <std::size_t values, typename T, typename F>
 void
 dump_print_width(std::size_t width, F f) {
   std::size_t pre_post = (width - 1) / 2;
 
   for (std::size_t i = 0; i < pre_post; ++i) {
-    printf("       ");
+    print_background<values, T>();
   }
   f();
   for (std::size_t i = 0; i < pre_post; ++i) {
-    printf("       ");
+    print_background<values, T>();
   }
 }
 
@@ -164,13 +219,15 @@ dump_print(Node *root, Result &columns) {
       column_count_for(capacity(root->children), level_cnt_for(root) - 1);
   auto width = calc_width(length(columns), col_cnt);
   for (std::size_t i = 0; i < length(columns); ++i) {
-    dump_print_width(width, [&] {
+    auto f = [&] {
       if (columns[i]) {
         print_column(columns[i]);
       } else {
-        print_null_column();
+        print_null_column<Node::keys, typename Node::value_type>();
       }
-    });
+    };
+    dump_print_width<Node::keys, typename Node::value_type, decltype(f)>(width,
+                                                                         f);
   }
   printf("\n");
 }
@@ -181,7 +238,8 @@ dump_specific_level(Node *root, std::size_t level) noexcept {
 
   sp::StaticArray<Node *, 512> columns;
   // insert(columns, root);
-  columns_for_level(root, level, columns, level);
+  columns_for_level(root, level, /*OUT*/ columns, level);
+  // printf("level:%zu\n", level);
   dump_print(root, columns);
 }
 
