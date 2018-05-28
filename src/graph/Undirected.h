@@ -37,7 +37,6 @@ struct Undirected {
   ~Undirected() noexcept;
 };
 
-
 //=====================================
 /*
  *  N
@@ -97,77 +96,6 @@ is_adjacent(const Undirected<T, N> &, const Undirected<T, N> &) noexcept;
 
 //=====================================
 //====Implementation===================
-//=====================================
-template <typename Vertex>
-Wrapper<Vertex>::Wrapper(const edge_type *a) noexcept
-    : ptr((edge_type *)a)
-    , owner(false) {
-}
-
-template <typename Vertex>
-Wrapper<Vertex>::Wrapper(Wrapper<Vertex> &&o) noexcept
-    : ptr(o.ptr)
-    , owner(o.owner) {
-  o.owner = false;
-  o.ptr = nullptr;
-}
-
-template <typename Vertex>
-Wrapper<Vertex> &
-Wrapper<Vertex>::operator=(Wrapper<Vertex> &&o) noexcept {
-  using std::swap;
-  swap(ptr, o.ptr);
-  swap(owner, o.owner);
-  return *this;
-}
-
-template <typename Vertex>
-bool
-Wrapper<Vertex>::operator>(const Wrapper<Vertex> &o) const noexcept {
-  return operator>(o.ptr);
-}
-
-template <typename Vertex>
-bool
-Wrapper<Vertex>::operator>(const Wrapper<Vertex> *o) const noexcept {
-  assertx(o);
-  return operator>(o->ptr);
-}
-
-template <typename Vertex>
-bool
-Wrapper<Vertex>::operator>(const edge_type *o) const noexcept {
-  assertx(o);
-  uintptr_t first = reinterpret_cast<uintptr_t>(ptr);
-  uintptr_t second = reinterpret_cast<uintptr_t>(o);
-  return first > second;
-}
-
-template <typename Vertex>
-bool
-Wrapper<Vertex>::operator>(const edge_type &o) const noexcept {
-  return operator>(o.ptr);
-}
-
-template <typename Vertex>
-bool
-Wrapper<Vertex>::operator==(const edge_type *o) const noexcept {
-  assertx(o);
-  return ptr == o;
-}
-
-template <typename Vertex>
-Wrapper<Vertex>::~Wrapper() noexcept {
-  if (owner) {
-    assertx(ptr);
-    if (ptr) {
-      delete ptr;
-    }
-    owner = false;
-  }
-  ptr = nullptr;
-}
-
 //=====================================
 template <typename T, std::size_t N>
 template <typename A>
@@ -476,9 +404,12 @@ bool
 is_adjacent(const Undirected<T, N> &self,
             const Undirected<T, N> &edge) noexcept {
   if (bin_search(self.edges, Wrapper<Undirected<T, N>>(&edge))) {
+
     assertx(bin_search(edge.edges, Wrapper<Undirected<T, N>>(&self)));
     return true;
   }
+
+  assertx(!bin_search(edge.edges, Wrapper<Undirected<T, N>>(&self)));
   return false;
 }
 
