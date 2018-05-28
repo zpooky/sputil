@@ -321,13 +321,7 @@ insert(BTNode<T, keys, Cmp> *const tree, Key &&needle, T *&out) noexcept {
     const auto child = children[index];
     result = insert(child, std::forward<Key>(needle), out);
   } else {
-    if (is_empty(*tree)) {
-      /* should only get here on first invocation */
-      BTNode<T, keys, Cmp> *gt = nullptr;
-      out = impl::bin_insert(*tree, std::forward<Key>(needle), gt);
-      assertx(out);
-      return empty<T, keys, Cmp>();
-    }
+    assertx(!is_empty(*tree));
 
     /* go down the greater */
     auto child = last(children);
