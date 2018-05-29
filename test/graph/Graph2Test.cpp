@@ -8,7 +8,8 @@ TEST(Graph2Test, test) {
   ASSERT_FALSE(is_adjacent(one, two));
 
   ASSERT_TRUE(add_edge(one, 0, &two));
-  ASSERT_FALSE(add_edge(one, 0, &two));
+  ASSERT_TRUE(is_adjacent(one, two));
 
+  ASSERT_FALSE(add_edge(one, 0, &two));
   ASSERT_TRUE(is_adjacent(one, two));
 }

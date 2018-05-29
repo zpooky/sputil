@@ -541,10 +541,7 @@ merge(BTNode<T, keys, Cmp> &dest, BTNode<T, keys, Cmp> *src) noexcept {
     return false;
   }
 
-  auto &src_elems = src->elements;
-  auto &dest_elems = dest.elements;
-
-  const bool result = move_all(dest_elems, src_elems);
+  const bool result = move_all(dest.elements, src->elements);
   if (result) {
     auto &children = dest.children;
     {
@@ -562,11 +559,23 @@ merge(BTNode<T, keys, Cmp> &dest, BTNode<T, keys, Cmp> *src) noexcept {
 #endif
 
     { /**/
+      clear(src->elements);
+      clear(src->children);
       delete src;
     }
   }
 
   return result;
+}
+
+template <typename T>
+static void
+du(T &elements) noexcept {
+  printf("[");
+  for (std::size_t i = 0; i < length(elements); ++i) {
+    printf("%d,", elements[i]);
+  }
+  printf("]");
 }
 
 template <typename T, std::size_t keys, typename Cmp>
@@ -587,14 +596,13 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, bool sub_left) noexcept {
     assertx(subject);
 
     if (sub_left) {
-      /* # left if pivot is deficient
+      /* # left of pivot is deficient
        * 1. Copy the separator from the parent to the end of the deficient node
        *    (the separator moves down; the deficient node now has the minimum
        *    number of elements)
        * 2. Replace the separator in the parent with the first element of the
        *    right sibling (right sibling loses one node but still has at least
-       * the
-       *    minimum number of elements)
+       *    the minimum number of elements)
        * 3. The tree is now balanced
        */
 
@@ -602,10 +610,16 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, bool sub_left) noexcept {
       BTNode<T, keys, Cmp> *const right_child = children[right_idx];
       if (right_child) {
         if (has_more_than_min(*right_child)) {
+          {
+            printf("sub_left[pivot: %d]", *pivot);
+            printf("rigt:");
+            du(right_child->elements);
+            printf("\n");
+          }
+          return false; // TODO
           // 1.
           {
-            BTNode<T, keys, Cmp> *gt = nullptr;
-            T *const res = bin_insert(*subject, std::move(*pivot), gt);
+            T *const res = bin_insert(*subject, std::move(*pivot), right_child);
             assertx(res);
           }
           // 2.
@@ -614,9 +628,14 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, bool sub_left) noexcept {
               bool res = stable_take(right_child->elements, 0, *pivot);
               assertx(res);
             }
-            // TODO? assertx(right_child->children[0] == nullptr);
-            bool res = stable_remove(right_child->children, 0);
-            assertx(res);
+
+            {
+              // TODO move children[right_idx] = right_child->children[?]
+              BTNode<T, keys, Cmp> *out = nullptr;
+              bool res = stable_take(right_child->children, 1, out);
+              children[right_idx] = out;
+              assertx(res);
+            }
           }
 
           // 3. done with rebalance
@@ -625,15 +644,13 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, bool sub_left) noexcept {
       }
 
     } /*sub_right*/ else {
-      /* # right if pivot is deficient
+      /* # right of pivot is deficient
        * 1. Copy the separator from the parent to the start of the deficient
-       * node
-       *    (the separator moves down; deficient node now has the minimum number
-       *    of elements)
+       *    node (the separator moves down; deficient node now has the minimum
+       *    number of elements)
        * 2. Replace the separator in the parent with the last element of the
-       * left
-       *    sibling (left sibling loses one node but still has at least the
-       *    minimum number of elements)
+       *    left sibling (left sibling loses one node but still has at least
+       *    the minimum number of elements)
        * 3. The tree is now balanced
        */
 
@@ -641,6 +658,13 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, bool sub_left) noexcept {
       BTNode<T, keys, Cmp> *const left_child = children[left_idx];
       if (left_child) {
         if (has_more_than_min(*left_child)) {
+          return false; // TODO
+          {
+            printf("sub_right[pivot: %d]", *pivot);
+            printf("left:");
+            du(left_child->elements);
+            printf("\n");
+          }
           // 1.
           {
             BTNode<T, keys, Cmp> *gt = nullptr;
@@ -686,6 +710,14 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, bool sub_left) noexcept {
   BTNode<T, keys, Cmp> *const left_child = children[left_idx];
   BTNode<T, keys, Cmp> *const right_child = children[right_idx];
 
+  {
+    printf("otherwise[pivot: %d]", *pivot);
+    printf("left:");
+    du(left_child->elements);
+    printf("right:");
+    du(right_child->elements);
+    printf("\n");
+  }
   // 1. move pivot into left
   {
     T *const res = insert(left_child->elements, std::move(*pivot));
@@ -856,7 +888,7 @@ struct BTreeNop {
     return *this;
   }
 };
-}
+} // namespace impl
 
 template <typename T, std::size_t keys, typename Comparator, typename Key>
 bool
@@ -875,6 +907,8 @@ remove(BTree<T, keys, Comparator> &self, const Key &needle) noexcept {
       self.root = children[0];
       clear(children);
 
+      clear(old->elements);
+      clear(old->children);
       delete old;
     }
   }

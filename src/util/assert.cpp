@@ -162,8 +162,8 @@ assert_func(const char *file, int line, const char * /*function prototype*/,
 } // namespace impl
 } // namespace sp
 
-namespace backward {
-
-backward::SignalHandling sh;
-
-} // namespace backward
+// namespace backward {
+//
+// backward::SignalHandling sh;
+//
+// } // namespace backward

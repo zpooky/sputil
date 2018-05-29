@@ -433,24 +433,24 @@ TEST(btree_recTest, remove_3_2_1) {
 
 TEST(btree_recTest, remove_10) {
   constexpr std::size_t values = 2;
-  sp::rec::BTree<std::size_t, values> tree;
-  const std::size_t it = 7;
-  for (std::size_t i = 0; i < it; ++i) {
+  sp::rec::BTree<int, values> tree;
+  const int it = 9;
+  for (int i = 0; i < it; ++i) {
     a_insert(tree, i);
   }
   btree::impl::btree::dump(tree.root);
 
-  for (std::size_t i = 0; i < it; ++i) {
-    //   for (std::size_t a = 0; a < i; ++a) {
-    //     auto res = find(tree, a);
-    //     ASSERT_FALSE(res);
-    //   }
+  for (int i = 0; i < it; ++i) {
+    for (int a = 0; a < i; ++a) {
+      auto res = find(tree, a);
+      ASSERT_FALSE(res);
+    }
 
-    // for (std::size_t a = i; a < it; ++a) {
-    //   std::size_t *res = find(tree, a);
-    //   ASSERT_TRUE(res);
-    //   ASSERT_EQ(*res, a);
-    // }
+    for (int a = i; a < it; ++a) {
+      int *res = find(tree, a);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, a);
+    }
 
     a_remove(tree, i);
   }
