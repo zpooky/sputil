@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <problem/prob_list.h>
+#include <problem/list_problem.h>
 using namespace prob;
 
 template <typename Node>

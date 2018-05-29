@@ -50,9 +50,9 @@ struct Array {
 template <typename T, std::size_t cap>
 struct StaticArray : public Array<T> {
   using value_type = T;
+  static constexpr std::size_t storage_capacity = cap;
 
   T raw[cap];
-  static constexpr std::size_t storage_capacity = cap;
 
   StaticArray() noexcept;
   StaticArray(std::initializer_list<T>) noexcept;
@@ -267,6 +267,15 @@ insert_all(Array<T> &, const V *, std::size_t) noexcept;
 template <typename T, std::size_t c, typename V>
 bool
 insert_all(UinStaticArray<T, c> &, const V *, std::size_t) noexcept;
+
+//=====================================
+template <typename T, std::size_t c>
+bool
+move_all(UinStaticArray<T, c> &, Array<T> &) noexcept;
+
+template <typename T, std::size_t c1, std::size_t c2>
+bool
+move_all(UinStaticArray<T, c1> &, UinStaticArray<T, c2> &) noexcept;
 
 //=====================================
 /*
@@ -1122,6 +1131,39 @@ insert_all(UinStaticArray<T, c> &self, const V *values,
       assertx(res);
     }
 
+    return true;
+  }
+
+  return false;
+}
+
+//=====================================
+template <typename T, std::size_t c>
+bool
+move_all(UinStaticArray<T, c> &self, Array<T> &other) noexcept {
+  if (remaining_write(self) >= length(other)) {
+    for (std::size_t i = 0; i < length(other); ++i) {
+      T *res = insert(self, std::move(other[i]));
+      assertx(res);
+    }
+
+    clear(other);
+    return true;
+  }
+
+  return false;
+}
+
+template <typename T, std::size_t c1, std::size_t c2>
+bool
+move_all(UinStaticArray<T, c1> &self, UinStaticArray<T, c2> &other) noexcept {
+  if (remaining_write(self) >= length(other)) {
+    for (std::size_t i = 0; i < length(other); ++i) {
+      T *res = insert(self, std::move(other[i]));
+      assertx(res);
+    }
+
+    clear(other);
     return true;
   }
 

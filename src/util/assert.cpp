@@ -43,11 +43,10 @@ print_source_loc(FILE *os, const char *indent,
   //         ln.function.c_str());
 
   // make function name higlight
-  fprintf(os,
-          "%s"
-          "%s"
-          " \033[91m%s\033[0m"
-          ":\033[92m%u\033[0m",
+  fprintf(os, "%s"
+              "%s"
+              " \033[91m%s\033[0m"
+              ":\033[92m%u\033[0m",
           indent,                                              //
           ln.function.c_str(),                                 //
           filename(ln.filename.c_str(), ln.filename.length()), //
@@ -125,10 +124,9 @@ assert_func(const char *file, int line, const char * /*function prototype*/,
 
   { // assert dump
     fprintf(dest, "assertion failed: (%s)\n", cond);
-    fprintf(dest,
-            "%s"
-            ": \033[92m%d\033[0m"
-            "\n\n",
+    fprintf(dest, "%s"
+                  ": \033[92m%d\033[0m"
+                  "\n\n",
             file, line);
   }
 
@@ -163,3 +161,9 @@ assert_func(const char *file, int line, const char * /*function prototype*/,
 
 } // namespace impl
 } // namespace sp
+
+namespace backward {
+
+backward::SignalHandling sh;
+
+} // namespace backward

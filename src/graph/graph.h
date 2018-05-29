@@ -1,108 +1,117 @@
-#ifndef SP_UTIL_GRAPH_GRAPH2_H
-#define SP_UTIL_GRAPH_GRAPH2_H
+#ifndef SP_UTIL_GRAPH_GRAPH_H
+#define SP_UTIL_GRAPH_GRAPH_H
 
-#include <collection/Array.h>
 #include <utility>
+#include <cstddef>
+#include <cstdint>
 
 namespace graph {
 //=====================================
-template <typename T, typename Weight = int>
-struct Vertex;
+template <typename Vertex>
+struct Wrapper {
+  using edge_type = Vertex;
+  Vertex *ptr;
+  bool owner;
 
-//=====================================
-template <typename T, typename Weight>
-struct Edge {
-  Vertex<T> *target;
-  Weight weight;
+  explicit Wrapper(const edge_type *) noexcept;
+  Wrapper(Wrapper<Vertex> &&) noexcept;
 
-  template <typename WK>
-  Edge(Vertex<T> *t, WK &&w)
-      : target{t}
-      , weight{std::forward<WK>(w)} {
-  }
+  Wrapper(const Wrapper<Vertex> &) = delete;
+  Wrapper<Vertex> &
+  operator=(const Wrapper<Vertex> &) = delete;
 
-  bool
-  operator>(const Vertex<T> *o) const noexcept {
-    assertx(o);
-    assertx(target);
-    return target > o;
-  }
+  Wrapper<Vertex> &
+  operator=(Wrapper<Vertex> &&o) noexcept;
 
   bool
-  operator>(const Edge<T, Weight> &o) const noexcept {
-    assertx(target);
-    assertx(o.target);
-    return target > o.target;
-  }
+  operator>(const Wrapper<Vertex> &) const noexcept;
+
+  bool
+  operator>(const Wrapper<Vertex> *) const noexcept;
+
+  bool
+  operator>(const edge_type *) const noexcept;
+
+  bool
+  operator>(const edge_type &) const noexcept;
+
+  bool
+  operator==(const edge_type *) const noexcept;
+
+  ~Wrapper() noexcept;
 };
-
-template <typename T, typename Weight>
-static bool
-operator>(const Vertex<T> *f, const Edge<T, Weight> &s) noexcept {
-  assertx(f);
-  assertx(s.target);
-  return f > s.target;
-}
-
-//=====================================
-template <typename T, typename Weight>
-struct Vertex {
-  T value;
-  sp::UinStaticArray<Edge<T, Weight>, 128> edges;
-
-  template <typename A>
-  Vertex(A &&) noexcept;
-
-  ~Vertex() noexcept;
-};
-
-//=====================================
-template <typename T, typename W>
-bool
-is_adjacent(const Vertex<T, W> &, const Vertex<T, W> &) noexcept;
-
-//=====================================
-template <typename T, typename W, typename WK>
-bool
-add_edge(Vertex<T, W> &, WK &&, Vertex<T, W> *) noexcept;
 
 //=====================================
 //====Implementation===================
 //=====================================
-
-template <typename T, typename Weight>
-template <typename A>
-Vertex<T, Weight>::Vertex(A &&a) noexcept
-    : value{std::forward<A>(a)}
-    , edges{} {
+template <typename Vertex>
+Wrapper<Vertex>::Wrapper(const edge_type *a) noexcept
+    : ptr((edge_type *)a)
+    , owner(false) {
 }
 
-template <typename T, typename Weight>
-Vertex<T, Weight>::~Vertex() noexcept {
+template <typename Vertex>
+Wrapper<Vertex>::Wrapper(Wrapper<Vertex> &&o) noexcept
+    : ptr(o.ptr)
+    , owner(o.owner) {
+  o.owner = false;
+  o.ptr = nullptr;
 }
 
-//=====================================
-template <typename T, typename W>
+template <typename Vertex>
+Wrapper<Vertex> &
+Wrapper<Vertex>::operator=(Wrapper<Vertex> &&o) noexcept {
+  using std::swap;
+  swap(ptr, o.ptr);
+  swap(owner, o.owner);
+  return *this;
+}
+
+template <typename Vertex>
 bool
-is_adjacent(const Vertex<T, W> &self, const Vertex<T, W> &needle) noexcept {
-  return bin_search(self.edges, &needle);
+Wrapper<Vertex>::operator>(const Wrapper<Vertex> &o) const noexcept {
+  return operator>(o.ptr);
 }
 
-//=====================================
-template <typename T, typename W, typename WK>
+template <typename Vertex>
 bool
-add_edge(Vertex<T, W> &self, WK &&weight, Vertex<T, W> *edge) noexcept {
-  assertx(edge);
-  const bool existing = bin_search(self.edges, edge);
-  const auto res =
-      bin_insert(self.edges, Edge<T, W>(edge, std::forward<WK>(weight)));
-  printf("res[%p], length[%zu]\n", res, length(self.edges));
+Wrapper<Vertex>::operator>(const Wrapper<Vertex> *o) const noexcept {
+  assertx(o);
+  return operator>(o->ptr);
+}
 
-  if (existing) {
-    assertx(res == nullptr);
+template <typename Vertex>
+bool
+Wrapper<Vertex>::operator>(const edge_type *o) const noexcept {
+  assertx(o);
+  uintptr_t first = reinterpret_cast<uintptr_t>(ptr);
+  uintptr_t second = reinterpret_cast<uintptr_t>(o);
+  return first > second;
+}
+
+template <typename Vertex>
+bool
+Wrapper<Vertex>::operator>(const edge_type &o) const noexcept {
+  return operator>(o.ptr);
+}
+
+template <typename Vertex>
+bool
+Wrapper<Vertex>::operator==(const edge_type *o) const noexcept {
+  assertx(o);
+  return ptr == o;
+}
+
+template <typename Vertex>
+Wrapper<Vertex>::~Wrapper() noexcept {
+  if (owner) {
+    assertx(ptr);
+    if (ptr) {
+      delete ptr;
+    }
+    owner = false;
   }
-
-  return res != nullptr;
+  ptr = nullptr;
 }
 
 } // namespace graph

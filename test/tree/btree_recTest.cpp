@@ -40,6 +40,32 @@ a_insert(sp::rec::BTree<T, n, Cmp> &tree, V v) {
   return res;
 }
 
+template <typename T, std::size_t n, typename Cmp, typename V>
+static bool
+a_remove(sp::rec::BTree<T, n, Cmp> &tree, const V &v) {
+  {
+    T *res = find(tree, v);
+    assertx(res);
+    assertxs(*res == v, *res, v);
+  }
+  printf("==============\n");
+  // printf("before:\n");
+  // btree::impl::btree::dump(tree.root);
+  printf("remove(tree, %d)\n", int(v));
+  bool res = remove(tree, v);
+  assertx(res);
+  btree::impl::btree::dump(tree.root);
+  {
+    T *res = find(tree, v);
+    assertx(res == nullptr);
+  }
+  {
+    bool res = remove(tree, v);
+    assertx(!res);
+  }
+  return res;
+}
+
 template <std::size_t n>
 static void
 dump(sp::UinStaticArray<int, n> &elements) {
@@ -126,6 +152,7 @@ TEST(btree_recTest, test_order3) {
 }
 
 TEST(btree_recTest, test_order5) {
+  // http://www.cs.carleton.edu/faculty/jgoldfea/cs201/spring11/inclass/Tree/BTreefinalNew.pdf
   char raw[] = {'A', 'G', 'F', 'B', 'K', 'D', 'H', 'M', 'J', 'E',
                 'S', 'I', 'R', 'X', 'C', 'L', 'N', 'T', 'U', 'P'};
   sp::rec::BTree<char, 4> tree;
@@ -326,16 +353,107 @@ TEST(btree_recTest, test_rand_order12) {
   // }
 }
 
-TEST(btree_recTest, remove) {
+TEST(btree_recTest, remove_2_1_3) {
+  constexpr std::size_t values = 2;
+  sp::rec::BTree<int, values> tree;
+  a_insert(tree, 1);
+  a_insert(tree, 2);
+  a_insert(tree, 3);
+
+  {
+    a_remove(tree, 2);
+    auto &elements = tree.root->elements;
+    ASSERT_EQ(1, elements[0]);
+    ASSERT_EQ(std::size_t(2), length(elements));
+    ASSERT_EQ(3, elements[1]);
+  }
+  {
+    a_remove(tree, 1);
+    auto &elements = tree.root->elements;
+    ASSERT_EQ(std::size_t(1), length(elements));
+    ASSERT_EQ(3, elements[0]);
+  }
+  {
+    a_remove(tree, 3);
+    ASSERT_FALSE(tree.root);
+  }
+}
+
+TEST(btree_recTest, remove_1_2_3) {
+  constexpr std::size_t values = 2;
+  sp::rec::BTree<int, values> tree;
+  a_insert(tree, 1);
+  a_insert(tree, 2);
+  a_insert(tree, 3);
+
+  {
+    a_remove(tree, 1);
+    auto &elements = tree.root->elements;
+    ASSERT_EQ(2, elements[0]);
+    ASSERT_EQ(std::size_t(2), length(elements));
+    ASSERT_EQ(3, elements[1]);
+  }
+  {
+    a_remove(tree, 2);
+    auto &elements = tree.root->elements;
+    ASSERT_EQ(std::size_t(1), length(elements));
+    ASSERT_EQ(3, elements[0]);
+  }
+  {
+    a_remove(tree, 3);
+    ASSERT_FALSE(tree.root);
+  }
+}
+
+TEST(btree_recTest, remove_3_2_1) {
+  constexpr std::size_t values = 2;
+  sp::rec::BTree<int, values> tree;
+  a_insert(tree, 1);
+  a_insert(tree, 2);
+  a_insert(tree, 3);
+
+  {
+    a_remove(tree, 3);
+    auto &elements = tree.root->elements;
+    ASSERT_EQ(1, elements[0]);
+    ASSERT_EQ(std::size_t(2), length(elements));
+    ASSERT_EQ(2, elements[1]);
+  }
+  {
+    a_remove(tree, 2);
+    auto &elements = tree.root->elements;
+    ASSERT_EQ(std::size_t(1), length(elements));
+    ASSERT_EQ(1, elements[0]);
+  }
+  {
+    a_remove(tree, 1);
+    ASSERT_FALSE(tree.root);
+  }
+}
+
+TEST(btree_recTest, remove_10) {
   constexpr std::size_t values = 2;
   sp::rec::BTree<std::size_t, values> tree;
-  {
-    a_insert(tree, 0);
-    ASSERT_TRUE(remove(tree, 0));
-    ASSERT_FALSE(find(tree, 0));
+  const std::size_t it = 7;
+  for (std::size_t i = 0; i < it; ++i) {
+    a_insert(tree, i);
   }
-  {
-    a_insert(tree, 1);
-    a_insert(tree, 2);
+  btree::impl::btree::dump(tree.root);
+
+  for (std::size_t i = 0; i < it; ++i) {
+    //   for (std::size_t a = 0; a < i; ++a) {
+    //     auto res = find(tree, a);
+    //     ASSERT_FALSE(res);
+    //   }
+
+    // for (std::size_t a = i; a < it; ++a) {
+    //   std::size_t *res = find(tree, a);
+    //   ASSERT_TRUE(res);
+    //   ASSERT_EQ(*res, a);
+    // }
+
+    a_remove(tree, i);
   }
+
+  ASSERT_FALSE(tree.root);
 }

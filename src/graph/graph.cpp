@@ -1,1 +1,4 @@
-#include "graph.h"
+#include "Graph.h"
+
+namespace graph {
+}

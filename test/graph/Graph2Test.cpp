@@ -1,4 +1,4 @@
-#include <graph/graph.h>
+#include <graph/graph2.h>
 #include <gtest/gtest.h>
 
 TEST(Graph2Test, test) {
