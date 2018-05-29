@@ -65,6 +65,10 @@ T *
 find(BTree<T, keys, Comparator> &, const Key &) noexcept;
 
 //=====================================
+template <typename T, std::size_t keys, typename Comparator, typename Key>
+bool
+remove(BTree<T, keys, Comparator> &, const Key &) noexcept;
+
 //====Implementation===================
 //=====================================
 template <typename T, std::size_t keys, typename Comparator>
@@ -127,6 +131,7 @@ is_empty(const BTNode<T, keys, Cmp> &node) noexcept {
   return false;
 }
 
+//=====================================
 template <typename T, std::size_t keys, typename Cmp, typename Key>
 static T *
 bin_insert(BTNode<T, keys, Cmp> &dest, Key &&value,
@@ -156,6 +161,7 @@ bin_insert(BTNode<T, keys, Cmp> &dest, Key &&value,
   return result;
 }
 
+//=====================================
 template <typename T, std::size_t keys, typename Cmp>
 static const T *
 median(const sp::UinStaticArray<T, keys> &elements, const T *extra) noexcept {
@@ -206,6 +212,7 @@ median(const sp::UinStaticArray<T, keys> &elements, const T *extra) noexcept {
   return extra;
 }
 
+//=====================================
 template <typename T, std::size_t keys, typename Cmp>
 static void
 partition(BTNode<T, keys, Cmp> &from, const T *pivot,
@@ -250,6 +257,7 @@ partition(BTNode<T, keys, Cmp> &from, const T *pivot,
   drop_back(from.children, drop);
 }
 
+//=====================================
 template <typename T, std::size_t keys, typename Cmp>
 static void
 extract(BTNode<T, keys, Cmp> &tree, const T &mid, T &dest,
@@ -277,6 +285,7 @@ extract(BTNode<T, keys, Cmp> &tree, const T &mid, T &dest,
   right.children[0] = gt;
 }
 
+//=====================================
 template <typename T, std::size_t keys, typename Cmp>
 static std::tuple<T *, BTNode<T, keys, Cmp> *>
 empty() noexcept {
@@ -285,6 +294,7 @@ empty() noexcept {
   return std::make_tuple(p, r);
 }
 
+//=====================================
 template <typename T, std::size_t keys, typename Cmp>
 static std::tuple<T *, BTNode<T, keys, Cmp> *>
 fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
@@ -339,6 +349,7 @@ insert(BTNode<T, keys, Cmp> *const tree, Key &&needle, T *&out) noexcept {
   return empty<T, keys, Cmp>();
 }
 
+//=====================================
 template <typename T, std::size_t keys, typename Cmp>
 static std::tuple<T *, BTNode<T, keys, Cmp> *>
 fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
@@ -392,6 +403,7 @@ fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
 }
 } // namespace impl
 
+//=====================================
 // TODO what is the log(order,elements) forumla to get the height?
 template <typename T, std::size_t keys, typename Cmp, typename Key>
 T *
@@ -445,7 +457,7 @@ find(const BTNode<T, keys, Cmp> *const tree, const Key &needle) noexcept {
 
     /* Go down less than element child */
     std::size_t index = index_of(elements, gte);
-    assertxs(index != capacity(elements), index, capacity(elements));
+    assertxs(index != capacity(elements), index, length(elements));
 
     const auto child = children[index];
     return find(child, needle);
@@ -472,6 +484,145 @@ find(BTree<T, keys, Comparator> &self, const Key &needle) noexcept {
 }
 
 //=====================================
+namespace impl {
+/**/
+template <typename T, std::size_t keys, typename Cmp>
+static bool
+is_leaf(const BTNode<T, keys, Cmp> &self) noexcept {
+  return for_all(self.children, [](const auto &child) {
+    /**/
+    return child == nullptr;
+  });
+}
+
+template <typename T, std::size_t keys, typename Cmp>
+static bool
+is_underflow(const BTNode<T, keys, Cmp> &self) noexcept {
+  // TODO
+  return false;
+}
+
+template <typename T, std::size_t keys, typename Cmp, typename Dest>
+static bool
+take_wrapper(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept;
+
+template <typename T, std::size_t keys, typename Cmp, typename Dest>
+static bool
+take_leaf(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
+  assertx(is_leaf(self));
+
+  auto &elements = self.elements;
+  auto &children = self.children;
+
+  const std::size_t index = index_of(elements, subject);
+  assertxs(index != capacity(elements), index, length(elements));
+  {
+    bool res = stable_take(elements, index, dest);
+    assertx(res);
+  }
+  {
+    bool res = stable_remove(children, index + 1);
+    assertx(res);
+  }
+  // TODO check if is_underflow
+  return true;
+}
+
+template <typename T, std::size_t keys, typename Cmp, typename Dest>
+static bool
+take_int_node(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
+  auto &elements = self.elements;
+  auto &children = self.children;
+
+  const std::size_t index = index_of(elements, subject);
+  assertxs(index != capacity(elements), index, length(elements));
+
+  dest = std::move(*subject);
+
+  BTNode<T, keys, Cmp> *const lt = children[index];
+  if (lt) {
+    assertx(!is_empty(*lt));
+    T *const lt_sub = &lt->elements[0];
+    return take_wrapper(*lt, lt_sub, *subject);
+  }
+
+  BTNode<T, keys, Cmp> *const gt = children[index + 1];
+  if (gt) {
+    assertx(!is_empty(*gt));
+    T *const gt_sub = &gt->elements[0];
+    return take_wrapper(*gt, gt_sub, *subject);
+  }
+
+  {
+    bool res = stable_remove(elements, index);
+    assertx(res);
+  }
+  {
+    bool res = stable_remove(children, index + 1);
+    assertx(res);
+  }
+
+  return true;
+}
+
+template <typename T, std::size_t keys, typename Cmp, typename Dest>
+static bool
+take_wrapper(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
+  if (is_leaf(self)) {
+    return take_leaf(self, subject, dest);
+  }
+  return take_int_node(self, subject, dest);
+}
+
+template <typename T, std::size_t keys, typename Cmp, typename Key,
+          typename Dest>
+static bool
+take(BTNode<T, keys, Cmp> *const tree, const Key &needle, Dest &dest) noexcept {
+  if (tree == nullptr) {
+    return false;
+  }
+
+  auto &children = tree->children;
+  auto &elements = tree->elements;
+
+  Cmp cmp;
+  T *const gte = bin_find_gte<T, keys, Key, Cmp>(elements, needle, cmp);
+  if (gte) {
+    if (!cmp(needle, *gte) && !cmp(*gte, needle)) {
+      /* equal */
+      return take_wrapper(*tree, gte, dest);
+    }
+
+    /* Go down less than element child */
+    const std::size_t index = index_of(elements, gte);
+    assertxs(index != capacity(elements), index, length(elements));
+
+    auto child = children[index];
+    return take(child, needle, dest);
+  }
+
+  /* needle is greater than any other element in elements */
+  auto child = last(children);
+  assertxs(child, length(children));
+  return take(*child, needle, dest);
+}
+
+template <typename T>
+struct BTreeNop {
+  BTreeNop &
+  operator=(T &&) noexcept {
+    return *this;
+  }
+};
+}
+
+template <typename T, std::size_t keys, typename Comparator, typename Key>
+bool
+remove(BTree<T, keys, Comparator> &self, const Key &needle) noexcept {
+  impl::BTreeNop<T> nop;
+  return impl::take(self.root, needle, nop);
+}
+
 } // namespace rec
 } // namespace sp
 

@@ -24,8 +24,9 @@ equal(const Node<T> *a, const Node<T> *b) noexcept {
     } else if (b == nullptr) {
       return false;
     }
+
     C cmp;
-    return cmp(a->value, b->value) == false && cmp(b->value, a->value) == false;
+    return !cmp(a->value, b->value) && !cmp(b->value, a->value);
   };
 
   if (!eq()) {
@@ -401,6 +402,12 @@ void
 reverse(Tree<T, C> &tree) noexcept {
   reverse(tree.root); // TODO test
 }
+
+//=====================================
+namespace impl {
+  /**/
+}
+
 
 //============================================================
 //===Itterative===============================================

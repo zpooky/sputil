@@ -8,6 +8,10 @@
 template <typename T, std::size_t n, typename Cmp, typename V>
 static T *
 a_insert(sp::rec::BTree<T, n, Cmp> &tree, V v) {
+  {
+    T *res = find(tree, v);
+    assertx(res == nullptr);
+  }
   // printf("insert(%d)\n", v);
   T *res = insert(tree, v);
   // btree::impl::btree::dump(tree.root);
@@ -320,4 +324,18 @@ TEST(btree_recTest, test_rand_order12) {
   btree_rand<11>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
+}
+
+TEST(btree_recTest, remove) {
+  constexpr std::size_t values = 2;
+  sp::rec::BTree<std::size_t, values> tree;
+  {
+    a_insert(tree, 0);
+    ASSERT_TRUE(remove(tree, 0));
+    ASSERT_FALSE(find(tree, 0));
+  }
+  {
+    a_insert(tree, 1);
+    a_insert(tree, 2);
+  }
 }

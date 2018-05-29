@@ -370,13 +370,13 @@ take(UinStaticArray<T, c> &, std::size_t, /*OUT*/ T &) noexcept;
  *
  *
  */
-template <typename T>
+template <typename T, typename Dest>
 bool
-stable_take(Array<T> &, std::size_t, /*OUT*/ T &) noexcept;
+stable_take(Array<T> &, std::size_t, /*OUT*/ Dest &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T, std::size_t c, typename Dest>
 bool
-stable_take(UinStaticArray<T, c> &, std::size_t, /*OUT*/ T &) noexcept;
+stable_take(UinStaticArray<T, c> &, std::size_t, /*OUT*/ Dest &) noexcept;
 
 //=====================================
 template <typename T>
@@ -1379,12 +1379,11 @@ take(UinStaticArray<T, c> &self, std::size_t idx, /*OUT*/ T &out) noexcept {
   return false;
 }
 //=====================================
-template <typename T>
+template <typename T, typename Dest>
 bool
-stable_take(Array<T> &self, std::size_t idx, /*OUT*/ T &out) noexcept {
+stable_take(Array<T> &self, std::size_t idx, /*OUT*/ Dest &out) noexcept {
   if (idx < length(self)) {
-    using std::swap;
-    swap(out, self.data()[idx]);
+    out = std::move(self.data()[idx]);
 
     bool res = stable_remove(self, idx);
     assertx(res);
@@ -1395,13 +1394,11 @@ stable_take(Array<T> &self, std::size_t idx, /*OUT*/ T &out) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c>
+template <typename T, std::size_t c, typename Dest>
 bool
-stable_take(UinStaticArray<T, c> &self, std::size_t idx,
-            /*OUT*/ T &out) noexcept {
+stable_take(UinStaticArray<T, c> &self, std::size_t idx, Dest &out) noexcept {
   if (idx < length(self)) {
-    using std::swap;
-    swap(out, self.data()[idx]);
+    out = std::move(self.data()[idx]);
 
     bool res = stable_remove(self, idx);
     assertx(res);
