@@ -1,37 +1,38 @@
 #include <gtest/gtest.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
+#include <tree/avl_rec.h>
 #include <tree/btree_extra.h>
 #include <tree/btree_rec.h>
 #include <util/Bitset.h>
 
-template <typename T, std::size_t n, typename Cmp, typename V>
-static T *
-a_insert(sp::rec::BTree<T, n, Cmp> &tree, V v) {
+template <typename Tree, typename V>
+static typename Tree::value_type *
+a_insert(Tree &tree, V v) {
   {
-    T *res = find(tree, v);
+    auto res = find(tree, v);
     assertx(res == nullptr);
   }
   // printf("insert(%d)\n", v);
-  T *res = insert(tree, v);
+  auto res = insert(tree, v);
   // btree::impl::btree::dump(tree.root);
   // printf("=============\n");
   assertx(res);
   assertxs(*res == v, *res, v);
   {
-    T *res2 = find(tree, v);
+    auto res2 = find(tree, v);
     assertx(res2);
     assertxs(*res2 == v, *res2, v);
     assertxs(res2 == res, *res2, *res);
   }
   {
-    T *res2 = insert(tree, v);
+    auto res2 = insert(tree, v);
     assertx(res2);
     assertxs(*res2 == v, *res2, v);
     assertxs(res2 == res, *res2, *res);
   }
   {
-    T *res2 = find(tree, v);
+    auto res2 = find(tree, v);
     assertx(res2);
     assertxs(*res2 == v, *res2, v);
     assertxs(res2 == res, *res2, *res);
@@ -40,23 +41,21 @@ a_insert(sp::rec::BTree<T, n, Cmp> &tree, V v) {
   return res;
 }
 
-template <typename T, std::size_t n, typename Cmp, typename V>
+template <typename Tree, typename V>
 static bool
-a_remove(sp::rec::BTree<T, n, Cmp> &tree, const V &v) {
+a_remove(Tree &tree, const V &v) {
   {
-    T *res = find(tree, v);
+    auto res = find(tree, v);
     assertx(res);
     assertxs(*res == v, *res, v);
   }
-  printf("==============\n");
-  // printf("before:\n");
-  // btree::impl::btree::dump(tree.root);
-  printf("remove(tree, %d)\n", int(v));
+  // printf("==============\n");
+  // printf("remove(tree, %d)\n", int(v));
   bool res = remove(tree, v);
   assertx(res);
-  btree::impl::btree::dump(tree.root);
+  // btree::impl::btree::dump(tree.root);
   {
-    T *res = find(tree, v);
+    auto res = find(tree, v);
     assertx(res == nullptr);
   }
   {
@@ -77,7 +76,7 @@ dump(sp::UinStaticArray<int, n> &elements) {
 
 TEST(btree_recTest, test_median_2_lt) {
   using cmp = sp::less;
-  constexpr std::size_t max = 20;
+  constexpr std::size_t max = 2;
   sp::UinStaticArray<int, max> elements;
   sp::bin_insert<int, max, int, cmp>(elements, 3);
   sp::bin_insert<int, max, int, cmp>(elements, 2);
@@ -91,7 +90,7 @@ TEST(btree_recTest, test_median_2_lt) {
 
 TEST(btree_recTest, test_median_2_gt) {
   using cmp = sp::greater;
-  constexpr std::size_t max = 20;
+  constexpr std::size_t max = 2;
   sp::UinStaticArray<int, max> elements;
   sp::bin_insert<int, max, int, cmp>(elements, 3);
   sp::bin_insert<int, max, int, cmp>(elements, 2);
@@ -101,6 +100,130 @@ TEST(btree_recTest, test_median_2_gt) {
   const int *res = sp::rec::impl::median<int, max, cmp>(elements, &extra);
   ASSERT_TRUE(res);
   ASSERT_EQ(*res, 2);
+}
+
+TEST(btree_recTest, test_median_3_gt) {
+  using cmp = sp::greater;
+  constexpr std::size_t max = 3;
+  sp::UinStaticArray<int, max> elements;
+  sp::bin_insert<int, max, int, cmp>(elements, 0);
+  sp::bin_insert<int, max, int, cmp>(elements, 1);
+  sp::bin_insert<int, max, int, cmp>(elements, 2);
+  // dump(elements);
+
+  int extra = 3;
+  const int *res = sp::rec::impl::median<int, max, cmp>(elements, &extra);
+  ASSERT_TRUE(res);
+  ASSERT_EQ(*res, 1);
+  printf("med:%d\n", *res);
+}
+
+TEST(btree_recTest, test_fixup_2_gt) {
+  using cmp = sp::greater;
+  constexpr std::size_t keys = 2;
+
+  sp::rec::BTNode<int, keys, cmp> tree;
+  sp::bin_insert<int, keys, int, cmp>(tree.elements, 0);
+  sp::bin_insert<int, keys, int, cmp>(tree.elements, 1);
+  ASSERT_TRUE(is_full(tree.elements));
+  for (std::size_t i = 0; i < capacity(tree.children); ++i) {
+    ASSERT_TRUE(insert(tree.children, nullptr));
+  }
+  // dump(elements);
+
+  int bubble = 2;
+  int out = 999;
+  int *optr = &out;
+  sp::rec::BTNode<int, keys, cmp> *gt = nullptr;
+  auto res = sp::rec::impl::fixup(&tree, &bubble, gt, optr);
+  {
+    int *out_bubble = std::get<0>(res);
+    ASSERT_TRUE(out_bubble);
+
+    sp::rec::BTNode<int, keys, cmp> *right = std::get<1>(res);
+    ASSERT_TRUE(right);
+    ASSERT_EQ(std::size_t(1), length(right->elements));
+    ASSERT_EQ(2, right->elements[0]);
+    delete right;
+
+    ASSERT_EQ(1, *out_bubble);
+  }
+  ASSERT_EQ(std::size_t(1), length(tree.elements));
+  ASSERT_EQ(0, tree.elements[0]);
+}
+
+TEST(btree_recTest, test_fixup_3_gt) {
+  using cmp = sp::greater;
+  constexpr std::size_t keys = 3;
+
+  sp::rec::BTNode<int, keys, cmp> tree;
+  sp::bin_insert<int, keys, int, cmp>(tree.elements, 0);
+  sp::bin_insert<int, keys, int, cmp>(tree.elements, 1);
+  sp::bin_insert<int, keys, int, cmp>(tree.elements, 2);
+  ASSERT_TRUE(is_full(tree.elements));
+  for (std::size_t i = 0; i < capacity(tree.children); ++i) {
+    ASSERT_TRUE(insert(tree.children, nullptr));
+  }
+  // dump(elements);
+
+  int bubble = 3;
+  int out = 999;
+  int *optr = &out;
+  sp::rec::BTNode<int, keys, cmp> *gt = nullptr;
+  auto res = sp::rec::impl::fixup(&tree, &bubble, gt, optr);
+  {
+    int *out_bubble = std::get<0>(res);
+    ASSERT_TRUE(out_bubble);
+
+    sp::rec::BTNode<int, keys, cmp> *right = std::get<1>(res);
+    ASSERT_TRUE(right);
+    ASSERT_EQ(std::size_t(2), length(right->elements));
+    ASSERT_EQ(2, right->elements[0]);
+    ASSERT_EQ(3, right->elements[1]);
+    delete right;
+
+    ASSERT_EQ(1, *out_bubble);
+  }
+  ASSERT_EQ(std::size_t(1), length(tree.elements));
+  ASSERT_EQ(0, tree.elements[0]);
+}
+
+TEST(btree_recTest, test_fixup_4_gt) {
+  using cmp = sp::greater;
+  constexpr std::size_t keys = 4;
+
+  sp::rec::BTNode<int, keys, cmp> tree;
+  sp::bin_insert<int, keys, int, cmp>(tree.elements, 0);
+  sp::bin_insert<int, keys, int, cmp>(tree.elements, 1);
+  sp::bin_insert<int, keys, int, cmp>(tree.elements, 2);
+  sp::bin_insert<int, keys, int, cmp>(tree.elements, 3);
+  ASSERT_TRUE(is_full(tree.elements));
+  for (std::size_t i = 0; i < capacity(tree.children); ++i) {
+    ASSERT_TRUE(insert(tree.children, nullptr));
+  }
+  // dump(elements);
+
+  int bubble = 4;
+  int out = 999;
+  int *optr = &out;
+  sp::rec::BTNode<int, keys, cmp> *gt = nullptr;
+  auto res = sp::rec::impl::fixup(&tree, &bubble, gt, optr);
+  {
+    int *out_bubble = std::get<0>(res);
+    ASSERT_TRUE(out_bubble);
+
+    sp::rec::BTNode<int, keys, cmp> *right = std::get<1>(res);
+    ASSERT_TRUE(right);
+    ASSERT_EQ(std::size_t(2), length(right->elements));
+    ASSERT_EQ(3, right->elements[0]);
+    ASSERT_EQ(4, right->elements[1]);
+    delete right;
+
+    ASSERT_EQ(2, *out_bubble);
+  }
+  ASSERT_EQ(std::size_t(2), length(tree.elements));
+  ASSERT_EQ(0, tree.elements[0]);
+  ASSERT_EQ(1, tree.elements[1]);
 }
 
 TEST(btree_recTest, test_321) {
@@ -182,7 +305,7 @@ TEST(btree_recTest, test_order5) {
 
 template <std::size_t values>
 static void
-btree_rand(prng::xorshift32 &r, sp::Bitset &bset, std::size_t max) {
+btree_rand_insert(prng::xorshift32 &r, sp::Bitset &bset, std::size_t max) {
   sp::rec::BTree<std::size_t, values> tree;
   std::size_t i = 0;
   while (i++ < max) {
@@ -226,129 +349,128 @@ btree_rand(prng::xorshift32 &r, sp::Bitset &bset, std::size_t max) {
         ASSERT_TRUE(res);
         ASSERT_EQ(*res, idx);
       } else {
-        auto res = find(tree, idx);
         ASSERT_FALSE(res);
       }
     });
   }
 }
 
-TEST(btree_recTest, test_rand_order3) {
+TEST(btree_recTest, test_rand_insert_order3) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<2>(r, bset, max);
+  btree_rand_insert<2>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
 
-TEST(btree_recTest, test_rand_order4) {
+TEST(btree_recTest, test_rand_insert_order4) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<3>(r, bset, max);
+  btree_rand_insert<3>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
 
-TEST(btree_recTest, test_rand_order5) {
+TEST(btree_recTest, test_rand_insert_order5) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<4>(r, bset, max);
+  btree_rand_insert<4>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
 
-TEST(btree_recTest, test_rand_order6) {
+TEST(btree_recTest, test_rand_insert_order6) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<5>(r, bset, max);
+  btree_rand_insert<5>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
 
-TEST(btree_recTest, test_rand_order7) {
+TEST(btree_recTest, test_rand_insert_order7) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<6>(r, bset, max);
+  btree_rand_insert<6>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
 
-TEST(btree_recTest, test_rand_order8) {
+TEST(btree_recTest, test_rand_insert_order8) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<7>(r, bset, max);
+  btree_rand_insert<7>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
 
-TEST(btree_recTest, test_rand_order9) {
+TEST(btree_recTest, test_rand_insert_order9) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<8>(r, bset, max);
+  btree_rand_insert<8>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
 
-TEST(btree_recTest, test_rand_order10) {
+TEST(btree_recTest, test_rand_insert_order10) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<9>(r, bset, max);
+  btree_rand_insert<9>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
 
-TEST(btree_recTest, test_rand_order11) {
+TEST(btree_recTest, test_rand_insert_order11) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<10>(r, bset, max);
+  btree_rand_insert<10>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
 
-TEST(btree_recTest, test_rand_order12) {
+TEST(btree_recTest, test_rand_insert_order12) {
   prng::xorshift32 r(1);
   // while (true) {
   std::uint64_t raw[512] = {0};
   sp::Bitset bset(raw);
   constexpr std::size_t max(sizeof(raw) * 8);
   // std::size_t max = 14;
-  btree_rand<11>(r, bset, max);
+  btree_rand_insert<11>(r, bset, max);
   // printf("\n\n==============================%u\n", r.state);
   // }
 }
@@ -431,29 +553,174 @@ TEST(btree_recTest, remove_3_2_1) {
   }
 }
 
-TEST(btree_recTest, remove_10) {
-  constexpr std::size_t values = 2;
-  sp::rec::BTree<int, values> tree;
-  const int it = 9;
-  for (int i = 0; i < it; ++i) {
-    a_insert(tree, i);
-  }
-  btree::impl::btree::dump(tree.root);
+template <typename Tree>
+static void
+btree_seq_remove(int max) {
+  const int strt = 6;
+  for (int it = strt; it < max; ++it) {
+    // printf("=============[%d]\n", it);
+    Tree tree;
 
-  for (int i = 0; i < it; ++i) {
-    for (int a = 0; a < i; ++a) {
-      auto res = find(tree, a);
-      ASSERT_FALSE(res);
+    // 1. setup
+    {
+      for (int i = 0; i < it; ++i) {
+        a_insert(tree, i);
+      }
+    }
+    // btree::impl::btree::dump(tree.root);
+
+    // 2. remove
+    {
+      for (int i = 0; i < it; ++i) {
+        // 2.1 assert still deleted
+        for (int a = 0; a < i; ++a) {
+          auto res = find(tree, a);
+          ASSERT_FALSE(res);
+        }
+
+        // 2.2 not yet deleted
+        for (int a = i; a < it; ++a) {
+          int *res = find(tree, a);
+          ASSERT_TRUE(res);
+          ASSERT_EQ(*res, a);
+        }
+
+        // 2.3 remove
+        a_remove(tree, i);
+      }
     }
 
-    for (int a = i; a < it; ++a) {
-      int *res = find(tree, a);
-      ASSERT_TRUE(res);
-      ASSERT_EQ(*res, a);
-    }
-
-    a_remove(tree, i);
+    ASSERT_FALSE(tree.root);
   }
-
-  ASSERT_FALSE(tree.root);
 }
+
+TEST(btree_recTest, remove_order_3) {
+  constexpr std::size_t values = 2;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+}
+
+TEST(btree_recTest, remove_order_4) {
+  constexpr std::size_t values = 3;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+  printf("================\n");
+}
+
+TEST(btree_recTest, remove_order_5) {
+  constexpr std::size_t values = 4;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+  printf("================\n");
+}
+
+TEST(btree_recTest, remove_order_6) {
+  constexpr std::size_t values = 7;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+  printf("================\n");
+}
+
+TEST(btree_recTest, remove_order_7) {
+  constexpr std::size_t values = 8;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+  printf("================\n");
+}
+
+TEST(btree_recTest, remove_order_8) {
+  constexpr std::size_t values = 9;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+}
+
+TEST(btree_recTest, remove_order_9) {
+  constexpr std::size_t values = 10;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+}
+
+TEST(btree_recTest, remove_order_10) {
+  constexpr std::size_t values = 11;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+}
+
+TEST(btree_recTest, remove_order_11) {
+  constexpr std::size_t values = 12;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+}
+
+TEST(btree_recTest, remove_order_12) {
+  constexpr std::size_t values = 13;
+  const int max = 128;
+  btree_seq_remove<sp::rec::BTree<int, values>>(max);
+}
+
+template <typename Tree>
+static void
+btree_rand_remove(prng::xorshift32 &r) {
+  printf("========seed[%d]\n", r.state);
+  Tree tree;
+  constexpr std::size_t max = 10;
+  sp::StaticArray<int, max> in;
+  for (int i = 0; i < max; ++i) {
+    int *res = insert(in, i);
+    assertx(res);
+  }
+
+  shuffle(r, in);
+  for (std::size_t i = 0; i < length(in); ++i) {
+    const int current = in[i];
+
+    ASSERT_FALSE(find(tree, current));
+    {
+      int *res = insert(tree, current);
+      assertx(res);
+    }
+    {
+      int *res = find(tree, current);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, current);
+    }
+  }
+
+  shuffle(r, in);
+  for (std::size_t i = 0; i < length(in); ++i) {
+    const int current = in[i];
+    int *res = find(tree, current);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(*res, current);
+  }
+
+  shuffle(r, in);
+  for (std::size_t i = 0; i < length(in); ++i) {
+    btree::impl::btree::dump(tree.root);
+    const int current = in[i];
+    printf("####remove(tree, %d)\n", current);
+    {
+      int *res = find(tree, current);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, current);
+    }
+    ASSERT_TRUE(remove(tree, current));
+    ASSERT_FALSE(find(tree, current));
+  }
+
+  ASSERT_TRUE(is_empty(tree));
+}
+
+TEST(btree_recTest, rand_remove_order_3) {
+  constexpr std::size_t values = 2;
+  prng::xorshift32 r(-967768435);
+  while (true) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+// TEST(btree_recTest, avl_rec_remove_10) {
+//   constexpr std::size_t values = 2;
+//   const int max = 128;
+//   btree_seq_remove<avl::rec::Tree<int>>(max);
+// }

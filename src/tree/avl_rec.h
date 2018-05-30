@@ -32,6 +32,8 @@ struct Node {
 //=====================================
 template <typename T>
 struct Tree {
+  using value_type = T;
+
   Node<T> *root;
 
   Tree() noexcept;

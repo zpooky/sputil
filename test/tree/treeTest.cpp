@@ -4,6 +4,8 @@
 #include <tree/avl_rec.h>
 #include <tree/bst.h>
 #include <tree/bst_extra.h>
+#include <tree/btree_extra.h>
+#include <tree/btree_rec.h>
 #include <tree/red-black.h>
 #include <util/Bitset.h>
 
@@ -220,6 +222,28 @@ a_insert(avl::Tree<T, C> &tree, A in) {
   ASSERT_TRUE(verify(tree));
 }
 
+template <typename T, typename C, std::size_t keys>
+bool
+verify(const sp::rec::BTree<T, keys, C> &tree) {
+  // dummy
+  return true;
+}
+
+template <typename T, typename C, std::size_t keys>
+dump(const sp::rec::BTree<T, keys, C> &tree) {
+  btree::impl::btree::dump(tree.root);
+}
+
+template <typename T, typename C, std::size_t keys, typename A>
+static void
+a_insert(sp::rec::BTree<T, keys, C> &tree, A in) {
+  T *p = insert(tree, in);
+  ASSERT_TRUE(p);
+  ASSERT_EQ(*p, in);
+
+  // ASSERT_TRUE(verify(tree));
+}
+
 template <class Tree_t>
 static void
 random_insert_random_delete() {
@@ -248,6 +272,9 @@ random_insert_random_delete() {
         ASSERT_FALSE(set(bset, std::size_t(in), true));
         {
           auto res = find(tree, in);
+          if(!res){
+            dump(tree);
+          }
           ASSERT_TRUE(res);
           ASSERT_EQ(*res, in);
         }
@@ -341,4 +368,8 @@ TEST(treeTest, test_rand_ins_rand_remove_avl) {
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_avl) {
   random_insert_random_delete<avl::rec::Tree<int>>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order4) {
+  random_insert_random_delete<sp::rec::BTree<int, 3>>();
 }
