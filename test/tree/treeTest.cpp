@@ -230,6 +230,7 @@ verify(const sp::rec::BTree<T, keys, C> &tree) {
 }
 
 template <typename T, typename C, std::size_t keys>
+void
 dump(const sp::rec::BTree<T, keys, C> &tree) {
   btree::impl::btree::dump(tree.root);
 }
@@ -241,7 +242,7 @@ a_insert(sp::rec::BTree<T, keys, C> &tree, A in) {
   ASSERT_TRUE(p);
   ASSERT_EQ(*p, in);
 
-  // ASSERT_TRUE(verify(tree));
+  ASSERT_TRUE(verify(tree));
 }
 
 template <class Tree_t>
@@ -272,7 +273,7 @@ random_insert_random_delete() {
         ASSERT_FALSE(set(bset, std::size_t(in), true));
         {
           auto res = find(tree, in);
-          if(!res){
+          if (!res) {
             dump(tree);
           }
           ASSERT_TRUE(res);

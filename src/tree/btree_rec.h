@@ -841,7 +841,7 @@ template <typename T, std::size_t keys, typename Cmp, typename Dest>
 static bool
 take_max(BTNode<T, keys, Cmp> &self, Dest &dest) {
   if (is_leaf(self)) {
-    T *subject = last(self.elements);
+    T *const subject = last(self.elements);
     assertx(subject);
     return take_leaf(self, subject, dest);
   }
@@ -858,6 +858,7 @@ take_max(BTNode<T, keys, Cmp> &self, Dest &dest) {
 
     return false;
   }
+
   assertx(false);
   return false;
 }
@@ -866,10 +867,11 @@ template <typename T, std::size_t keys, typename Cmp, typename Dest>
 static bool
 take_min(BTNode<T, keys, Cmp> &self, Dest &dest) {
   if (is_leaf(self)) {
-    T *subject = &self.elements[0];
+    T *const subject = &self.elements[0];
     assertx(subject);
     return take_leaf(self, subject, dest);
   }
+
   const std::size_t first_idx = 0;
   BTNode<T, keys, Cmp> *const smallest = self.children[first_idx];
   if (smallest) {
@@ -882,14 +884,15 @@ take_min(BTNode<T, keys, Cmp> &self, Dest &dest) {
 
     return false;
   }
+
   assertx(false);
-  // TODO this should recursively got down $gt to find the absolute min
   return false;
 }
 
 template <typename T, std::size_t keys, typename Cmp, typename Dest>
 static bool
 take_int_node(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
+  assertx(subject);
   auto &elements = self.elements;
   auto &children = self.children;
 
@@ -922,16 +925,8 @@ take_int_node(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
     return false;
   }
 
-  assertx(false); // TODO should not get here?
-  // {
-  //   bool res = stable_remove(elements, index);
-  //   assertx(res);
-  // }
-  // {
-  //   bool res = stable_remove(children, index + 1);
-  //   assertx(res);
-  // }
-
+  // should not get here
+  assertx(false);
   return false;
 }
 
@@ -1016,11 +1011,11 @@ remove(BTree<T, keys, Comparator> &self, const Key &needle) noexcept {
 
       assertx(length(children) == 1);
       self.root = children[0];
-      clear(children);
-
-      clear(old->elements);
-      clear(old->children);
-      delete old;
+      {
+        clear(children);
+        clear(old->elements);
+        delete old;
+      }
     }
   }
 
