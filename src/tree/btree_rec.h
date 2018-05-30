@@ -758,16 +758,43 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, ChildDir dir) noexcept {
 
   BTNode<T, keys, Cmp> *const left_child = children[left_idx];
   BTNode<T, keys, Cmp> *const right_child = children[right_idx];
-  {
+
+  if (!left_child && !right_child) {
+    return false;
+  }
+
+  if (right_child && left_child) {
     // TODO define behaviour
     if (!is_deficient(*left_child) && !is_deficient(*right_child)) {
       return false;
     }
 
-    if (remaining_write(left_child->elements) <
-        (length(right_child->elements) + 1)) {
+    const std::size_t req_len = (length(right_child->elements) + 1);
+    if (remaining_write(left_child->elements) < req_len) {
+      // if (is_empty(left_child->elements)) {
+      //   assertx(is_leaf(*left_child));
+      //   delete left_child;
+      //   children[left_idx] = nullptr;
+      // }
+      // if (is_empty(right_child->elements)) {
+      //   assertx(is_leaf(*right_child));
+      //   delete right_child;
+      //   children[right_idx] = nullptr;
+      // }
       return false;
     }
+  } else {
+    // if (left_child && is_empty(left_child->elements)) {
+    //   assertx(is_leaf(*left_child));
+    //   delete left_child;
+    //   children[left_idx] = nullptr;
+    // }
+    // if (right_child && is_empty(right_child->elements)) {
+    //   assertx(is_leaf(*right_child));
+    //   delete right_child;
+    //   children[right_idx] = nullptr;
+    // }
+    return false;
   }
 
 #ifdef BTREE_REC_DEBUG
@@ -834,7 +861,13 @@ take_leaf(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
     assertx(res);
   }
 
-  return is_deficient(self);
+  const bool result = is_deficient(self);
+  if (result) {
+    printf("is_deficient: ");
+    du(elements);
+    printf("\n");
+  }
+  return result;
 }
 
 template <typename T, std::size_t keys, typename Cmp, typename Dest>
@@ -903,7 +936,9 @@ take_int_node(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
 
   BTNode<T, keys, Cmp> *const lt = children[index];
   if (lt) {
-    assertx(!is_empty(*lt));
+    assertxs(!is_empty(lt->elements), *subject);
+    assertxs(!is_empty(lt->children), *subject);
+    assertxs(!is_empty(*lt), *subject);
 
     const bool balance = take_max(*lt, *subject);
     if (balance) {
@@ -915,7 +950,7 @@ take_int_node(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
 
   BTNode<T, keys, Cmp> *const gt = children[index + 1];
   if (gt) {
-    assertx(!is_empty(*gt));
+    assertxs(!is_empty(*gt), *subject);
 
     const bool balance = take_min(*gt, *subject);
     if (balance) {

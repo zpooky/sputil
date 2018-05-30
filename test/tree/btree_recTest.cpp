@@ -713,7 +713,7 @@ btree_rand_remove(prng::xorshift32 &r) {
 
 TEST(btree_recTest, rand_remove_order_3) {
   constexpr std::size_t values = 2;
-  prng::xorshift32 r(-967768435);
+  prng::xorshift32 r(1);
   while (true) {
     btree_rand_remove<sp::rec::BTree<int, values>>(r);
   }
