@@ -13,6 +13,80 @@
 #include <gtest/gtest.h>
 #include <random>
 
+template <typename T, typename A>
+static void
+a_insert(avl::rec::Tree<T> &tree, A in) {
+  T *p = insert(tree, in);
+  ASSERT_TRUE(p);
+  ASSERT_EQ(*p, in);
+
+  const bool res = verify(tree);
+  if (!res) {
+    printf("failed: \n");
+    dump(tree);
+  }
+  ASSERT_TRUE(res);
+}
+
+template <typename T, typename A, typename C>
+static void
+a_insert(binary::Tree<T, C> &tree, A in) {
+  std::tuple<T *, bool> tres = insert(tree, in);
+  ASSERT_TRUE(std::get<1>(tres));
+  int *p = std::get<0>(tres);
+  ASSERT_TRUE(p);
+  ASSERT_EQ(*p, in);
+  ASSERT_TRUE(verify(tree));
+}
+
+template <typename T, typename A, typename C>
+static void
+a_insert(avl::Tree<T, C> &tree, A in) {
+  std::tuple<T *, bool> tres = insert(tree, in);
+  ASSERT_TRUE(std::get<1>(tres));
+  int *p = std::get<0>(tres);
+  ASSERT_TRUE(p);
+  ASSERT_EQ(*p, in);
+
+  ASSERT_TRUE(verify(tree));
+}
+
+template <typename T, typename A, typename C>
+static void
+a_insert(rb::Tree<T, C> &tree, A in) {
+  std::tuple<T *, bool> tres = insert(tree, in);
+  ASSERT_TRUE(std::get<1>(tres));
+  int *p = std::get<0>(tres);
+  ASSERT_TRUE(p);
+  ASSERT_EQ(*p, in);
+
+  ASSERT_TRUE(verify(tree));
+}
+
+template <typename T, typename C, std::size_t keys>
+bool
+verify(const sp::rec::BTree<T, keys, C> &tree) {
+  // dummy
+  return true;
+}
+
+template <typename T, typename C, std::size_t keys>
+void
+dump(const sp::rec::BTree<T, keys, C> &tree) {
+  btree::impl::btree::dump(tree.root);
+}
+
+template <typename T, typename C, std::size_t keys, typename A>
+static void
+a_insert(sp::rec::BTree<T, keys, C> &tree, A in) {
+  // printf("insert(tree, %d)\n", in);
+  T *p = insert(tree, in);
+  ASSERT_TRUE(p);
+  ASSERT_EQ(*p, in);
+
+  ASSERT_TRUE(verify(tree));
+}
+
 template <class Tree_t, typename T, std::size_t in_size>
 static void
 find_stuff(Tree_t &tree, std::size_t deleted, T (&in)[in_size]) {
@@ -23,7 +97,8 @@ find_stuff(Tree_t &tree, std::size_t deleted, T (&in)[in_size]) {
     } else {
       if (!f) {
         printf("%p = find(tree, %d)\n", f, in[k]);
-        dump(tree, "find|");
+        printf("find|\n");
+        dump(tree);
       }
       ASSERT_TRUE(f);
       ASSERT_TRUE(*f == in[k]);
@@ -58,20 +133,15 @@ random_insert_delete(std::size_t goal) {
         ASSERT_TRUE(*f == in[k]);
       }
       // printf(".%d <- %d\n", i, in[i]);
-      auto res = insert(tree, in[i]);
-      int *const iptr = std::get<0>(res);
-      ASSERT_TRUE(std::get<1>(res) == true);
-      ASSERT_TRUE(iptr);
-      ASSERT_TRUE(*iptr == in[i]);
+      a_insert(tree, in[i]);
       {
         int *const fptr = find(tree, in[i]);
         ASSERT_TRUE(fptr);
-        ASSERT_TRUE(fptr == iptr);
-        ASSERT_TRUE(*fptr == *iptr);
+        ASSERT_TRUE(*fptr == in[i]);
       }
 
       if (!verify(tree)) {
-        dump(tree, "ins|");
+        dump(tree);
         ASSERT_TRUE(false);
       }
     }
@@ -89,7 +159,7 @@ random_insert_delete(std::size_t goal) {
       ASSERT_TRUE(rb);
       if (!verify(tree)) {
         printf("\n");
-        dump(tree, "rem|");
+        dump(tree);
         ASSERT_TRUE(false);
       } else {
         // dump(tree, "rem|");
@@ -131,22 +201,17 @@ random_insert(std::size_t goal) {
         ASSERT_TRUE(*f == in[k]);
       }
       // printf(".%d <- ", i);
-      auto res = insert(tree, in[i]);
-      int *const iptr = std::get<0>(res);
-      ASSERT_TRUE(std::get<1>(res) == true);
-      ASSERT_TRUE(iptr);
-      ASSERT_TRUE(*iptr == in[i]);
+      a_insert(tree, in[i]);
 
       const int *const fptr = find(tree, in[i]);
       if (!fptr) {
         dump(tree);
       }
       ASSERT_TRUE(fptr);
-      ASSERT_TRUE(fptr == iptr);
-      ASSERT_TRUE(*fptr == *iptr);
+      ASSERT_TRUE(*fptr == in[i]);
 
       if (!verify(tree)) {
-        dump(tree, "after|");
+        dump(tree);
         ASSERT_TRUE(false);
       }
     }
@@ -157,7 +222,7 @@ random_insert(std::size_t goal) {
 }
 
 TEST(treeTest, test_insert_delete_bst) {
-  random_insert_delete<binary::Tree<int>>(100);
+  random_insert_delete<binary::Tree<int>>(10);
 }
 
 TEST(treeTest, test_insert_bst) {
@@ -169,7 +234,15 @@ TEST(treeTest, test_insert_avl) {
 }
 
 TEST(treeTest, test_inser_remove_avl) {
-  random_insert_delete<avl::Tree<int>>(100);
+  random_insert_delete<avl::Tree<int>>(10);
+}
+
+TEST(treeTest, test_insert_avl_rec) {
+  random_insert<avl::rec::Tree<int>>(10);
+}
+
+TEST(treeTest, test_inser_remove_avl_rec) {
+  random_insert_delete<avl::rec::Tree<int>>(10);
 }
 
 TEST(treeTest, test_insert_remove_red_black) {
@@ -180,76 +253,22 @@ TEST(treeTest, test_insert_red_black) {
   random_insert<rb::Tree<int>>(10);
 }
 
+TEST(treeTest, test_insert_btree_rec_order3) {
+  random_insert<sp::rec::BTree<int, 2>>(10);
+}
+
+TEST(treeTest, test_inser_remove_btree_rec_order3) {
+  random_insert_delete<sp::rec::BTree<int, 2>>(10);
+}
+
 // TEST(treeTest, test_insert_StaticTree) {
 //   random_insert<bst::StaticTree<int>>(10);
 // }
-
-template <typename T, typename A>
-static void
-a_insert(avl::rec::Tree<T> &tree, A in) {
-  T *p = insert(tree, in);
-  ASSERT_TRUE(p);
-  ASSERT_EQ(*p, in);
-
-  const bool res = verify(tree);
-  if (!res) {
-    printf("failed: \n");
-    dump(tree);
-  }
-  ASSERT_TRUE(res);
-}
-
-template <typename T, typename A, typename C>
-static void
-a_insert(binary::Tree<T, C> &tree, A in) {
-  std::tuple<T *, bool> tres = insert(tree, in);
-  ASSERT_TRUE(std::get<1>(tres));
-  int *p = std::get<0>(tres);
-  ASSERT_TRUE(p);
-  ASSERT_EQ(*p, in);
-  ASSERT_TRUE(verify(tree));
-}
-
-template <typename T, typename A, typename C>
-static void
-a_insert(avl::Tree<T, C> &tree, A in) {
-  std::tuple<T *, bool> tres = insert(tree, in);
-  ASSERT_TRUE(std::get<1>(tres));
-  int *p = std::get<0>(tres);
-  ASSERT_TRUE(p);
-  ASSERT_EQ(*p, in);
-
-  ASSERT_TRUE(verify(tree));
-}
-
-template <typename T, typename C, std::size_t keys>
-bool
-verify(const sp::rec::BTree<T, keys, C> &tree) {
-  // dummy
-  return true;
-}
-
-template <typename T, typename C, std::size_t keys>
-void
-dump(const sp::rec::BTree<T, keys, C> &tree) {
-  btree::impl::btree::dump(tree.root);
-}
-
-template <typename T, typename C, std::size_t keys, typename A>
-static void
-a_insert(sp::rec::BTree<T, keys, C> &tree, A in) {
-  T *p = insert(tree, in);
-  ASSERT_TRUE(p);
-  ASSERT_EQ(*p, in);
-
-  ASSERT_TRUE(verify(tree));
-}
-
-template <class Tree_t>
+template <class Tree_t, std::size_t cap = 256>
 static void
 random_insert_random_delete() {
   prng::xorshift32 r(5);
-  std::uint64_t raw[256] = {0};
+  std::uint64_t raw[cap] = {0};
   sp::Bitset bset(raw);
   constexpr std::uint32_t max(sizeof(raw) * 8);
   std::size_t i = 0;
@@ -284,7 +303,7 @@ random_insert_random_delete() {
 
     {
       const auto del = uniform_dist(r, 0, 10);
-      for (std::size_t i = 0; i < del; ++i) {
+      for (std::size_t x = 0; x < del; ++x) {
         const auto in = uniform_dist(r, 0, max);
         if (test(bset, std::size_t(in))) {
           {
@@ -322,7 +341,6 @@ random_insert_random_delete() {
       }
     }
   }
-
   for_each(bset, [&tree, &balance](auto idx, bool set) {
     // printf("idx[%zu]\n", idx);
     if (set) {
@@ -371,6 +389,42 @@ TEST(treeTest, test_rand_ins_rand_remove_rec_avl) {
   random_insert_random_delete<avl::rec::Tree<int>>();
 }
 
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order3) {
+  random_insert_random_delete<sp::rec::BTree<int, 2>, 256>();
+}
+
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order4) {
-  random_insert_random_delete<sp::rec::BTree<int, 3>>();
+  random_insert_random_delete<sp::rec::BTree<int, 3>, 256>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order5) {
+  random_insert_random_delete<sp::rec::BTree<int, 4>, 256>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order6) {
+  random_insert_random_delete<sp::rec::BTree<int, 5>, 256>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order7) {
+  random_insert_random_delete<sp::rec::BTree<int, 6>, 256>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order8) {
+  random_insert_random_delete<sp::rec::BTree<int, 7>, 256>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order9) {
+  random_insert_random_delete<sp::rec::BTree<int, 8>, 256>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order10) {
+  random_insert_random_delete<sp::rec::BTree<int, 9>, 256>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order11) {
+  random_insert_random_delete<sp::rec::BTree<int, 10>, 256>();
+}
+
+TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order12) {
+  random_insert_random_delete<sp::rec::BTree<int, 11>, 256>();
 }

@@ -250,7 +250,7 @@ TEST(btree_recTest, test_321) {
 
 TEST(btree_recTest, test_order3) {
   std::size_t max = 99;
-  sp::rec::BTree<int, 2> tree;
+  sp::rec::BTree<std::size_t, 2> tree;
 
   constexpr std::size_t strt = 1;
   for (std::size_t i = strt; i < max; ++i) {
@@ -661,9 +661,9 @@ TEST(btree_recTest, remove_order_12) {
 template <typename Tree>
 static void
 btree_rand_remove(prng::xorshift32 &r) {
-  printf("========seed[%d]\n", r.state);
+  // printf("========seed[%d]\n", r.state);
   Tree tree;
-  constexpr std::size_t max = 10;
+  constexpr std::size_t max = 99;
   sp::StaticArray<int, max> in;
   for (int i = 0; i < max; ++i) {
     int *res = insert(in, i);
@@ -676,6 +676,7 @@ btree_rand_remove(prng::xorshift32 &r) {
 
     ASSERT_FALSE(find(tree, current));
     {
+      // printf("insert(tree, %d)\n", current);
       int *res = insert(tree, current);
       assertx(res);
     }
@@ -688,22 +689,20 @@ btree_rand_remove(prng::xorshift32 &r) {
 
   shuffle(r, in);
   for (std::size_t i = 0; i < length(in); ++i) {
-    const int current = in[i];
-    int *res = find(tree, current);
-    ASSERT_TRUE(res);
-    ASSERT_EQ(*res, current);
-  }
+    for (std::size_t a = 0; a < i; ++a) {
+      const int current = in[a];
+      ASSERT_FALSE(find(tree, current));
+    }
 
-  shuffle(r, in);
-  for (std::size_t i = 0; i < length(in); ++i) {
-    btree::impl::btree::dump(tree.root);
-    const int current = in[i];
-    printf("####remove(tree, %d)\n", current);
-    {
+    for (std::size_t a = i; a < length(in); ++a) {
+      const int current = in[a];
       int *res = find(tree, current);
       ASSERT_TRUE(res);
       ASSERT_EQ(*res, current);
     }
+    // btree::impl::btree::dump(tree.root);
+    const int current = in[i];
+    // printf("####remove(tree, %d)\n", current);
     ASSERT_TRUE(remove(tree, current));
     ASSERT_FALSE(find(tree, current));
   }
@@ -714,7 +713,79 @@ btree_rand_remove(prng::xorshift32 &r) {
 TEST(btree_recTest, rand_remove_order_3) {
   constexpr std::size_t values = 2;
   prng::xorshift32 r(1);
-  while (true) {
+  for (std::size_t i = 0; i < 70; ++i) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+TEST(btree_recTest, rand_remove_order_4) {
+  constexpr std::size_t values = 3;
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 80; ++i) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+TEST(btree_recTest, rand_remove_order_5) {
+  constexpr std::size_t values = 4;
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 80; ++i) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+TEST(btree_recTest, rand_remove_order_6) {
+  constexpr std::size_t values = 5;
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 90; ++i) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+TEST(btree_recTest, rand_remove_order_7) {
+  constexpr std::size_t values = 6;
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 90; ++i) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+TEST(btree_recTest, rand_remove_order_8) {
+  constexpr std::size_t values = 7;
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 90; ++i) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+TEST(btree_recTest, rand_remove_order_9) {
+  constexpr std::size_t values = 8;
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 90; ++i) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+TEST(btree_recTest, rand_remove_order_10) {
+  constexpr std::size_t values = 9;
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 100; ++i) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+TEST(btree_recTest, rand_remove_order_11) {
+  constexpr std::size_t values = 10;
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 100; ++i) {
+    btree_rand_remove<sp::rec::BTree<int, values>>(r);
+  }
+}
+
+TEST(btree_recTest, rand_remove_order_12) {
+  constexpr std::size_t values = 11;
+  prng::xorshift32 r(1);
+  for (std::size_t i = 0; i < 100; ++i) {
     btree_rand_remove<sp::rec::BTree<int, values>>(r);
   }
 }

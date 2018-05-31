@@ -7,7 +7,7 @@
 #include <tuple>
 #include <util/comparator.h>
 
-#define BTREE_REC_DEBUG
+// #define BTREE_REC_DEBUG
 
 /*
  * # Knuth's definition
@@ -178,9 +178,46 @@ bin_insert(BTNode<T, keys, Cmp> &dest, Key &&value,
   assertxs(index != capacity(elements), index, length(elements),
            capacity(elements));
 
-  BTNode<T, keys, Cmp> **const gt = insert_at(children, index + 1, greater);
-  assertx(gt);
-  assertx(*gt == greater);
+  {
+    BTNode<T, keys, Cmp> **const gt = insert_at(children, index + 1, greater);
+    assertx(gt);
+    assertx(*gt == greater);
+  }
+
+  return result;
+}
+
+template <typename T, std::size_t keys, typename Cmp, typename Key>
+static T *
+bin_insert(BTNode<T, keys, Cmp> &dest, BTNode<T, keys, Cmp> *less,
+           Key &&value) noexcept {
+  auto &children = dest.children;
+  auto &elements = dest.elements;
+
+  Cmp cmp;
+  T *const result = bin_insert(elements, std::forward<Key>(value), cmp);
+  assertxs(result, length(elements), capacity(elements), length(children),
+           capacity(children));
+
+  const std::size_t index = index_of(elements, result);
+  assertxs(index != capacity(elements), index, length(elements),
+           capacity(elements));
+
+  {
+    BTNode<T, keys, Cmp> **const l = insert_at(children, index, less);
+    assertx(l);
+    assertx(*l == less);
+  }
+
+  if (length(children) == 1) {
+    assertx(length(elements) == 1);
+
+    BTNode<T, keys, Cmp> *const greater = nullptr;
+    auto res = insert(children, greater);
+    assertx(res);
+    assertx(*res == greater);
+  }
+
   return result;
 }
 
@@ -620,25 +657,36 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, ChildDir dir) noexcept {
   const std::size_t piv_idx = index_of(elements, pivot);
   assertxs(piv_idx != capacity(elements), piv_idx, length(elements));
 
+  const std::size_t left_idx = piv_idx;
+  const std::size_t right_idx = piv_idx + 1;
+
   {
     if (dir == ChildDir::LEFT) {
       const std::size_t subject_idx = piv_idx;
       BTNode<T, keys, Cmp> *const subject = children[subject_idx];
       assertx(subject);
 
-      /* before:
-       *        [xxxx,pivot,yyyy]
-       *       /     |     |    \
-       *      ?     left  right  ?
-       *             |     |
-       *  [aa,nil,nil]     [bb, cc, dd]
-       *  /  |            /   |    \   \
-       * a0  a1         b0   b1    c1  d1
+      /* # Rotation
+       * before:
+       *          [xxxx,pivot,yyyy]
+       *         /     |     |     \
+       *        ?     left  right   ?
+       *               |     |
+       *  [aa, nil, nil]     [bb, cc, dd]
+       *  |   \             /   |    \   \
+       * a0   a1          b0   b1    c1  d1
        *
        * after:
-       * ...
+       *          [xxxx, bb ,yyyy]
+       *         /     |    |     \
+       *        ?     left right   ?
+       *               |    |
+       *  [aa,pivot,nil]    [cc, dd, nil]
+       *  |  |     |       /   |    \
+       * a0  a1    b0      b1  c1    d1
        *
-       * # left of pivot is deficient
+       *
+       * left of pivot is deficient:
        * 1. Copy the separator from the parent to the end of the deficient node
        *    (the separator moves down; the deficient node now has the minimum
        *    number of elements)
@@ -648,32 +696,31 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, ChildDir dir) noexcept {
        * 3. The tree is now balanced
        */
 
-      const std::size_t right_idx = piv_idx + 1;
-      BTNode<T, keys, Cmp> *const right_child = children[right_idx];
-      if (right_child) {
-        if (has_more_than_min(*right_child)) {
+      BTNode<T, keys, Cmp> *const right_sibling = children[right_idx];
+      if (right_sibling) {
+        if (has_more_than_min(*right_sibling)) {
 #ifdef BTREE_REC_DEBUG
           {
             printf("balance-left[pivot: %d]", *pivot);
             printf("rigt:");
-            du(right_child->elements);
+            du(right_sibling->elements);
             printf("\n");
           }
 #endif
 
           // 1.
           {
-            BTNode<T, keys, Cmp> *right_smallest = right_child->children[0];
+            BTNode<T, keys, Cmp> *right_smallest = right_sibling->children[0];
             T *res = bin_insert(*subject, std::move(*pivot), right_smallest);
             assertx(res);
           }
 
           // 2.
           {
-            bool tres = stable_take(right_child->elements, 0, *pivot);
+            bool tres = stable_take(right_sibling->elements, 0, *pivot);
             assertx(tres);
 
-            bool res = stable_remove(right_child->children, 0);
+            bool res = stable_remove(right_sibling->children, 0);
             assertx(res);
           }
 
@@ -686,7 +733,27 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, ChildDir dir) noexcept {
       const std::size_t subject_idx = piv_idx + 1;
       BTNode<T, keys, Cmp> *const subject = children[subject_idx];
       assertx(subject);
-      /* # right of pivot is deficient
+      /* # Rotation:
+       * before:
+       *          [xxxx,pivot,yyyy]
+       *         /     |     |     \
+       *        ?     left  right   ?
+       *               |     |
+       *   [aa ,bb , cc]     [dd, nil, nil]
+       *  /   /    |   |     |   \
+       * a0  a1    b1  c1    d0   d1
+       *
+       * after:
+       *          [xxxx, cc ,yyyy]
+       *         /     |    |     \
+       *        ?     left right   ?
+       *               |    |
+       *   [aa ,bb ,nil]    [pivot, dd, nil]
+       *  /   /    |        |     |    \
+       * a0  a1    b1       c1    d0    d1
+       *
+       * right of pivot is deficient
+       *
        * 1. Copy the separator from the parent to the start of the deficient
        *    node (the separator moves down; deficient node now has the minimum
        *    number of elements)
@@ -696,36 +763,35 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, ChildDir dir) noexcept {
        * 3. The tree is now balanced
        */
 
-      const std::size_t left_idx = piv_idx;
-      BTNode<T, keys, Cmp> *const left_child = children[left_idx];
-      if (left_child) {
-        if (has_more_than_min(*left_child)) {
+      BTNode<T, keys, Cmp> *const left_sibling = children[left_idx];
+      if (left_sibling) {
+        if (has_more_than_min(*left_sibling)) {
 #ifdef BTREE_REC_DEBUG
           {
             printf("balance-right[pivot: %d]", *pivot);
             printf("left:");
-            du(left_child->elements);
+            du(left_sibling->elements);
             printf("\n");
           }
 #endif
 
           // 1.
           {
-            BTNode<T, keys, Cmp> **left_greatest = last(left_child->children);
+            BTNode<T, keys, Cmp> **left_greatest = last(left_sibling->children);
             assertx(left_greatest);
-            T *res = bin_insert(*subject, std::move(*pivot), *left_greatest);
+            T *res = bin_insert(*subject, *left_greatest, std::move(*pivot));
             assertx(res);
           }
 
           // 2.
           {
             {
-              std::size_t last_idx = length(left_child->elements) - 1;
-              bool res = stable_take(left_child->elements, last_idx, *pivot);
+              std::size_t last_idx = length(left_sibling->elements) - 1;
+              bool res = stable_take(left_sibling->elements, last_idx, *pivot);
               assertx(res);
             }
-            std::size_t last_idx = length(left_child->children) - 1;
-            bool res = stable_remove(left_child->children, last_idx);
+            std::size_t last_idx = length(left_sibling->children) - 1;
+            bool res = stable_remove(left_sibling->children, last_idx);
             assertx(res);
           }
 
@@ -736,7 +802,26 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, ChildDir dir) noexcept {
     }
   }
 
-  /* Otherwise, if both immediate siblings have only the minimum number of
+  /* # Merge
+   * before:
+   *        [xx  ,pivot,  yy]
+   *       /     |     |     \
+   *      x0    left  right   y0
+   *             |     |
+   * [aa ,nil,nil]     [dd, nil, nil]
+   * |    \            |   \
+   * a0    a1          d0   d1
+   *
+   * after:
+   *   [xx  , yy]
+   *  /     |    \
+   * x0     |     y0
+   *        |
+   *        [aa,pivot,dd]
+   *       /   |     |   \
+   *      a0   a1    d0   d1
+   *
+   * Otherwise, if both immediate siblings have only the minimum number of
    * elements, then merge with a sibling sandwiching their separator taken
    * off from their parent
 
@@ -753,53 +838,52 @@ rebalance(BTNode<T, keys, Cmp> &parent, T *pivot, ChildDir dir) noexcept {
    *      elements, then rebalance the parent
    */
 
-  const std::size_t left_idx = piv_idx;
-  const std::size_t right_idx = piv_idx + 1;
-
   BTNode<T, keys, Cmp> *const left_child = children[left_idx];
   BTNode<T, keys, Cmp> *const right_child = children[right_idx];
-
-  if (!left_child && !right_child) {
-    return false;
-  }
-
-  if (right_child && left_child) {
-    // TODO define behaviour
-    if (!is_deficient(*left_child) && !is_deficient(*right_child)) {
+  {
+    if (!left_child && !right_child) {
+      assertx(false);
       return false;
     }
 
-    const std::size_t req_len = (length(right_child->elements) + 1);
-    if (remaining_write(left_child->elements) < req_len) {
-      // if (is_empty(left_child->elements)) {
-      //   assertx(is_leaf(*left_child));
-      //   delete left_child;
-      //   children[left_idx] = nullptr;
-      // }
-      // if (is_empty(right_child->elements)) {
-      //   assertx(is_leaf(*right_child));
-      //   delete right_child;
-      //   children[right_idx] = nullptr;
-      // }
+    bool cont = false;
+    if (right_child && left_child) {
+      // TODO define behaviour
+      if (!is_deficient(*left_child) && !is_deficient(*right_child)) {
+        return false;
+      }
+
+      const std::size_t req_len = (length(right_child->elements) + 1);
+      if (remaining_write(left_child->elements) >= req_len) {
+        cont = true;
+      }
+    }
+
+    if (!cont) {
+      if (left_child && is_empty(left_child->elements)) {
+        /*delete left child node if empy*/
+        assertx(is_leaf(*left_child));
+        { /**/
+          delete left_child;
+        }
+        children[left_idx] = nullptr;
+      }
+
+      /*delete right child node if empy*/
+      if (right_child && is_empty(right_child->elements)) {
+        assertx(is_leaf(*right_child));
+        { /**/
+          delete right_child;
+        }
+        children[right_idx] = nullptr;
+      }
       return false;
     }
-  } else {
-    // if (left_child && is_empty(left_child->elements)) {
-    //   assertx(is_leaf(*left_child));
-    //   delete left_child;
-    //   children[left_idx] = nullptr;
-    // }
-    // if (right_child && is_empty(right_child->elements)) {
-    //   assertx(is_leaf(*right_child));
-    //   delete right_child;
-    //   children[right_idx] = nullptr;
-    // }
-    return false;
   }
 
 #ifdef BTREE_REC_DEBUG
   {
-    printf("otherwise[pivot: %d]", *pivot);
+    printf("reb-otherwise[pivot: %d]", *pivot);
     printf("left:");
     du(left_child->elements);
     printf("right:");
@@ -861,13 +945,7 @@ take_leaf(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
     assertx(res);
   }
 
-  const bool result = is_deficient(self);
-  if (result) {
-    printf("is_deficient: ");
-    du(elements);
-    printf("\n");
-  }
-  return result;
+  return is_deficient(self);
 }
 
 template <typename T, std::size_t keys, typename Cmp, typename Dest>
@@ -942,7 +1020,7 @@ take_int_node(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
 
     const bool balance = take_max(*lt, *subject);
     if (balance) {
-      return rebalance(self, subject, ChildDir::RIGHT);
+      return rebalance(self, subject, ChildDir::LEFT);
     }
 
     return false;
@@ -1004,7 +1082,7 @@ take(BTNode<T, keys, C> *const tree, const Key &needle, Dest &dest,
     auto child = children[index];
     const bool result = take(child, needle, dest, balance);
     if (balance) {
-      balance = rebalance(*tree, gte, ChildDir::LEFT);
+      balance = rebalance(*tree, /*pivot*/ gte, ChildDir::LEFT);
     }
     return result;
   }
