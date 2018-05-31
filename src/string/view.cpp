@@ -23,4 +23,16 @@ string_view::operator==(const string_view &o) const noexcept {
   return o.length == length && std::memcmp(o.str, str, length) == 0;
 }
 
+string_view::operator bool() const noexcept {
+  return bool(str) && length > 0;
+}
+
+std::ostream &
+operator<<(std::ostream &out, const string_view &str) noexcept {
+  for (std::size_t i = 0; i < str.length; ++i) {
+    out << str.str[i];
+  }
+  return out;
+}
+
 } // namespace sp

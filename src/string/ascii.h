@@ -21,12 +21,6 @@ void
 reflect_right(char needle, char *str, std::size_t length) noexcept;
 
 //=====================================
-
-void
-reverse(char *str, std::size_t length) noexcept;
-
-//=====================================
-
 sp::string_view
 longest_palindromic_substring(const char *str, std::size_t);
 

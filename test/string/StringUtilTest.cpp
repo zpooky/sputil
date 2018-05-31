@@ -4,32 +4,6 @@
 #include <prng/xorshift.h>
 #include <string/ascii.h>
 
-TEST(StringUtil, test_reverse) {
-  {
-    char str[] = "dummy";
-    ascii::reverse(str, 0);
-    ASSERT_TRUE(std::strcmp(str, "dummy") == 0);
-  }
-
-  {
-    char *str = nullptr;
-    ascii::reverse(str, 0);
-    ASSERT_EQ(nullptr, str);
-  }
-  {
-    char str = 'r';
-    ascii::reverse(&str, 1);
-    ASSERT_EQ(str, 'r');
-  }
-  {
-    char str[] = "reverse";
-    // printf("%s\n", str);
-    ascii::reverse(str, std::strlen(str));
-    // printf("%s\n", str);
-    ASSERT_TRUE(std::strcmp(str, "esrever") == 0);
-  }
-}
-
 template <std::size_t N>
 static bool
 cmp_reverse(char (&straight)[N], char (&backwards)[N], std::size_t len) {
@@ -43,29 +17,6 @@ cmp_reverse(char (&straight)[N], char (&backwards)[N], std::size_t len) {
     }
   }
   return true;
-}
-
-TEST(StringUtil, test_reverse_inc) {
-  constexpr std::size_t cap = 1024;
-
-  prng::xorshift32 r(1);
-  for (std::size_t i = 0; i < cap; ++i) {
-    char straight[cap + 1] = {0};
-    for (std::size_t a = 0; a < i; ++a) {
-      straight[a] = uniform_dist(r, '0', 'z');
-    }
-    char backwards[cap + 1];
-    std::memcpy(backwards, straight, cap + 1);
-    {
-      ascii::reverse(backwards, i);
-      // printf("[%s]: [%s]\n", straight, backwards);
-      ASSERT_TRUE(cmp_reverse(straight, backwards, i));
-    }
-    {
-      ascii::reverse(backwards, i);
-      ASSERT_TRUE(std::memcmp(straight, backwards, i) == 0);
-    }
-  }
 }
 
 TEST(StringUtil, test_reflect) {

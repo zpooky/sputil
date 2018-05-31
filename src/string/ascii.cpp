@@ -55,32 +55,13 @@ void
 reflect(char needle, char *str, std::size_t len) noexcept {
   rec::reflect(needle, 0, str, len);
 }
+
 //=====================================
 void
 reflect_right(char needle, char *str, std::size_t length) noexcept {
   //TODO
 }
 
-//=====================================
-
-void
-reverse(char *str, std::size_t length) noexcept {
-  if (str) {
-    if (length > 0) {
-      // printf("strlen: %zu, length: %zu\n", std::strlen(str), length);
-      // assertx(std::strlen(str) == length);
-
-      char *tail = str + (length - 1);
-      char *head = str;
-      while (head < tail) {
-        using std::swap;
-        swap(*head, *tail);
-        --tail;
-        ++head;
-      }
-    }
-  }
-}
 //=====================================
 static bool
 is_palindrome(const char *str, std::size_t length) {
