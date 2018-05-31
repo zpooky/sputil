@@ -390,41 +390,41 @@ TEST(treeTest, test_rand_ins_rand_remove_rec_avl) {
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order3) {
-  random_insert_random_delete<sp::rec::BTree<int, 2>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 2>>();
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order4) {
-  random_insert_random_delete<sp::rec::BTree<int, 3>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 3>>();
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order5) {
-  random_insert_random_delete<sp::rec::BTree<int, 4>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 4>>();
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order6) {
-  random_insert_random_delete<sp::rec::BTree<int, 5>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 5>>();
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order7) {
-  random_insert_random_delete<sp::rec::BTree<int, 6>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 6>>();
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order8) {
-  random_insert_random_delete<sp::rec::BTree<int, 7>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 7>>();
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order9) {
-  random_insert_random_delete<sp::rec::BTree<int, 8>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 8>>();
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order10) {
-  random_insert_random_delete<sp::rec::BTree<int, 9>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 9>>();
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order11) {
-  random_insert_random_delete<sp::rec::BTree<int, 10>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 10>>();
 }
 
 TEST(treeTest, test_rand_ins_rand_remove_rec_btree_order12) {
-  random_insert_random_delete<sp::rec::BTree<int, 11>, 256>();
+  random_insert_random_delete<sp::rec::BTree<int, 11>>();
 }
