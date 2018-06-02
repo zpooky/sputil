@@ -36,7 +36,7 @@ struct SparseBitset {
   const std::size_t blocks;
   void *tree;
 
-  SparseBitset(std::size_t, std::size_t) noexcept;
+  SparseBitset(std::size_t block_sz, std::size_t blocks) noexcept;
 
   ~SparseBitset() noexcept;
 };

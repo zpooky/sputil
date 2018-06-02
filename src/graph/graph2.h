@@ -2,6 +2,8 @@
 #define SP_UTIL_GRAPH_GRAPH2_H
 
 #include <collection/Array.h>
+#include <queue/Queue.h>
+#include <map/HashSet.h>
 #include <utility>
 
 namespace graph {
@@ -48,7 +50,7 @@ operator>(const Vertex<T> *f, const Edge<T, Weight> &s) noexcept {
 template <typename T, typename Weight>
 struct Vertex {
   T value;
-  sp::UinStaticArray<Edge<T, Weight>, 128> edges;
+  sp::UinStaticArray<Edge<T, Weight>, 256> edges;
 
   template <typename A>
   Vertex(A &&) noexcept;
@@ -65,6 +67,18 @@ is_adjacent(const Vertex<T, W> &, const Vertex<T, W> &) noexcept;
 template <typename T, typename W, typename WK>
 bool
 add_edge(Vertex<T, W> &, WK &&, Vertex<T, W> *) noexcept;
+
+//=====================================
+template <typename T, typename W, typename F>
+bool
+deapth_first(Vertex<T, W> &, F) noexcept;
+
+//=====================================
+template <typename T, typename W, typename F>
+bool
+breadth_first(Vertex<T, W> &, F) noexcept;
+
+//=====================================
 
 //=====================================
 //====Implementation===================
@@ -97,6 +111,81 @@ add_edge(Vertex<T, W> &self, WK &&weight, Vertex<T, W> *edge) noexcept {
                            Edge<T, W>(edge, std::forward<WK>(weight)));
 }
 
-} // namespace graph
+//=====================================
+namespace impl {
+template <typename T, typename W>
+static std::size_t
+vertex_hash(Vertex<T, W> *const &in) {
+  return reinterpret_cast<std::uintptr_t>(in);
+}
+} // namespace impl
 
+template <typename T, typename W, typename F>
+bool
+deapth_first(Vertex<T, W> &root, F f) noexcept {
+  sp::HashSet<Vertex<T, W> *, impl::vertex_hash<T, W>> visited;
+
+  sp::HeapStack<Vertex<T, W> *> stack;
+  if(!push(stack, &root)){
+    return false;
+  }
+  if(!insert(visited, &root)) {
+    return false;
+  }
+
+  Vertex<T, W> *head = nullptr;
+  while (pop(stack, head)) {
+    assertx(head);
+    f(*head);
+    for (std::size_t i = 0; i < length(head->edges); ++i) {
+      graph::Edge<T, W> &edge = head->edges[i];
+      if (!lookup(visited, edge.target)) {
+        if (!push(stack, edge.target)) {
+          return false;
+        }
+        if(! insert(visited, edge.target)){
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+//=====================================
+template <typename T, typename W, typename F>
+bool
+breadth_first(Vertex<T, W> &root, F f) noexcept {
+  sp::HashSet<Vertex<T, W> *, impl::vertex_hash<T, W>> visited;
+
+  sp::LinkedListQueue<Vertex<T, W> *> stack;
+  if(!enqueue(stack, &root)){
+    return false;
+  }
+  if(!insert(visited, &root)){
+    return false;
+  }
+
+  Vertex<T, W> *head = nullptr;
+  while (dequeue(stack, head)) {
+    assertx(head);
+    f(*head);
+    for (std::size_t i = 0; i < length(head->edges); ++i) {
+      graph::Edge<T, W> &edge = head->edges[i];
+      if (!lookup(visited, edge.target)) {
+        if (!enqueue(stack, edge.target)) {
+          return false;
+        }
+        if(! insert(visited, edge.target)){
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+} // namespace graph
 #endif
