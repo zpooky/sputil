@@ -11,7 +11,7 @@ TEST(BloomFilterTest, test) {
     return fnv_1a::encode64(&i, sizeof(i));
   };
 
-  sp::StaticArray<sp::Hasher<int>, 2> h;
+  sp::StaticArray<sp::hasher<int>, 2> h;
   assert(insert(h, djb));
   assert(insert(h, fnv1a));
 

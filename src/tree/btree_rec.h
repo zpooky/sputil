@@ -90,6 +90,7 @@ template <typename T, std::size_t keys, typename Comparator>
 bool
 is_empty(const BTree<T, keys, Comparator> &) noexcept;
 
+//=====================================
 //====Implementation===================
 //=====================================
 template <typename T, std::size_t keys, typename Comparator>
@@ -271,6 +272,7 @@ median(const sp::UinStaticArray<T, keys> &elements, const T *extra) noexcept {
     assertx(res);
     assertx(is_full(ptrs));
   }
+  assertxs(is_full(ptrs), length(ptrs), capacity(ptrs));
   std::size_t mid = btree_middle<max>();
   const T &needle = ptrs[mid];
 
@@ -453,7 +455,7 @@ fixup(BTNode<T, keys, Cmp> *const tree, T *bubble,
 
   if (med != bubble) {
     T med_copy = *med; // TODO fix this[insert will invalidate $med]
-    // XXX: assert $m is last in $tree
+    // XXX: assert $med is last in $tree
     Cmp cmp;
     T *res = nullptr;
     if (cmp(*bubble, /*>*/ med_copy)) {
@@ -957,13 +959,13 @@ take_max(BTNode<T, keys, Cmp> &self, Dest &dest) {
     return take_leaf(self, subject, dest);
   }
 
-  const std::size_t last_idx = length(self.elements);
-  BTNode<T, keys, Cmp> *const greatest = self.children[last_idx];
+  const std::size_t max_idx = length(self.elements);
+  BTNode<T, keys, Cmp> *const greatest = self.children[max_idx];
   if (greatest) {
     const bool balance = take_max(*greatest, dest);
     if (balance) {
-      T *const pivot = &self.elements[last_idx - 1];
-      /* $greatest is right of $pivot */
+      T *const pivot = &self.elements[max_idx - 1];
+      /* $greatest is RIGHT of $pivot */
       return rebalance(self, pivot, ChildDir::RIGHT);
     }
 
@@ -977,19 +979,19 @@ take_max(BTNode<T, keys, Cmp> &self, Dest &dest) {
 template <typename T, std::size_t keys, typename Cmp, typename Dest>
 static bool
 take_min(BTNode<T, keys, Cmp> &self, Dest &dest) {
+  const std::size_t smallest_idx = 0;
+
   if (is_leaf(self)) {
-    T *const subject = &self.elements[0];
-    assertx(subject);
+    T *const subject = &self.elements[smallest_idx];
     return take_leaf(self, subject, dest);
   }
 
-  const std::size_t first_idx = 0;
-  BTNode<T, keys, Cmp> *const smallest = self.children[first_idx];
+  BTNode<T, keys, Cmp> *const smallest = self.children[smallest_idx];
   if (smallest) {
     const bool balance = take_min(*smallest, dest);
     if (balance) {
-      T *const pivot = &self.elements[first_idx];
-      /* $smallest is left of $pivot */
+      T *const pivot = &self.elements[smallest_idx];
+      /* $smallest is LEFT of $pivot */
       return rebalance(self, pivot, ChildDir::LEFT);
     }
 
@@ -1002,7 +1004,8 @@ take_min(BTNode<T, keys, Cmp> &self, Dest &dest) {
 
 template <typename T, std::size_t keys, typename Cmp, typename Dest>
 static bool
-take_int_node(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
+take_internal_node(BTNode<T, keys, Cmp> &self, T *subject,
+                   Dest &dest) noexcept {
   assertx(subject);
   auto &elements = self.elements;
   auto &children = self.children;
@@ -1050,7 +1053,7 @@ take_wrapper(BTNode<T, keys, Cmp> &self, T *subject, Dest &dest) noexcept {
     return take_leaf(self, subject, dest);
   }
 
-  return take_int_node(self, subject, dest);
+  return take_internal_node(self, subject, dest);
 }
 
 template <typename T, std::size_t keys, typename C, typename Key, typename Dest>

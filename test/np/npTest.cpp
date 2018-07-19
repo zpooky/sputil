@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <np/problem.h>
+#include <np/subset_sum.h>
 
 TEST(npTest, subset_sum) {
 }

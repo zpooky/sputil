@@ -8,12 +8,12 @@
 #include <util/maybe.h>
 
 namespace sp {
-template <typename Key, typename Value, sp::Hasher<Key>>
+template <typename Key, typename Value, sp::hasher<Key>>
 struct ProbingHashMap {
   /**/
 };
 
-template <typename Value, std::size_t cap, sp::Hasher<Value>>
+template <typename Value, std::size_t cap, sp::hasher<Value>>
 struct StaticProbingHashSet {
   using node_type = Value *;
   /**/
@@ -25,12 +25,12 @@ struct StaticProbingHashSet {
 };
 
 //=====================================
-// template <typename Value, std::size_t cap, sp::Hasher<Value> h>
+// template <typename Value, std::size_t cap, sp::hasher<Value> h>
 // StaticProbingHashSet<Value, cap, h>
 // create(Value (&)[cap]) noexcept;
 
 //=====================================
-template <typename Value, std::size_t cap, sp::Hasher<Value> h, typename K>
+template <typename Value, std::size_t cap, sp::hasher<Value> h, typename K>
 Value *
 lookup(StaticProbingHashSet<Value, cap, h> &, const K &) noexcept;
 
@@ -40,7 +40,7 @@ lookup(StaticProbingHashSet<Value, cap, h> &, const K &) noexcept;
 /* ======================================================= */
 /* ======================================================= */
 
-template <typename Value, std::size_t cap, sp::Hasher<Value> h>
+template <typename Value, std::size_t cap, sp::hasher<Value> h>
 StaticProbingHashSet<Value, cap, h>::StaticProbingHashSet() noexcept
     : key{nullptr}
     , value{nullptr} {
@@ -48,7 +48,7 @@ StaticProbingHashSet<Value, cap, h>::StaticProbingHashSet() noexcept
   //
 }
 
-template <typename Value, std::size_t cap, sp::Hasher<Value> h>
+template <typename Value, std::size_t cap, sp::hasher<Value> h>
 StaticProbingHashSet<Value, cap, h>::StaticProbingHashSet(
     UinStaticArray<Value, cap> &in) noexcept
     : key{nullptr}
@@ -62,14 +62,14 @@ StaticProbingHashSet<Value, cap, h>::StaticProbingHashSet(
 }
 
 //=====================================
-// template <typename Value, std::size_t cap, sp::Hasher<Value> h>
+// template <typename Value, std::size_t cap, sp::hasher<Value> h>
 // StaticProbingHashSet<Value, cap, h>
 // create(Value (&)[cap]) noexcept {
 //
 //   return {};
 // }
 //=====================================
-template <typename Value, std::size_t cap, sp::Hasher<Value> h, typename K>
+template <typename Value, std::size_t cap, sp::hasher<Value> h, typename K>
 Value *
 lookup(StaticProbingHashSet<Value, cap, h> &self, const K &needle) noexcept {
   const std::size_t hash = h(needle);

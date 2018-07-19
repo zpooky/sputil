@@ -4,8 +4,19 @@
 #include <cstdint>
 
 namespace ascii {
-std::uint32_t
+std::size_t
 levenshtein(const char *, const char *) noexcept;
+
+std::size_t
+levenshtein2(const char *, const char *) noexcept;
+
+void
+p();
+
+namespace dp {
+std::size_t
+levenshtein(const char *, const char *) noexcept;
+}
 }
 
 #endif

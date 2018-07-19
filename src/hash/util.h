@@ -5,7 +5,7 @@
 
 namespace sp {
 template <typename T>
-using Hasher = std::size_t (*)(const T &);
+using hasher = std::size_t (*)(const T &);
 }
 
 #endif

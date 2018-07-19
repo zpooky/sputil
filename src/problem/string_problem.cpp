@@ -75,10 +75,13 @@ longest_palindromic_substring(const char *const str, const std::size_t length) {
     return {nullptr, 0};
   }
 
+  std::cout << sp::string_view(str, length) << "\n";
   if (is_palindrome(str, length)) {
     return {str, length};
   }
   assertx(length > 1);
+  assertx(length < 64);
+  // printf("length[%zu]\n", length);
 
   auto left = longest_palindromic_substring(str, length - 1);
   if (left.length == length - 1) {

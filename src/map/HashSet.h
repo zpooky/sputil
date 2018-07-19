@@ -1,5 +1,5 @@
-#ifndef SP_UTIL_MAP_SET_H
-#define SP_UTIL_MAP_SET_H
+#ifndef SP_UTIL_MAP_MAP_SET_H
+#define SP_UTIL_MAP_MAP_SET_H
 
 #include <hash/util.h>
 #include <limits>
@@ -106,7 +106,7 @@ struct HashKey {
 } // namespace impl
 
 //=====================================
-template <typename T, sp::Hasher<T>>
+template <typename T, sp::hasher<T>>
 struct HashSet {
 
   // binary::Tree<impl::HSNode<T>> tree;
@@ -116,27 +116,37 @@ struct HashSet {
 };
 
 //=====================================
-template <typename T, sp::Hasher<T> h, typename V>
+template <typename T, sp::hasher<T> h, typename V>
 T *
 insert(HashSet<T, h> &, V &&) noexcept;
 
 //=====================================
-// template <typename T, sp::Hasher<T> h, typename V>
+// template <typename T, sp::hasher<T> h, typename V>
 // bool
 // contains(const HashSet<T, h> &, const V &) noexcept;
 //=====================================
-template <typename T, sp::Hasher<T> h, typename V>
+namespace impl {
+template <typename T, sp::hasher<T> h>
+const T *
+lookup(const HashSet<T, h> &, const HashKey &code) noexcept;
+}
+
+template <typename T, sp::hasher<T> h, typename V>
 const T *
 lookup(const HashSet<T, h> &, const V &) noexcept;
 
+// template <typename T, sp::hasher<T> h, typename V>
+// T *
+// lookup(HashSet<T, h> &, const V &) noexcept;
+
 //=====================================
 namespace rec {
-template <typename T, sp::Hasher<T> h>
+template <typename T, sp::hasher<T> h>
 bool
 verify(const HashSet<T, h> &) noexcept;
 
 //=====================================
-template <typename T, sp::Hasher<T> h>
+template <typename T, sp::hasher<T> h>
 std::size_t
 length(const HashSet<T, h> &) noexcept;
 
@@ -181,12 +191,12 @@ bool
 HSNode<T, c>::operator>(const HashKey &o) const noexcept {
   const bool res = (start + length) > o.hash;
   // if (o.hash == 256) {
-    // printf("HSNode[%zu,%zu]>HashKey[%zu] in_range = %s gt=%s\n", start,
-    // length,
-    //        o.hash //
-    //        ,
-    //        in_range(*this, o) ? "true" : "false", //
-    //        res ? "true" : "false");
+  // printf("HSNode[%zu,%zu]>HashKey[%zu] in_range = %s gt=%s\n", start,
+  // length,
+  //        o.hash //
+  //        ,
+  //        in_range(*this, o) ? "true" : "false", //
+  //        res ? "true" : "false");
   // }
 
   if (in_range(*this, o)) {
@@ -249,7 +259,7 @@ HashKey::operator>(const HSNode<T> &o) const noexcept {
 
 } // namespace impl
 //=====================================
-template <typename T, sp::Hasher<T> h>
+template <typename T, sp::hasher<T> h>
 HashSet<T, h>::HashSet() noexcept
     : tree() {
 }
@@ -318,7 +328,7 @@ lookup(const HSNode<T, cap> &node, const HashKey &code) noexcept {
   return node.buckets[index];
 }
 
-template <typename T, sp::Hasher<T> hash, std::size_t cap>
+template <typename T, sp::hasher<T> hash, std::size_t cap>
 static HSNode<T, cap> *
 split(HashSet<T, hash> &self, HSNode<T, cap> &source) noexcept {
   const std::size_t split(source.length / std::size_t(2));
@@ -358,7 +368,7 @@ split(HashSet<T, hash> &self, HSNode<T, cap> &source) noexcept {
   return nullptr;
 }
 
-template <typename T, sp::Hasher<T> h>
+template <typename T, sp::hasher<T> h>
 static std::size_t
 hash(const HSBucket<T> &subject) noexcept {
   const T *const value = (T *)&subject.value;
@@ -372,7 +382,7 @@ in_range(const HSNode<T, cap> &node, const HashKey &h) noexcept {
 }
 
 namespace rec {
-template <typename T, sp::Hasher<T> h, std::size_t cap>
+template <typename T, sp::hasher<T> h, std::size_t cap>
 HSBucket<T> *
 migrate_list(HSNode<T, cap> &node, HSBucket<T> *const current,
              HSNode<T, cap> &dest) {
@@ -405,7 +415,7 @@ migrate_list(HSNode<T, cap> &node, HSBucket<T> *const current,
 }
 } // namespace rec
 
-template <typename T, sp::Hasher<T> h, std::size_t cap>
+template <typename T, sp::hasher<T> h, std::size_t cap>
 static void
 migrate(HSNode<T, cap> &node, HSBucket<T> &source,
         HSNode<T, cap> &dest) noexcept {
@@ -430,7 +440,7 @@ migrate(HSNode<T, cap> &node, HSBucket<T> &source,
   source.next = rec::migrate_list<T, h, cap>(node, source.next, dest);
 }
 
-template <typename T, sp::Hasher<T> h, std::size_t cap>
+template <typename T, sp::hasher<T> h, std::size_t cap>
 static bool
 rehash(HashSet<T, h> &self, HSNode<T, cap> &source) noexcept {
   HSNode<T, cap> *const other = split(self, source);
@@ -471,7 +481,7 @@ insert(HSNode<T, cap> &node, const HashKey &code, V &&val) noexcept {
 
 } // namespace impl
 
-template <typename T, sp::Hasher<T> hash, typename V>
+template <typename T, sp::hasher<T> hash, typename V>
 T *
 insert(HashSet<T, hash> &self, V &&val) noexcept {
   using namespace impl;
@@ -485,6 +495,7 @@ insert(HashSet<T, hash> &self, V &&val) noexcept {
     assertx(is_empty(tree));
 
     const std::size_t start = 0;
+    // TODO bug when hash == length
     const auto length = std::numeric_limits<std::size_t>::max();
     auto res = emplace(tree, start, length);
 
@@ -506,6 +517,7 @@ insert(HashSet<T, hash> &self, V &&val) noexcept {
         impl::rehash(self, *node);
       }
     }
+
     return result;
   }
 
@@ -543,25 +555,36 @@ lookup(const HSNode<T, c> &node, const HashKey &code,
   const HSBucket<T> &bucket = lookup(node, code);
   return lookup(bucket, needle);
 }
-} // namespace impl
 
-template <typename T, sp::Hasher<T> hash, typename V>
+template <typename T, sp::hasher<T> h, typename V>
 const T *
-lookup(const HashSet<T, hash> &self, const V &needle) noexcept {
-  using namespace impl;
-
-  const auto &tree = self.tree;
-  const HashKey code(hash(needle));
-
-  const HSNode<T> *node = find(tree, code);
+lookup(const HashSet<T, h> &self, const HashKey &code,
+       const V &needle) noexcept {
+  const HSNode<T> *node = find(self.tree, code);
   if (node) {
     assertx(in_range(*node, code));
 
-    return impl::lookup(*node, code, needle);
+    return lookup(*node, code, needle);
   }
 
   return nullptr;
 }
+} // namespace impl
+
+template <typename T, sp::hasher<T> hash, typename V>
+const T *
+lookup(const HashSet<T, hash> &self, const V &needle) noexcept {
+  const impl::HashKey code(hash(needle));
+
+  return impl::lookup(self, code, needle);
+}
+
+// template <typename T, sp::hasher<T> h, typename V>
+// T *
+// lookup(HashSet<T, h> &self, const V &needle) noexcept {
+//   const auto &c_self = self;
+//   return lookup(c_self, needle);
+// }
 
 //=====================================
 namespace rec {
@@ -589,7 +612,7 @@ for_each(const sp::impl::HSBucket<T> &bucket, F f) noexcept {
 }
 } // namespace impl
 
-template <typename T, sp::Hasher<T> h>
+template <typename T, sp::hasher<T> h>
 bool
 verify(const sp::HashSet<T, h> &self) noexcept {
   using namespace impl;
@@ -611,7 +634,7 @@ verify(const sp::HashSet<T, h> &self) noexcept {
 }
 
 //=====================================
-template <typename T, sp::Hasher<T> h>
+template <typename T, sp::hasher<T> h>
 std::size_t
 length(const HashSet<T, h> &self) noexcept {
   using namespace impl;

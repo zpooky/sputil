@@ -8,16 +8,16 @@
 namespace sp {
 
 // template <typename T, std::size_t N>
-// using HasherArray = StaticArray<Hasher<T>, N>;
+// using HasherArray = StaticArray<hasher<T>, N>;
 
 //=====================================
 template <typename T, std::size_t size>
 struct BloomFilter {
   StaticBitset<size> bitset;
 
-  Array<Hasher<T>> &hashers;
+  Array<hasher<T>> &hashers;
 
-  explicit BloomFilter(Array<Hasher<T>> &) noexcept;
+  explicit BloomFilter(Array<hasher<T>> &) noexcept;
 };
 
 //=====================================
@@ -34,7 +34,7 @@ insert(BloomFilter<T, s> &, const T &) noexcept;
 //====Implementation===================
 //=====================================
 template <typename T, std::size_t size>
-BloomFilter<T, size>::BloomFilter(Array<Hasher<T>> &hs) noexcept
+BloomFilter<T, size>::BloomFilter(Array<hasher<T>> &hs) noexcept
     : bitset{}
     , hashers{hs} {
 }
@@ -43,7 +43,7 @@ BloomFilter<T, size>::BloomFilter(Array<Hasher<T>> &hs) noexcept
 template <typename T, std::size_t s>
 bool
 test(const BloomFilter<T, s> &b, const T &v) noexcept {
-  return for_all(b.hashers, [&b, &v](Hasher<T> h) {
+  return for_all(b.hashers, [&b, &v](hasher<T> h) {
     auto hash = h(v);
 
     std::size_t idx(hash % bits(b.bitset));
@@ -59,7 +59,7 @@ test(const BloomFilter<T, s> &b, const T &v) noexcept {
 template <typename T, std::size_t s>
 bool
 insert(BloomFilter<T, s> &b, const T &v) noexcept {
-  for_each(b.hashers, [&b, &v](Hasher<T> h) {
+  for_each(b.hashers, [&b, &v](hasher<T> h) {
     auto hash = h(v);
     std::size_t idx(hash % bits(b.bitset));
 

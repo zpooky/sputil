@@ -47,6 +47,19 @@ struct Array {
 /*
  * Reuquire a T default ctor
  */
+template <typename T>
+struct DynamicArray : public Array<T> {
+
+  DynamicArray(std::size_t) noexcept;
+  DynamicArray(std::initializer_list<T>) noexcept;
+
+  ~DynamicArray() noexcept;
+};
+
+//=====================================
+/*
+ * Reuquire a T default ctor
+ */
 template <typename T, std::size_t cap>
 struct StaticArray : public Array<T> {
   using value_type = T;
@@ -523,6 +536,8 @@ Array<T>::Array(T *b, std::size_t size) noexcept
     : buffer(b)
     , length(0)
     , capacity(size) {
+  // printf("Array(b:%p,len:%zu,cap:%zu)\n", this->buffer, this->length,
+  //        this->capacity);
 }
 
 template <typename T>
@@ -554,6 +569,39 @@ template <typename T>
 const T *
 Array<T>::data() const noexcept {
   return buffer;
+}
+
+//=====================================
+template <typename T>
+DynamicArray<T>::DynamicArray(std::size_t cap) noexcept
+    : Array<T>(nullptr, 0) {
+  assertx(this->length == 0);
+  assertx(this->capacity == 0);
+  this->buffer = new T[cap]{};
+  assertx(this->buffer);
+  this->length = 0;
+  assertx(this->length == 0);
+  if (this->buffer) {
+    this->capacity = cap;
+    assertx(this->capacity == cap);
+  }
+}
+
+template <typename T>
+DynamicArray<T>::DynamicArray(std::initializer_list<T> l) noexcept
+    : DynamicArray(l.size()) {
+  bool result = insert_all(*this, l.begin(), l.size());
+  assertx(result);
+}
+
+template <typename T>
+DynamicArray<T>::~DynamicArray() noexcept {
+  if (this->buffer) {
+    delete[] this->buffer;
+  }
+  this->buffer = nullptr;
+  this->length = 0;
+  this->capacity = 0;
 }
 
 //=====================================
@@ -740,37 +788,34 @@ bin_find_gte(const UinStaticArray<T, c> &self, const K &needle,
   };
 
   std::size_t length = self.length;
-  const T *p = self.data();
-  const T *const end = p + length;
+  const T *it = self.data();
+  const T *const end = it + length;
 Lit : {
   const std::size_t mid = middle(length);
-  // printf("%zu-[%zu]-%zu", p[0], p[mid], p[length - 1]);
-  if /*needle < mid*/ (cmp(p[mid], /*>*/ needle)) {
-    // printf("|mid[idx%zu] > needle[v%zu]|len:%zu\n", mid, needle, length);
+  if (cmp(it[mid], /*>*/ needle)) {
     if (length == 0) {
-      return p;
+      return it;
     }
 
     length = mid;
 
     goto Lit;
-  } /* needle > mid*/ else if (cmp(needle, /*>*/ p[mid])) {
-    // printf("|n[v%zu] > mid[idx%zu]|len:%zu\n", needle, mid, length);
+  } else if (cmp(needle, /*>*/ it[mid])) {
     if (length == 1) {
-      if (p + length != end) {
-        return p + length;
+      if (it + length != end) {
+        return it + length;
       } else {
         return nullptr;
       }
     }
 
-    p = p + mid;
+    it = it + mid;
     length = length - mid;
 
     goto Lit;
   } else {
     /* needle is exact match */
-    return p + mid;
+    return it + mid;
   }
 }
 
