@@ -29,6 +29,7 @@ heapsort(T *const in, std::size_t length) noexcept {
   if (length == 0) {
     return;
   }
+  assertxs(in, length);
 
   auto heap = heap::heapify<T, sp::inverse<Cmp>>(in, length);
 

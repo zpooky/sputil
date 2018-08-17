@@ -7,9 +7,15 @@ namespace sp {
 std::uint32_t fibonacci(std::uint32_t) noexcept;
 
 namespace dp {
+namespace memo {
 std::uint32_t fibonacci(std::uint32_t) noexcept;
 }
 
+namespace tab {
+std::uint32_t fibonacci(std::uint32_t) noexcept;
+}
+
+}
 }
 
 #endif

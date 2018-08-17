@@ -16,8 +16,7 @@ namespace rec {
  */
 //=====================================
 /*
- * permutation of: [0,1]
- * with length 2:
+ * permutation of: [0,1], length 2:
  * - 01
  * - 00
  * - 11
@@ -43,31 +42,6 @@ permutations(const T *pool, std::size_t length, F out) noexcept;
 
 std::size_t
 permutations_of(std::size_t pool, std::size_t res_length) noexcept;
-
-//=====================================
-/*
- * combination of: [0,1]
- * - 01
- * - 10
- */
-template <typename T, typename F, std::size_t n = 64>
-bool
-combinations(const T *pool, std::size_t length, F out) noexcept;
-
-std::size_t
-combinations_of(std::size_t) noexcept;
-
-//=====================================
-/*
- * optionals of: [0,1]
- * - 01
- * - 0
- * - 1
- * - ""
- */
-template <typename T, typename F, std::size_t n = 64>
-bool
-optionals(const T *pool, std::size_t length, F out) noexcept;
 
 //=====================================
 //====Implementation===================
@@ -148,94 +122,6 @@ permutations(const T *pool, std::size_t length, F out) noexcept {
   return permutations<T, F, n>(pool, length, length, out);
 }
 
-
-//=====================================
-namespace impl {
-template <typename T, typename F, std::size_t len>
-static bool
-combinations(const sp::StaticArray<const T *, len> &pool,
-             sp::StaticArray<const T *, len> &result, std::size_t idx,
-             F out) noexcept {
-  if (!is_empty(pool)) {
-    for (std::size_t i = 0; i < length(pool); ++i) {
-      sp::StaticArray<const T *, len> sub_pool;
-      {
-        assertx(insert_all(sub_pool, pool));
-        assertx(remove(sub_pool, i));
-      }
-
-      assertx(set(result, idx, pool[i]));
-      if (!combinations(sub_pool, result, idx + 1, out)) {
-        return false;
-      }
-    }
-
-  } else {
-    return out(result);
-  }
-  return true;
-}
-} // namespace impl
-
-template <typename T, typename F, std::size_t len>
-bool
-combinations(const T *pool, std::size_t l, F out) noexcept {
-  sp::StaticArray<const T *, len> apool;
-  for (std::size_t i = 0; i < l; ++i) {
-    assertx(insert(apool, pool + i));
-  }
-
-  sp::StaticArray<const T *, len> result;
-  return impl::combinations(apool, result, 0, out);
-}
-
-//=====================================
-namespace impl {
-template <typename T, typename F, std::size_t len>
-static bool
-optionals(const sp::StaticArray<const T *, len> &pool, std::size_t pool_idx,
-          sp::StaticArray<const T *, len> &result, std::size_t idx,
-          F out) noexcept {
-  if (pool_idx < pool.length) {
-    /*some*/ {
-      assertx(set(result, idx, pool[pool_idx]));
-      if (!optionals(pool, pool_idx + 1, result, idx + 1, out)) {
-        return false;
-      }
-    }
-    /*none*/ {
-      if (!optionals(pool, pool_idx + 1, result, idx, out)) {
-        return false;
-      }
-    }
-
-  } else {
-    const std::size_t blength = length(result);
-    result.length = idx;
-    bool res = out(result);
-    result.length = blength;
-    return res;
-  }
-
-  return true;
-}
-} // namespace impl
-
-template <typename T, typename F, std::size_t len>
-bool
-optionals(const T *pool, std::size_t length, F out) noexcept {
-  sp::StaticArray<const T *, len> apool;
-  for (std::size_t i = 0; i < length; ++i) {
-    assertx(insert(apool, pool + i));
-  }
-
-  sp::StaticArray<const T *, len> result;
-  result.length = result.capacity;
-
-  return impl::optionals(apool, 0, result, 0, out);
-}
-
-//=====================================
 } // namespace rec
 } // namespace sp
 

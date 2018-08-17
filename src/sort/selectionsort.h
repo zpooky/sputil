@@ -18,9 +18,15 @@ selectionsort(T *, std::size_t) noexcept;
 
 template <typename T, typename C>
 void
-selectionsort(T *in, std::size_t length) noexcept {
+selectionsort(T *const in, std::size_t length) noexcept {
+  if (length == 0) {
+    return;
+  }
+  assertxs(in, length);
+
   const T *const end = in + length;
   C cmp;
+
   for (T *start = in; start != end; ++start) {
     T *min = start;
 
@@ -29,13 +35,13 @@ selectionsort(T *in, std::size_t length) noexcept {
         min = it;
       }
     } // for
+
     if (min != start) {
       using std::swap;
       swap(*min, *start);
     }
   } // for
 }
-
 }
 
 #endif

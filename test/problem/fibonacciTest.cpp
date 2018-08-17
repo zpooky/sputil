@@ -16,7 +16,7 @@ TEST(fibonacciTest, test) {
 TEST(fibonacciTest, test_cmp) {
   for (std::uint32_t i = 0; i < 20; ++i) {
     auto one = sp::fibonacci(i);
-    auto two = sp::dp::fibonacci(i);
+    auto two = sp::dp::memo::fibonacci(i);
     ASSERT_EQ(one, two);
 
     printf("N:%zu fib: %zu\n", i, one);

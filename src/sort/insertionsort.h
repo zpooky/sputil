@@ -16,8 +16,9 @@ template <typename T, typename Comparator>
 void
 insertionsort(T *const arr, std::size_t length) noexcept {
   Comparator cmp;
+
   for (std::size_t i = 1; i < length; ++i) {
-    assertx(arr);
+    assertxs(arr, length);
     T *current = arr + i;
     std::size_t j = i;
 

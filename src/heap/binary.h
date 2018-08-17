@@ -122,9 +122,10 @@ find(Binary<T, Comparator> &, const K &) noexcept; // TODO
 template <typename T, typename Comparator>
 void
 swap(Binary<T, Comparator> &, Binary<T, Comparator> &) noexcept;
+//TODO this should not work a static heap
 
 //=====================================
-// create a heap out of given array of elements
+// create a heap out of given array of N unsorted elements
 template <typename T, typename Comparator>
 Binary<T, Comparator>
 heapify(T *, std::size_t) noexcept;
@@ -521,13 +522,12 @@ swap(Binary<T, Comparator> &first, Binary<T, Comparator> &second) noexcept {
 }
 
 //=====================================
-// create a heap out of given array of elements
 template <typename T, typename Comparator>
 Binary<T, Comparator>
 heapify(T *const raw, std::size_t length) noexcept {
   using namespace impl::heap;
 
-  Binary<T, Comparator> heap(raw, length);
+  Binary<T, Comparator> heap(raw, /*cap*/length);
   for (std::size_t i = 0; i < length; ++i) {
     std::size_t idx = heap.length++;
     shift_up(heap, idx);

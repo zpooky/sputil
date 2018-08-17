@@ -4,14 +4,15 @@
 namespace sp {
 std::uint32_t
 fibonacci(std::uint32_t in) noexcept {
-  if (in <= 1) {
-    return in;
+  if (in >= 2) {
+    return fibonacci(in - 1) + fibonacci(in - 2);
   }
 
-  return fibonacci(in - 1) + fibonacci(in - 2);
+  return in;
 }
 
 namespace dp {
+namespace memo {
 static std::uint32_t
 fibonacci(DynamicArray<std::uint32_t> &memo, std::uint32_t in) noexcept {
   if (in <= 1) {
@@ -30,6 +31,15 @@ fibonacci(std::uint32_t in) noexcept {
   DynamicArray<std::uint32_t> memo(in + 1);
   memo.length = memo.capacity;
   return fibonacci(memo, in);
+}
+}
+
+namespace tab {
+std::uint32_t
+fibonacci(std::uint32_t) noexcept {
+  // TOD
+  return 0;
+}
 }
 }
 }

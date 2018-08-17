@@ -34,7 +34,6 @@ introsort(T *const in, std::size_t length, std::size_t depth) noexcept {
   if (length <= 1) {
     return;
   }
-
   assertxs(in, in, length);
 
   if (length < 16) {
@@ -57,6 +56,11 @@ introsort(T *const in, std::size_t length, std::size_t depth) noexcept {
 template <typename T, typename Cmp>
 void
 introsort(T *const in, std::size_t length) noexcept {
+  if (length == 0) {
+    return;
+  }
+  assertxs(in, length);
+
   std::size_t depth = std::log(length) * 2;
   impl::introsort<T, Cmp>(in, length, depth);
 }

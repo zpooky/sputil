@@ -35,7 +35,7 @@ pivot(const T *in, std::size_t length) noexcept {
 // and return that pointer
 template <typename T>
 static const T *
-medianOfThree(const T *in, std::size_t length) {
+median_of_three(const T *in, std::size_t length) {
   if (length <= 2) {
     return pivot(in, length);
   }
@@ -79,7 +79,7 @@ partition(T *const in, std::size_t length) noexcept {
   const T *const start = in;
   const T *const end = in + length;
 
-  const T *p = medianOfThree<T>(in, length);
+  const T *p = median_of_three<T>(in, length);
 
   C cmp;
   while (true) {

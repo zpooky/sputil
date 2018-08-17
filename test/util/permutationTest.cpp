@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
+#include <util/combinations.h>
 #include <util/permutation.h>
+#include <util/subsets.h>
 
 TEST(permutationTest, perm_test2_2) {
   std::size_t res = 0;
@@ -51,10 +53,27 @@ TEST(permutationTest, combination_test) {
   ASSERT_EQ(sp::rec::combinations_of(strlen(in)), res);
 }
 
-TEST(permutationTest, optionals_rwx) {
+TEST(permutationTest, combination_test2) {
+  std::size_t res = 0;
+  const char *in = "012";
+  ASSERT_TRUE(sp::rec::combinations(in, strlen(in), [&res](const auto &str) {
+    for_each(str, [](const char *c) {
+      /**/
+      printf("%c", *c);
+    });
+
+    printf("\n");
+    ++res;
+    return true;
+  }));
+  ASSERT_EQ(std::size_t(6), res);
+  ASSERT_EQ(sp::rec::combinations_of(strlen(in)), res);
+}
+
+TEST(permutationTest, subsets_rwx) {
   std::size_t res = 0;
   const char *in = "rwx";
-  ASSERT_TRUE(sp::rec::optionals(in, strlen(in), [&res](const auto &str) {
+  ASSERT_TRUE(sp::rec::subsets(in, strlen(in), [&res](const auto &str) {
     for_each(str, [](const char *c) {
       /**/
       printf("%c", *c);
@@ -72,7 +91,7 @@ TEST(permutationTest, rwx) {
   sp::UinStaticArray<std::string, 128> access;
 
   const char *in = "rwx";
-  ASSERT_TRUE(sp::rec::optionals(in, strlen(in), [&access](const auto &str) {
+  ASSERT_TRUE(sp::rec::subsets(in, strlen(in), [&access](const auto &str) {
     std::string msg;
     for_each(str, [&msg](const char *c) {
       /**/

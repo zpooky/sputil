@@ -27,6 +27,7 @@ bool
 is_sorted(T *const in, std::size_t length) noexcept {
   const T *it = in;
   const T *const end = in + length;
+
   while (it != end) {
     const T *const next = it + 1;
     if (next != end) {
