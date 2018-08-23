@@ -224,6 +224,14 @@ Bitset::Bitset(std::uint64_t *b, std::size_t c) noexcept
     , capacity{c} {
 }
 
+DynamicBitset::DynamicBitset(std::size_t c) noexcept
+    : Bitset{nullptr, 0} {
+  this->buffer = new (std::nothrow) std::uint64_t[c]{0};
+  if (this->buffer) {
+    this->capacity = c;
+  }
+}
+
 SparseBitset::SparseBitset(std::size_t bs, std::size_t c) noexcept
     : block_size(bs)
     , blocks(c)
@@ -243,6 +251,7 @@ test(const Bitset &self, std::size_t idx) noexcept {
   assertxs(wIdx < bits(self), wIdx, bits(self));
 
   std::size_t bIdx = bit_index(idx);
+  assertx(self.buffer);
   auto word = self.buffer[wIdx];
 
   return test(word, bIdx);
@@ -271,6 +280,7 @@ set(Bitset &self, std::size_t idx, bool v) noexcept {
   std::size_t wIdx = word_index(idx);
   assertxs(wIdx < bits(self), wIdx, bits(self));
 
+  assertx(self.buffer);
   auto &word = self.buffer[wIdx];
   const auto old_word = word;
 
@@ -348,6 +358,30 @@ bits(const Bitset &self) noexcept {
 std::size_t
 bits(const SparseBitset &self) noexcept {
   return bits(capacity(self));
+}
+
+//=====================================
+/*
+ * returns number of uint64_t buffers required to fit $x distinct values
+ */
+std::size_t
+bitset_number_of_buffer(std::size_t x) noexcept {
+  if (x == 0) {
+    return 0;
+  }
+
+  constexpr std::size_t buf_size = sizeof(Bitset_buffer::type) * 8;
+  if (x > buf_size) {
+    std::size_t sz = x / buf_size;
+
+    if (x % buf_size > 0) {
+      ++sz;
+    }
+
+    return sz;
+  }
+
+  return 1;
 }
 
 //=====================================

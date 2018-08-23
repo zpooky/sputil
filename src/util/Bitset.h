@@ -9,7 +9,7 @@ namespace sp {
 //=====================================
 struct Bitset {
   std::uint64_t *buffer;
-  const std::size_t capacity;
+  std::size_t capacity;
 
   Bitset(std::uint64_t *, std::size_t) noexcept;
 
@@ -23,6 +23,11 @@ struct StaticBitset : public Bitset {
   std::uint64_t raw[cap];
 
   StaticBitset() noexcept;
+};
+
+//=====================================
+struct DynamicBitset : public Bitset {
+  explicit DynamicBitset(std::size_t) noexcept;
 };
 
 //=====================================
@@ -80,6 +85,13 @@ bits(const Bitset &) noexcept;
 
 std::size_t
 bits(const SparseBitset &) noexcept;
+
+//=====================================
+/*
+ * returns number of uint64_t required to fit $x distinct values
+ */
+std::size_t
+bitset_number_of_buffer(std::size_t x) noexcept;
 
 //=====================================
 template <typename F>

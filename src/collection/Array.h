@@ -291,6 +291,26 @@ bool
 move_all(UinStaticArray<T, c1> &, UinStaticArray<T, c2> &) noexcept;
 
 //=====================================
+/* The same as insert()
+ */
+template <typename T, typename V>
+T *
+push(Array<T> &, V &&) noexcept;
+
+template <typename T, std::size_t c, typename V>
+T *
+push(UinStaticArray<T, c> &, V &&) noexcept;
+
+//=====================================
+template <typename T>
+bool
+pop(Array<T> &) noexcept;
+
+template <typename T, std::size_t c>
+bool
+pop(UinStaticArray<T, c> &) noexcept;
+
+//=====================================
 /*
  * Insert the value at the specified index. Values already present at and after
  * the index will be shifted upwards. returns a pointer to the newly inserted
@@ -549,13 +569,13 @@ Array<T>::Array(T *b, std::size_t l, std::size_t size) noexcept
 
 template <typename T>
 T &Array<T>::operator[](std::size_t idx) noexcept {
-  assertxs(idx < length, idx, length);
+  assertxs(idx < length, idx, length, capacity);
   return buffer[idx];
 }
 
 template <typename T>
 const T &Array<T>::operator[](std::size_t idx) const noexcept {
-  assertxs(idx < length, idx, length);
+  assertxs(idx < length, idx, length, capacity);
   return buffer[idx];
 }
 
@@ -577,10 +597,13 @@ DynamicArray<T>::DynamicArray(std::size_t cap) noexcept
     : Array<T>(nullptr, 0) {
   assertx(this->length == 0);
   assertx(this->capacity == 0);
+
   this->buffer = new T[cap]{};
   assertx(this->buffer);
+
   this->length = 0;
   assertx(this->length == 0);
+
   if (this->buffer) {
     this->capacity = cap;
     assertx(this->capacity == cap);
@@ -1214,6 +1237,39 @@ move_all(UinStaticArray<T, c1> &self, UinStaticArray<T, c2> &other) noexcept {
 
   return false;
 }
+//=====================================
+template <typename T, typename V>
+T *
+push(Array<T> &self, V &&value) noexcept {
+  return insert(self, std::forward<V>(value));
+}
+
+template <typename T, std::size_t c, typename V>
+T *
+push(UinStaticArray<T, c> &self, V &&value) noexcept {
+  return insert(self, std::forward<V>(value));
+}
+
+//=====================================
+template <typename T>
+bool
+pop(Array<T> &self) noexcept {
+  if (!is_empty(self)) {
+    drop_back(self, 1);
+    return true;
+  }
+  return false;
+}
+
+template <typename T, std::size_t c>
+bool
+pop(UinStaticArray<T, c> &self) noexcept {
+  if (!is_empty(self)) {
+    drop_back(self, 1);
+    return true;
+  }
+  return false;
+}
 
 //=====================================
 template <typename T, typename V>
@@ -1578,7 +1634,7 @@ void
 drop_back(Array<T> &self, std::size_t len) noexcept {
   assertxs(len <= length(self), len, length(self));
 
-  length = std::min(length(self), len);
+  len = std::min(length(self), len);
   for (std::size_t idx = len; idx-- > 0;) {
     T *const p = self.buffer + idx;
     p->~T();

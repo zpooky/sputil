@@ -16,7 +16,7 @@ namespace rec {
  */
 //=====================================
 /*
- * permutation of: [0,1], length 2:
+ * repeating permutation of: [0,1], length 2:
  * - 01
  * - 00
  * - 11
