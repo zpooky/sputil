@@ -10,12 +10,23 @@ TEST(Graph2Test, test) {
   graph::Vertex<int> two(2);
   ASSERT_FALSE(is_adjacent(one, one));
   ASSERT_FALSE(is_adjacent(one, two));
+  ASSERT_FALSE(is_adjacent(two, one));
 
   ASSERT_TRUE(add_edge(one, 0, &two));
   ASSERT_TRUE(is_adjacent(one, two));
+  ASSERT_FALSE(is_adjacent(two, one));
 
   ASSERT_FALSE(add_edge(one, 0, &two));
   ASSERT_TRUE(is_adjacent(one, two));
+  ASSERT_FALSE(is_adjacent(two, one));
+
+  ASSERT_TRUE(add_edge(two, 0, &one));
+  ASSERT_TRUE(is_adjacent(one, two));
+  ASSERT_TRUE(is_adjacent(two, one));
+
+  ASSERT_FALSE(add_edge(two, 0, &one));
+  ASSERT_TRUE(is_adjacent(one, two));
+  ASSERT_TRUE(is_adjacent(two, one));
 }
 
 TEST(Graph2Test, add_edge) {
@@ -42,18 +53,24 @@ TEST(Graph2Test, add_edge) {
       }
     }
   }
+  printf("asd\n");
 }
 
 TEST(Graph2Test, dfs) {
-  constexpr std::size_t cap = 1024;
+  printf("--\n");
+  constexpr std::size_t cap = 256;
+  printf("--\n");
   sp::UinStaticArray<graph::Vertex<std::size_t>, cap> arr;
+  printf("--\n");
   for (std::size_t i = 0; i < cap; ++i) {
     auto res = insert(arr, i);
     ASSERT_TRUE(res);
   }
+  printf("--\n");
   printf("size: %zubytes, %zukB, %zuMB\n", //
          sizeof(arr), sizeof(arr) / 1024, sizeof(arr) / 1024 / 1024);
 
+  printf("--\n");
   ASSERT_TRUE(is_full(arr));
   prng::xorshift32 r(1);
   //===

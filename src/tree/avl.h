@@ -632,7 +632,8 @@ verify(const Node<T> *parent, const Node<T> *tree, int &result) noexcept {
 
     int bl = int(right) - int(left);
     const int h = std::max(right, left) + 1;
-    if (h != tree->height) {
+    assertx(h >= 0);
+    if (std::size_t(h) != tree->height) {
       // printf("height[%d] != tree->height[%d]\n", h, tree->height);
       return false;
     }

@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <prng/util.h>
+#include <util/array.h>
 #include <util/assert.h>
 #include <util/comparator.h>
 #include <util/numeric.h>
@@ -1365,20 +1366,8 @@ exchange(UinStaticArray<T, c> &self, std::size_t idx,
 template <typename T>
 std::size_t
 index_of(const Array<T> &self, const T *ptr) noexcept {
-  if (ptr) {
-    const T *start = self.buffer;
-    auto s = reinterpret_cast<std::uintptr_t>(start);
-    auto e = reinterpret_cast<std::uintptr_t>(ptr);
-    if (e >= s) {
-      auto index = e - s;
-      // assertx(index % sizeof(*ptr) == 0);??
-      index /= sizeof(*ptr);
-      if (index < self.length) {
-        return index;
-      }
-    }
-  }
-  return self.capacity;
+  // util/array.h
+  return sp::index_of(self.buffer, self.length, self.capacity, ptr);
 }
 
 template <typename T, std::size_t c>

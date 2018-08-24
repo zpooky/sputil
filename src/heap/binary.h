@@ -2,6 +2,7 @@
 #define SP_UTIL_HEAP_BINARY_H
 
 #include <stack/HeapStack.h>
+#include <util/array.h>
 #include <util/assert.h>
 #include <util/comparator.h>
 
@@ -122,10 +123,12 @@ find(Binary<T, Comparator> &, const K &) noexcept; // TODO
 template <typename T, typename Comparator>
 void
 swap(Binary<T, Comparator> &, Binary<T, Comparator> &) noexcept;
-//TODO this should not work a static heap
+// TODO this should not work a static heap
 
 //=====================================
-// create a heap out of given array of N unsorted elements
+/*
+ * Create a heap out of given array of N unsorted elements.
+ */
 template <typename T, typename Comparator>
 Binary<T, Comparator>
 heapify(T *, std::size_t) noexcept;
@@ -142,12 +145,19 @@ heapify(T *, std::size_t) noexcept;
 // noexcept;//TODO
 
 //=====================================
-// joining two heaps to form a valid new heap containing all the elements of
-// both
+/*
+ * Joining two heaps to form a valid new heap containing all the elements of
+ * both
+ */
 template <typename T, typename Comparator>
 bool
 concat(Binary<T, Comparator> &dest,
        const Binary<T, Comparator> &source) noexcept; // TODO
+
+//=====================================
+template <typename T, typename Comparator>
+T *
+decrease_key(Binary<T, Comparator> &self, T *) noexcept;
 
 //=====================================
 template <typename Comparator>
@@ -196,6 +206,7 @@ Lit:
   return idx;
 }
 
+// namespace impl_heap {
 template <typename T, typename Comp, typename V>
 static T *
 insert_at(Binary<T, Comp> &self, std::size_t idx, V &&val) noexcept {
@@ -208,6 +219,7 @@ insert_at(Binary<T, Comp> &self, std::size_t idx, V &&val) noexcept {
   idx = shift_up(self, idx);
   return self.buffer + idx;
 }
+// }
 
 template <typename T, typename Comp>
 std::size_t
@@ -525,15 +537,35 @@ swap(Binary<T, Comparator> &first, Binary<T, Comparator> &second) noexcept {
 template <typename T, typename Comparator>
 Binary<T, Comparator>
 heapify(T *const raw, std::size_t length) noexcept {
+  assertx(raw);
+
   using namespace impl::heap;
 
-  Binary<T, Comparator> heap(raw, /*cap*/length);
+  Binary<T, Comparator> heap(raw, /*cap*/ length);
   for (std::size_t i = 0; i < length; ++i) {
     std::size_t idx = heap.length++;
     shift_up(heap, idx);
   }
 
   return heap;
+}
+
+//=====================================
+namespace impl_heap {
+template <typename T, typename Comparator>
+std::size_t
+index_of(Binary<T, Comparator> &self, T *subject) noexcept {
+  return sp::index_of(self.buffer, self.length, self.capacity, subject);
+}
+}
+
+template <typename T, typename Comparator>
+T *
+decrease_key(Binary<T, Comparator> &self, T *subject) noexcept {
+  assertx(subject);
+  std::size_t idx = impl_heap::index_of(self, subject);
+  assertxs(idx == capacity(self), idx, capacity(self));
+  return shift_up(self, idx);
 }
 
 //=====================================

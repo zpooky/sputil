@@ -2,8 +2,8 @@
 #define SP_UTIL_GRAPH_GRAPH2_H
 
 #include <collection/Array.h>
-#include <queue/Queue.h>
 #include <map/HashSet.h>
+#include <queue/Queue.h>
 #include <utility>
 
 namespace graph {
@@ -27,14 +27,14 @@ struct Edge {
   operator>(const Vertex<T> *o) const noexcept {
     assertx(o);
     assertx(target);
-    return target > o;
+    return target > o; // TODO??
   }
 
   bool
   operator>(const Edge<T, Weight> &o) const noexcept {
     assertx(target);
     assertx(o.target);
-    return target > o.target;
+    return target > o.target; // TODO??
   }
 };
 
@@ -43,7 +43,7 @@ static bool
 operator>(const Vertex<T> *f, const Edge<T, Weight> &s) noexcept {
   assertx(f);
   assertx(s.target);
-  return f > s.target;
+  return f > s.target; // TODO??
 }
 
 //=====================================
@@ -77,8 +77,6 @@ deapth_first(Vertex<T, W> &, F) noexcept;
 template <typename T, typename W, typename F>
 bool
 breadth_first(Vertex<T, W> &, F) noexcept;
-
-//=====================================
 
 //=====================================
 //====Implementation===================
@@ -126,10 +124,10 @@ deapth_first(Vertex<T, W> &root, F f) noexcept {
   sp::HashSet<Vertex<T, W> *, impl::vertex_hash<T, W>> visited;
 
   sp::HeapStack<Vertex<T, W> *> stack;
-  if(!push(stack, &root)){
+  if (!push(stack, &root)) {
     return false;
   }
-  if(!insert(visited, &root)) {
+  if (!insert(visited, &root)) {
     return false;
   }
 
@@ -137,18 +135,21 @@ deapth_first(Vertex<T, W> &root, F f) noexcept {
   while (pop(stack, head)) {
     assertx(head);
     f(*head);
+
     for (std::size_t i = 0; i < length(head->edges); ++i) {
       graph::Edge<T, W> &edge = head->edges[i];
+
       if (!lookup(visited, edge.target)) {
         if (!push(stack, edge.target)) {
           return false;
         }
-        if(! insert(visited, edge.target)){
+        if (!insert(visited, edge.target)) {
           return false;
         }
       }
-    }
-  }
+
+    } // for
+  }   // while
 
   return true;
 }
@@ -160,10 +161,10 @@ breadth_first(Vertex<T, W> &root, F f) noexcept {
   sp::HashSet<Vertex<T, W> *, impl::vertex_hash<T, W>> visited;
 
   sp::LinkedListQueue<Vertex<T, W> *> stack;
-  if(!enqueue(stack, &root)){
+  if (!enqueue(stack, &root)) {
     return false;
   }
-  if(!insert(visited, &root)){
+  if (!insert(visited, &root)) {
     return false;
   }
 
@@ -171,18 +172,21 @@ breadth_first(Vertex<T, W> &root, F f) noexcept {
   while (dequeue(stack, head)) {
     assertx(head);
     f(*head);
+
     for (std::size_t i = 0; i < length(head->edges); ++i) {
       graph::Edge<T, W> &edge = head->edges[i];
+
       if (!lookup(visited, edge.target)) {
         if (!enqueue(stack, edge.target)) {
           return false;
         }
-        if(! insert(visited, edge.target)){
+        if (!insert(visited, edge.target)) {
           return false;
         }
       }
-    }
-  }
+
+    } // for
+  }   // while
 
   return true;
 }

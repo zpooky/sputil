@@ -121,10 +121,6 @@ T *
 insert(HashSet<T, h> &, V &&) noexcept;
 
 //=====================================
-// template <typename T, sp::hasher<T> h, typename V>
-// bool
-// contains(const HashSet<T, h> &, const V &) noexcept;
-//=====================================
 namespace impl {
 template <typename T, sp::hasher<T> h>
 const T *
@@ -138,6 +134,11 @@ lookup(const HashSet<T, h> &, const V &) noexcept;
 // template <typename T, sp::hasher<T> h, typename V>
 // T *
 // lookup(HashSet<T, h> &, const V &) noexcept;
+
+//=====================================
+template <typename T, sp::hasher<T> h, typename V>
+bool
+contains(const HashSet<T, h> &, const V &) noexcept;
 
 //=====================================
 namespace rec {
@@ -587,6 +588,13 @@ lookup(const HashSet<T, hash> &self, const V &needle) noexcept {
 // }
 
 //=====================================
+template <typename T, sp::hasher<T> h, typename V>
+bool
+contains(const HashSet<T, h> &self, const V &needle) noexcept {
+  return lookup(self, needle) != nullptr;
+}
+
+//=====================================
 namespace rec {
 namespace impl {
 template <typename T, std::size_t c, typename F>
@@ -604,7 +612,7 @@ for_each(const sp::impl::HSBucket<T> &bucket, F f) noexcept {
   const sp::impl::HSBucket<T> *it = &bucket;
   while (it) {
     if (it->present) {
-      const T *const value = (T *)&it->value;
+      const T *const value = (const T *)&it->value;
       f(*value);
     }
     it = it->next;

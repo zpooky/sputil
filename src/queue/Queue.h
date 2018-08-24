@@ -23,19 +23,23 @@ struct LinkedListQueue {
 //=====================================
 template <typename T, template <typename> class A, typename V>
 T *
-enqueue(LinkedListQueue<T> &, V &&) noexcept;
+enqueue(LinkedListQueue<T, A> &, V &&) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A>
 bool
-dequeue(LinkedListQueue<T> &, T &out) noexcept;
+dequeue(LinkedListQueue<T, A> &, T &out) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A>
 bool
-is_empty(const LinkedListQueue<T> &) noexcept;
+is_empty(const LinkedListQueue<T, A> &) noexcept;
+
 //=====================================
 template <typename T, template <typename> class A>
 std::size_t
-length(const LinkedListQueue<T> &) noexcept;
+length(const LinkedListQueue<T, A> &) noexcept;
+
 //=====================================
 
 /*

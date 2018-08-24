@@ -519,11 +519,11 @@ Lit:
 template <typename T, template <typename> class A, typename Acum, typename F>
 Acum &
 reduce(LinkedList<T, A> &l, Acum &result, F f) noexcept {
-
   for_each(l, [&result, f](auto &current) {
     /**/
     result = f(result, current);
   });
+
   return result;
 }
 //=====================================
