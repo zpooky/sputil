@@ -15,6 +15,9 @@ struct Bitset {
 
   template <std::size_t SIZE>
   explicit Bitset(std::uint64_t (&)[SIZE]) noexcept;
+
+  virtual ~Bitset() noexcept {
+  }
 };
 
 //=====================================
@@ -27,7 +30,9 @@ struct StaticBitset : public Bitset {
 
 //=====================================
 struct DynamicBitset : public Bitset {
-  explicit DynamicBitset(std::size_t) noexcept;
+  explicit DynamicBitset(std::size_t number_of_u64_buffers) noexcept;
+
+  ~DynamicBitset() noexcept;
 };
 
 //=====================================

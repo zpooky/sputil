@@ -4,6 +4,7 @@
 #include <map/HashSet.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
+#include <unordered_set>
 #include <util/Bitset.h>
 #include <util/assert.h>
 
@@ -14,7 +15,9 @@
 
 static std::size_t
 identity(const std::uint32_t &in) {
-  return std::size_t(in);
+  std::hash<std::uint32_t> h;
+  return h(in);
+  // return std::size_t(in);
 }
 
 struct StrictHashSetTest {
@@ -61,6 +64,13 @@ struct StrictHashSetTest {
   }
 };
 
+struct vanilla_hash_shst {
+  std::size_t
+  operator()(const StrictHashSetTest &in) const {
+    return identity(in.data);
+  }
+};
+
 std::int64_t StrictHashSetTest::active = 0;
 
 static std::size_t
@@ -69,10 +79,10 @@ identity(const StrictHashSetTest &in) {
 }
 
 TEST(HashSetTest, test) {
-  {
-    // using TType = std::size_t;
-    using TType = StrictHashSetTest;
+  // using TType = std::size_t;
+  using TType = StrictHashSetTest;
 
+  {
     sp::HashSet<TType, identity> set;
     for (std::size_t i = 0; i < 1024; ++i) {
       for (std::size_t a = 0; a < i; ++a) {
@@ -100,6 +110,34 @@ TEST(HashSetTest, test) {
         ASSERT_TRUE(res);
         ASSERT_EQ(res->data, i);
         ASSERT_TRUE(sp::rec::verify(set));
+      }
+    }
+  }
+  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+}
+
+TEST(HashSetTest, test_vanilla) {
+  using TType = StrictHashSetTest;
+  // using TType = std::uint32_t;
+
+  {
+    std::unordered_set<TType, vanilla_hash_shst> set;
+    for (std::size_t i = 0; i < 1024; ++i) {
+      for (std::size_t a = 0; a < i; ++a) {
+        auto res = set.insert(TType(a, 0));
+        ASSERT_FALSE(res.second);
+        {
+          TType needle(a, 0);
+          auto res = set.find(needle);
+          ASSERT_TRUE(res != set.end());
+          ASSERT_EQ(res->data, a);
+        }
+      }
+
+      {
+        auto res = set.insert(TType(i, 0));
+        ASSERT_TRUE(res.second);
+        ASSERT_EQ(res.first->data, i);
       }
     }
   }
@@ -139,10 +177,11 @@ TEST(HashSetTest, test_rand) {
       } else {
         ASSERT_TRUE(res);
         ASSERT_EQ(*res, current);
-        ASSERT_EQ(false, sp::set(bset, std::size_t(current), true));
+        bool priv = sp::set(bset, std::size_t(current), true);
+        ASSERT_EQ(false, priv);
       }
     }
-  }
+  } // for
   ASSERT_TRUE(sp::rec::verify(set));
   // dump(set.tree);
 
@@ -200,7 +239,12 @@ std::int64_t TestHashSetTest::active = 0;
 
 static std::size_t
 fnv_hash(const TestHashSetTest &in) noexcept {
-  return fnv_1a::encode32(&in.data, sizeof(in));
+  return fnv_1a::encode32(&in.data, sizeof(in.data));
+}
+
+static std::size_t
+fnv_hash(const std::uint32_t &in) noexcept {
+  return fnv_1a::encode32(&in, sizeof(in));
 }
 
 TEST(HashSetTest, test_dtor) {
@@ -228,4 +272,73 @@ TEST(HashSetTest, test_dtor) {
     }
   }
   ASSERT_EQ(std::int64_t(0), TestHashSetTest::active);
+}
+
+TEST(HashSetTest, test_afew) {
+  std::size_t seed = 1;
+  for (; seed < 10000000; ++seed) //
+  {
+    printf("seed[%zu]\n", seed);
+
+    std::size_t inserted = 0;
+    std::size_t i = 0;
+
+    prng::xorshift32 r(seed);
+    sp::HashSet<std::uint32_t, fnv_hash> set;
+    sp::HashSet<std::uint32_t, fnv_hash> set2;
+    constexpr std::size_t limit_i = 3100000;
+    constexpr std::size_t max_dist = 3233123;
+
+    sp::DynamicBitset b((max_dist / 64) + 64);
+    printf("bits(): %zu\n", bits(b));
+    for (std::size_t i = 0; i < bits(b); ++i) {
+      ASSERT_FALSE(sp::set(b, i, true));
+      ASSERT_TRUE(sp::set(b, i, false));
+    }
+
+    ASSERT_FALSE(sp::set(b, max_dist, true));
+    ASSERT_TRUE(sp::set(b, max_dist, false));
+
+    while (i++ < limit_i) {
+      if (i % 10000 == 0) {
+        printf(".%zu\n", i);
+      }
+      const std::size_t in = uniform_dist(r, 0, max_dist);
+      std::uint32_t *res = insert(set, in);
+      if (res) {
+        ASSERT_EQ(*res, in);
+        ++inserted;
+        ASSERT_FALSE(test(b, in));
+        ASSERT_FALSE(sp::set(b, in, true));
+      } else {
+        ASSERT_TRUE(test(b, in));
+      }
+      ASSERT_TRUE(upsert(set2, in));
+    }
+
+    ASSERT_EQ(inserted, sp::rec::length(set));
+    printf("inserted:%zu\n", inserted);
+
+    std::size_t fins = 0;
+    for_each(b, [&](std::size_t idx, bool present) {
+      ASSERT_EQ(test(b, idx), present);
+
+      std::uint32_t *l = lookup(set, idx);
+      std::uint32_t *l2 = lookup(set2, idx);
+      if (present) {
+        ++fins;
+        ASSERT_TRUE(l);
+        ASSERT_EQ(idx, *l);
+
+        ASSERT_TRUE(l2);
+        ASSERT_EQ(idx, *l2);
+      } else {
+        ASSERT_FALSE(l);
+        ASSERT_FALSE(l2);
+      }
+    });
+
+    ASSERT_EQ(inserted, fins);
+    printf("done\n");
+  }
 }

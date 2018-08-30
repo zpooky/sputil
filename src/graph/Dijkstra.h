@@ -131,8 +131,19 @@ struct SPTmp {
   }
 
   bool
-  operator<(const SPTmp &o) const noexcept {
+  operator<(const SPTmp<T> &o) const noexcept {
     return weight < o.weight;
+  }
+  bool
+  operator==(const Vertex<T, int> *o) const noexcept {
+    assertx(o);
+    assertx(vtx);
+    return vtx == o;
+  }
+
+  bool
+  operator==(const Vertex<T, int> &o) const noexcept {
+    return this->operator==(&o);
   }
 };
 }
@@ -143,63 +154,64 @@ shortest_path2(Vertex<T, int> *from, Vertex<T, int> *to) noexcept {
   using Vtx = Vertex<T, int>;
 
   int weight = 0;
+  bool found_path = false;
 
   sp::HashSet<Vtx *, impl::hash_vtx<T>> explored;
-  heap::StaticMinBinary<impl::SPTmp<T>, 1024> frontier; // TODO
-  sp::HashMap<Vtx *, Vtx *, impl::hash_vtx<T>> previous;
-  sp::LinkedList<Vtx *> path;
 
-  {
-    impl::SPTmp<T> in(from, 0);
-    if (!insert(frontier, in)) {
-      return false;
-    }
+  heap::StaticMinBinary<impl::SPTmp<T>, 1024> frontier; // TODO
+
+  /* Fastest know path to $vertex
+   * fastest = lookup(previous, $vertex);
+   */
+  sp::HashMap<Vtx *, Vtx *, impl::hash_vtx<T>> previous;
+
+  if (!insert(frontier, impl::SPTmp<T>(from, 0))) {
+    return false;
   }
 
   while (!is_empty(frontier)) {
-    impl::SPTmp<T> n;
-    bool res = take_head(frontier, n);
+    impl::SPTmp<T> current;
+    bool res = take_head(frontier, current);
     assertx(res);
-    assertx(n.vtx);
+    assertx(current.vtx);
 
-    if (n.vtx == to) {
-      weight = n.weight;
-
-      if (from != to) {
-        if (!push_back(path, n.vtx)) {
-          return false;
-        }
-      }
-
+    if (current.vtx == to) {
+      /* Found end */
+      weight = current.weight;
+      found_path = true;
       break;
     }
 
-    if (!insert(explored, n.vtx)) {
+    if (!insert(explored, current.vtx)) {
+      assertx(false);
       return false;
     }
 
-    for (std::size_t i = 0; i < length(n.vtx->edges); ++i) {
-      Edge<T, int> &cur_edge = n.vtx->edges[i];
-      if (!contains(explored, cur_edge.target)) {
-        const int new_weight = n.weight + cur_edge.weight;
+    for (std::size_t i = 0; i < length(current.vtx->edges); ++i) {
+      Edge<T, int> &edge = current.vtx->edges[i];
 
-        // TODO should supply a compare function the prio does not uniquely
-        // identify a entry
-        impl::SPTmp<T> *res = lookup(frontier, cur_edge.target);
+      if (!contains(explored, edge.target)) {
+        const int new_weight = current.weight + edge.weight;
+
+        impl::SPTmp<T> *res =
+            sp::n::search(frontier.buffer, frontier.length, edge.target);
         if (!res) {
-          if (!insert(previous, cur_edge.target, /* <- */ n.vtx)) {
+          if (!insert(previous, edge.target, /* <- */ current.vtx)) {
+            assertx(false);
             return false;
           }
 
-          impl::SPTmp<T> in(cur_edge.target, new_weight);
+          impl::SPTmp<T> in(edge.target, new_weight);
           res = insert(frontier, in);
           if (!res) {
+            assertx(false);
             return false;
           }
         }
 
         if (new_weight < res->weight) {
-          if (!insert(previous, cur_edge.target, /* <- */ n.vtx)) {
+          if (!insert(previous, edge.target, /* <- */ current.vtx)) {
+            assertx(false);
             return false;
           }
 
@@ -213,18 +225,53 @@ shortest_path2(Vertex<T, int> *from, Vertex<T, int> *to) noexcept {
 
   } // while
 
-  if (!push_back(path, from)) {
-    return false;
-  }
+  assertx(found_path);
 
-  // TODO
-  // sp::rec::reverse(path);
-  // int cmp_weight = 0;
-  // cmp_weight = sp::reduce(path, cmp_weight, [](int acum, impl::SPTmp<T> &cur)
-  // {
-  //   return cur.weight + acum;
-  // });
-  // assertxs(cmp_weight == weight, cmp_weight, weight);
+  {
+    int cmp_weight = 0;
+    sp::HeapStack<Vtx *> path;
+
+    {
+      Vtx *priv = to;
+      do {
+        push(path, priv);
+
+        Vtx **priv_priv = lookup(previous, priv);
+        assertx(priv_priv);
+        assertx(*priv_priv);
+
+        {
+          auto edge = get_edge(**priv_priv, priv);
+          assertx(edge);
+          cmp_weight += edge->weight;
+        }
+
+        priv = *priv_priv;
+      } while (priv != from);
+
+      push(path, from);
+    }
+
+    assertxs(cmp_weight == weight, cmp_weight, weight);
+
+    Vtx *priv = nullptr;
+    for_each(path, [&priv](auto &vtx) {
+      int cost = -1;
+      if (priv) {
+        auto edge = get_edge(*priv, vtx);
+        assertx(edge);
+        cost = edge->weight;
+      }
+      priv = vtx;
+      /**/
+      if (cost > 0) {
+        printf("[%d]->Vtx(%d)-", cost, vtx->value);
+      } else {
+        printf("Vtx(%d)-", vtx->value);
+      }
+    });
+    printf(": sum cost[%d]\n", weight);
+  }
 
   return true;
 }

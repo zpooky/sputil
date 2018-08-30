@@ -113,12 +113,22 @@ struct HashSet {
   avl::Tree<impl::HSNode<T>> tree;
 
   HashSet() noexcept;
+  /* HashSet(const HashSet<T, sp::hasher<T>> &) = delete;
+   * HashSet(const HashSet<T, sp::hasher<T>> &&) = delete;
+   */
 };
+
+//=====================================
+/* returns null on duplicate
+ */
+template <typename T, sp::hasher<T> h, typename V>
+T *
+insert(HashSet<T, h> &, V &&) noexcept;
 
 //=====================================
 template <typename T, sp::hasher<T> h, typename V>
 T *
-insert(HashSet<T, h> &, V &&) noexcept;
+upsert(HashSet<T, h> &, V &&) noexcept;
 
 //=====================================
 namespace impl {
@@ -131,9 +141,9 @@ template <typename T, sp::hasher<T> h, typename V>
 const T *
 lookup(const HashSet<T, h> &, const V &) noexcept;
 
-// template <typename T, sp::hasher<T> h, typename V>
-// T *
-// lookup(HashSet<T, h> &, const V &) noexcept;
+template <typename T, sp::hasher<T> h, typename V>
+T *
+lookup(HashSet<T, h> &, const V &) noexcept;
 
 //=====================================
 template <typename T, sp::hasher<T> h, typename V>
@@ -280,17 +290,17 @@ namespace impl {
 //     n |= n >>> 16;
 //     return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
 // }
-template <typename T, typename V>
+template <typename T, typename V, typename Duplicate>
 static T *
-insert(HSBucket<T> &node, V &&val) noexcept {
+generic_insert(HSBucket<T> &node, V &&val, Duplicate d) noexcept {
   HSBucket<T> *current = &node;
 Lit:
   if (current) {
     if (current->present) {
-      const T *const value = (T *)&current->value;
-      if (*value == val) {
-        // already present
-        return nullptr;
+      const T *const existing = (T *)&current->value;
+      if (*existing == val) {
+        /* Already present */
+        return d(*current, std::forward<V>(val));
       }
     }
 
@@ -298,19 +308,51 @@ Lit:
       current = current->next;
       goto Lit;
     }
-    current = current->next = new (std::nothrow) HSBucket<T>;
 
+    current = current->next = new (std::nothrow) HSBucket<T>;
     if (current) {
       assertx(!current->present);
 
       current->present = true;
       return new (&current->value) T(std::forward<V>(val));
     }
+
   } else {
     assertx(false);
   }
 
   return nullptr;
+}
+
+template <typename T, typename V>
+static T *
+insert(HSBucket<T> &node, V &&val) noexcept {
+  auto on_duplicate = [](HSBucket<T> &, V &&) {
+    /**/
+    return nullptr;
+  };
+
+  return generic_insert(node, std::forward<V>(val), on_duplicate);
+}
+
+template <typename T, typename V>
+static T *
+upsert(HSBucket<T> &node, V &&val, bool &inserted) noexcept {
+  bool updated = false;
+  auto on_duplicate = [&](HSBucket<T> &current, V &&v) {
+    assertx(current.present);
+
+    updated = true;
+
+    T *existing = (T *)&current.value;
+    existing->~T();
+    return new (existing) T(std::forward<V>(v));
+  };
+
+  T *const result = generic_insert(node, std::forward<V>(val), on_duplicate);
+  inserted = result != nullptr && !updated;
+
+  return result;
 }
 
 static inline std::size_t
@@ -344,7 +386,7 @@ split(HashSet<T, hash> &self, HSNode<T, cap> &source) noexcept {
 
     source.length -= split;
     auto status = emplace(self.tree, start, split);
-    if (!verify(self.tree)) {
+    if (!verify(self.tree)) { // TODO only debug
       dump(self.tree);
       verify(self.tree);
       assertx(false);
@@ -354,8 +396,8 @@ split(HashSet<T, hash> &self, HSNode<T, cap> &source) noexcept {
     assertx(created);
     HSNode<T, cap> *const result = std::get<0>(status);
     if (result) {
-      assertx(result->start == start);
-      assertx(result->length == split);
+      assertxs(result->start == start, result->start, start);
+      assertxs(result->length == split, result->length, split);
       // printf("Before[%zu, %zu]\n", source.start, source.length);
 
       // printf("SPlit[%zu, %zu]\n", source.start, source.length);
@@ -372,7 +414,7 @@ split(HashSet<T, hash> &self, HSNode<T, cap> &source) noexcept {
 template <typename T, sp::hasher<T> h>
 static std::size_t
 hash(const HSBucket<T> &subject) noexcept {
-  const T *const value = (T *)&subject.value;
+  const T *const value = (const T *)&subject.value;
   return h(*value);
 }
 
@@ -469,7 +511,7 @@ lookup(HSNode<T, cap> &node, const HashKey &code) noexcept {
 
 template <typename T, std::size_t cap, typename V>
 static T *
-insert(HSNode<T, cap> &node, const HashKey &code, V &&val) noexcept {
+insert_node(HSNode<T, cap> &node, const HashKey &code, V &&val) noexcept {
   assertx(in_range(node, code));
 
   HSBucket<T> &bucket = lookup(node, code);
@@ -477,16 +519,28 @@ insert(HSNode<T, cap> &node, const HashKey &code, V &&val) noexcept {
   if (result) {
     ++node.entries;
   }
+
   return result;
 }
 
-} // namespace impl
+template <typename T, std::size_t cap, typename V>
+static T *
+upsert_node(HSNode<T, cap> &node, const HashKey &code, V &&val) noexcept {
+  assertx(in_range(node, code));
 
-template <typename T, sp::hasher<T> hash, typename V>
+  HSBucket<T> &bucket = lookup(node, code);
+  bool inserted = false;
+  T *const result = upsert(bucket, std::forward<V>(val), inserted);
+  if (inserted) {
+    ++node.entries;
+  }
+
+  return result;
+}
+
+template <typename T, sp::hasher<T> hash, typename V, typename Insert>
 T *
-insert(HashSet<T, hash> &self, V &&val) noexcept {
-  using namespace impl;
-
+gen_insert(HashSet<T, hash> &self, V &&val, Insert insert) noexcept {
   auto &tree = self.tree;
   const HashKey code(hash(val));
 
@@ -511,18 +565,49 @@ insert(HashSet<T, hash> &self, V &&val) noexcept {
     assertx(find(tree, code) == node);
     assertx(in_range(*node, code));
 
-    T *const result = impl::insert(*node, code, std::forward<V>(val));
+    T *const result = insert(*node, code, std::forward<V>(val));
     if (result) {
+      typename std::aligned_storage<sizeof(T), alignof(T)>::type wasd;
+      std::memcpy(&wasd, result, sizeof(*result));
+
       // TODO resize factor
       if (node->entries >= node->capacity) {
         impl::rehash(self, *node);
       }
+      // TODO why is never the data pointed to by $result affected by the
+      // rehash?
+
+      assertx(std::memcmp(&wasd, result, sizeof(*result)) == 0);
     }
 
     return result;
   }
 
   return nullptr;
+}
+} // namespace impl
+
+template <typename T, sp::hasher<T> h, typename V>
+T *
+insert(HashSet<T, h> &self, V &&val) noexcept {
+  using namespace impl;
+
+  return impl::gen_insert(self, std::forward<V>(val),
+                          [](HSNode<T> &node, const HashKey &code, V &&v) {
+                            return insert_node(node, code, std::forward<V>(v));
+                          });
+}
+
+//=====================================
+template <typename T, sp::hasher<T> h, typename V>
+T *
+upsert(HashSet<T, h> &self, V &&val) noexcept {
+  using namespace impl;
+
+  return impl::gen_insert(self, std::forward<V>(val),
+                          [](HSNode<T> &node, const HashKey &code, V &&v) {
+                            return upsert_node(node, code, std::forward<V>(v));
+                          });
 }
 
 //=====================================
@@ -535,7 +620,7 @@ lookup(const HSBucket<T> &node, const V &needle) noexcept {
 Lit:
   if (current) {
     if (current->present) {
-      const T *const value = (T *)&current->value;
+      const T *const value = (const T *)&current->value;
       if (*value == needle) {
         return value;
       }
@@ -580,12 +665,12 @@ lookup(const HashSet<T, hash> &self, const V &needle) noexcept {
   return impl::lookup(self, code, needle);
 }
 
-// template <typename T, sp::hasher<T> h, typename V>
-// T *
-// lookup(HashSet<T, h> &self, const V &needle) noexcept {
-//   const auto &c_self = self;
-//   return lookup(c_self, needle);
-// }
+template <typename T, sp::hasher<T> h, typename V>
+T *
+lookup(HashSet<T, h> &self, const V &needle) noexcept {
+  const HashSet<T, h> &c_self = self;
+  return (T *)lookup(c_self, needle);
+}
 
 //=====================================
 template <typename T, sp::hasher<T> h, typename V>

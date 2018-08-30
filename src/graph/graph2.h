@@ -69,6 +69,15 @@ bool
 add_edge(Vertex<T, W> &, WK &&, Vertex<T, W> *) noexcept;
 
 //=====================================
+template <typename T, typename W>
+const Edge<T, W> *
+get_edge(const Vertex<T, W> &, const Vertex<T, W> *) noexcept;
+
+template <typename T, typename W>
+Edge<T, W> *
+get_edge(Vertex<T, W> &, const Vertex<T, W> *) noexcept;
+
+//=====================================
 template <typename T, typename W, typename F>
 bool
 deapth_first(Vertex<T, W> &, F) noexcept;
@@ -97,7 +106,7 @@ Vertex<T, Weight>::~Vertex() noexcept {
 template <typename T, typename W>
 bool
 is_adjacent(const Vertex<T, W> &self, const Vertex<T, W> &needle) noexcept {
-  return bin_search(self.edges, &needle);
+  return get_edge(self, &needle) != nullptr;
 }
 
 //=====================================
@@ -107,6 +116,22 @@ add_edge(Vertex<T, W> &self, WK &&weight, Vertex<T, W> *edge) noexcept {
   assertx(edge);
   return bin_insert_unique(self.edges,
                            Edge<T, W>(edge, std::forward<WK>(weight)));
+}
+
+//=====================================
+template <typename T, typename W>
+const Edge<T, W> *
+get_edge(const Vertex<T, W> &self, const Vertex<T, W> *const needle) noexcept {
+  assertx(needle);
+
+  return bin_search(self.edges, needle);
+}
+
+template <typename T, typename W>
+Edge<T, W> *
+get_edge(Vertex<T, W> &self, const Vertex<T, W> *const needle) noexcept {
+  const Vertex<T, W> &c_self = self;
+  return (Edge<T, W> *)get_edge(c_self, needle);
 }
 
 //=====================================

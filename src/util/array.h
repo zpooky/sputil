@@ -1,12 +1,27 @@
 #ifndef SP_UTIL_UTIL_ARRAY_H
 #define SP_UTIL_UTIL_ARRAY_H
 
+#include <cstddef>
+#include <cstdint>
+
 namespace sp {
 //=====================================
 template <typename T>
 std::size_t
 index_of(const T *arr, std::size_t length, std::size_t capacity,
          const T *needle) noexcept;
+
+namespace n {
+//=====================================
+template <typename T, typename K>
+const T *
+search(const T *arr, std::size_t length, const K *needle) noexcept;
+
+//=====================================
+template <typename T, typename K>
+T *
+search(T *arr, std::size_t length, const K *needle) noexcept;
+}
 
 //=====================================
 //====Implementation===================
@@ -35,6 +50,34 @@ index_of(const T *const arr, std::size_t l, std::size_t cap,
 
   return cap;
 }
+
+namespace n {
+//=====================================
+template <typename T, typename K>
+const T *
+search(const T *arr, std::size_t length, const K *needle) noexcept {
+  const T *it = arr;
+  const T *const end = it + length;
+  while (it != end) {
+    if (*it == *needle) {
+      return it;
+    }
+    ++it;
+  }
+
+  return nullptr;
+}
+
+//=====================================
+template <typename T, typename K>
+T *
+search(T *arr, std::size_t length, const K *needle) noexcept {
+  const T *const c_arr = arr;
+  return (T *)search(c_arr, length, needle);
+}
+}
+
+//=====================================
 }
 
 #endif

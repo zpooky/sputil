@@ -115,9 +115,11 @@ T *
 peek_head(Binary<T, Comparator> &) noexcept;
 
 //=====================================
+// TODO should supply a compare function the prio does not uniquely
+// identify a entry
 template <typename T, typename Comparator, typename K>
 T *
-find(Binary<T, Comparator> &, const K &) noexcept; // TODO
+find(Binary<T, Comparator> &, const K &) noexcept;
 
 //=====================================
 template <typename T, typename Comparator>
@@ -134,15 +136,15 @@ Binary<T, Comparator>
 heapify(T *, std::size_t) noexcept;
 
 //=====================================
-// TODO define
+// XXX define
 // // joining two heaps to form a valid new heap containing all the elements
 // shared by both parties template<typename T,typename Comparator > bool
 // union(Binary<T,Comarator>&dest,const Binary<T,Comparator>&source)
-// noexcept;//TODO
+// noexcept;//XXX
 //
 // template<typename T,typename Comparator >
 // bool union(Binary<T,Comarator>&dest,const Binary<T,Comparator>&&source)
-// noexcept;//TODO
+// noexcept;//XXX
 
 //=====================================
 /*
@@ -453,7 +455,11 @@ find_heap(Binary<T, Comparator> &self, const K &needle) noexcept {
   using namespace impl::heap;
 
   sp::HeapStack<std::size_t> stack;
-  push(stack, 0);
+  if (!push(stack, 0)) {
+    assertx(false);
+    return nullptr;
+  }
+
   std::size_t index;
   while (pop(stack, index)) {
 
@@ -463,10 +469,17 @@ find_heap(Binary<T, Comparator> &self, const K &needle) noexcept {
       const bool greater = cmp(self.buffer[index], needle);
       const bool lesser = cmp(needle, self.buffer[index]);
 
-      if (!greater && !lesser) { //==
-        return self.buffer + index;
+      if (!greater && !lesser) {
+        /* Equal priority */
+        T *current = self.buffer + index;
+
+        if (*current == needle) {
+          return current;
+        }
+        goto Lwasd;
       } else if (greater) {
-        std::size_t left = left_child(index);
+      Lwasd:
+        const std::size_t left = left_child(index);
         if (left < self.length) {
           if (!push(stack, left)) {
             assertx(false);
@@ -474,18 +487,19 @@ find_heap(Binary<T, Comparator> &self, const K &needle) noexcept {
           }
         }
 
-        // We directly handle right child, so we do not need to keep track of
-        // it on the stack.
-        std::size_t right = right_child(index);
-        index = right;
+        /* We directly handle right child, so we do not need to keep track of
+         * it on the stack.
+         */
+        index = right_child(index);
         goto Lit;
       }
     }
-  }
+  } // while
 
   return nullptr; // TODO
 }
 
+// this is wrong prio is not unique
 template <typename T, typename Comparator, typename K>
 T *
 find_stack(Binary<T, Comparator> &self, const K &needle,
@@ -564,8 +578,10 @@ T *
 decrease_key(Binary<T, Comparator> &self, T *subject) noexcept {
   assertx(subject);
   std::size_t idx = impl_heap::index_of(self, subject);
-  assertxs(idx == capacity(self), idx, capacity(self));
-  return shift_up(self, idx);
+  assertxs(idx != capacity(self), idx, capacity(self));
+
+  idx = impl::heap::shift_up(self, idx);
+  return self.buffer + idx;
 }
 
 //=====================================

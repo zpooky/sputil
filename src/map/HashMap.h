@@ -81,7 +81,7 @@ HashMap<Key, Value, h>::~HashMap() noexcept {
 template <typename K, typename V, sp::hasher<K> h, typename Key, typename Value>
 V *
 insert(HashMap<K, V, h> &self, Key &&key, Value &&value) noexcept {
-  auto res = insert(self.set, impl::HashMapEntry<K, V>(key, value));
+  auto res = upsert(self.set, impl::HashMapEntry<K, V>(key, value));
   if (res) {
     return &res->value;
   }
