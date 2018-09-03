@@ -148,7 +148,7 @@ bool
 deapth_first(Vertex<T, W> &root, F f) noexcept {
   sp::HashSet<Vertex<T, W> *, impl::vertex_hash<T, W>> visited;
 
-  sp::HeapStack<Vertex<T, W> *> stack;
+  sp::DynamicStack<Vertex<T, W> *> stack;
   if (!push(stack, &root)) {
     return false;
   }

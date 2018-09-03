@@ -1,7 +1,7 @@
 #ifndef SP_UTIL_HEAP_BINARY_H
 #define SP_UTIL_HEAP_BINARY_H
 
-#include <stack/HeapStack.h>
+#include <stack/DynamicStack.h>
 #include <util/array.h>
 #include <util/assert.h>
 #include <util/comparator.h>
@@ -454,7 +454,7 @@ T *
 find_heap(Binary<T, Comparator> &self, const K &needle) noexcept {
   using namespace impl::heap;
 
-  sp::HeapStack<std::size_t> stack;
+  sp::DynamicStack<std::size_t> stack;
   if (!push(stack, 0)) {
     assertx(false);
     return nullptr;

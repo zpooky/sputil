@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include <stack/HeapStack.h>
+#include <stack/DynamicStack.h>
 #include <stack/Stack.h>
 
 TEST(StackTest, test_empty) {
@@ -41,7 +41,7 @@ TEST(StackTest, test) {
 }
 
 TEST(HeapStackTest, test) {
-  sp::HeapStack<int> stack;
+  sp::DynamicStack<int> stack;
   ASSERT_EQ(std::size_t(0), length(stack));
   ASSERT_TRUE(is_empty(stack));
   ASSERT_FALSE(is_full(stack));

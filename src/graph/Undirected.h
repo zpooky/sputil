@@ -7,7 +7,7 @@
 #include <map/HashSet.h>
 #include <memory/StackPooledAllocator.h>
 #include <queue/Queue.h>
-#include <stack/HeapStack.h>
+#include <stack/DynamicStack.h>
 #include <utility>
 
 /*
@@ -253,7 +253,7 @@ depth_first(Undirected<T, N> &root, F f) noexcept {
   using blah = Undirected<T, N> *;
   sp::HashSet<blah, fnv_1a::hash<blah>> visited;
 
-  sp::HeapStack<Undirected<T, N> *, sp::StackPooledAllocator> toVisit;
+  sp::DynamicStack<Undirected<T, N> *, sp::StackPooledAllocator> toVisit;
 
   {
     auto res = push(toVisit, &root);

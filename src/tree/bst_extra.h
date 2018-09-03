@@ -2,7 +2,7 @@
 #define SP_UTIL_TREE_BINARY_SEARCH_TREE_EXTRA_H
 
 #include <queue/Queue.h>
-#include <stack/HeapStack.h>
+#include <stack/DynamicStack.h>
 #include <tree/avl.h>
 #include <tree/bst.h>
 
@@ -192,7 +192,7 @@ namespace impl {
 template <typename T, typename F>
 void
 reverse_levelorder(const Node<T> *tree, F f,
-                   sp::HeapStack<const Node<T> *> &stack) noexcept {
+                   sp::DynamicStack<const Node<T> *> &stack) noexcept {
   if (tree) {
     push(stack, tree);
     reverse_levelorder(tree->left, f, stack);
@@ -204,7 +204,7 @@ reverse_levelorder(const Node<T> *tree, F f,
 template <typename T, typename C, typename F>
 void
 reverse_levelorder(const Tree<T, C> &tree, F f) noexcept {
-  sp::HeapStack<const Node<T> *> stack;
+  sp::DynamicStack<const Node<T> *> stack;
   // start at the bottom level and work up
   impl::reverse_levelorder(tree.root, f, stack);
   for_each(stack, [f](auto *c) {
@@ -405,9 +405,8 @@ reverse(Tree<T, C> &tree) noexcept {
 
 //=====================================
 namespace impl {
-  /**/
+/**/
 }
-
 
 //============================================================
 //===Itterative===============================================
@@ -453,7 +452,7 @@ reverse_levelorder(const Tree<T, C> &tree, F f) noexcept {
   if (!tree.root) {
     return;
   }
-  sp::HeapStack<Node<T> *> stack;
+  sp::DynamicStack<Node<T> *> stack;
   sp::LinkedListQueue<Node<T> *> queue;
   assert(enqueue(queue, tree.root));
   /*
