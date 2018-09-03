@@ -40,15 +40,25 @@ struct Matrix {
 
 template <typename T, typename F>
 void
-for_each(Matrix<T> &m, F f) noexcept {
-  for (std::size_t y = 0; y < m.height; ++y) {
-    for (std::size_t x = 0; x < m.width; ++x) {
-      f(y, x, m[y][x]);
+for_each(Matrix<T> &mtx, F f) noexcept {
+  for (std::size_t x = 0; x < mtx.height; ++x) {
+    for (std::size_t y = 0; y < mtx.width; ++y) {
+      T &current = mtx[x][y];
+      f(x, y, current);
     }
   }
 }
 
-template<typename T>
+template <typename T>
+void
+init(Matrix<T> &mtx, const T &val) noexcept {
+  for_each(mtx, [&val](auto, auto, char &cur) {
+    //
+    cur = val;
+  });
+}
+
+template <typename T>
 void
 print(const Matrix<T> &) noexcept;
 }

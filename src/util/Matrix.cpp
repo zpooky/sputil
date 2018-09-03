@@ -60,6 +60,16 @@ do_print(ssize_t value) noexcept {
   }
 }
 
+static void
+do_print(char value) noexcept {
+  printf("%c", value);
+}
+
+static void
+do_print(unsigned char value) noexcept {
+  printf("%u", value);
+}
+
 template <typename T>
 static void
 print(T value, std::size_t pad) noexcept {
@@ -91,4 +101,10 @@ print<std::size_t>(const Matrix<std::size_t> &) noexcept;
 
 template void
 print<ssize_t>(const Matrix<ssize_t> &) noexcept;
+
+template void
+print<char>(const Matrix<char> &) noexcept;
+
+template void
+print<unsigned char>(const Matrix<unsigned char> &) noexcept;
 }

@@ -2,8 +2,8 @@
 #define SP_UTIL_NP_PROBLEM_H
 
 #include <collection/Array.h>
+// TODO
 
-// https://en.wikipedia.org/wiki/Knapsack_problem
 // https://en.wikipedia.org/wiki/Karp%27s_21_NP-complete_problems
 namespace np {
 namespace complete {
