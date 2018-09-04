@@ -52,7 +52,7 @@ for_each(Matrix<T> &mtx, F f) noexcept {
 template <typename T>
 void
 init(Matrix<T> &mtx, const T &val) noexcept {
-  for_each(mtx, [&val](auto, auto, char &cur) {
+  for_each(mtx, [&val](auto, auto, auto &cur) {
     //
     cur = val;
   });
