@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <util/Matrix.h>
 
+// TODO not sure if this is np
 namespace np {
 /* # N-Queen
  * Given $n queens and a $n*$n board calculate all posible position of the $n

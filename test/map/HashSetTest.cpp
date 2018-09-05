@@ -283,7 +283,7 @@ TEST(HashSetTest, test_afew) {
     std::size_t inserted = 0;
     std::size_t i = 0;
 
-    prng::xorshift32 r(seed);
+    prng::xorshift32 r(10000 + seed);
     sp::HashSet<std::uint32_t, fnv_hash> set;
     sp::HashSet<std::uint32_t, fnv_hash> set2;
     constexpr std::size_t limit_i = 3100000;
@@ -341,4 +341,17 @@ TEST(HashSetTest, test_afew) {
     ASSERT_EQ(inserted, fins);
     printf("done\n");
   }
+}
+
+TEST(HashSetTest, test_lookup_insert) {
+  sp::HashSet<std::uint32_t, fnv_hash> set;
+  ASSERT_EQ(0, sp::rec::length(set));
+  std::uint32_t *first = lookup_insert(set, 1);
+  ASSERT_EQ(1, sp::rec::length(set));
+  ASSERT_EQ(*first, 1);
+  std::uint32_t *second = lookup_insert(set, 1);
+  ASSERT_EQ(*first, 1);
+  ASSERT_EQ(*first, *second);
+  ASSERT_EQ(first, second);
+  ASSERT_EQ(1, sp::rec::length(set));
 }

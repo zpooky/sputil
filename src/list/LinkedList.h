@@ -6,6 +6,12 @@
 #include <util/assert.h>
 #include <utility>
 
+/* ## Stable
+ * Nodes in the linked list are stable meaning we can hold a reference to values
+ * from the outside and except it to refere to the same value even after other
+ * values inserted into the LinkedList.
+ */
+
 // TODO emplace
 
 namespace sp {
