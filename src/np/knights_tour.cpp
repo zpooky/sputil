@@ -146,8 +146,8 @@ build_graph(sp::LinkedList<Vtx> &nodes, int N) noexcept {
 
           ::graph::Undirected<int, int> graph(**from);
           if (!add_edge(graph, 1, *to)) {
-            // assertx(false);
-            // return false;
+            assertx(is_adjacent(**from, **to));
+            assertx(is_adjacent(**to, **from));
           }
         } // if in_range
       }   // for cords
@@ -159,11 +159,54 @@ build_graph(sp::LinkedList<Vtx> &nodes, int N) noexcept {
   return true;
 }
 
+template <typename H, typename Eq>
+static bool
+traverse(Vtx &start, sp::HashSet<Vtx *, H, Eq> &visited,
+         sp::DynamicStack<Vtx *> &path, std::size_t done) noexcept {
+  if (length(path) == done) {
+    return true;
+  }
+  // 1. sort path edges accouring to its edges where less is highly priority
+  // 2. for
+  /*
+   * {
+   *   if (!contains(visited, current)) {
+   *     Vtx **res = insert(visited, current);
+   *     assertx(res);
+   *     push(path, current);
+   *     if (traverse(current, visited, path, done)) {
+   *       return true;
+   *     }
+   *     pop(path);
+   *   }
+   * }
+   */
+
+  return false;
+}
+
 bool
-knights_tour(std::size_t n) noexcept {
-  sp::LinkedList<Vtx> nodes;
-  if (!build_graph(nodes, n)) {
+knights_tour(std::size_t N) noexcept {
+  if (N == 0) {
     return false;
+  }
+
+  sp::LinkedList<Vtx> nodes;
+  if (!build_graph(nodes, N)) {
+    return false;
+  }
+
+  sp::DynamicStack<Vtx *> path;
+
+  if (!is_empty(nodes)) {
+    Vtx *const start = get(nodes, 0);
+    assertx(start);
+    assertxs(start->value == 0, start->value);
+
+    sp::HashSet<Vtx *, VtxHash, VtxEquality> visited;
+    if (!traverse(*start, visited, path, (N * N))) {
+      return false;
+    }
   }
 
   return true;

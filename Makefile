@@ -84,6 +84,10 @@ dumb_clean:
 # }}}
 
 # - {{{
+.PHONY: spooky
+spooky:
+	$(MAKE) CXXFLAGS="$(CXXFLAGS_DEBUG)"
+
 .PHONY: buildO1
 buildO1:
 	$(MAKE) BUILD_DIR=build/buildO1 CXXFLAGS="$(CXXFLAGS_O1)"
