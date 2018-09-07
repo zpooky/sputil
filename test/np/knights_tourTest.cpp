@@ -17,7 +17,6 @@ TEST(knights_tourTest, test) {
   ASSERT_EQ(165575218320, np::knights_tour(7, f, nullptr));
 }
 
-
 TEST(knights_tourTest, test2) {
   np::graph::knights_tour(4);
 }

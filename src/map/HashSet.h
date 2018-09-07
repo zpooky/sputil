@@ -11,15 +11,9 @@
 // #include <tree/red-black.h>
 // #include <list/SkipList.h>
 
-// TODO refactor all the hash functions to use a struct instead to allow for
-// more hash functions with different parameters instead only a single function
-// pointer. Make it similar as the std. This change allows us to use other than
-// T values as a Key in the hash map/set in a well defined manner.
-
 // TODO mix of hash to avoid identity 1 -> 1 hash problem
 // TODO remove(set,key)
 // TODO dynamic node size, not template size look at sparse bitset?
-// TODO hash map based on this
 // TODO load factor?
 //
 
@@ -127,9 +121,10 @@ struct HashSet {
   avl::Tree<impl::HSNode<T>> tree;
 
   HashSet() noexcept;
-  /* HashSet(const HashSet<T, Hash> &) = delete;
-   * HashSet(const HashSet<T, Hash> &&) = delete;
-   */
+  HashSet(const HashSet<T, Hash, Eq> &) = delete;
+  HashSet(const HashSet<T, Hash, Eq> &&) = delete;
+
+  ~HashSet() noexcept;
 };
 
 //=====================================
@@ -320,6 +315,10 @@ HashKey::operator>(const HSNode<T> &o) const noexcept {
 template <typename T, typename H, typename Eq>
 HashSet<T, H, Eq>::HashSet() noexcept
     : tree() {
+}
+
+template <typename T, typename H, typename Eq>
+HashSet<T, H, Eq>::~HashSet() noexcept {
 }
 
 //=====================================

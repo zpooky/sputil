@@ -59,6 +59,13 @@ struct Vertex {
 };
 
 //=====================================
+template <typename T, typename Weight>
+struct Undirected {
+  Vertex<T, Weight> &graph;
+  explicit Undirected(Vertex<T, Weight> &) noexcept;
+};
+
+//=====================================
 template <typename T, typename W>
 bool
 is_adjacent(const Vertex<T, W> &, const Vertex<T, W> &) noexcept;
@@ -67,6 +74,10 @@ is_adjacent(const Vertex<T, W> &, const Vertex<T, W> &) noexcept;
 template <typename T, typename W, typename WK>
 bool
 add_edge(Vertex<T, W> &, WK &&, Vertex<T, W> *) noexcept;
+
+template <typename T, typename W, typename WK>
+bool
+add_edge(Undirected<T, W> &, const WK &, Vertex<T, W> *) noexcept;
 
 //=====================================
 template <typename T, typename W>
@@ -90,7 +101,6 @@ breadth_first(Vertex<T, W> &, F) noexcept;
 //=====================================
 //====Implementation===================
 //=====================================
-
 template <typename T, typename Weight>
 template <typename A>
 Vertex<T, Weight>::Vertex(A &&a) noexcept
@@ -100,6 +110,11 @@ Vertex<T, Weight>::Vertex(A &&a) noexcept
 
 template <typename T, typename Weight>
 Vertex<T, Weight>::~Vertex() noexcept {
+}
+
+template <typename T, typename Weight>
+Undirected<T, Weight>::Undirected(Vertex<T, Weight> &root) noexcept
+    : graph(root) {
 }
 
 //=====================================
@@ -114,8 +129,29 @@ template <typename T, typename W, typename WK>
 bool
 add_edge(Vertex<T, W> &self, WK &&weight, Vertex<T, W> *edge) noexcept {
   assertx(edge);
-  return bin_insert_unique(self.edges,
-                           Edge<T, W>(edge, std::forward<WK>(weight)));
+  auto &edges = self.edges;
+  return bin_insert_unique(edges, Edge<T, W>(edge, std::forward<WK>(weight)));
+}
+
+template <typename T, typename W, typename WK>
+bool
+add_edge(Undirected<T, W> &self, const WK &w, Vertex<T, W> *edge) noexcept {
+  assertx(edge);
+
+  Vertex<T, W> &me = self.graph;
+  if (!is_full(me.edges) && !is_full(edge->edges)) {
+    if (bin_search(me.edges, edge) == nullptr &&
+        bin_search(edge->edges, &me) == nullptr) {
+      bool res = add_edge(me, w, edge);
+      assertx(res);
+      res = add_edge(*edge, w, &me);
+      assertx(res);
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
 //=====================================
@@ -140,7 +176,9 @@ template <typename T, typename W>
 struct vertex_hash {
   bool
   operator()(Vertex<T, W> *const &in) const noexcept {
-    return reinterpret_cast<std::uintptr_t>(in);
+    sp::Hasher<std::uintptr_t> h;
+    auto num = reinterpret_cast<std::uintptr_t>(in);
+    return h(num);
   }
 };
 
