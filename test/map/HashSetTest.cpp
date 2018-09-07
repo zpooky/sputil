@@ -32,13 +32,13 @@ struct StrictHashSetTest {
   operator=(const StrictHashSetTest &) = delete;
 
   bool
-  operator==(const StrictHashSetTest &o) const noexcept {
-    return data == o.data;
+  operator==(std::size_t o) const noexcept {
+    return data == o;
   }
 
   bool
-  operator>(const StrictHashSetTest &o) const noexcept {
-    return data > o.data;
+  operator==(const StrictHashSetTest &o) const noexcept {
+    return this->operator==(o.data);
   }
 
   explicit operator std::size_t() const noexcept {
@@ -55,16 +55,19 @@ struct StrictHashSetTest {
 
 struct vanilla_hash_shst {
   std::size_t
-  operator()(const StrictHashSetTest &in) const {
+  operator()(std::size_t in) const {
     sp::Hasher<std::size_t> h;
-    return h(in.data);
+    return h(in);
+  }
+  std::size_t
+  operator()(const StrictHashSetTest &in) const {
+    return operator()(in.data);
   }
 };
 
 std::int64_t StrictHashSetTest::active = 0;
 
-TEST(HashSetTest, test) {
-  // using TType = std::size_t;
+TEST(HashSetTest, test_insert_dtor) {
   using TType = StrictHashSetTest;
 
   {
@@ -72,9 +75,6 @@ TEST(HashSetTest, test) {
     for (std::size_t i = 0; i < 1024; ++i) {
       for (std::size_t a = 0; a < i; ++a) {
         {
-          // if (i == 311 && a == 256) {
-          //   printf("");
-          // }
           TType *res = insert(set, TType(a, 0));
           if (res) {
             printf("i[%zu] a[%zu] = res[%zu]\n", i, a, std::size_t(*res));
@@ -87,11 +87,171 @@ TEST(HashSetTest, test) {
           ASSERT_TRUE(res);
           ASSERT_EQ(res->data, a);
         }
+        {
+          const TType *res = lookup(set, a);
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
       }
 
       ASSERT_EQ(i, sp::rec::length(set));
       {
+        ASSERT_FALSE(lookup(set, i));
+        ASSERT_FALSE(lookup(set, TType(i, 0)));
+
         TType *res = insert(set, TType(i, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, i);
+        ASSERT_TRUE(sp::rec::verify(set));
+      }
+    }
+  }
+  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+}
+
+TEST(HashSetTest, test_upsert_dtor) {
+  using TType = StrictHashSetTest;
+
+  {
+    sp::HashSet<TType, vanilla_hash_shst> set;
+    for (std::size_t i = 0; i < 1024; ++i) {
+      for (std::size_t a = 0; a < i; ++a) {
+        {
+          TType *res = insert(set, TType(a, 0));
+          ASSERT_FALSE(res);
+        }
+        {
+          TType *res = upsert(set, TType(a, 0));
+          ASSERT_TRUE(res);
+        }
+        {
+          const TType *res = lookup(set, TType(a, 0));
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
+        {
+          const TType *res = lookup(set, a);
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
+      }
+
+      ASSERT_EQ(i, sp::rec::length(set));
+      {
+        ASSERT_FALSE(lookup(set, i));
+        ASSERT_FALSE(lookup(set, TType(i, 0)));
+
+        TType *res = upsert(set, TType(i, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, i);
+        ASSERT_TRUE(sp::rec::verify(set));
+      }
+    }
+  }
+  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+}
+
+TEST(HashSetTest, test_lookup_insert_dtor) {
+  using TType = StrictHashSetTest;
+
+  {
+    sp::HashSet<TType, vanilla_hash_shst> set;
+    for (std::size_t i = 0; i < 1024; ++i) {
+      for (std::size_t a = 0; a < i; ++a) {
+        {
+          TType *res = insert(set, TType(a, 0));
+          ASSERT_FALSE(res);
+        }
+        {
+          TType *res = upsert(set, TType(a, 0));
+          ASSERT_TRUE(res);
+        }
+        {
+          TType *res = lookup_insert(set, TType(a, 0));
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
+        {
+          const TType *res = lookup(set, TType(a, 0));
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
+        {
+          const TType *res = lookup(set, a);
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
+      }
+
+      ASSERT_EQ(i, sp::rec::length(set));
+      {
+        ASSERT_FALSE(lookup(set, i));
+        ASSERT_FALSE(lookup(set, TType(i, 0)));
+
+        TType *res = lookup_insert(set, TType(i, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, i);
+        ASSERT_TRUE(sp::rec::verify(set));
+      }
+    }
+  }
+  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+}
+
+TEST(HashSetTest, test_lookup_compute_dtor) {
+  using TType = StrictHashSetTest;
+
+  auto not_comp = [](auto &, const TType &) {
+    /**/
+    assertx(false);
+  };
+
+  {
+    sp::HashSet<TType, vanilla_hash_shst> set;
+    for (std::size_t i = 0; i < 1024; ++i) {
+
+      auto comp = [&i](auto &current, const TType &xarx) {
+        assertxs(xarx.data == i, xarx.data, i);
+        new (&current.value) TType(xarx.data, 0);
+      };
+
+      for (std::size_t a = 0; a < i; ++a) {
+        {
+          TType *res = insert(set, TType(a, 0));
+          ASSERT_FALSE(res);
+        }
+        {
+          TType *res = lookup_compute(set, TType(a, 0), not_comp);
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
+        {
+          TType *res = upsert(set, TType(a, 0));
+          ASSERT_TRUE(res);
+        }
+        {
+          TType *res = lookup_insert(set, TType(a, 0));
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
+        {
+          const TType *res = lookup(set, TType(a, 0));
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
+        {
+          const TType *res = lookup(set, a);
+          ASSERT_TRUE(res);
+          ASSERT_EQ(res->data, a);
+        }
+      }
+
+      ASSERT_EQ(i, sp::rec::length(set));
+      {
+        ASSERT_FALSE(lookup(set, i));
+        ASSERT_FALSE(lookup(set, TType(i, 0)));
+
+        TType *res = lookup_compute(set, TType(i, 0), comp);
         ASSERT_TRUE(res);
         ASSERT_EQ(res->data, i);
         ASSERT_TRUE(sp::rec::verify(set));
@@ -103,7 +263,6 @@ TEST(HashSetTest, test) {
 
 TEST(HashSetTest, test_vanilla) {
   using TType = StrictHashSetTest;
-  // using TType = std::uint32_t;
 
   {
     std::unordered_set<TType, vanilla_hash_shst> set;

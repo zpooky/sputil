@@ -139,7 +139,7 @@ namespace impl {
 template <typename T, typename W>
 struct vertex_hash {
   bool
-  operator()(Vertex<T, W> *const &in) {
+  operator()(Vertex<T, W> *const &in) const noexcept {
     return reinterpret_cast<std::uintptr_t>(in);
   }
 };

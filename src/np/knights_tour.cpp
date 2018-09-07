@@ -92,7 +92,7 @@ Id(int x, int y, int N) noexcept {
 
 static bool
 build_graph(sp::LinkedList<Vtx> &nodes, int N) noexcept {
-  std::size_t insxx = 0;
+  int insxx = 0;
   auto factory = [&insxx, &nodes](auto &state, const Vtx *id) {
     insxx++;
     assertx(id);

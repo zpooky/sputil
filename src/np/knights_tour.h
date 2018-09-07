@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <util/Matrix.h>
 
-// TODO not sure if this is working...
 // TODO not sure if this is np
 // TODO add XXX heuristic (just sort x,y canditates according to valid edge
 //      count where smaller amount of edges is better)
@@ -17,10 +16,10 @@ namespace np {
  */
 typedef void (*knights_tour_cb)(const sp::Matrix<int> &board, void *);
 
-/*
- * recursive, backtracking
+/* recursive, backtracking
  * Result is a matrix where is entry contains the jump number of the knight:
  */
+// TODO not sure if this is working...
 std::size_t
 knights_tour(std::size_t n, knights_tour_cb, void *closure) noexcept;
 
