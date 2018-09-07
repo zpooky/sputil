@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <hash/fnv.h>
+#include <hash/standard.h>
 #include <list/SkipList.h>
 #include <map/HashSet.h>
 #include <prng/util.h>
@@ -17,6 +18,12 @@ static std::size_t
 identity(const std::uint32_t &in) {
   std::hash<std::uint32_t> h;
   return h(in);
+  // return std::size_t(in);
+}
+
+static std::size_t
+identityx(const int &in) {
+  return in;
   // return std::size_t(in);
 }
 
@@ -247,6 +254,11 @@ fnv_hash(const std::uint32_t &in) noexcept {
   return fnv_1a::encode32(&in, sizeof(in));
 }
 
+static std::size_t
+fnv_hash(const int &in) noexcept {
+  return fnv_1a::encode32(&in, sizeof(in));
+}
+
 TEST(HashSetTest, test_dtor) {
   {
     sp::HashSet<TestHashSetTest, fnv_hash> set;
@@ -276,16 +288,18 @@ TEST(HashSetTest, test_dtor) {
 
 TEST(HashSetTest, test_afew) {
   std::size_t seed = 1;
-  for (; seed < 10000000; ++seed) //
+  // for (; seed < 10000000; ++seed) //
   {
     printf("seed[%zu]\n", seed);
 
     std::size_t inserted = 0;
     std::size_t i = 0;
 
-    prng::xorshift32 r(10000 + seed);
-    sp::HashSet<std::uint32_t, fnv_hash> set;
-    sp::HashSet<std::uint32_t, fnv_hash> set2;
+    prng::xorshift32 r(20000 + seed);
+    sp::HashSet<std::uint32_t, fnv_hash> set_insert;
+    sp::HashSet<std::uint32_t, fnv_hash> set_upsert;
+    sp::HashSet<std::uint32_t, fnv_hash> set_look_insert;
+    sp::HashSet<std::uint32_t, fnv_hash> set_compute;
     constexpr std::size_t limit_i = 3100000;
     constexpr std::size_t max_dist = 3233123;
 
@@ -304,37 +318,63 @@ TEST(HashSetTest, test_afew) {
         printf(".%zu\n", i);
       }
       const std::size_t in = uniform_dist(r, 0, max_dist);
-      std::uint32_t *res = insert(set, in);
+      std::uint32_t *res = insert(set_insert, in);
+
+      bool comp = false;
+      ASSERT_TRUE(lookup_compute(
+          set_compute, in, [in, &comp](auto &current, const auto &xarx) {
+            comp = true;
+            assertxs(in == xarx, in, xarx);
+            return new (&current.value) std::uint32_t(xarx);
+          }));
+
       if (res) {
         ASSERT_EQ(*res, in);
         ++inserted;
         ASSERT_FALSE(test(b, in));
         ASSERT_FALSE(sp::set(b, in, true));
+        ASSERT_TRUE(comp);
       } else {
+        // already inserted
         ASSERT_TRUE(test(b, in));
+        ASSERT_FALSE(comp);
       }
-      ASSERT_TRUE(upsert(set2, in));
+      ASSERT_TRUE(upsert(set_upsert, in));
+      ASSERT_TRUE(lookup_insert(set_look_insert, in));
     }
 
-    ASSERT_EQ(inserted, sp::rec::length(set));
+    ASSERT_EQ(inserted, sp::rec::length(set_insert));
+    ASSERT_EQ(inserted, sp::rec::length(set_upsert));
+    ASSERT_EQ(inserted, sp::rec::length(set_look_insert));
+    ASSERT_EQ(inserted, sp::rec::length(set_compute));
     printf("inserted:%zu\n", inserted);
 
     std::size_t fins = 0;
     for_each(b, [&](std::size_t idx, bool present) {
       ASSERT_EQ(test(b, idx), present);
 
-      std::uint32_t *l = lookup(set, idx);
-      std::uint32_t *l2 = lookup(set2, idx);
+      std::uint32_t *l_ins = lookup(set_insert, idx);
+      std::uint32_t *l_ups = lookup(set_upsert, idx);
+      std::uint32_t *l_look_ins = lookup(set_look_insert, idx);
+      std::uint32_t *l_comp = lookup(set_look_insert, idx);
       if (present) {
         ++fins;
-        ASSERT_TRUE(l);
-        ASSERT_EQ(idx, *l);
+        ASSERT_TRUE(l_ins);
+        ASSERT_EQ(idx, *l_ins);
 
-        ASSERT_TRUE(l2);
-        ASSERT_EQ(idx, *l2);
+        ASSERT_TRUE(l_ups);
+        ASSERT_EQ(idx, *l_ups);
+
+        ASSERT_TRUE(l_look_ins);
+        ASSERT_EQ(idx, *l_look_ins);
+
+        ASSERT_TRUE(l_comp);
+        ASSERT_EQ(idx, *l_comp);
       } else {
-        ASSERT_FALSE(l);
-        ASSERT_FALSE(l2);
+        ASSERT_FALSE(l_ins);
+        ASSERT_FALSE(l_ups);
+        ASSERT_FALSE(l_look_ins);
+        ASSERT_FALSE(l_comp);
       }
     });
 
@@ -354,4 +394,193 @@ TEST(HashSetTest, test_lookup_insert) {
   ASSERT_EQ(*first, *second);
   ASSERT_EQ(first, second);
   ASSERT_EQ(1, sp::rec::length(set));
+}
+
+TEST(HashSetTest, test_lookup_compute) {
+  sp::HashSet<std::uint32_t, fnv_hash> set;
+  ASSERT_EQ(0, sp::rec::length(set));
+  bool first_cb = false;
+  std::uint32_t *first = lookup_compute(
+      set, 1, [&first_cb](auto &current, const std::uint32_t &value) {
+        first_cb = true;
+        return new (&current.value) std::uint32_t(value);
+      });
+
+  ASSERT_TRUE(first_cb);
+  ASSERT_EQ(1, sp::rec::length(set));
+  ASSERT_EQ(*first, 1);
+
+  bool second_cb = false;
+  std::uint32_t *second =
+      lookup_compute(set, 1, [&second_cb](auto &, const std::uint32_t &) {
+        second_cb = true;
+        return nullptr;
+      });
+  ASSERT_FALSE(second_cb);
+  ASSERT_EQ(*first, 1);
+  ASSERT_EQ(*first, *second);
+  ASSERT_EQ(first, second);
+  ASSERT_EQ(1, sp::rec::length(set));
+}
+
+#if 0
+
+TEST(HashSetTest, test_lookup_compute2) {
+  // sp::LinkedList<int> nodes;
+  std::size_t insxx = 0;
+
+  auto factory = [&insxx](auto &state, int id) {
+    insxx++;
+    // printf("  2.push_back(%d)\n", id);
+    // int *res = push_back(nodes, id);
+    // assertx(res);
+
+    new (&state.value) int(id);
+  };
+
+  sp::HashSet<int, identityx> set;
+
+  int *zero = lookup_compute(set, 0, factory);
+  ASSERT_TRUE(zero);
+  ASSERT_EQ(*zero, 0);
+  ASSERT_EQ(1, insxx);
+  ASSERT_EQ(insxx, sp::rec::length(set));
+
+  int *one = lookup_compute(set, 1, factory);
+  ASSERT_TRUE(one);
+  ASSERT_EQ(*one, 1);
+  ASSERT_EQ(2, insxx);
+  ASSERT_EQ(insxx, sp::rec::length(set));
+
+  int *three = lookup_compute(set, 3, factory);
+  ASSERT_TRUE(three);
+  ASSERT_EQ(*three, 3);
+  ASSERT_EQ(3, insxx);
+  ASSERT_EQ(insxx, sp::rec::length(set));
+
+  int *three_x = lookup_compute(set, 3, factory);
+  ASSERT_TRUE(three_x);
+  ASSERT_EQ(*three_x, 3);
+  ASSERT_EQ(three, three_x);
+  ASSERT_EQ(3, insxx);
+  ASSERT_EQ(insxx, sp::rec::length(set));
+
+  int *one_x = lookup_compute(set, 1, factory);
+  ASSERT_TRUE(one_x);
+  ASSERT_EQ(*one_x, 1);
+  ASSERT_EQ(one_x, one);
+  ASSERT_EQ(3, insxx);
+  ASSERT_EQ(insxx, sp::rec::length(set));
+
+  printf("--\n");
+  int *minus_one = lookup_compute(set, -1, factory);
+  printf("--\n");
+  ASSERT_TRUE(minus_one);
+  ASSERT_EQ(*minus_one, -1);
+  ASSERT_EQ(4, insxx);
+  ASSERT_EQ(insxx, sp::rec::length(set));
+
+  ASSERT_EQ(*zero, 0);
+  ASSERT_EQ(*one, 1);
+  ASSERT_EQ(*three, 3);
+  ASSERT_EQ(three_x, three);
+  ASSERT_EQ(one_x, one);
+  ASSERT_EQ(*minus_one, -1);
+
+  {
+    int *l_zero = lookup(set, 0);
+    ASSERT_EQ(l_zero, zero);
+    int *l_one = lookup(set, 1);
+    ASSERT_EQ(l_one, one);
+    int *l_three = lookup(set, 3);
+    ASSERT_EQ(l_three, three);
+    int *l_minus_one = lookup(set, -1);
+    ASSERT_EQ(l_minus_one, minus_one);
+  }
+}
+
+#endif
+
+struct HSTDummy {
+  const int id;
+  explicit HSTDummy(int i)
+      : id(i) {
+  }
+
+  ~HSTDummy() {
+  }
+};
+
+static std::size_t
+identity(HSTDummy *const &in) {
+  return in->id;
+}
+
+struct HSTDummyEq {
+  bool
+  operator()(const HSTDummy *f, const HSTDummy *s) const noexcept {
+    return f->id == s->id;
+  }
+};
+
+TEST(HashSetTest, test_lookup_compute3) {
+  HSTDummy one_storage{1};
+
+  std::size_t insxx = 0;
+  auto factory = [&insxx, &one_storage](auto &state, HSTDummy *id) {
+    printf("--\n");
+    insxx++;
+    new (&state.value) HSTDummy *(&one_storage);
+
+    std::size_t stor_hash = identity(&one_storage);
+    std::size_t id_hash = identity(id);
+    std::size_t st_hash = identity(*((HSTDummy **)&state.value));
+
+    assertxs(stor_hash == id_hash, stor_hash, id_hash);
+    assertxs(st_hash == id_hash, stor_hash, st_hash, id_hash);
+  };
+
+  sp::HashSet<HSTDummy *, identity, HSTDummyEq> set;
+  for (std::size_t i = 0; i < 100; ++i) {
+    HSTDummy one_in{1};
+    HSTDummy **one = lookup_compute(set, &one_in, factory);
+    ASSERT_TRUE(one);
+    ASSERT_TRUE(*one);
+    ASSERT_EQ((*one)->id, 1);
+    ASSERT_EQ(1, insxx);
+    ASSERT_EQ(1, sp::rec::length(set));
+
+    {
+      HSTDummy one_look{1};
+      HSTDummy **l_one = lookup(set, &one_look);
+      ASSERT_TRUE(l_one);
+      ASSERT_TRUE(*l_one);
+      ASSERT_EQ((*l_one)->id, 1);
+      ASSERT_EQ(one, l_one);
+      ASSERT_EQ(*one, *l_one);
+      ASSERT_EQ(1, sp::rec::length(set));
+    }
+
+    HSTDummy **one_x = lookup_compute(set, &one_in, factory);
+    ASSERT_TRUE(one_x);
+    ASSERT_TRUE(*one_x);
+    // ASSERT_EQ(one, one_x);
+    ASSERT_EQ(*one, *one_x);
+    ASSERT_EQ((*one_x)->id, 1);
+    ASSERT_EQ(1, insxx);
+    ASSERT_EQ(1, sp::rec::length(set));
+  }
+}
+
+TEST(HashSetTest, hasherxx) {
+  {
+    sp::Hasher<signed char> h;
+    std::size_t hash = h('c');
+    printf("signed char: %zu\n", hash);
+  }
+  {
+    sp::Hasher<unsigned char> h;
+    std::size_t hash = h('c');
+    printf("unsigned char: %zu\n", hash);
+  }
 }

@@ -19,6 +19,6 @@ TEST(fibonacciTest, test_cmp) {
     auto two = sp::dp::memo::fibonacci(i);
     ASSERT_EQ(one, two);
 
-    printf("N:%zu fib: %zu\n", i, one);
+    printf("N:%u fib: %u\n", i, one);
   }
 }

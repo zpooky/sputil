@@ -54,7 +54,7 @@ write(Sink &sink, BytesView &in) noexcept {
 
 bool
 write(Sink &sink, const void *w, std::size_t l) noexcept {
-  return write(sink, (unsigned char *)w, l);
+  return write(sink, (const unsigned char *)w, l);
 }
 
 bool

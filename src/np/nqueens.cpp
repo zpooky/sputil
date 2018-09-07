@@ -3,12 +3,11 @@
 #include <cstdlib>
 #include <cstring>
 
-#define Piece_EMPTY char('-')
-#define Piece_QUEEN char('Q')
+#define Piece_EMPTY ('-')
+#define Piece_QUEEN ('Q')
 
 namespace np {
 static is_valid_vertical(const sp::Matrix<char> &board, const std::size_t y) {
-  std::size_t result = 0;
   for (std::size_t x = 0; x < board.height; ++x) {
     if (board[x][y] == Piece_QUEEN) {
       return false;

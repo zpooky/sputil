@@ -71,52 +71,77 @@ knights_tour(std::size_t n, knights_tour_cb cb, void *closure) noexcept {
 namespace graph {
 using Vtx = ::graph::Vertex<int>;
 
-template <typename T>
-std::size_t
-hash_vtx(::graph::Vertex<T> *const &in) noexcept {
-  // printf("%p hash = \n");
+static std::size_t
+hash_vtxxx(::graph::Vertex<int> *const &in) noexcept {
   return in->value;
 }
 
+struct VtxEquality {
+  bool
+  operator()(const Vtx *f, const Vtx *s) const noexcept {
+    return f->value == s->value;
+  }
+};
+
+static int
+Id(int x, int y, int N) noexcept {
+  return (x * N) + y;
+}
+
 static bool
-build_graph(sp::LinkedList<Vtx> &nodes, int n) noexcept {
-  auto compute = [&nodes](const Vtx *v) {
-    assertx(v);
-    Vtx *res = push_back(nodes, v->value);
+build_graph(sp::LinkedList<Vtx> &nodes, int N) noexcept {
+  std::size_t insxx = 0;
+  auto factory = [&insxx, &nodes](auto &state, const Vtx *id) {
+    insxx++;
+    assertx(id);
+    // printf("  1.push_back(%d)\n", id->value);
+    Vtx *res = push_back(nodes, id->value);
     assertx(res);
-    // TODO assert res has the smae hash as v in HashSet
-    return res;
+    return new (&state.value) Vtx *(res);
   };
 
-  sp::HashSet<Vtx *, hash_vtx> vtxs;
+  sp::HashSet<Vtx *, hash_vtxxx, VtxEquality> vtxs;
 
-  for (int x = 0; x < n; ++x) {
-    for (int y = 0; y < n; ++y) {
+  for (int x = 0; x < N; ++x) {
+    for (int y = 0; y < N; ++y) {
+
+      Vtx from_id{Id(x, y, N)};
+      printf("%d.\n", from_id.value);
+      // printf("from.lookup_compute(%d)\n", from_id.value);
+      Vtx **from = lookup_compute(vtxs, &from_id, factory);
+      if (!from) {
+        assertx(false);
+        return false;
+      }
+      assertxs(insxx == sp::rec::length(vtxs), insxx, sp::rec::length(vtxs));
+
       for (std::size_t i = 0; i < cords_moves; ++i) {
         const int x_move = x + cords[i][0];
         const int y_move = y + cords[i][1];
 
-        Vtx from_id{x + y};
-        Vtx to_id{x_move + y_move};
-        Vtx **from = lookup_compute(vtxs, &from_id, compute);
-        if (!from) {
-          assertx(false);
-          return false;
-        }
+        if (in_range(x_move, N) && in_range(y_move, N)) {
+          Vtx to_id{Id(x_move, y_move, N)};
 
-        Vtx **to = lookup_compute(vtxs, &to_id, compute);
-        if (!to) {
-          assertx(false);
-          return false;
-        }
+          Vtx **to = lookup_compute(vtxs, &to_id, factory);
+          if (!to) {
+            assertx(false);
+            return false;
+          }
+          assertxs(insxx == sp::rec::length(vtxs), insxx,
+                   sp::rec::length(vtxs));
 
-        // TODO undirected since if we can $from -> $to also means $to -> $from
-        if (!add_edge(**from, 0, *to)) {
-          return false;
-        }
-      }
-    }
-  }
+          // TODO undirected since if we can $from -> $to also means $to ->
+          // $from
+          if (!add_edge(**from, 0, *to)) {
+            // assertx(false);
+            // return false;
+          }
+        } // if in_range
+      }   // for cords
+    }     // for y
+  }       // for x
+
+  assertxs(insxx == (N * N), insxx);
 
   return true;
 }
@@ -124,9 +149,11 @@ build_graph(sp::LinkedList<Vtx> &nodes, int n) noexcept {
 bool
 knights_tour(std::size_t n) noexcept {
   sp::LinkedList<Vtx> nodes;
-  build_graph(nodes, n);
+  if (!build_graph(nodes, n)) {
+    return false;
+  }
 
-  return false;
+  return true;
 }
 }
 //=====================================
