@@ -71,10 +71,12 @@ knights_tour(std::size_t n, knights_tour_cb cb, void *closure) noexcept {
 namespace graph {
 using Vtx = ::graph::Vertex<int>;
 
-static std::size_t
-hash_vtxxx(::graph::Vertex<int> *const &in) noexcept {
-  return in->value;
-}
+struct hash_vtxxx {
+  std::size_t
+  operator()(::graph::Vertex<int> *const &in) const noexcept {
+    return in->value;
+  }
+};
 
 struct VtxEquality {
   bool

@@ -9,24 +9,6 @@
 #include <util/Bitset.h>
 #include <util/assert.h>
 
-// static std::size_t
-// identity(const std::size_t &in) {
-//   return in;
-// }
-
-static std::size_t
-identity(const std::uint32_t &in) {
-  std::hash<std::uint32_t> h;
-  return h(in);
-  // return std::size_t(in);
-}
-
-static std::size_t
-identityx(const int &in) {
-  return in;
-  // return std::size_t(in);
-}
-
 struct StrictHashSetTest {
   static std::int64_t active;
   const std::size_t data;
@@ -74,23 +56,19 @@ struct StrictHashSetTest {
 struct vanilla_hash_shst {
   std::size_t
   operator()(const StrictHashSetTest &in) const {
-    return identity(in.data);
+    sp::Hasher<std::size_t> h;
+    return h(in.data);
   }
 };
 
 std::int64_t StrictHashSetTest::active = 0;
-
-static std::size_t
-identity(const StrictHashSetTest &in) {
-  return std::size_t(in.data);
-}
 
 TEST(HashSetTest, test) {
   // using TType = std::size_t;
   using TType = StrictHashSetTest;
 
   {
-    sp::HashSet<TType, identity> set;
+    sp::HashSet<TType, vanilla_hash_shst> set;
     for (std::size_t i = 0; i < 1024; ++i) {
       for (std::size_t a = 0; a < i; ++a) {
         {
@@ -152,7 +130,7 @@ TEST(HashSetTest, test_vanilla) {
 }
 
 TEST(HashSetTest, test_rand) {
-  sp::HashSet<std::uint32_t, identity> set;
+  sp::HashSet<std::uint32_t> set;
   prng::xorshift32 r(1);
   std::size_t i = 0;
   constexpr std::uint32_t range = 1024 * 9;
@@ -244,24 +222,16 @@ struct TestHashSetTest {
 
 std::int64_t TestHashSetTest::active = 0;
 
-static std::size_t
-fnv_hash(const TestHashSetTest &in) noexcept {
-  return fnv_1a::encode32(&in.data, sizeof(in.data));
-}
-
-static std::size_t
-fnv_hash(const std::uint32_t &in) noexcept {
-  return fnv_1a::encode32(&in, sizeof(in));
-}
-
-static std::size_t
-fnv_hash(const int &in) noexcept {
-  return fnv_1a::encode32(&in, sizeof(in));
-}
+struct THSTHasher {
+  std::size_t
+  operator()(const TestHashSetTest &in) noexcept {
+    return fnv_1a::encode32(&in.data, sizeof(in.data));
+  }
+};
 
 TEST(HashSetTest, test_dtor) {
   {
-    sp::HashSet<TestHashSetTest, fnv_hash> set;
+    sp::HashSet<TestHashSetTest, THSTHasher> set;
 
     for (std::size_t i = 0; i < 1024; ++i) {
       for (std::size_t a = 0; a < i; ++a) {
@@ -296,10 +266,10 @@ TEST(HashSetTest, test_afew) {
     std::size_t i = 0;
 
     prng::xorshift32 r(20000 + seed);
-    sp::HashSet<std::uint32_t, fnv_hash> set_insert;
-    sp::HashSet<std::uint32_t, fnv_hash> set_upsert;
-    sp::HashSet<std::uint32_t, fnv_hash> set_look_insert;
-    sp::HashSet<std::uint32_t, fnv_hash> set_compute;
+    sp::HashSet<std::uint32_t> set_insert;
+    sp::HashSet<std::uint32_t> set_upsert;
+    sp::HashSet<std::uint32_t> set_look_insert;
+    sp::HashSet<std::uint32_t> set_compute;
     constexpr std::size_t limit_i = 3100000;
     constexpr std::size_t max_dist = 3233123;
 
@@ -384,7 +354,7 @@ TEST(HashSetTest, test_afew) {
 }
 
 TEST(HashSetTest, test_lookup_insert) {
-  sp::HashSet<std::uint32_t, fnv_hash> set;
+  sp::HashSet<std::uint32_t> set;
   ASSERT_EQ(0, sp::rec::length(set));
   std::uint32_t *first = lookup_insert(set, 1);
   ASSERT_EQ(1, sp::rec::length(set));
@@ -397,7 +367,7 @@ TEST(HashSetTest, test_lookup_insert) {
 }
 
 TEST(HashSetTest, test_lookup_compute) {
-  sp::HashSet<std::uint32_t, fnv_hash> set;
+  sp::HashSet<std::uint32_t> set;
   ASSERT_EQ(0, sp::rec::length(set));
   bool first_cb = false;
   std::uint32_t *first = lookup_compute(
@@ -438,7 +408,7 @@ TEST(HashSetTest, test_lookup_compute2) {
     new (&state.value) int(id);
   };
 
-  sp::HashSet<int, identityx> set;
+  sp::HashSet<int> set;
 
   int *zero = lookup_compute(set, 0, factory);
   ASSERT_TRUE(zero);
@@ -511,15 +481,28 @@ struct HSTDummy {
   }
 };
 
-static std::size_t
-identity(HSTDummy *const &in) {
-  return in->id;
-}
+struct HSTHasher {
+  std::size_t
+  operator()(int id) const {
+    return id;
+  }
+
+  std::size_t
+  operator()(const HSTDummy *in) const {
+    assertx(in);
+    return this->operator()(in->id);
+  }
+};
 
 struct HSTDummyEq {
   bool
+  operator()(const HSTDummy *f, int id) const noexcept {
+    return f->id == id;
+  }
+
+  bool
   operator()(const HSTDummy *f, const HSTDummy *s) const noexcept {
-    return f->id == s->id;
+    return operator()(f, s->id);
   }
 };
 
@@ -527,21 +510,29 @@ TEST(HashSetTest, test_lookup_compute3) {
   HSTDummy one_storage{1};
 
   std::size_t insxx = 0;
-  auto factory = [&insxx, &one_storage](auto &state, HSTDummy *id) {
+  auto factory2 = [&insxx, &one_storage](auto &state, int id) {
     printf("--\n");
+    assertx(id == 1);
     insxx++;
     new (&state.value) HSTDummy *(&one_storage);
 
-    std::size_t stor_hash = identity(&one_storage);
-    std::size_t id_hash = identity(id);
-    std::size_t st_hash = identity(*((HSTDummy **)&state.value));
+    HSTHasher hash;
+    std::size_t stor_hash = hash(&one_storage);
+    std::size_t id_hash = hash(id);
+    std::size_t st_hash = hash(*((HSTDummy **)&state.value));
 
     assertxs(stor_hash == id_hash, stor_hash, id_hash);
     assertxs(st_hash == id_hash, stor_hash, st_hash, id_hash);
   };
 
-  sp::HashSet<HSTDummy *, identity, HSTDummyEq> set;
-  for (std::size_t i = 0; i < 100; ++i) {
+  auto factory = [factory2](auto &state, HSTDummy *id) {
+    assertx(id);
+
+    factory2(state, id->id);
+  };
+
+  sp::HashSet<HSTDummy *, HSTHasher, HSTDummyEq> set;
+  for (int i = 0; i < 100; ++i) {
     HSTDummy one_in{1};
     HSTDummy **one = lookup_compute(set, &one_in, factory);
     ASSERT_TRUE(one);
@@ -551,8 +542,18 @@ TEST(HashSetTest, test_lookup_compute3) {
     ASSERT_EQ(1, sp::rec::length(set));
 
     {
-      HSTDummy one_look{1};
-      HSTDummy **l_one = lookup(set, &one_look);
+      HSTDummy **one_x = lookup_compute(set, &one_in, factory);
+      ASSERT_TRUE(one_x);
+      ASSERT_TRUE(*one_x);
+      ASSERT_EQ(one, one_x);
+      ASSERT_EQ(*one, *one_x);
+      ASSERT_EQ((*one_x)->id, 1);
+      ASSERT_EQ(1, insxx);
+      ASSERT_EQ(1, sp::rec::length(set));
+    }
+
+    {
+      HSTDummy **l_one = lookup(set, 1);
       ASSERT_TRUE(l_one);
       ASSERT_TRUE(*l_one);
       ASSERT_EQ((*l_one)->id, 1);
@@ -561,14 +562,16 @@ TEST(HashSetTest, test_lookup_compute3) {
       ASSERT_EQ(1, sp::rec::length(set));
     }
 
-    HSTDummy **one_x = lookup_compute(set, &one_in, factory);
-    ASSERT_TRUE(one_x);
-    ASSERT_TRUE(*one_x);
-    // ASSERT_EQ(one, one_x);
-    ASSERT_EQ(*one, *one_x);
-    ASSERT_EQ((*one_x)->id, 1);
-    ASSERT_EQ(1, insxx);
-    ASSERT_EQ(1, sp::rec::length(set));
+    {
+      HSTDummy **one_x = lookup_compute(set, 1, factory2);
+      ASSERT_TRUE(one_x);
+      ASSERT_TRUE(*one_x);
+      ASSERT_EQ(one, one_x);
+      ASSERT_EQ(*one, *one_x);
+      ASSERT_EQ((*one_x)->id, 1);
+      ASSERT_EQ(1, insxx);
+      ASSERT_EQ(1, sp::rec::length(set));
+    }
   }
 }
 

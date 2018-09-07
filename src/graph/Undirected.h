@@ -209,34 +209,34 @@ Undirected<T, N>::~Undirected() noexcept {
 template <typename T, std::size_t N, typename F>
 void
 breadth_first(Undirected<T, N> &root, F f) noexcept {
-  using blah = Undirected<T, N> *;
-  sp::HashSet<blah, fnv_1a::hash<blah>> visited;
-
-  sp::LinkedListQueue<Undirected<T, N> *, sp::StackPooledAllocator> toVisit;
-
-  {
-    auto res = enqueue(toVisit, &root);
-    assertx(res);
-  }
-  {
-    auto res = insert(visited, &root);
-    assertx(res);
-  }
-  while (!is_empty(toVisit)) {
-    Undirected<T, N> *current = nullptr;
-    dequeue(toVisit, current);
-    assertx(current);
-    f(*current);
-
-    for (std::size_t i = 0; i < length(current->edges); ++i) {
-      auto &edge = current->edges[i];
-      if (insert(visited, edge.ptr)) {
-        // insert only succeeds if it does not already contain edge
-        auto res = enqueue(toVisit, edge.ptr);
-        assertx(res);
-      }
-    }
-  }
+  // using blah = Undirected<T, N> *;
+  // sp::HashSet<blah, fnv_1a::hash<blah>> visited;
+  //
+  // sp::LinkedListQueue<Undirected<T, N> *, sp::StackPooledAllocator> toVisit;
+  //
+  // {
+  //   auto res = enqueue(toVisit, &root);
+  //   assertx(res);
+  // }
+  // {
+  //   auto res = insert(visited, &root);
+  //   assertx(res);
+  // }
+  // while (!is_empty(toVisit)) {
+  //   Undirected<T, N> *current = nullptr;
+  //   dequeue(toVisit, current);
+  //   assertx(current);
+  //   f(*current);
+  //
+  //   for (std::size_t i = 0; i < length(current->edges); ++i) {
+  //     auto &edge = current->edges[i];
+  //     if (insert(visited, edge.ptr)) {
+  //       // insert only succeeds if it does not already contain edge
+  //       auto res = enqueue(toVisit, edge.ptr);
+  //       assertx(res);
+  //     }
+  //   }
+  // }
 }
 
 template <typename T, std::size_t N, typename F>
@@ -250,35 +250,35 @@ breadth_first(const Undirected<T, N> &self, F f) noexcept {
 template <typename T, std::size_t N, typename F>
 void
 depth_first(Undirected<T, N> &root, F f) noexcept {
-  using blah = Undirected<T, N> *;
-  sp::HashSet<blah, fnv_1a::hash<blah>> visited;
-
-  sp::DynamicStack<Undirected<T, N> *, sp::StackPooledAllocator> toVisit;
-
-  {
-    auto res = push(toVisit, &root);
-    assertx(res);
-  }
-  {
-    auto res = insert(visited, &root);
-    assertx(res);
-  }
-  while (!is_empty(toVisit)) {
-    Undirected<T, N> *current = nullptr;
-    pop(toVisit, current);
-    assertx(current);
-
-    f(*current);
-
-    for (std::size_t i = 0; i < length(current->edges); ++i) {
-      auto &edge = current->edges[i];
-      if (insert(visited, edge.ptr)) {
-        // insert only succeeds if it does not already contain edge
-        auto res = push(toVisit, edge.ptr);
-        assertx(res);
-      }
-    }
-  }
+  // using blah = Undirected<T, N> *;
+  // sp::HashSet<blah, fnv_1a::hash<blah>> visited;
+  //
+  // sp::DynamicStack<Undirected<T, N> *, sp::StackPooledAllocator> toVisit;
+  //
+  // {
+  //   auto res = push(toVisit, &root);
+  //   assertx(res);
+  // }
+  // {
+  //   auto res = insert(visited, &root);
+  //   assertx(res);
+  // }
+  // while (!is_empty(toVisit)) {
+  //   Undirected<T, N> *current = nullptr;
+  //   pop(toVisit, current);
+  //   assertx(current);
+  //
+  //   f(*current);
+  //
+  //   for (std::size_t i = 0; i < length(current->edges); ++i) {
+  //     auto &edge = current->edges[i];
+  //     if (insert(visited, edge.ptr)) {
+  //       // insert only succeeds if it does not already contain edge
+  //       auto res = push(toVisit, edge.ptr);
+  //       assertx(res);
+  //     }
+  //   }
+  // }
 }
 
 template <typename T, std::size_t N, typename F>

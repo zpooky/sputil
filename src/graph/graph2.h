@@ -137,10 +137,13 @@ get_edge(Vertex<T, W> &self, const Vertex<T, W> *const needle) noexcept {
 //=====================================
 namespace impl {
 template <typename T, typename W>
-static std::size_t
-vertex_hash(Vertex<T, W> *const &in) {
-  return reinterpret_cast<std::uintptr_t>(in);
-}
+struct vertex_hash {
+  bool
+  operator()(Vertex<T, W> *const &in) {
+    return reinterpret_cast<std::uintptr_t>(in);
+  }
+};
+
 } // namespace impl
 
 template <typename T, typename W, typename F>

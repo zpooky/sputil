@@ -14,12 +14,14 @@ namespace dijkstra {
 //=====================================
 template <typename T>
 bool
-shortest_path(Vertex<T, int> *from, Vertex<T, int> *to) noexcept;
+shortest_path(::graph::Vertex<T, int> *from,
+              ::graph::Vertex<T, int> *to) noexcept;
 
 //=====================================
 template <typename T>
 void
-longest_path(Vertex<T, int> *from, Vertex<T, int> *to) noexcept;
+longest_path(::graph::Vertex<T, int> *from,
+             ::graph::Vertex<T, int> *to) noexcept;
 // invert weight
 
 //=====================================
@@ -27,18 +29,21 @@ longest_path(Vertex<T, int> *from, Vertex<T, int> *to) noexcept;
 //=====================================
 namespace impl {
 template <typename T>
-std::size_t
-hash_vtx(graph::Vertex<int> *const &in) {
-  // printf("%p hash = \n");
-  return reinterpret_cast<std::uintptr_t>(in);
-}
+struct hash_vtx {
+  std::size_t
+  operator()(const ::graph::Vertex<T, int> *in) {
+    // printf("%p hash = \n");
+    return reinterpret_cast<std::uintptr_t>(in);
+  }
+};
 }
 
 /*
  * template <typename T>
  * bool
- * shortest_path(Vertex<T, int> *from, Vertex<T, int> *to) noexcept {
- *   using Vtx = Vertex<T, int>;
+ * shortest_path(::graph::Vertex<T, int> *from, ::graph::Vertex<T, int> *to)
+ * noexcept {
+ *   using Vtx = ::graph::Vertex<T, int>;
  *
  *   sp::HashSet<Vtx *, impl::hash_vtx<T>> visited;
  *   if (!insert(visited, from)) {
@@ -114,11 +119,11 @@ namespace impl {
 template <typename T>
 struct SPTmp {
   /* $vtx is a node in the graph */
-  Vertex<T, int> *vtx;
+  ::graph::Vertex<T, int> *vtx;
   /* $weight is the lowest(fastest) known cost $from to $vtx */
   int weight;
 
-  SPTmp(Vertex<T, int> *v, int c)
+  SPTmp(::graph::Vertex<T, int> *v, int c)
       : vtx{v}
       , weight{c} {
   }
@@ -134,14 +139,14 @@ struct SPTmp {
   }
 
   bool
-  operator==(const Vertex<T, int> *o) const noexcept {
+  operator==(const ::graph::Vertex<T, int> *o) const noexcept {
     assertx(o);
     assertx(vtx);
     return vtx == o;
   }
 
   bool
-  operator==(const Vertex<T, int> &o) const noexcept {
+  operator==(const ::graph::Vertex<T, int> &o) const noexcept {
     return this->operator==(&o);
   }
 };
@@ -149,8 +154,9 @@ struct SPTmp {
 
 template <typename T>
 bool
-shortest_path(Vertex<T, int> *const from, Vertex<T, int> *const to) noexcept {
-  using Vtx = Vertex<T, int>;
+shortest_path(::graph::Vertex<T, int> *const from,
+              ::graph::Vertex<T, int> *const to) noexcept {
+  using Vtx = ::graph::Vertex<T, int>;
 
   int result = 0;
   bool found_path = false;

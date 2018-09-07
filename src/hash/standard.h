@@ -77,6 +77,16 @@ struct Hasher<unsigned long> {
   std::size_t
   operator()(unsigned long) const noexcept;
 };
+
+#if 0
+//=====================================
+template <typename T>
+template <>
+struct Hasher<T *> {
+  std::size_t
+  operator()(const T *) const noexcept;
+};
+#endif
 }
 
 #endif

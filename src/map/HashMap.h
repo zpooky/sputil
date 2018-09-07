@@ -31,18 +31,21 @@ struct HashMapEntry {
   }
 };
 
-template <typename Key, typename Value, sp::hasher<Key> impl>
-static std::size_t
-hasher_HashMap(const HashMapEntry<Key, Value> &in) noexcept {
-  return impl(in.key);
-}
+template <typename Key, typename Value, typename H>
+struct hasher_HashMap {
+  std::size_t
+  operator()(const HashMapEntry<Key, Value> &in) noexcept {
+    H hash;
+    return hash(in.key);
+  }
+};
 }
 
-template <typename Key, typename Value, sp::hasher<Key> h>
+template <typename Key, typename Value, typename H>
 struct HashMap {
   using Entry = impl::HashMapEntry<Key, Value>;
 
-  HashSet<Entry, impl::hasher_HashMap<Key, Value, h>> set;
+  HashSet<Entry, impl::hasher_HashMap<Key, Value, H>> set;
 
   HashMap() noexcept;
   HashMap(const HashMap &) = delete;
@@ -52,35 +55,35 @@ struct HashMap {
 };
 
 //=====================================
-template <typename K, typename V, sp::hasher<K> h, typename Key, typename Value>
+template <typename K, typename V, typename H, typename Key, typename Value>
 V *
-insert(HashMap<K, V, h> &, Key &&, Value &&) noexcept;
+insert(HashMap<K, V, H> &, Key &&, Value &&) noexcept;
 
 //=====================================
-template <typename Key, typename V, sp::hasher<Key> h>
+template <typename Key, typename V, typename H>
 const V *
-lookup(const HashMap<Key, V, h> &, const Key &) noexcept;
+lookup(const HashMap<Key, V, H> &, const Key &) noexcept;
 
-template <typename Key, typename V, sp::hasher<Key> h>
+template <typename Key, typename V, typename H>
 V *
-lookup(HashMap<Key, V, h> &, const Key &) noexcept;
+lookup(HashMap<Key, V, H> &, const Key &) noexcept;
 
 //=====================================
 //====Implementation===================
 //=====================================
-template <typename Key, typename Value, sp::hasher<Key> h>
-HashMap<Key, Value, h>::HashMap() noexcept
+template <typename Key, typename Value, typename H>
+HashMap<Key, Value, H>::HashMap() noexcept
     : set{} {
 }
 
-template <typename Key, typename Value, sp::hasher<Key> h>
-HashMap<Key, Value, h>::~HashMap() noexcept {
+template <typename Key, typename Value, typename H>
+HashMap<Key, Value, H>::~HashMap() noexcept {
 }
 
 //=====================================
-template <typename K, typename V, sp::hasher<K> h, typename Key, typename Value>
+template <typename K, typename V, typename H, typename Key, typename Value>
 V *
-insert(HashMap<K, V, h> &self, Key &&key, Value &&value) noexcept {
+insert(HashMap<K, V, H> &self, Key &&key, Value &&value) noexcept {
   auto res = upsert(self.set, impl::HashMapEntry<K, V>(key, value));
   if (res) {
     return &res->value;
@@ -90,9 +93,10 @@ insert(HashMap<K, V, h> &self, Key &&key, Value &&value) noexcept {
 }
 
 //=====================================
-template <typename Key, typename V, sp::hasher<Key> hash>
+template <typename Key, typename V, typename H>
 const V *
-lookup(const HashMap<Key, V, hash> &self, const Key &needle) noexcept {
+lookup(const HashMap<Key, V, H> &self, const Key &needle) noexcept {
+  H hash;
   const impl::HashKey code(hash(needle));
   auto *res = sp::impl::lookup(self.set, code, needle);
   if (res) {
@@ -102,9 +106,9 @@ lookup(const HashMap<Key, V, hash> &self, const Key &needle) noexcept {
   return nullptr;
 }
 
-template <typename Key, typename V, sp::hasher<Key> h>
+template <typename Key, typename V, typename H>
 V *
-lookup(HashMap<Key, V, h> &self, const Key &needle) noexcept {
+lookup(HashMap<Key, V, H> &self, const Key &needle) noexcept {
   const auto &c_self = self;
   return (V *)lookup(c_self, needle);
 }

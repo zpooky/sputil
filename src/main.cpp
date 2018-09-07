@@ -16,14 +16,9 @@ main() {
   test();
 }
 
-static std::size_t
-identity(const std::uint32_t &in) {
-  return std::size_t(in);
-}
-
 static void
 test() {
-  sp::HashSet<std::uint32_t, identity> set;
+  sp::HashSet<std::uint32_t> set;
   prng::xorshift32 r(1);
   std::size_t i = 0;
   constexpr std::uint32_t range = 1024;
