@@ -10,6 +10,8 @@ TEST(ProbingHashMapTest, test_map) {
   // assertx(false);
 }
 
+#if 0
+
 TEST(ProbingHashMapTest, test_static_set) {
   sp::UinStaticArray<std::size_t, 1024> arr;
   using Set = sp::StaticProbingHashSet<std::size_t, arr.capacity,
@@ -27,3 +29,4 @@ TEST(ProbingHashMapTest, test_static_set) {
     ASSERT_EQ(*res, i);
   }
 }
+#endif

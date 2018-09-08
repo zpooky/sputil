@@ -4,7 +4,7 @@
 #include <tree/bst.h>
 #include <tree/bst_extra.h>
 
-TEST(bstTest, test_eq) {
+TEST(bst_test, test_eq) {
   binary::Tree<int> t;
   binary::Tree<int> t4;
   for (int i = 0; i < 10; ++i) {
@@ -27,7 +27,7 @@ TEST(bstTest, test_eq) {
   ASSERT_FALSE(binary::rec::equal(t, t2));
 }
 
-TEST(bstTest, test_height_and_other) {
+TEST(bst_test, test_height_and_other) {
   {
     binary::Tree<int> t;
     ASSERT_EQ(std::size_t(0), binary::rec::height(t));

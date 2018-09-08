@@ -19,12 +19,12 @@ namespace complete {
 
 bool
 subset_sum(const sp::Array<int> &set) noexcept;
-}
+} // namespace complete
 
 //-----
 // # napsack problem
 // The decision problem form of the knapsack problem (Can a value of at least V
 // be achieved without exceeding the weight W?) is NP-complete, thus there is no
 // known algorithm both correct and fast (polynomial-time) in all cases.
-}
+} // namespace np
 #endif

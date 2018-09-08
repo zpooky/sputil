@@ -24,6 +24,6 @@ nqueens(std::size_t n, nqueens_cb, void *) noexcept;
 
 /* TODO additional implementation competetive programmers handbook[p61]
  */
-}
+} // namespace np
 
 #endif

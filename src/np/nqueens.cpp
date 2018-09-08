@@ -1,5 +1,7 @@
 #include "nqueens.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 
@@ -7,7 +9,8 @@
 #define Piece_QUEEN ('Q')
 
 namespace np {
-static is_valid_vertical(const sp::Matrix<char> &board, const std::size_t y) {
+static bool
+is_valid_vertical(const sp::Matrix<char> &board, const std::size_t y) {
   for (std::size_t x = 0; x < board.height; ++x) {
     if (board[x][y] == Piece_QUEEN) {
       return false;
@@ -69,4 +72,4 @@ nqueens(std::size_t n, nqueens_cb cb, void *closure) noexcept {
 
   return nqueens(board, 0, cb, closure);
 }
-}
+} // namespace np
