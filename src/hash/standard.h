@@ -2,6 +2,7 @@
 #define SP_UTIL_HASH_STANDARD_H
 
 #include <cstddef>
+#include <type_traits>
 
 namespace sp {
 template <typename>
@@ -11,6 +12,16 @@ struct Equality {
   template <typename F, typename S>
   bool
   operator()(const F &f, const S &s) const noexcept {
+    static_assert(!std::is_pointer<F>::value, "Can not be pointer");
+    return f == s;
+  }
+};
+
+struct PointerEquality {
+  template <typename F, typename S>
+  bool
+  operator()(const F &f, const S &s) const noexcept {
+    static_assert(std::is_pointer<F>::value, "Must be a pointer");
     return f == s;
   }
 };
@@ -87,6 +98,6 @@ struct Hasher<T *> {
   operator()(const T *) const noexcept;
 };
 #endif
-}
+} // namespace sp
 
 #endif

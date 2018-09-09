@@ -173,7 +173,7 @@ get_edge(Vertex<T, W> &self, const Vertex<T, W> *const needle) noexcept {
 //=====================================
 namespace impl {
 template <typename T, typename W>
-struct vertex_hash {
+struct VtxHsh {
   bool
   operator()(Vertex<T, W> *const &in) const noexcept {
     sp::Hasher<std::uintptr_t> h;
@@ -187,7 +187,7 @@ struct vertex_hash {
 template <typename T, typename W, typename F>
 bool
 deapth_first(Vertex<T, W> &root, F f) noexcept {
-  sp::HashSet<Vertex<T, W> *, impl::vertex_hash<T, W>> visited;
+  sp::HashSet<Vertex<T, W> *, impl::VtxHsh<T, W>, sp::PointerEquality> visited;
 
   sp::DynamicStack<Vertex<T, W> *> stack;
   if (!push(stack, &root)) {
@@ -224,7 +224,7 @@ deapth_first(Vertex<T, W> &root, F f) noexcept {
 template <typename T, typename W, typename F>
 bool
 breadth_first(Vertex<T, W> &root, F f) noexcept {
-  sp::HashSet<Vertex<T, W> *, impl::vertex_hash<T, W>> visited;
+  sp::HashSet<Vertex<T, W> *, impl::VtxHsh<T, W>, sp::PointerEquality> visited;
 
   sp::LinkedListQueue<Vertex<T, W> *> stack;
   if (!enqueue(stack, &root)) {

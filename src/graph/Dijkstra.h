@@ -36,7 +36,7 @@ struct hash_vtx {
     return reinterpret_cast<std::uintptr_t>(in);
   }
 };
-}
+} // namespace impl
 
 /*
  * template <typename T>
@@ -150,7 +150,7 @@ struct SPTmp {
     return this->operator==(&o);
   }
 };
-}
+} // namespace impl
 
 template <typename T>
 bool
@@ -162,7 +162,7 @@ shortest_path(::graph::Vertex<T, int> *const from,
   bool found_path = false;
   /* $explored keeps track of handled vertex and vertex present in $frontier.
    */
-  sp::HashSet<Vtx *, impl::hash_vtx<T>> explored;
+  sp::HashSet<Vtx *, impl::hash_vtx<T>, sp::PointerEquality> explored;
   /* A min-prio queue where shortest path $from to any vertex is present in
    * order. By always handling the shortest path vertex first we can be sure
    * that when we encounter $to we have found its shortest path.
@@ -310,6 +310,6 @@ shortest_path(::graph::Vertex<T, int> *const from,
 }
 
 } // namespace dijkstra
-}
+} // namespace graph
 
 #endif

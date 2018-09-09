@@ -17,7 +17,6 @@
  */
 
 namespace sp {
-//=====================================
 // Note: pointer supplied to the ctor is required to point to ctor:ed objects
 template <typename T>
 struct Array {

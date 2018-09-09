@@ -1,11 +1,12 @@
-#ifndef SP_UTIL_MAP_MAP_SET_H
-#define SP_UTIL_MAP_MAP_SET_H
+#ifndef SP_UTIL_MAP_HASH_SET_TREE_H
+#define SP_UTIL_MAP_HASH_SET_TREE_H
 
 #include <hash/standard.h>
 #include <hash/util.h>
 #include <limits>
 #include <sstream> //debug
 #include <tree/avl.h>
+#include <type_traits>
 // #include <tree/bst.h>
 #include <tree/bst_extra.h>
 // #include <tree/red-black.h>

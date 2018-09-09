@@ -87,3 +87,50 @@ in a weighted digraph
 
 # Heap
 - Fibonacci
+
+# HashMap
+## ProbingHM
+```
+static const int TOMB_STONE;
+
+//start from index 
+def insert(value):
+  index = hash(value) % length;
+  store_index = index
+  while(items[index]!=NULL && items[index] != &TOMB_STONE){
+    ++index;
+    if(items[index] == NULL)
+      TODO ...
+  }
+  items[index] =value;
+
+//start from index continue until not NULL, if found remove
+def remove(value):
+  index = hash(value) % length;
+  while(items[index] != value){
+    if(items[index] == NULL){
+      // Not found
+      return;
+    }
+    ++index;
+  }
+  if(items[index+1]==NULL) {
+    items[index] = NULL;
+  } else {
+    items[index] = &TOMB_STONE;
+  }
+
+//start from index and continue until NULL
+def lookup(value):
+  index = hash(value) % length;
+  do {
+    if(items[index] != &TOMB_STONE){
+      if(items[index] == value){
+        return items[index];
+      }
+    }
+  } while(items[index] != NULL);
+  return NULL;
+
+
+```

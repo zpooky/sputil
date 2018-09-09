@@ -745,4 +745,11 @@ TEST(HashSetTest, hasherxx) {
     std::size_t hash = h('c');
     printf("unsigned char: %zu\n", hash);
   }
+
+  int asd = 0;
+  long wasd = 0;
+  sp::Equality eq;
+  // eq(&asd, wasd);
+  // eq(asd, &wasd);
+  // eq(&asd, &asd);
 }
