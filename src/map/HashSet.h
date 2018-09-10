@@ -506,18 +506,22 @@ split(HashSet<T, Hash, Eq> &self, HSNode<T, cap> &source) noexcept {
   if (split >= source.capacity) {
     const std::size_t start(source.start + split);
     const std::size_t before = source.length;
-    if (!verify(self.tree)) {
-      dump(self.tree);
-      assertx(false);
-    }
+    assertx_f({
+      if (!verify(self.tree)) {
+        dump(self.tree);
+        assertx(false);
+      }
+    });
 
     source.length -= split;
     auto status = emplace(self.tree, start, split);
-    if (!verify(self.tree)) { // TODO only debug
-      dump(self.tree);
-      verify(self.tree);
-      assertx(false);
-    }
+    assertx_f({
+      if (!verify(self.tree)) {
+        dump(self.tree);
+        verify(self.tree);
+        assertx(false);
+      }
+    });
 
     bool created = std::get<1>(status);
     assertx(created);

@@ -6,6 +6,7 @@
 
 // TODO not sure if this is np
 
+// http://ispython.com/knights-tour/
 namespace np {
 /* # Knight's Tour
  * Given a $n*$n chess board, the starting position x:0,y:0. Using the chess

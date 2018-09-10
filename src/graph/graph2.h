@@ -71,6 +71,11 @@ bool
 is_adjacent(const Vertex<T, W> &, const Vertex<T, W> &) noexcept;
 
 //=====================================
+template <typename T, typename W>
+bool
+is_DAG(const Vertex<T, W> &) noexcept; // TODO
+
+//=====================================
 template <typename T, typename W, typename WK>
 bool
 add_edge(Vertex<T, W> &, WK &&, Vertex<T, W> *) noexcept;

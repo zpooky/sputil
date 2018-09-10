@@ -29,6 +29,12 @@ a_insert(avl::rec::Tree<T> &tree, T val) {
 
 template <typename T>
 static T *
+a_insert_duplicate(avl::rec::Tree<T> &tree, T val) {
+  return insert(tree, val);
+}
+
+template <typename T>
+static T *
 a_insert(avl::Tree<T> &tree, T val) {
   // printf("insert(tree,'%c')\n", char(val));
   std::tuple<T *, bool> ins = insert(tree, val);
@@ -51,6 +57,16 @@ a_insert(avl::Tree<T> &tree, T val) {
   }
 
   // printf("\n");
+  return res;
+}
+
+template <typename T>
+static T *
+a_insert_duplicate(avl::Tree<T> &tree, T val) {
+  std::tuple<T *, bool> ins = insert(tree, val);
+  T *res = std::get<0>(ins);
+  assertx(res);
+  assertx(!std::get<1>(ins));
   return res;
 }
 
@@ -718,4 +734,76 @@ TEST(avlRecTest, rec_test) {
 TEST(avlRecTest, avl_az_test) {
   avl::Tree<char> tree;
   az_test(tree);
+}
+
+template <typename Tree>
+static void
+range_test(Tree &tree) {
+  const int top = 1024 * 1;
+  ASSERT_TRUE(is_empty(tree));
+
+  for (int i = 0; i < top; ++i) {
+    for (int a = 0; a < i; ++a) {
+      int *f_res = find(tree, a);
+      ASSERT_TRUE(f_res);
+      ASSERT_EQ(*f_res, a);
+    }
+
+    for (int a = i; a < top; ++a) {
+      ASSERT_FALSE(find(tree, a));
+      ASSERT_FALSE(remove(tree, a));
+    }
+
+    ASSERT_FALSE(find(tree, i));
+
+    int *i_res = a_insert(tree, i);
+    ASSERT_TRUE(i_res);
+    ASSERT_EQ(*i_res, i);
+    verify(tree);
+
+    int *i_res_dup = a_insert_duplicate(tree, i);
+    ASSERT_TRUE(i_res_dup);
+    ASSERT_EQ(i_res, i_res_dup);
+    ASSERT_EQ(*i_res_dup, i);
+  }
+
+  for (int i = 0; i < top; ++i) {
+    int *f_res = find(tree, i);
+    ASSERT_TRUE(f_res);
+    ASSERT_EQ(*f_res, i);
+  }
+
+  for (int i = 0; i < top; ++i) {
+    for (int a = 0; a < i; ++a) {
+      ASSERT_FALSE(find(tree, a));
+    }
+
+    int *f_res = find(tree, i);
+    ASSERT_TRUE(f_res);
+    ASSERT_EQ(*f_res, i);
+
+    ASSERT_TRUE(remove(tree, i));
+    verify(tree);
+
+    ASSERT_FALSE(find(tree, i));
+
+    ASSERT_FALSE(remove(tree, i));
+    verify(tree);
+  }
+
+  for (int i = 0; i < top; ++i) {
+    ASSERT_FALSE(find(tree, i));
+  }
+
+  ASSERT_TRUE(is_empty(tree));
+}
+
+TEST(avlRecTest, avl_rec_test2) {
+  avl::rec::Tree<int> tree;
+  range_test(tree);
+}
+
+TEST(avlRecTest, avl_test2) {
+  avl::Tree<int> tree;
+  range_test(tree);
 }

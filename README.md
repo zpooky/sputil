@@ -136,3 +136,24 @@ def lookup(value):
 ```
 Try out Bitset for present set, instead of fucking up the alignment of buckets
 by adding boolean flags.
+
+# TODO
+https://www.geeksforgeeks.org/c-program-for-tower-of-hanoi/ |
+https://www.geeksforgeeks.org/rat-in-a-maze-backtracking-2/ | maze
+https://www.geeksforgeeks.org/longest-palindromic-subsequence-dp-12/
+
+https://www.redblobgames.com/pathfinding/a-star/introduction.html |A* search algorithm
+http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html
+
+https://bradfieldcs.com/algos/graphs/prims-spanning-tree-algorithm/ |prim
+|Bellman–Ford algorithm
+|Floyd–Warshall_algorithm
+
+|Boyer–Moore string-search algorithm
+|Knuth–Morris–Pratt string-search algorithm
+
+https://www.michaelfogleman.com/rush/ | rush hour
+https://en.wikipedia.org/wiki/Luhn_algorithm
+
+Soduku solver
+knapsack
