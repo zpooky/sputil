@@ -181,6 +181,11 @@ bool
 contains(const HashSet<T, H, Eq> &, const V &) noexcept;
 
 //=====================================
+template <typename T, typename H, typename Eq, typename V>
+bool
+remove(HashSet<T, H, Eq> &, const V &) noexcept;
+
+//=====================================
 namespace rec {
 template <typename T, typename H, typename Eq>
 bool
@@ -337,6 +342,29 @@ namespace impl {
 //     n |= n >>> 16;
 //     return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
 // }
+template <typename T, typename V, typename Eq>
+static bool
+bucket_remove(HSBucket<T> &node, const V &needle, Eq eq) noexcept {
+  HSBucket<T> *current = &node;
+Lit:
+  if (current) {
+    if (current->present) {
+      T *const existing = (T *)&current->value;
+      if (eq(*existing, needle)) {
+        current->present = false;
+        existing->~T();
+
+        return true;
+      }
+    }
+
+    current = current->next;
+    goto Lit;
+  }
+
+  return false;
+}
+
 template <typename T, typename V, typename Fact, typename Dup, typename Eq>
 static T *
 bucket_gen_ins(HSBucket<T> &node, const V &in, Fact f, Dup d, Eq eq) noexcept {
@@ -344,7 +372,7 @@ bucket_gen_ins(HSBucket<T> &node, const V &in, Fact f, Dup d, Eq eq) noexcept {
 Lit:
   if (current) {
     if (current->present) {
-      const T *const existing = (T *)&current->value;
+      const T *const existing = (const T *)&current->value;
       if (eq(*existing, in)) {
         /* Already present */
         return d(*current);
@@ -884,6 +912,29 @@ template <typename T, typename H, typename Eq, typename V>
 bool
 contains(const HashSet<T, H, Eq> &self, const V &needle) noexcept {
   return lookup(self, needle) != nullptr;
+}
+
+//=====================================
+template <typename T, typename H, typename Eq, typename V>
+bool
+remove(HashSet<T, H, Eq> &self, const V &needle) noexcept {
+  using namespace impl;
+
+  H h;
+  const HashKey code(h(needle));
+
+  auto &tree = self.tree;
+  HSNode<T> *const node = find(tree, code);
+  if (node) {
+    assertx(in_range(*node, code));
+
+    HSBucket<T> &bucket = lookup(*node, code);
+    Eq equality;
+
+    return bucket_remove(bucket, needle, equality);
+  }
+
+  return false;
 }
 
 //=====================================

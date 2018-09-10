@@ -104,18 +104,21 @@ length(const DynamicStack<T, A> &self) noexcept {
   }
   return result;
 }
+
 //=====================================
 template <typename T, template <typename> class A>
 bool
 is_empty(const DynamicStack<T, A> &self) noexcept {
   return self.head == nullptr;
 }
+
 //=====================================
 template <typename T, template <typename> class A>
 bool
 is_full(const DynamicStack<T, A> &) noexcept {
   return false;
 }
+
 //=====================================
 template <typename T, template <typename> class A, typename V>
 T *
@@ -141,6 +144,7 @@ peek(DynamicStack<T, A> &self) noexcept {
   if (self.head) {
     return peek(*self.head);
   }
+
   return nullptr;
 }
 
@@ -151,6 +155,7 @@ peek(const DynamicStack<T, A> &self) noexcept {
   if (self.head) {
     return peek(*self.head);
   }
+
   return nullptr;
 }
 
@@ -178,7 +183,7 @@ pop(DynamicStack<T, A> &self, T &out) noexcept {
 template <typename T, template <typename> class A, typename F>
 void
 for_each(DynamicStack<T, A> &self, F f) noexcept {
-  auto *head = self.head;
+  typename DynamicStack<T, A>::node_type *head = self.head;
   while (head) {
     for_each(*head, f);
     head = head->priv;
@@ -188,7 +193,7 @@ for_each(DynamicStack<T, A> &self, F f) noexcept {
 template <typename T, template <typename> class A, typename F>
 void
 for_each(const DynamicStack<T, A> &self, F f) noexcept {
-  const auto *head = self.head;
+  const typename DynamicStack<T, A>::node_type *head = self.head;
   while (head) {
     for_each(*head, f);
     head = head->priv;

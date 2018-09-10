@@ -28,6 +28,8 @@ struct Array {
 
   Array() noexcept;
 
+  virtual ~Array() noexcept;
+
   template <std::size_t SIZE>
   explicit Array(T (&)[SIZE]) noexcept;
 
@@ -543,6 +545,10 @@ reduce(const UinStaticArray<T, c> &, K &, F) noexcept;
 template <typename T>
 Array<T>::Array() noexcept
     : Array(nullptr, 0) {
+}
+
+template <typename T>
+Array<T>::~Array() noexcept {
 }
 
 template <typename T>

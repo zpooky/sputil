@@ -1,6 +1,7 @@
 #include "knights_tour.h"
 #include <graph/graph2.h>
 #include <list/LinkedList.h>
+#include <sort/introsort.h>
 #include <util/assert.h>
 
 namespace np {
@@ -159,57 +160,122 @@ build_graph(sp::LinkedList<Vtx> &nodes, int N) noexcept {
   return true;
 }
 
-template <typename H, typename Eq>
-static bool
-traverse(Vtx &start, sp::HashSet<Vtx *, H, Eq> &visited,
-         sp::DynamicStack<Vtx *> &path, std::size_t done) noexcept {
-  if (length(path) == done) {
-    return true;
-  }
-  // 1. sort path edges accouring to its edges where less is highly priority
-  // 2. for
-  /*
-   * {
-   *   if (!contains(visited, current)) {
-   *     Vtx **res = insert(visited, current);
-   *     assertx(res);
-   *     push(path, current);
-   *     if (traverse(current, visited, path, done)) {
-   *       return true;
-   *     }
-   *     pop(path);
-   *   }
-   * }
-   */
+struct WarnsdorffsHeuristic {
+  bool
+  operator()(const Vtx *lhs, const Vtx *rhs) const noexcept {
+    assertx(lhs);
+    assertx(rhs);
+    ssize_t l = length(lhs->edges) - length(rhs->edges);
 
-  return false;
+    return l < 0;
+  }
+};
+
+static void
+print_board(const sp::DynamicStack<const Vtx *> &path) noexcept {
+  const int CORD = 5;
+  int id = CORD * CORD;
+
+  int board[CORD][CORD];
+  int *bp = (int *)&board;
+  memset(bp, char(-1), sizeof(board));
+
+  for_each(path, [&id, &bp](const Vtx *current) {
+    assertx(current);
+    /**/
+    *(bp + current->value) = --id;
+  });
+
+  for (int x = 0; x < CORD; ++x) {
+    for (int y = 0; y < CORD; ++y) {
+      printf("%02d|", board[x][y]);
+    }
+    printf("\n");
+  }
+  printf("\n");
 }
 
-bool
-knights_tour(std::size_t N) noexcept {
+template <typename H, typename Eq>
+static std::size_t
+traverse(const Vtx &start, sp::HashSet<const Vtx *, H, Eq> &visited,
+         sp::DynamicStack<const Vtx *> &path, std::size_t done,
+         knights_tour_cb cb, void *closure) noexcept {
+  // printf("length(path): %zu\n", length(path));
+  if (length(path) == done) {
+    // print_board(path);
+    return 1;
+  }
+
+  sp::DynamicArray<Vtx *> arr(decltype(start.edges)::capacity);
+  for (std::size_t i = 0; i < length(start.edges); ++i) {
+    auto &edge = start.edges[i];
+
+    Vtx **res = insert(arr, edge.target);
+    assertx(res);
+    assertx(*res);
+  }
+
+  // Sort path edges accouring to its edges where less is highly priority
+  sp::rec::introsort<Vtx *, WarnsdorffsHeuristic>(arr.data(), length(arr));
+  assertx_f({
+    if (length(arr) > 0) {
+      std::size_t w = length(arr[0]->edges);
+      for (std::size_t i = 0; i < length(arr); ++i) {
+        assertxs(w <= length(arr[i]->edges), w, length(arr[i]->edges));
+        w = length(arr[i]->edges);
+      }
+    }
+  });
+
+  std::size_t result = 0;
+
+  for (std::size_t i = 0; i < length(arr); ++i) {
+    const Vtx *const current = arr[i];
+
+    if (!contains(visited, current)) {
+      assertx_n(insert(visited, current));
+      assertx_n(push(path, current));
+
+      result += traverse(*current, visited, path, done, cb, closure);
+
+      assertx_n(remove(visited, current));
+      const Vtx *pop_out = nullptr;
+      assertx_n(pop(path, pop_out));
+    }
+  }
+
+  return result;
+}
+
+std::size_t
+knights_tour(std::size_t N, knights_tour_cb cb, void *closure) noexcept {
   if (N == 0) {
-    return false;
+    assertx(false);
+    return 0;
   }
 
   sp::LinkedList<Vtx> nodes;
   if (!build_graph(nodes, N)) {
-    return false;
+    assertx(false);
+    return 0;
   }
 
-  sp::DynamicStack<Vtx *> path;
+  sp::DynamicStack<const Vtx *> path;
 
   if (!is_empty(nodes)) {
-    Vtx *const start = get(nodes, 0);
+    const Vtx *const start = get(nodes, 0);
     assertx(start);
     assertxs(start->value == 0, start->value);
 
-    sp::HashSet<Vtx *, VtxHash, VtxEquality> visited;
-    if (!traverse(*start, visited, path, (N * N))) {
-      return false;
-    }
+    sp::HashSet<const Vtx *, VtxHash, VtxEquality> visited;
+
+    assertx_n(insert(visited, start));
+    assertx_n(push(path, start));
+
+    return traverse(*start, visited, path, (N * N), cb, closure);
   }
 
-  return true;
+  return 0;
 }
 }
 //=====================================

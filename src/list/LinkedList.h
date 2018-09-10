@@ -358,6 +358,7 @@ template <typename T, template <typename> class A, typename F>
 void
 for_each(const LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
+
   const LLNode<T> *it = list.root;
 Lit:
   if (it) {
@@ -373,6 +374,7 @@ template <typename T, template <typename> class A, typename F>
 void
 for_each(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
+
   LLNode<T> *it = list.root;
 Lit:
   if (it) {
@@ -389,6 +391,7 @@ template <typename T, template <typename> class A, typename F>
 bool
 for_all(const LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
+
   const LLNode<T> *it = list.root;
 Lit:
   if (it) {
@@ -409,6 +412,7 @@ template <typename T, template <typename> class A, typename F>
 bool
 for_all(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
+
   LLNode<T> *it = list.root;
 Lit:
   if (it) {
@@ -430,6 +434,7 @@ template <typename T, template <typename> class A, typename F>
 T *
 find_first(LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
+
   LLNode<T> *it = list.root;
 Lit:
   if (it) {
@@ -449,6 +454,7 @@ template <typename T, template <typename> class A, typename F>
 const T *
 find_first(const LinkedList<T, A> &list, F f) noexcept {
   using namespace impl::LinkedList;
+
   const LLNode<T> *it = list.root;
 Lit:
   if (it) {

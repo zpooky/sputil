@@ -134,3 +134,5 @@ def lookup(value):
 
 
 ```
+Try out Bitset for present set, instead of fucking up the alignment of buckets
+by adding boolean flags.
