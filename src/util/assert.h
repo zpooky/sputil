@@ -24,7 +24,7 @@ assert_func(const char *, int, const char *, const char *) noexcept;
 
 #define assertx_n(__e) (__e)
 
-#define assertx_f(__e) ((void)0)
+#define assertx_f(...) ((void)0)
 
 #else
 
@@ -88,7 +88,7 @@ show(std::ostream &out, const char *label, H1 &&value, T &&... rest) {
  * __e is a scope which will only be executed in DEBUG mode. the return value is
  * not checked.
  */
-#define assertx_f(__e) (__e)
+#define assertx_f(...) __VA_ARGS__
 
 #endif
 
