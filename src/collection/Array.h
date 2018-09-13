@@ -1243,6 +1243,7 @@ move_all(UinStaticArray<T, c1> &self, UinStaticArray<T, c2> &other) noexcept {
 
   return false;
 }
+
 //=====================================
 template <typename T, typename V>
 T *

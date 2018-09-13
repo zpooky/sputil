@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include <collection/Array.h>
+#include <gtest/gtest.h>
 #include <hash/fnv.h>
 #include <hash/util.h>
 #include <map/ProbingHashMap.h>
