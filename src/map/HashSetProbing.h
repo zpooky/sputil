@@ -95,6 +95,11 @@ std::size_t
 capacity(const HashSetProbing<T, H, Eq> &) noexcept;
 
 //=====================================
+template <typename T, typename H, typename Eq>
+void
+swap(HashSetProbing<T, H, Eq> &, HashSetProbing<T, H, Eq> &) noexcept;
+
+//=====================================
 //====Implementation===================
 //=====================================
 namespace impl {
@@ -140,6 +145,31 @@ index_of(std::size_t hash, std::size_t length) noexcept {
   assertxs(cmp == res, hash, length, cmp, res);
   return res;
 }
+
+template <typename T, typename H, typename Eq>
+static bool
+rehash(HashSetProbing<T, H, Eq> &self) noexcept {
+  HashSetProbing<T, H, Eq> tmp;
+  tmp.capacity = self.capacity * 2;
+  tmp.table = new impl::HashSetProbingBucket<T>[tmp.capacity];
+
+  if (tmp.table) {
+    for (std::size_t i = 0; i < capacity(self); ++i) {
+      auto &bucket = self.table[i];
+      if (bucket.tag == HSPTag::PRESENT) {
+        bucket.tag = HSPTag::TOMBSTONE;
+        T *const current = (T *)&bucket.value;
+
+        assertx_n(insert(tmp, std::move(*current)));
+      }
+    }
+
+    swap(self, tmp);
+    return true;
+  }
+
+  return false;
+}
 }
 
 template <typename T, typename H, typename Eq, typename V>
@@ -151,6 +181,7 @@ insert(HashSetProbing<T, H, Eq> &self, V &&value) noexcept {
     self.table = new impl::HashSetProbingBucket<T>[self.capacity];
   }
 
+Lretry:
   if (self.table) {
     H hash;
     const std::size_t h = hash(value);
@@ -177,6 +208,10 @@ insert(HashSetProbing<T, H, Eq> &self, V &&value) noexcept {
 
       idx = (idx + 1) % self.capacity;
     } while (idx != dest);
+
+    if (rehash(self)) {
+      goto Lretry;
+    }
   }
 
   return nullptr;
@@ -278,6 +313,15 @@ capacity(const HashSetProbing<T, H, Eq> &self) noexcept {
   }
 
   return self.capacity;
+}
+
+//=====================================
+template <typename T, typename H, typename Eq>
+void
+swap(HashSetProbing<T, H, Eq> &f, HashSetProbing<T, H, Eq> &s) noexcept {
+  using std::swap;
+  swap(f.table, s.table);
+  swap(f.capacity, s.capacity);
 }
 }
 

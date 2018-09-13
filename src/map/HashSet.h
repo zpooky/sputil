@@ -757,12 +757,18 @@ do_insert(HashSet<T, H, Eq> &self, V &&val, Insert insert) noexcept {
 
       // TODO resize factor
       if (node->entries >= node->capacity) {
+        printf("rehash\n");
         impl::rehash(self, *node);
       }
       // TODO why is never the data pointed to by $result affected by the
       // rehash?
 
       assertx(std::memcmp(&wasd, result, sizeof(*result)) == 0);
+      assertx_f({
+        T *dumb = lookup(self, val);
+        assertx(dumb);
+        assertx(result == dumb);
+      });
     }
 
     return result;
