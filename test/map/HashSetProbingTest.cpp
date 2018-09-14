@@ -3,52 +3,63 @@
 #include <map/HashSet.h>
 #include <map/HashSetProbing.h>
 #include <prng/xorshift.h>
+#include <util/Timer.h>
 
 template <typename SET>
 static void
 run_bench(SET &set) noexcept {
-  constexpr int range = 1024;
+  constexpr int range = 1024 * 100;
   prng::xorshift32 r(1);
+  sp::TimerContex ctx;
 
-  for (std::size_t a = 0; a < 1; ++a) {
-    sp::DynamicArray<int> ref(range);
+  for (std::size_t a = 0; a < 30; ++a) {
+    sp::timer(ctx, [&]() {
+      sp::DynamicArray<int> ref(range);
 
-    for (int i = 0; i < range; ++i) {
-      ASSERT_FALSE(lookup(set, i));
+      for (int i = 0; i < range; ++i) {
+        ASSERT_FALSE(lookup(set, i));
 
-      int *maybe = insert(set, i);
-      int *l = lookup(set, i);
-      if (maybe) {
-        ASSERT_TRUE(push(ref, i));
-        printf("%d\n", *maybe);
+        int *maybe = insert(set, i);
+        int *l = lookup(set, i);
+        if (maybe) {
+          ASSERT_TRUE(push(ref, i));
+          // printf("%d\n", *maybe);
 
-        ASSERT_TRUE(l);
-        ASSERT_EQ(*maybe, *l);
-        ASSERT_EQ(*maybe, i);
-        ASSERT_EQ(maybe, l);
-      } else {
-        ASSERT_FALSE(l);
+          ASSERT_TRUE(l);
+          ASSERT_EQ(*maybe, *l);
+          ASSERT_EQ(*maybe, i);
+          ASSERT_EQ(maybe, l);
+        } else {
+          ASSERT_FALSE(l);
+        }
       }
-    }
 
-    // ASSERT_EQ(length(ref), capacity(set));
+      // ASSERT_EQ(length(ref), capacity(set));
 
-    shuffle(r, ref);
+      shuffle(r, ref);
 
-    for_each(ref, [&set](int &in) {
-      int *l = lookup(set, in);
-      ASSERT_TRUE(l);
-      ASSERT_EQ(*l, in);
+      for_each(ref, [&set](int &in) {
+        int *l = lookup(set, in);
+        ASSERT_TRUE(l);
+        ASSERT_EQ(*l, in);
 
-      ASSERT_TRUE(remove(set, in));
-      ASSERT_FALSE(lookup(set, in));
+        ASSERT_TRUE(remove(set, in));
+        ASSERT_FALSE(lookup(set, in));
+      });
+
+      for (int i = 0; i < range; ++i) {
+        ASSERT_FALSE(lookup(set, i));
+        ASSERT_FALSE(remove(set, i));
+      }
     });
-
-    for (int i = 0; i < range; ++i) {
-      ASSERT_FALSE(lookup(set, i));
-      ASSERT_FALSE(remove(set, i));
-    }
   }
+
+  print(ctx);
+  printf("Average: ");
+  print(average(ctx));
+
+  printf("Median: ");
+  print(median(ctx));
 
   // printf("length:%zu\n", length);
 }

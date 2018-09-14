@@ -144,6 +144,8 @@ by adding boolean flags.
 - https://www.redblobgames.com/pathfinding/a-star/introduction.html |A* search algorithm
   http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html
 
+Given an unsorted array, find the nth smallest element in the array
+
 - https://bradfieldcs.com/algos/graphs/prims-spanning-tree-algorithm/ |prim
 - |Bellman–Ford algorithm
 - |Floyd–Warshall_algorithm

@@ -23,6 +23,7 @@ assert_func(const char *, int, const char *, const char *) noexcept;
 #define assertx(__e) ((void)0)
 
 #define assertx_n(__e) (__e)
+#define assertxs_n(__e, ...) (__e)
 
 #define assertx_f(...) ((void)0)
 
@@ -80,6 +81,15 @@ show(std::ostream &out, const char *label, H1 &&value, T &&... rest) {
   do {                                                                         \
     if (!(__e)) {                                                              \
       printf("\n");                                                            \
+      sp::impl::assert_func(__FILE__, __LINE__, "", #__e);                     \
+    }                                                                          \
+  } while (0)
+
+#define assertxs_n(__e, ...)                                                   \
+  do {                                                                         \
+    if (!(__e)) {                                                              \
+      printf("\n");                                                            \
+      sp::impl::show(std::cout, #__VA_ARGS__, __VA_ARGS__);                    \
       sp::impl::assert_func(__FILE__, __LINE__, "", #__e);                     \
     }                                                                          \
   } while (0)
