@@ -53,8 +53,8 @@ run_bench(SET &set) noexcept {
       }
     });
   }
-
   print(ctx);
+
   printf("Average: ");
   print(average(ctx));
 

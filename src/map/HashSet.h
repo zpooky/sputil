@@ -559,10 +559,11 @@ in_range(const HSNode<T, cap> &node, const HashKey &h) noexcept {
   return (h.hash >= node.start) && h.hash < (node.start + node.length);
 }
 
+#if 0
 namespace rec {
 template <typename T, typename H, std::size_t cap>
 HSBucket<T> *
-migrate_list(HSNode<T, cap> &node, HSBucket<T> *const current,
+migrate_list(HSNode<T, cap> &src, HSBucket<T> *const current,
              HSNode<T, cap> &dest) {
   if (current) {
 
@@ -570,57 +571,68 @@ migrate_list(HSNode<T, cap> &node, HSBucket<T> *const current,
     if (current->present) {
 
       const HashKey code(hash<T, H>(*current));
-      if (!in_range(node, code)) {
+      if (!in_range(src, code)) {
         assertxs(in_range(dest, code), dest.start, dest.length, code.hash);
 
         HSBucket<T> &bucket = lookup(dest, code);
         current->next = bucket.next;
         bucket.next = current;
 
-        assertx(node.entries > 0);
-        --node.entries;
+        assertx(src.entries > 0);
+        --src.entries;
         ++dest.entries;
 
-        return migrate_list<T, H, cap>(node, next, dest);
+        return migrate_list<T, H, cap>(src, next, dest);
       }
     }
 
-    current->next = migrate_list<T, H, cap>(node, next, dest);
+    current->next = migrate_list<T, H, cap>(src, next, dest);
     return current;
   }
 
   return nullptr;
 }
 } // namespace rec
+#endif
 
-template <typename T, typename H, typename Eq, std::size_t cap>
-static void
-migrate(HSNode<T, cap> &node, HSBucket<T> &source,
+template <typename T, std::size_t cap, typename H, typename Eq>
+static HSBucket<T> *
+migrate(HSNode<T, cap> &src, HSBucket<T> *current,
         HSNode<T, cap> &dest) noexcept {
-  if (source.present) {
-    const HashKey code(hash<T, H>(source));
-    if (!in_range(node, code)) {
-      assertx(in_range(dest, code));
+  if (current) {
+    if (current->present) {
 
-      HSBucket<T> &bucket = lookup(dest, code);
-      T *const value = (T *)&source.value;
-      bool inserted = false;
-      Eq eq;
+      const HashKey code(hash<T, H>(*current));
+      if (!in_range(src, code)) {
+        assertx(in_range(dest, code));
 
-      T *const result = bucket_insert(bucket, std::move(*value), inserted, eq);
-      if (inserted) {
-        assertx(result);
-        assertx(node.entries > 0);
-        --node.entries;
-        ++dest.entries;
+        HSBucket<T> &bucket = lookup(dest, code);
+        T *const value = (T *)&current->value;
+        bool inserted = false;
+        Eq eq;
+
+        T *result = bucket_insert(bucket, std::move(*value), inserted, eq);
+        if (inserted) {
+          assertx(result);
+          assertx(src.entries > 0);
+          --src.entries;
+          ++dest.entries;
+        }
+
+        // TODO reclaim bucket
+        value->~T();
+        current->present = false;
       }
 
-      value->~T();
-      source.present = false;
+      return migrate<T, cap, H, Eq>(src, current->next, dest);
     }
+
+    current->next = migrate<T, cap, H, Eq>(src, current->next, dest);
+
+    return current;
   }
 
-  source.next = rec::migrate_list<T, H, cap>(node, source.next, dest);
+  return nullptr;
 }
 
 template <typename T, typename H, typename Eq, std::size_t cap>
@@ -631,7 +643,7 @@ rehash(HashSet<T, H, Eq> &self, HSNode<T, cap> &source) noexcept {
 
   if (other) {
     for (std::size_t i = 0; i < source.capacity; ++i) {
-      migrate<T, H, Eq, cap>(source, source.buckets[i], *other);
+      migrate<T, cap, H, Eq>(source, &source.buckets[i], *other);
     }
 
     return true;
@@ -723,7 +735,9 @@ do_insert(HashSet<T, H, Eq> &self, V &&val, Insert insert) noexcept {
   auto &tree = self.tree;
   H h;
   const HashKey code(h(val));
+  bool re_hash = false;
 
+Lretry : {
   HSNode<T> *node = find(tree, code);
   if (node == nullptr) {
     // should only get here on first invocation
@@ -748,22 +762,21 @@ do_insert(HashSet<T, H, Eq> &self, V &&val, Insert insert) noexcept {
     assertx(find(tree, code) == node);
     assertx(in_range(*node, code));
 
+    if (!re_hash && node->entries >= node->capacity) {
+      static int asdhasd = 0;
+      asdhasd++;
+      re_hash = true;
+      printf("rehash[%d]\n", asdhasd);
+      // TODO resize factor
+      if (impl::rehash(self, *node)) {
+        goto Lretry;
+      }
+    }
+
     T *const result = insert(*node, code, std::forward<V>(val));
     if (result) {
       assertxs(code == h(*result), h(*result), code.hash);
 
-      typename std::aligned_storage<sizeof(T), alignof(T)>::type wasd;
-      std::memcpy(&wasd, result, sizeof(*result));
-
-      // TODO resize factor
-      if (node->entries >= node->capacity) {
-        printf("rehash\n");
-        impl::rehash(self, *node);
-      }
-      // TODO why is never the data pointed to by $result affected by the
-      // rehash?
-
-      assertx(std::memcmp(&wasd, result, sizeof(*result)) == 0);
       assertx_f({
         T *dumb = lookup(self, val);
         assertx(dumb);
@@ -773,6 +786,7 @@ do_insert(HashSet<T, H, Eq> &self, V &&val, Insert insert) noexcept {
 
     return result;
   }
+}
 
   return nullptr;
 }
