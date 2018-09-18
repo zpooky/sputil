@@ -689,13 +689,14 @@ rehash(HashSet<T, H, Eq> &self, HSNode<T, cap> &source) noexcept {
   HSNode<T, cap> *const other = split(self, source);
   assertx(verify(self.tree));
 
-  static int asdhasd = 0;
-  asdhasd++;
-  printf("rehash[%d]\n", asdhasd);
+  // static int asdhasd = 0;
+  // asdhasd++;
+  // printf("rehash[%d]\n", asdhasd);
 
   if (other) {
-    assertx_f({ verify_node<T, H, Eq, cap>(self, source, "source_before"); });
-    assertx_f({ verify_node<T, H, Eq, cap>(self, *other, "other_before"); });
+    // assertx_f({ verify_node<T, H, Eq, cap>(self, source, "source_before");
+    // });
+    // assertx_f({ verify_node<T, H, Eq, cap>(self, *other, "other_before"); });
 
     for (std::size_t i = 0; i < source.capacity; ++i) {
       migrate<T, cap, H, Eq>(source, source.buckets + i, *other);
@@ -704,8 +705,8 @@ rehash(HashSet<T, H, Eq> &self, HSNode<T, cap> &source) noexcept {
     // printf("---------\n");
     // dump(self.tree);
 
-    assertx_f({ verify_node<T, H, Eq, cap>(self, *other, "other"); });
-    assertx_f({ verify_node<T, H, Eq, cap>(self, source, "source"); });
+    // assertx_f({ verify_node<T, H, Eq, cap>(self, *other, "other"); });
+    // assertx_f({ verify_node<T, H, Eq, cap>(self, source, "source"); });
 
     return true;
   }
@@ -814,7 +815,7 @@ Lretry : {
     node = std::get<0>(res);
     if (node) {
       assertx(find(tree, code) == node);
-      assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins_init"); });
+      // assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins_init"); });
 
       const bool created = std::get<1>(res);
       assertxs(created, node, created);
@@ -823,7 +824,7 @@ Lretry : {
 
   if (node) {
     assertx(in_range(*node, code));
-    assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins"); });
+    // assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins"); });
 
     if (!re_hash && node->entries >= node->capacity) {
       re_hash = true;
@@ -837,14 +838,14 @@ Lretry : {
     if (result) {
       assertxs(code == h(*result), h(*result), code.hash);
 
-      assertx_f({
-        T *dumb = lookup(self, val);
-        assertx(dumb);
-        assertx(result == dumb);
-      });
+      // assertx_f({
+      //   T *dumb = lookup(self, val);
+      //   assertx(dumb);
+      //   assertx(result == dumb);
+      // });
     }
 
-    assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins_before"); });
+    // assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins_before"); });
     return result;
   }
 }

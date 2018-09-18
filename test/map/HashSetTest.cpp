@@ -109,6 +109,54 @@ TEST(HashSetTest, test_insert_dtor) {
   ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
 }
 
+TEST(HashSetTest, test_insert_remove) {
+  using TType = StrictHashSetTest;
+
+  sp::HashSet<TType, vanilla_hash_shst> set;
+  for (std::size_t i = 0; i < 1024; ++i) {
+    for (std::size_t a = 0; a < i; ++a) {
+      {
+        TType *res = insert(set, TType(a, 0));
+        if (res) {
+          printf("i[%zu] a[%zu] = res[%zu]\n", i, a, std::size_t(*res));
+          dump(set.tree);
+        }
+        ASSERT_FALSE(res);
+      }
+      {
+        const TType *res = lookup(set, TType(a, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+      {
+        const TType *res = lookup(set, a);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+    }
+
+    ASSERT_EQ(i, sp::rec::length(set));
+    {
+      ASSERT_FALSE(lookup(set, i));
+      ASSERT_FALSE(lookup(set, TType(i, 0)));
+
+      TType *res = insert(set, TType(i, 0));
+      ASSERT_TRUE(res);
+      ASSERT_EQ(res->data, i);
+      ASSERT_TRUE(sp::rec::verify(set));
+    }
+  }
+  for (std::size_t i = 0; i < 1024; ++i) {
+    TType *res = lookup(set, i);
+    ASSERT_TRUE(res);
+    ASSERT_EQ(res->data, i);
+    ASSERT_TRUE(remove(set, i));
+    ASSERT_FALSE(lookup(set, i));
+  }
+  ASSERT_EQ(std::size_t(0), sp::rec::length(set));
+  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+}
+
 TEST(HashSetTest, test_upsert_dtor) {
   using TType = StrictHashSetTest;
 
@@ -289,45 +337,51 @@ TEST(HashSetTest, test_vanilla) {
 }
 
 TEST(HashSetTest, test_rand) {
-  sp::HashSet<std::uint32_t> set;
   prng::xorshift32 r(1);
-  std::size_t i = 0;
+
   constexpr std::uint32_t range = 1024 * 9;
   constexpr std::size_t bits(sizeof(std::uint64_t) * 8);
   ASSERT_TRUE(range % bits == 0);
-  std::size_t length = range / bits;
+  const std::size_t length = range / bits;
+  uint64_t *const raw = new uint64_t[length]{0};
 
-  auto raw = new uint64_t[length]{0};
-  sp::Bitset bset(raw, length);
+  do {
+    memset(raw, 0, length);
+    sp::HashSet<std::uint32_t> set;
+    sp::Bitset bset(raw, length);
 
-  for (; i < range; ++i) {
-    for_each(bset, [&set](std::size_t idx, bool v) {
-      const std::uint32_t in(idx);
-      auto res = lookup(set, in);
-      if (v) {
-        ASSERT_TRUE(res);
-        ASSERT_EQ(*res, in);
-      } else {
-        ASSERT_FALSE(res);
+    for (std::size_t i = 0; i < range; ++i) {
+
+      for_each(bset, [&set](std::size_t idx, bool v) {
+        const std::uint32_t in(idx);
+        auto res = lookup(set, in);
+        if (v) {
+          ASSERT_TRUE(res);
+          ASSERT_EQ(*res, in);
+        } else {
+          ASSERT_FALSE(res);
+        }
+      });
+
+      const std::uint32_t current = uniform_dist(r, 0, range);
+      {
+        const bool v = test(bset, current);
+        auto res = insert(set, std::size_t(current));
+        if (v) {
+          ASSERT_FALSE(res);
+        } else {
+          ASSERT_TRUE(res);
+          ASSERT_EQ(*res, current);
+          bool priv = sp::set(bset, std::size_t(current), true);
+          ASSERT_EQ(false, priv);
+        }
       }
-    });
 
-    const std::uint32_t current = uniform_dist(r, 0, range);
-    {
-      const bool v = test(bset, current);
-      auto res = insert(set, std::size_t(current));
-      if (v) {
-        ASSERT_FALSE(res);
-      } else {
-        ASSERT_TRUE(res);
-        ASSERT_EQ(*res, current);
-        bool priv = sp::set(bset, std::size_t(current), true);
-        ASSERT_EQ(false, priv);
-      }
-    }
-  } // for
-  ASSERT_TRUE(sp::rec::verify(set));
-  // dump(set.tree);
+    } // for
+    ASSERT_TRUE(sp::rec::verify(set));
+    // dump(set.tree);
+
+  } while (false);
 
   delete[] raw;
 }
@@ -508,6 +562,11 @@ TEST(HashSetTest, test_afew) {
     });
 
     ASSERT_EQ(inserted, fins);
+    printf("verify\n");
+    sp::rec::verify(set_insert);
+    sp::rec::verify(set_upsert);
+    sp::rec::verify(set_look_insert);
+    sp::rec::verify(set_compute);
     printf("done\n");
   }
 }

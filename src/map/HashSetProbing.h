@@ -1,9 +1,11 @@
 #ifndef SP_UTIL_MAP_HASH_SET_PROBING_H
 #define SP_UTIL_MAP_HASH_SET_PROBING_H
 
+#include <algorithm>
 #include <cstddef>
 #include <hash/standard.h>
 #include <type_traits>
+#include <util/array.h>
 #include <util/assert.h>
 
 namespace sp {
@@ -129,7 +131,7 @@ HashSetProbingBucket<T>::~HashSetProbingBucket() noexcept {
 template <typename T, typename H, typename Eq>
 HashSetProbing<T, H, Eq>::HashSetProbing(std::size_t cap) noexcept
     : table{nullptr}
-    , capacity{cap} {
+    , capacity{cap < 16 ? 16 : cap} {
 }
 
 template <typename T, typename H, typename Eq>
@@ -294,6 +296,38 @@ lookup(HashSetProbing<T, H, Eq> &self, const V &needle) noexcept {
 }
 
 //=====================================
+namespace impl {
+template <typename T, typename H, typename Eq>
+static void
+cleanup(HashSetProbing<T, H, Eq> &self, HashSetProbingBucket<T> *s) noexcept {
+  assertx(s);
+
+  const std::size_t capacity = self.capacity;
+  const std::size_t dest = sp::index_of(self.table, capacity, capacity, s);
+
+  assertxs(dest != capacity, dest, capacity);
+  auto &table = self.table;
+
+  const std::size_t next_idx = (dest + 1) % capacity;
+  if (table[next_idx].tag != HSPTag::EMPTY) {
+    return;
+  }
+
+  std::size_t idx = dest;
+  do {
+    if (table[idx].tag == HSPTag::PRESENT) {
+      return;
+    }
+    assertx(table[idx].tag == HSPTag::EMPTY ||
+            table[idx].tag == HSPTag::TOMBSTONE);
+
+    table[idx].tag = HSPTag::EMPTY;
+
+    idx = (idx - 1) % capacity;
+  } while (idx != dest);
+}
+}
+
 template <typename T, typename H, typename Eq, typename V>
 bool
 remove(HashSetProbing<T, H, Eq> &self, const V &needle) noexcept {
@@ -305,6 +339,7 @@ remove(HashSetProbing<T, H, Eq> &self, const V &needle) noexcept {
     T *const value = (T *)&bucket->value;
     value->~T();
 
+    // cleanup(self, bucket);
     return true;
   }
 

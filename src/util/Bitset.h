@@ -1,5 +1,5 @@
-#ifndef SP_UTIL_COLLECTION_BITSET_H
-#define SP_UTIL_COLLECTION_BITSET_H
+#ifndef SP_UTIL_UTIL_BITSET_H
+#define SP_UTIL_UTIL_BITSET_H
 
 #include <cstddef>
 #include <cstdint>

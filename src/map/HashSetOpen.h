@@ -28,7 +28,7 @@ struct HashSetOpen {
   std::size_t capacity;
   std::size_t length;
 
-  HashSetOpen(std::size_t cap = 10) noexcept;
+  explicit HashSetOpen(std::size_t cap = 10) noexcept;
   ~HashSetOpen() noexcept;
 };
 
