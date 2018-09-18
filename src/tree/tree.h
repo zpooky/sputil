@@ -101,7 +101,7 @@ doubly_linked(T *n) noexcept {
 //=====================================
 template <typename T>
 void
-dump(T *tree, std::string prefix = "", bool isTail = true,
+dump(const T *tree, std::string prefix = "", bool isTail = true,
      const char *ctx = "") noexcept {
   if (tree) {
     char name[256] = {0};

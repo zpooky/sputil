@@ -105,11 +105,14 @@ struct HashKey {
   bool
   operator==(const HashKey &) const noexcept;
 
-  bool operator==(std::size_t) const noexcept;
-
   template <typename T>
   bool
   operator>(const HSNode<T> &) const noexcept;
+
+  static constexpr std::size_t
+  max() {
+    return std::numeric_limits<std::size_t>::max() - 1;
+  }
 };
 
 } // namespace impl
@@ -144,7 +147,7 @@ upsert(HashSet<T, H, Eq> &, V &&) noexcept;
 namespace impl {
 template <typename T, typename H, typename Eq>
 const T *
-lookup(const HashSet<T, H, Eq> &, const HashKey &code) noexcept;
+set_lookup(const HashSet<T, H, Eq> &, const HashKey &code) noexcept;
 }
 
 template <typename T, typename H, typename Eq, typename V>
@@ -279,25 +282,18 @@ HSNode<T, c>::operator<(const HSNode<T> &o) const noexcept {
 template <typename T, std::size_t c>
 HSNode<T, c>::operator std::string() const noexcept {
   std::stringstream res;
-  res << "HSNode[start[" << start << "],length[" << length << "]]";
+  res << "HSNode[strt[" << start << "]len[" << length << "]entrs[" << entries
+      << "]]";
   return res.str();
 }
 
 inline HashKey::HashKey(std::size_t h) noexcept
-    : hash(h) {
-
-  constexpr auto mx = std::numeric_limits<std::size_t>::max();
-  assertxs(h != mx, h, mx);
-}
-
-inline bool
-HashKey::operator==(std::size_t o) const noexcept {
-  return this->hash == o;
+    : hash(std::min(h, HashKey::max())) {
 }
 
 inline bool
 HashKey::operator==(const HashKey &o) const noexcept {
-  return this->operator==(o.hash);
+  return this->hash == o.hash;
 }
 
 template <typename T>
@@ -498,50 +494,6 @@ lookup(const HSNode<T, cap> &node, const HashKey &code) noexcept {
   return node.buckets[index];
 }
 
-template <typename T, typename Hash, typename Eq, std::size_t cap>
-static HSNode<T, cap> *
-split(HashSet<T, Hash, Eq> &self, HSNode<T, cap> &source) noexcept {
-  const std::size_t split(source.length / std::size_t(2));
-
-  if (split >= source.capacity) {
-    const std::size_t start(source.start + split);
-    const std::size_t before = source.length;
-    assertx_f({
-      if (!verify(self.tree)) {
-        dump(self.tree);
-        assertx(false);
-      }
-    });
-
-    source.length -= split;
-    auto status = emplace(self.tree, start, split);
-    assertx_f({
-      if (!verify(self.tree)) {
-        dump(self.tree);
-        verify(self.tree);
-        assertx(false);
-      }
-    });
-
-    bool created = std::get<1>(status);
-    assertx(created);
-    HSNode<T, cap> *const result = std::get<0>(status);
-    if (result) {
-      assertxs(result->start == start, result->start, start);
-      assertxs(result->length == split, result->length, split);
-      // printf("Before[%zu, %zu]\n", source.start, source.length);
-
-      // printf("SPlit[%zu, %zu]\n", source.start, source.length);
-      // printf("SplitOther[%zu, %zu]\n", result->start, result->length);
-      return result;
-    } else {
-      source.length = before;
-    }
-  }
-
-  return nullptr;
-}
-
 template <typename T, typename H>
 static std::size_t
 hash(const HSBucket<T> &subject) noexcept {
@@ -553,10 +505,74 @@ hash(const HSBucket<T> &subject) noexcept {
   return h(*value);
 }
 
+/*
+ * node.start                             =9223372036854775807,
+ * node.length                            =13835058055282163710,
+ * node.start + node.length               =4611686018427387901,
+ * std::numeric_limits<std::size_t>::max()=18446744073709551615
+ */
 template <typename T, std::size_t cap>
 static bool
 in_range(const HSNode<T, cap> &node, const HashKey &h) noexcept {
+  assertxs(!overflow_sum(node.start, node.length), node.start, node.length,
+           node.start + node.length, std::numeric_limits<std::size_t>::max());
+
   return (h.hash >= node.start) && h.hash < (node.start + node.length);
+}
+
+template <typename T, typename Hash, typename Eq, std::size_t cap>
+static HSNode<T, cap> *
+split(HashSet<T, Hash, Eq> &self, HSNode<T, cap> &subject) noexcept {
+  const std::size_t split(subject.length / std::size_t(2));
+
+  if (split >= subject.capacity) {
+    const std::size_t new_start = subject.start + split;
+    const std::size_t before_length = subject.length;
+    assertx_f({
+      if (!verify(self.tree)) {
+        dump(self.tree);
+        assertx(false);
+      }
+    });
+
+    assertxs(new_start > subject.start, new_start, subject.start);
+    subject.length = new_start - subject.start;
+
+    assertxs((subject.start + before_length) > new_start, subject.start,
+             before_length, new_start);
+    const std::size_t new_length = subject.start + (before_length - new_start);
+
+    assertxs(!overflow_sum(subject.start, subject.length), subject.start,
+             subject.length);
+    assertxs((subject.start + subject.length) == new_start, subject.start,
+             subject.length, new_start);
+    assertxs(!overflow_sum(new_start, new_length), new_start, new_length);
+    assertx((new_start + new_length) == subject.start + before_length);
+
+    auto status = emplace(self.tree, new_start, new_length);
+    assertx_f({
+      if (!verify(self.tree)) {
+        dump(self.tree);
+        verify(self.tree);
+        assertx(false);
+      }
+    });
+
+    assertx(std::get<1>(status));
+
+    HSNode<T, cap> *const result = std::get<0>(status);
+    if (result) {
+      assertxs(result->start == new_start, result->start, new_start);
+      assertxs(result->length == new_length, result->length, new_length);
+      assertxs(result->entries == 0, result->entries);
+
+      return result;
+    } else {
+      subject.length = before_length;
+    }
+  }
+
+  return nullptr;
 }
 
 #if 0
@@ -597,17 +613,16 @@ migrate_list(HSNode<T, cap> &src, HSBucket<T> *const current,
 
 template <typename T, std::size_t cap, typename H, typename Eq>
 static HSBucket<T> *
-migrate(HSNode<T, cap> &src, HSBucket<T> *current,
-        HSNode<T, cap> &dest) noexcept {
-  if (current) {
-    if (current->present) {
+migrate(HSNode<T, cap> &src, HSBucket<T> *c, HSNode<T, cap> &dest) noexcept {
+  if (c) {
+    if (c->present) {
 
-      const HashKey code(hash<T, H>(*current));
+      const HashKey code(hash<T, H>(*c));
       if (!in_range(src, code)) {
         assertx(in_range(dest, code));
 
         HSBucket<T> &bucket = lookup(dest, code);
-        T *const value = (T *)&current->value;
+        T *const value = (T *)&c->value;
         bool inserted = false;
         Eq eq;
 
@@ -617,22 +632,55 @@ migrate(HSNode<T, cap> &src, HSBucket<T> *current,
           assertx(src.entries > 0);
           --src.entries;
           ++dest.entries;
+
+          // TODO reclaim bucket
+          value->~T();
+          c->present = false;
         }
 
-        // TODO reclaim bucket
-        value->~T();
-        current->present = false;
+        return migrate<T, cap, H, Eq>(src, c->next, dest);
       }
-
-      return migrate<T, cap, H, Eq>(src, current->next, dest);
     }
 
-    current->next = migrate<T, cap, H, Eq>(src, current->next, dest);
-
-    return current;
+    c->next = migrate<T, cap, H, Eq>(src, c->next, dest);
+    return c;
   }
 
   return nullptr;
+}
+
+template <typename T, typename H, typename Eq, std::size_t cap>
+static void
+verify_node(HashSet<T, H, Eq> &self, const HSNode<T, cap> &source,
+            const char *ctx) noexcept {
+  std::size_t cnt = 0;
+
+  for (std::size_t i = 0; i < source.capacity; ++i) {
+    const HSBucket<T> *current = source.buckets + i;
+    {
+    Lit:
+      if (current) {
+        if (current->present) {
+          const T *val = (const T *)&current->value;
+
+          H h;
+          const HashKey code(h(*val));
+
+          std::size_t idx = index_of(code, source.capacity);
+          assertxs(idx == i, idx, i);
+          ++cnt;
+        }
+        current = current->next;
+        goto Lit;
+      }
+    }
+  }
+
+  if (source.entries != cnt) {
+    sp::rec::verify(self);
+    dump(self.tree);
+  }
+  assertxs(source.entries == cnt, source.entries, cnt, ctx);
 }
 
 template <typename T, typename H, typename Eq, std::size_t cap>
@@ -641,10 +689,23 @@ rehash(HashSet<T, H, Eq> &self, HSNode<T, cap> &source) noexcept {
   HSNode<T, cap> *const other = split(self, source);
   assertx(verify(self.tree));
 
+  static int asdhasd = 0;
+  asdhasd++;
+  printf("rehash[%d]\n", asdhasd);
+
   if (other) {
+    assertx_f({ verify_node<T, H, Eq, cap>(self, source, "source_before"); });
+    assertx_f({ verify_node<T, H, Eq, cap>(self, *other, "other_before"); });
+
     for (std::size_t i = 0; i < source.capacity; ++i) {
-      migrate<T, cap, H, Eq>(source, &source.buckets[i], *other);
+      migrate<T, cap, H, Eq>(source, source.buckets + i, *other);
     }
+
+    // printf("---------\n");
+    // dump(self.tree);
+
+    assertx_f({ verify_node<T, H, Eq, cap>(self, *other, "other"); });
+    assertx_f({ verify_node<T, H, Eq, cap>(self, source, "source"); });
 
     return true;
   }
@@ -739,7 +800,7 @@ do_insert(HashSet<T, H, Eq> &self, V &&val, Insert insert) noexcept {
 
 Lretry : {
   HSNode<T> *node = find(tree, code);
-  if (node == nullptr) {
+  if (!node) {
     // should only get here on first invocation
     if (!is_empty(tree)) {
       dump(tree);
@@ -747,26 +808,25 @@ Lretry : {
     assertxs(is_empty(tree), sp::rec::length(self), code.hash);
 
     const std::size_t start = 0;
-    // TODO bug when hash == length
     const auto length = std::numeric_limits<std::size_t>::max();
     auto res = emplace(tree, start, length);
 
     node = std::get<0>(res);
     if (node) {
+      assertx(find(tree, code) == node);
+      assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins_init"); });
+
       const bool created = std::get<1>(res);
       assertxs(created, node, created);
     }
   }
 
   if (node) {
-    assertx(find(tree, code) == node);
     assertx(in_range(*node, code));
+    assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins"); });
 
     if (!re_hash && node->entries >= node->capacity) {
-      static int asdhasd = 0;
-      asdhasd++;
       re_hash = true;
-      printf("rehash[%d]\n", asdhasd);
       // TODO resize factor
       if (impl::rehash(self, *node)) {
         goto Lretry;
@@ -784,6 +844,7 @@ Lretry : {
       });
     }
 
+    assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins_before"); });
     return result;
   }
 }
@@ -843,8 +904,8 @@ Lit:
 
 template <typename T, std::size_t cap, typename V, typename Eq>
 static const T *
-lookup(const HSNode<T, cap> &node, const HashKey &c, const V &needle,
-       const Eq &eq) noexcept {
+node_lookup(const HSNode<T, cap> &node, const HashKey &c, const V &needle,
+            const Eq &eq) noexcept {
   assertx(in_range(node, c));
 
   const HSBucket<T> &bucket = lookup(node, c);
@@ -853,14 +914,18 @@ lookup(const HSNode<T, cap> &node, const HashKey &c, const V &needle,
 
 template <typename T, typename H, typename Eq, typename V>
 const T *
-lookup(const HashSet<T, H, Eq> &self, const HashKey &code,
-       const V &needle) noexcept {
-  const HSNode<T> *node = find(self.tree, code);
+set_lookup(const HashSet<T, H, Eq> &self, const HashKey &c,
+           const V &n) noexcept {
+  const HSNode<T> *node = find(self.tree, c);
   if (node) {
-    assertx(in_range(*node, code));
+    assertx(in_range(*node, c));
 
     Eq eq;
-    return lookup(*node, code, needle, eq);
+    return node_lookup(*node, c, n, eq);
+  }
+
+  if (self.tree.root) {
+    assertx(false);
   }
 
   return nullptr;
@@ -873,7 +938,7 @@ lookup(const HashSet<T, Hash, Eq> &self, const V &needle) noexcept {
   Hash h;
   const impl::HashKey code(h(needle));
 
-  return impl::lookup(self, code, needle);
+  return impl::set_lookup(self, code, needle);
 }
 
 template <typename T, typename H, typename Eq, typename V>
@@ -943,6 +1008,7 @@ template <typename T, typename H, typename Eq, typename V>
 bool
 remove(HashSet<T, H, Eq> &self, const V &needle) noexcept {
   using namespace impl;
+  bool result = false;
 
   H h;
   const HashKey code(h(needle));
@@ -955,10 +1021,14 @@ remove(HashSet<T, H, Eq> &self, const V &needle) noexcept {
     HSBucket<T> &bucket = lookup(*node, code);
     Eq equality;
 
-    return bucket_remove(bucket, needle, equality);
+    result = bucket_remove(bucket, needle, equality);
+    if (result) {
+      assertxs(node->entries > 0, node->entries);
+      --node->entries;
+    }
   }
 
-  return false;
+  return result;
 }
 
 //=====================================
@@ -994,18 +1064,63 @@ verify(const sp::HashSet<T, H, Eq> &self) noexcept {
 
   assertx(verify(self.tree));
 
-  binary::rec::inorder(self.tree, [](const auto &node) {
-    for_each(node, [&node](const auto &buckets) {
-      for_each(buckets, [&node](const T &value) {
+  std::size_t node_cnt = 0;
+  std::size_t len = 0;
+  binary::rec::inorder(self.tree, [&len, &node_cnt](const auto &node) {
+    ++node_cnt;
+    for_each(node, [&node, &len](const auto &buckets) {
+      for_each(buckets, [&node, &len](const T &value) {
         H h;
         const sp::impl::HashKey code(h(value));
 
+        ++len;
         assertxs(sp::impl::in_range(node, code), code.hash, node.start,
                  node.length);
       });
     });
     /**/
   });
+
+  if (self.tree.root) {
+    std::size_t entries = 0;
+    std::size_t needle = 0;
+    std::size_t node_cnt_find = 0;
+
+  Lit:
+    const sp::impl::HashKey code(needle);
+    const sp::impl::HSNode<T> *it = find(self.tree, code);
+    if (!it) {
+      printf("find(%zu): null\n", needle);
+      printf(" max(%zu)\n", sp::impl::HashKey::max());
+      dump(self.tree);
+    }
+    assertx(it);
+    assertx(sp::impl::in_range(*it, code));
+
+    if (code.hash != sp::impl::HashKey::max()) {
+      ++node_cnt_find;
+      entries += it->entries;
+      assertxs(it->start == code.hash, it->start, it->length, code.hash);
+
+      assertx(!overflow_sum(it->start, it->length));
+      needle = it->start + it->length;
+
+      // const sp::impl::HashKey tmp(needle);
+      // assertxs(!sp::impl::in_range(*it, tmp), it->start, it->length,
+      //         it->start + it->length, tmp.hash);
+      goto Lit;
+    }
+
+    if (len != entries) {
+      dump(self.tree);
+      assertxs(len == entries, len, entries, node_cnt, node_cnt_find);
+    }
+    assertxs(node_cnt == node_cnt_find, node_cnt, node_cnt_find);
+
+  } else {
+    assertxs(len == 0, len);
+  }
+
   return true;
 }
 

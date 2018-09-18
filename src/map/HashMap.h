@@ -98,7 +98,7 @@ const V *
 lookup(const HashMap<Key, V, H> &self, const Key &needle) noexcept {
   H hash;
   const impl::HashKey code(hash(needle));
-  auto *res = sp::impl::lookup(self.set, code, needle);
+  auto *res = sp::impl::set_lookup(self.set, code, needle);
   if (res) {
     return &res->value;
   }

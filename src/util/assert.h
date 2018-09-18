@@ -18,15 +18,18 @@ assert_func(const char *, int, const char *, const char *) noexcept;
 } // namespace sp
 
 #ifdef NDEBUG
+// =======================================
 // Note: here the expression gets nooped and will never be executed
 #define assertxs(...) ((void)0)
 #define assertx(__e) ((void)0)
 
+#define assertx_f(...) ((void)0)
+
+// =======================================
 #define assertx_n(__e) (__e)
 #define assertxs_n(__e, ...) (__e)
 
-#define assertx_f(...) ((void)0)
-
+// =======================================
 #else
 
 namespace sp {
@@ -50,6 +53,7 @@ show(std::ostream &out, const char *label, H1 &&value, T &&... rest) {
 }
 }
 
+// =======================================
 /*
  * __e will only be executed in DEBUG mode. Support for printing arguments.
  */
@@ -74,6 +78,13 @@ show(std::ostream &out, const char *label, H1 &&value, T &&... rest) {
   } while (0)
 
 /*
+ * __e is a scope which will only be executed in DEBUG mode. the return value is
+ * not checked.
+ */
+#define assertx_f(...) __VA_ARGS__
+
+// =======================================
+/*
  * __e will be executed in both DEBUG and Non-DEBUG mode, but only be asserted
  * in DEBUG mode.
  */
@@ -94,12 +105,7 @@ show(std::ostream &out, const char *label, H1 &&value, T &&... rest) {
     }                                                                          \
   } while (0)
 
-/*
- * __e is a scope which will only be executed in DEBUG mode. the return value is
- * not checked.
- */
-#define assertx_f(...) __VA_ARGS__
-
+// =======================================
 #endif
 
 #endif

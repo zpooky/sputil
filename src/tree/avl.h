@@ -60,7 +60,7 @@ remove(Tree<T, C> &, const K &) noexcept;
 //=====================================
 template <typename T, typename C>
 void
-dump(Tree<T, C> &tree, std::string prefix = "") noexcept;
+dump(const Tree<T, C> &tree, std::string prefix = "") noexcept;
 
 //=====================================
 template <typename T, typename C>
@@ -593,7 +593,7 @@ remove(Tree<T, C> &self, const K &needle) noexcept {
 //=====================================
 template <typename T, typename C>
 void
-dump(Tree<T, C> &tree, std::string prefix) noexcept {
+dump(const Tree<T, C> &tree, std::string prefix) noexcept {
   return bst::impl::dump(tree.root, prefix);
 } // avl::dump()
 

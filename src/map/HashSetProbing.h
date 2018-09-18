@@ -100,6 +100,13 @@ void
 swap(HashSetProbing<T, H, Eq> &, HashSetProbing<T, H, Eq> &) noexcept;
 
 //=====================================
+namespace rec {
+template <typename T, typename H, typename Eq>
+bool
+verify(const HashSetProbing<T, H, Eq> &) noexcept;
+}
+
+//=====================================
 //====Implementation===================
 //=====================================
 namespace impl {
@@ -323,6 +330,17 @@ swap(HashSetProbing<T, H, Eq> &f, HashSetProbing<T, H, Eq> &s) noexcept {
   swap(f.table, s.table);
   swap(f.capacity, s.capacity);
 }
+
+//=====================================
+namespace rec {
+template <typename T, typename H, typename Eq>
+bool
+verify(const HashSetProbing<T, H, Eq> &) noexcept {
+  return true;
+}
+}
+
+//=====================================
 }
 
 #endif
