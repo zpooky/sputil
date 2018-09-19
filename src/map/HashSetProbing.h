@@ -339,7 +339,7 @@ remove(HashSetProbing<T, H, Eq> &self, const V &needle) noexcept {
     T *const value = (T *)&bucket->value;
     value->~T();
 
-    // cleanup(self, bucket);
+    cleanup(self, bucket);
     return true;
   }
 

@@ -160,6 +160,10 @@ TEST(HashSetProbingTest, test_rand) {
       for_each(present, [&set, &found](std::size_t idx, bool v) {
         const std::uint32_t in(idx);
         auto res = lookup(set, in);
+        if (in == 1347) {
+          printf("##########################lookup[%u]: %s\n", in,
+                 res ? "true" : "false");
+        }
         if (v) {
           ASSERT_TRUE(res);
           ASSERT_EQ(*res, in);
@@ -169,12 +173,11 @@ TEST(HashSetProbingTest, test_rand) {
         }
       });
 
+      ASSERT_FALSE(lookup(set, std::uint32_t(~int(0))));
+
       ASSERT_EQ(inserted, found);
 
       const std::uint32_t current = uniform_dist(r, 0, range);
-      if (current == 1347) {
-        printf("##########################[%u]\n", current);
-      }
 
       const std::uint32_t *const l_before = lookup(set, current);
       const std::uint32_t *const res = insert(set, current);
@@ -189,9 +192,19 @@ TEST(HashSetProbingTest, test_rand) {
           printf("bad[%u]\n", current);
         }
 
-        ASSERT_FALSE(res);
+        // TODO 1347 is inserted in duplicate
+        if (current == 1347) {
+          printf("##########################remove[%u]\n", current);
+        }
+
         ASSERT_TRUE(l_before);
         ASSERT_TRUE(l_after);
+
+        ASSERT_EQ(*l_before, current);
+        ASSERT_EQ(*l_after, current);
+        ASSERT_EQ(l_before, l_after);
+
+        ASSERT_FALSE(res);
 
         {
           ASSERT_TRUE(remove(set, current));
@@ -203,6 +216,10 @@ TEST(HashSetProbingTest, test_rand) {
           ASSERT_FALSE(sp::set(present, std::size_t(current), false));
         }
       } else {
+        if (current == 1347) {
+          printf("##########################insert[%u]\n", current);
+        }
+
         ++inserted;
         ASSERT_TRUE(res);
         ASSERT_EQ(*res, current);
