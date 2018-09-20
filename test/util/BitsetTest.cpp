@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include <random>
+#include <gtest/gtest.h>
 #include <util/Bitset.h>
 
 template <typename Bits>

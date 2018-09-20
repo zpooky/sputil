@@ -256,7 +256,7 @@ SparseBitset::~SparseBitset() noexcept {
 bool
 test(const Bitset &self, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertxs(wIdx < self.capacity, wIdx, bits(self), self.capacity);
+  assertxs(wIdx < self.capacity, wIdx, bits(self), self.capacity, idx);
 
   std::size_t bIdx = bit_index(idx);
   assertx(self.buffer);
@@ -267,7 +267,7 @@ test(const Bitset &self, std::size_t idx) noexcept {
 
 bool
 test(const SparseBitset &self, std::size_t abs_idx) noexcept {
-  assertxs(abs_idx < bits(self), abs_idx, bits(self)); // TODO?
+  assertxs(abs_idx < bits(self), abs_idx, bits(self), abs_idx); // TODO?
 
   std::size_t block_idx = block_index(self, abs_idx);
   // printf("block_for(self,block_idx[%zu])\n", block_idx);
@@ -286,7 +286,7 @@ test(const SparseBitset &self, std::size_t abs_idx) noexcept {
 bool
 set(Bitset &self, std::size_t idx, bool v) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertxs(wIdx < self.capacity, wIdx, bits(self), self.capacity);
+  assertxs(wIdx < self.capacity, wIdx, bits(self), self.capacity, idx, v);
 
   assertx(self.buffer);
   auto &word = self.buffer[wIdx];
@@ -300,7 +300,7 @@ set(Bitset &self, std::size_t idx, bool v) noexcept {
 
 bool
 set(SparseBitset &self, std::size_t abs_idx, bool v) noexcept {
-  assertxs(abs_idx < bits(self), abs_idx, bits(self)); // TODO?
+  assertxs(abs_idx < bits(self), abs_idx, bits(self), abs_idx, v); // TODO?
 
   std::size_t block_idx = block_index(self, abs_idx);
   // printf("block_for_insert(self,block_idx[%zu])\n", block_idx);
@@ -322,7 +322,7 @@ set(SparseBitset &self, std::size_t abs_idx, bool v) noexcept {
 bool
 toggle(Bitset &self, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertxs(wIdx < self.capacity, wIdx, bits(self));
+  assertxs(wIdx < self.capacity, wIdx, bits(self), idx);
 
   const std::size_t bIdx = bit_index(idx);
   auto &word = self.buffer[wIdx];
@@ -335,7 +335,7 @@ toggle(Bitset &self, std::size_t idx) noexcept {
 
 bool
 toggle(SparseBitset &self, std::size_t abs_idx) noexcept {
-  assertxs(abs_idx < bits(self), abs_idx, bits(self)); // TODO?
+  assertxs(abs_idx < bits(self), abs_idx, bits(self), abs_idx); // TODO?
 
   std::size_t block_idx = block_index(self, abs_idx);
   SparseEntry *const block = block_for_insert(self, block_idx);
@@ -369,9 +369,6 @@ bits(const SparseBitset &self) noexcept {
 }
 
 //=====================================
-/*
- * returns number of uint64_t buffers required to fit $x distinct values
- */
 std::size_t
 bitset_number_of_buffer(std::size_t x) noexcept {
   if (x == 0) {
