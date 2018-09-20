@@ -11,15 +11,15 @@
 template <typename SET>
 static void
 run_bench(SET &set) noexcept {
-  constexpr int range = (1024 * 4) + 1;
+  // constexpr int range = (1024 * 4) + 1;
   // constexpr int range = 350;
-  // constexpr int range = 1024 * 1;
+  constexpr int range = (1024 * 10) + 1;
   prng::xorshift32 r(1);
   // for (std::size_t range = 471; range < 1024 * 4; ++range) //
   // {
   sp::TimerContex ctx;
   // printf("range(%zu)\n", range);
-  for (std::size_t a = 0; a < 20; ++a) //
+  for (std::size_t a = 0; a < 3; ++a) //
   {
     sp::timer(ctx, [&]() {
       sp::DynamicArray<int> ref(range);
@@ -119,9 +119,9 @@ TEST(HashSetProbingTest, test_HashSetProbing) {
   run_bench(set);
   std::size_t cnt = 0;
   for (std::size_t i = 0; i < set.capacity; ++i) {
-    if (set.table[i].tag != sp::impl::HSPTag::EMPTY) {
+    if (sp::test(set.tags, i) != HSPTag_EMPTY) {
       ++cnt;
-      // ASSERT_EQ(set.table[i].tag, sp::impl::HSPTag::EMPTY);
+      // ASSERT_EQ(set.table[i].tag, HSPTag_EMPTY);
     }
   }
   ASSERT_EQ(std::size_t(0), cnt);
