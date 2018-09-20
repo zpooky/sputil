@@ -46,6 +46,6 @@ Quadset::Quadset(typename Quadset::Type (&b)[SIZE]) noexcept
 }
 
 //=====================================
-}
+} // namespace sp
 
 #endif

@@ -16,7 +16,7 @@ CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
 LDLIBS = -L$(GTEST_ROOT)/make -lgtest -lpthread -L$(PROJECT_ROOT)/$(SUT_DIR) -lsut -lbfd -ldl
 LDFLAGS = -fno-omit-frame-pointer
 
-BUILD_DIR = build
+BUILD_DIR = build/debug
 
 # File names
 EXEC = thetest
@@ -28,6 +28,12 @@ DEPENDS = $(OBJECTS:.o=.d)
 
 # all {{{
 all: $(EXEC)
+# }}}
+
+# all_debug {{{
+# TODO link with 02 as well
+all_o2:
+	$(MAKE) BUILD_DIR=build/O2 CXXFLAGS+=-O2
 # }}}
 
 # $(EXEC) linking {{{

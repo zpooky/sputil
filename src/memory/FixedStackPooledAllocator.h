@@ -32,11 +32,15 @@ T *
 allocate(FixedStackPooledAllocator<T> &a) noexcept {
   if (a.length < a.capacity) {
     a.length++;
-    auto result = allocate(a.allocator);
-    std::memset(result, 0, sizeof(T));
+    T *const result = allocate(a.allocator);
+
+    void *const p = result;
+    std::memset(p, 0, sizeof(T));
+
     // printf("alloc(%p)\n", result);
     return result;
   }
+
   return nullptr;
 }
 

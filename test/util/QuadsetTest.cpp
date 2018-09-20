@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
-#include <util/Quadset.h>
+#include <util/QuadSet.h>
 
 TEST(Quadset, test) {
   prng::xorshift32 r(1);
@@ -18,7 +18,7 @@ TEST(Quadset, test) {
 
   sp::Quadset q(buf);
 
-  for (std::size_t cnt = 0; cnt < 1000; ++cnt) {
+  for (std::size_t cnt = 0; cnt < 100; ++cnt) {
     for (std::size_t idx = 0; idx < cap; ++idx) {
       std::uint8_t priv = test(q, idx);
       ASSERT_EQ(priv, storage[idx]);

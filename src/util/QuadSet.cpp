@@ -71,7 +71,7 @@ set(Quadset &self, std::size_t idx, std::uint8_t v) noexcept {
   std::size_t wIdx = word_index(idx);
   assertxs(wIdx < self.capacity, wIdx, self.capacity, idx, v);
   assertxs(self.buffer, self.capacity);
-  assertxs(v >= 0 && v <= 3, std::uint32_t(v));
+  assertxs(v <= 3, std::uint32_t(v));
 
   auto &word = self.buffer[wIdx];
   const auto old_word = word;
@@ -118,4 +118,4 @@ Quadset::Quadset(typename Quadset::Type *b, std::size_t c) noexcept
 }
 
 //=====================================
-}
+} // namespace sp

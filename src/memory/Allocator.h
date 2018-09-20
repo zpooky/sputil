@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <util/assert.h>
 
 // TODO hide malloc in impl to not require cstdlib include
 namespace sp {
@@ -12,10 +13,10 @@ struct Allocator {};
 template <typename T>
 T *
 allocate(Allocator<T> &, std::size_t) noexcept {
-  T *result = (T *)malloc(sizeof(T));
+  void *const result = malloc(sizeof(T));
   // printf("alloc(%p)\n", result);
   std::memset(result, 0, sizeof(T));
-  return result;
+  return (T *)result;
 }
 
 template <typename T>
@@ -27,8 +28,10 @@ allocate(Allocator<T> &a) noexcept {
 template <typename T>
 void
 deallocate(Allocator<T> &, T *ptr, std::size_t) noexcept {
+  assertx(ptr);
   // printf("dealloc(%p)\n", ptr);
-  std::memset(ptr, 0, sizeof(T));
+  void *v = ptr;
+  std::memset(v, 0, sizeof(T));
   free(ptr);
 }
 template <typename T>

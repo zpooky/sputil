@@ -63,6 +63,7 @@ to_node(void *in) noexcept {
 }
 } // namespace StackPooledAllocator
 } // namespace impl
+
 template <typename T>
 StackPooledAllocator<T>::StackPooledAllocator() noexcept
     : stack(nullptr) {
@@ -92,7 +93,8 @@ allocate(StackPooledAllocator<T> &a) noexcept {
     SPANode *result = to_node(a.stack);
     a.stack = result->next;
 
-    std::memset(result, 0, sizeof(T));
+    void *const p = result;
+    std::memset(p, 0, sizeof(T));
     return reinterpret_cast<T *>(result);
   } else {
     // printf("allocate(%zu, sizeof[%zu], alignof[%zu])\n", n, sizeof(T),
@@ -109,7 +111,8 @@ template <typename T>
 void
 deallocate(StackPooledAllocator<T> &a, T *p) noexcept {
   using namespace impl::StackPooledAllocator;
-  std::memset(p, 0, sizeof(T));
+  void *const pah = p;
+  std::memset(pah, 0, sizeof(T));
   a.stack = new (p) SPANode(to_node(a.stack));
 }
 } // namespace sp

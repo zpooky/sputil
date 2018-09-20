@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <hash/standard.h>
 #include <type_traits>
-#include <util/Quadset.h>
+#include <util/QuadSet.h>
 #include <util/array.h>
 #include <util/assert.h>
 
@@ -27,7 +27,7 @@ struct HashSetProbingBucket {
 
   ~HashSetProbingBucket() noexcept;
 };
-}
+} // namespace impl
 
 //=====================================
 template <typename T, typename Hash = sp::Hasher<T>, typename Eq = sp::Equality>
@@ -130,7 +130,7 @@ HashSetProbingBucket<T>::HashSetProbingBucket() noexcept
 template <typename T>
 HashSetProbingBucket<T>::~HashSetProbingBucket() noexcept {
 }
-}
+} // namespace impl
 
 template <typename T, typename H, typename Eq>
 HashSetProbing<T, H, Eq>::HashSetProbing(std::size_t cap) noexcept
@@ -202,7 +202,7 @@ rehash(HashSetProbing<T, H, Eq> &self) noexcept {
 
   return true;
 }
-}
+} // namespace impl
 
 template <typename T, typename H, typename Eq, typename V>
 T *
@@ -312,7 +312,7 @@ lookup_bucket(const HashSetProbing<T, H, Eq> &self, const V &needle) noexcept {
 
   return self.capacity;
 }
-}
+} // namespace impl
 
 template <typename T, typename H, typename Eq, typename V>
 const T *
@@ -369,7 +369,7 @@ cleanup(HashSetProbing<T, H, Eq> &self,
     idx = (idx - 1) % capacity;
   } while (idx != dest);
 }
-}
+} // namespace impl
 
 template <typename T, typename H, typename Eq, typename V>
 bool
@@ -435,9 +435,9 @@ bool
 verify(const HashSetProbing<T, H, Eq> &) noexcept {
   return true;
 }
-}
+} // namespace rec
 
 //=====================================
-}
+} // namespace sp
 
 #endif
