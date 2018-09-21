@@ -120,6 +120,7 @@ struct HashKey {
 //=====================================
 template <typename T, typename Hash = sp::Hasher<T>, typename Eq = sp::Equality>
 struct HashSet {
+  using value_type = T;
 
   // binary::Tree<impl::HSNode<T>> tree;
   avl::Tree<impl::HSNode<T>> tree;
@@ -145,9 +146,10 @@ upsert(HashSet<T, H, Eq> &, V &&) noexcept;
 
 //=====================================
 namespace impl {
-template <typename T, typename H, typename Eq>
+template <typename T, typename H, typename Eq, typename V>
 const T *
-set_lookup(const HashSet<T, H, Eq> &, const HashKey &code) noexcept;
+set_lookup(const HashSet<T, H, Eq> &self, const HashKey &c,
+           const V &n) noexcept;
 }
 
 template <typename T, typename H, typename Eq, typename V>

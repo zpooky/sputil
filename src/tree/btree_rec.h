@@ -523,7 +523,7 @@ find(const BTNode<T, keys, Cmp> *const tree, const Key &needle) noexcept {
   const auto &elements = tree->elements;
 
   Cmp cmp;
-  const T *const gte = bin_find_gte<T, keys, Key, Cmp>(elements, needle, cmp);
+  const T *const gte = bin_find_gte(elements, needle, cmp);
   if (gte) {
     if (!cmp(needle, *gte) && !cmp(*gte, needle)) {
       /* equal */
@@ -1069,7 +1069,7 @@ take(BTNode<T, keys, C> *const tree, const Key &needle, Dest &dest,
   auto &elements = tree->elements;
 
   C cmp;
-  T *const gte = bin_find_gte<T, keys, Key, C>(elements, needle, cmp);
+  T *const gte = bin_find_gte(elements, needle, cmp);
   if (gte) {
     if (!cmp(needle, *gte) && !cmp(*gte, needle)) {
       /* equal */

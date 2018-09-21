@@ -32,6 +32,8 @@ struct HashSetProbingBucket {
 //=====================================
 template <typename T, typename Hash = sp::Hasher<T>, typename Eq = sp::Equality>
 struct HashSetProbing {
+  using value_type = T;
+
   impl::HashSetProbingBucket<T> *table;
   sp::Quadset tags;
 
@@ -176,6 +178,7 @@ rehash(HashSetProbing<T, H, Eq> &self) noexcept {
   // printf("rehash()\n");
   HashSetProbing<T, H, Eq> tmp;
   tmp.capacity = self.capacity * 2;
+
   // XXX new and check non null before move
 
   std::size_t cnt = 0;

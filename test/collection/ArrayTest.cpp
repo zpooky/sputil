@@ -146,7 +146,11 @@ TEST(ArrayTest, test_take) {
 TEST(ArrayTest, test_binary_search) {
   constexpr std::size_t cap = 1024 * 1;
   sp::UinStaticArray<std::size_t, cap> a;
+  // printf("a.data(): %p\n", a.data());
+  // printf("a.raw: %p\n", a.raw);
+
   for (std::size_t i = 0; i < cap; ++i) {
+    // printf("length: %zu\n", i);
     ASSERT_EQ(a.length, i);
 
     for (std::size_t k = 0; k < cap; ++k) {

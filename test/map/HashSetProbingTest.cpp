@@ -11,9 +11,10 @@
 template <typename SET>
 static void
 run_bench(SET &set) noexcept {
+  using TT = typename SET::value_type;
   // constexpr int range = (1024 * 4) + 1;
   // constexpr int range = 350;
-  constexpr int range = (1024 * 10) + 1;
+  constexpr int range = (1024 * 1) + 1;
   prng::xorshift32 r(1);
   // for (std::size_t range = 471; range < 1024 * 4; ++range) //
   // {
@@ -22,19 +23,19 @@ run_bench(SET &set) noexcept {
   for (std::size_t a = 0; a < 3; ++a) //
   {
     sp::timer(ctx, [&]() {
-      sp::DynamicArray<int> ref(range);
+      sp::UinDynamicArray<TT> ref(range);
 
       for (int i = 0; i < range; ++i) {
-        const int cmp = i;
+        const TT cmp(i);
         ASSERT_FALSE(lookup(set, i));
         ASSERT_EQ(cmp, i);
 
         // printf("insert(%d){", i);
-        int *maybe = insert(set, i);
+        TT *maybe = insert(set, i);
         ASSERT_EQ(cmp, i);
         // printf("}\n");
 
-        int *l = lookup(set, i);
+        TT *l = lookup(set, i);
         ASSERT_EQ(cmp, i);
         if (maybe) {
           ASSERT_TRUE(push(ref, i));
@@ -52,9 +53,9 @@ run_bench(SET &set) noexcept {
         sp::rec::verify(set);
 
         for (int in = 0; in < i; ++in) {
-          const int cmp = in;
+          const TT cmp(in);
 
-          int *l = lookup(set, in);
+          TT *l = lookup(set, in);
           ASSERT_EQ(cmp, in);
 
           if (!l) {
@@ -72,13 +73,13 @@ run_bench(SET &set) noexcept {
       sp::rec::verify(set);
       shuffle(r, ref);
 
-      for_each(ref, [&set](int &in) {
-        const int cmp = in;
-        int *l = lookup(set, in);
-        ASSERT_EQ(cmp, in);
+      for_each(ref, [&set](TT &in) {
+        // const TT cmp(in);
+        TT *l = lookup(set, in);
+        // ASSERT_EQ(cmp, in);
 
         if (!l) {
-          printf("lookup(%d): null\n", in);
+          // printf("lookup(%d): null\n", in);
         }
         ASSERT_TRUE(l);
         ASSERT_EQ(*l, in);
@@ -114,6 +115,52 @@ run_bench(SET &set) noexcept {
   // printf("length:%zu\n", length);
 }
 
+namespace sp {
+struct HSPTDummy {
+  static std::int64_t active;
+  int key;
+  long alignment0;
+  long alignment1;
+  long alignment2;
+
+  explicit HSPTDummy(int k)
+      : key(k)
+      , alignment0(active)
+      , alignment1(active)
+      , alignment2(active) {
+    ++active;
+  }
+
+  HSPTDummy(HSPTDummy &&o)
+      : HSPTDummy(o.key) {
+    ++active;
+  }
+
+  bool
+  operator==(const HSPTDummy &o) const noexcept {
+    return key == o.key;
+  }
+
+  ~HSPTDummy() {
+    // printf("dtor %p\n", this);
+    assertxs(active > 0, active);
+    --active;
+    assertxs(active >= 0, active);
+  }
+};
+
+template <>
+struct Hasher<HSPTDummy> {
+  std::size_t
+  operator()(const HSPTDummy &o) const noexcept {
+    Hasher<int> h;
+    return h(o.key);
+  }
+};
+
+std::int64_t HSPTDummy::active = 0;
+}
+
 TEST(HashSetProbingTest, test_HashSetProbing) {
   sp::HashSetProbing<int> set;
   run_bench(set);
@@ -125,6 +172,22 @@ TEST(HashSetProbingTest, test_HashSetProbing) {
     }
   }
   ASSERT_EQ(std::size_t(0), cnt);
+}
+
+TEST(HashSetProbingTest, test_HashSetProbing_dtor) {
+  // {
+  //   sp::HashSetProbing<sp::HSPTDummy> set;
+  //   run_bench(set);
+  //   std::size_t cnt = 0;
+  //   for (std::size_t i = 0; i < set.capacity; ++i) {
+  //     if (sp::test(set.tags, i) != HSPTag_EMPTY) {
+  //       ++cnt;
+  //       // ASSERT_EQ(set.table[i].tag, HSPTag_EMPTY);
+  //     }
+  //   }
+  //   ASSERT_EQ(std::size_t(0), cnt);
+  // }
+  ASSERT_EQ(std::int64_t(0), sp::HSPTDummy::active);
 }
 
 TEST(HashSetProbingTest, test_HashSetTree) {
@@ -155,9 +218,7 @@ test_dump(sp::HashSetProbing<std::uint32_t> &set) {
 }
 
 TEST(HashSetProbingTest, test_rand) {
-  // constexpr std::size_t fault = 1347;
-  constexpr std::size_t fault = 29;
-  prng::xorshift32 r(2144056621);
+  prng::xorshift32 r(1459312133);
 
   constexpr std::size_t range = 1024 * 4;
   constexpr std::size_t bits(sizeof(std::uint64_t) * 8);
@@ -186,10 +247,6 @@ TEST(HashSetProbingTest, test_rand) {
       for_each(present, [&set, &found](std::size_t idx, bool v) {
         const std::uint32_t in(idx);
         auto res = lookup(set, in);
-        // if (in == fault) {
-        //   printf("##########################lookup[%u]: %s\n", in,
-        //          res ? "true" : "false");
-        // }
         if (v) {
           ASSERT_TRUE(res);
           ASSERT_EQ(*res, in);
@@ -218,19 +275,11 @@ TEST(HashSetProbingTest, test_rand) {
           printf("bad[%u]\n", current);
         }
 
-        // TODO $fault is inserted in duplicate
-        if (current == fault) {
-          // printf("##########################remove[%u]\n", current);
-        }
-
         ASSERT_TRUE(l_before);
         ASSERT_TRUE(l_after);
 
         ASSERT_EQ(*l_before, current);
         ASSERT_EQ(*l_after, current);
-        if (current == fault) {
-          test_dump(set);
-        }
         ASSERT_EQ(l_before, l_after);
 
         ASSERT_FALSE(res);
@@ -249,10 +298,6 @@ TEST(HashSetProbingTest, test_rand) {
         // printf("ins[%u]\n", current);
         test_dump(set);
 
-        if (current == fault) {
-          // printf("##########################insert[%u]\n", current);
-        }
-
         ++inserted;
         ASSERT_TRUE(res);
         ASSERT_EQ(*res, current);
@@ -270,7 +315,7 @@ TEST(HashSetProbingTest, test_rand) {
 
     ASSERT_TRUE(sp::rec::verify(set));
 
-  } while (true);
+  } while (false);
 
   delete[] raw;
 }

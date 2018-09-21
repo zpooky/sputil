@@ -17,6 +17,7 @@
  */
 
 namespace sp {
+//=====================================
 // Note: pointer supplied to the ctor is required to point to ctor:ed objects
 template <typename T>
 struct Array {
@@ -75,24 +76,28 @@ struct StaticArray : public Array<T> {
 
 //=====================================
 /*
- * Do not reuquire a T default ctor
+ * Does not reuquire a T default ctor
  */
-template <typename T, std::size_t cap>
-struct UinStaticArray {
-  using value_type = T;
+template <typename T>
+struct UinArray {
+protected:
   using storage_type =
-      typename std::aligned_storage<sizeof(T) * cap, alignof(T)>::type;
-  static constexpr std::size_t capacity = cap;
+      typename std::aligned_storage<sizeof(T), alignof(T)>::type;
 
-  storage_type buffer;
+public:
+  using value_type = T;
+
+  storage_type *buffer;
+  std::size_t capacity;
   std::size_t length;
 
-  UinStaticArray() noexcept;
-  UinStaticArray(const UinStaticArray &) = delete;
-  UinStaticArray(UinStaticArray &&) noexcept;
-  UinStaticArray(std::initializer_list<T>) noexcept;
+  UinArray(storage_type *buffer, std::size_t c) noexcept;
+  UinArray() noexcept;
 
-  ~UinStaticArray() noexcept;
+  UinArray(const UinArray &) = delete;
+  UinArray(const UinArray &&) = delete;
+
+  virtual ~UinArray() noexcept;
 
   T *
   data() noexcept;
@@ -109,48 +114,81 @@ struct UinStaticArray {
 };
 
 //=====================================
+template <typename T, std::size_t cap>
+struct UinStaticArray : public UinArray<T> {
+
+  static_assert(cap > 0, "");
+
+  static constexpr std::size_t capacity = cap;
+
+  // using storage_type =
+  //    typename std::aligned_storage<sizeof(T) * cap, alignof(T)>::type;
+  typename UinArray<T>::storage_type raw[cap];
+
+  UinStaticArray() noexcept;
+
+  UinStaticArray(const UinStaticArray<T, cap> &) = delete;
+
+  UinStaticArray(UinStaticArray<T, cap> &&) noexcept;
+  UinStaticArray(std::initializer_list<T>) noexcept;
+};
+
+//=====================================
+template <typename T>
+struct UinDynamicArray : public UinArray<T> {
+  UinDynamicArray(std::size_t cap) noexcept;
+
+  UinDynamicArray(const UinDynamicArray<T> &) = delete;
+
+  UinDynamicArray(UinDynamicArray<T> &&) noexcept;
+  UinDynamicArray(std::initializer_list<T>) noexcept;
+
+  virtual ~UinDynamicArray() noexcept;
+};
+
+//=====================================
 template <typename T>
 std::size_t
 length(const Array<T> &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 std::size_t
-length(const UinStaticArray<T, c> &) noexcept;
+length(const UinArray<T> &) noexcept;
 
 //=====================================
 template <typename T>
 std::size_t
 capacity(const Array<T> &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 std::size_t
-capacity(const UinStaticArray<T, c> &) noexcept;
+capacity(const UinArray<T> &) noexcept;
 
 //=====================================
 template <typename T>
 std::size_t
 remaining_write(const Array<T> &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 std::size_t
-remaining_write(const UinStaticArray<T, c> &) noexcept;
+remaining_write(const UinArray<T> &) noexcept;
 
 //=====================================
 template <typename T>
 bool
 is_empty(const Array<T> &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-is_empty(const UinStaticArray<T, c> &) noexcept;
+is_empty(const UinArray<T> &) noexcept;
 //=====================================
 template <typename T>
 bool
 is_full(const Array<T> &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-is_full(const UinStaticArray<T, c> &) noexcept;
+is_full(const UinArray<T> &) noexcept;
 
 //=====================================
 template <typename T, typename V, typename Comparator>
@@ -161,13 +199,13 @@ template <typename T, typename V, typename Comparator = sp::greater>
 T *
 bin_insert(Array<T> &, V &&) noexcept;
 
-template <typename T, std::size_t c, typename V, typename C>
+template <typename T, typename V, typename C>
 T *
-bin_insert(UinStaticArray<T, c> &, V &&, C &) noexcept;
+bin_insert(UinArray<T> &, V &&, C &) noexcept;
 
-template <typename T, std::size_t c, typename V, typename C = sp::greater>
+template <typename T, typename V, typename C = sp::greater>
 T *
-bin_insert(UinStaticArray<T, c> &, V &&) noexcept;
+bin_insert(UinArray<T> &, V &&) noexcept;
 
 //=====================================
 template <typename T, typename V, typename Comparator>
@@ -178,13 +216,13 @@ template <typename T, typename V, typename Comparator = sp::greater>
 T *
 bin_insert_unique(Array<T> &, V &&) noexcept;
 
-template <typename T, std::size_t c, typename V, typename Comparator>
+template <typename T, typename V, typename Comparator>
 T *
-bin_insert_unique(UinStaticArray<T, c> &, V &&, Comparator &) noexcept;
+bin_insert_unique(UinArray<T> &, V &&, Comparator &) noexcept;
 
-template <typename T, std::size_t c, typename V, typename C = sp::greater>
+template <typename T, typename V, typename C = sp::greater>
 T *
-bin_insert_unique(UinStaticArray<T, c> &, V &&) noexcept;
+bin_insert_unique(UinArray<T> &, V &&) noexcept;
 
 //=====================================
 template <typename T, typename K, typename Comparator>
@@ -203,30 +241,30 @@ template <typename T, typename K, typename Comparator = sp::greater>
 T *
 bin_search(Array<T> &, const K &) noexcept;
 
-template <typename T, std::size_t c, typename K, typename Comparator>
+template <typename T, typename K, typename Comparator>
 const T *
-bin_search(const UinStaticArray<T, c> &, const K &, Comparator &) noexcept;
+bin_search(const UinArray<T> &, const K &, Comparator &) noexcept;
 
-template <typename T, std::size_t c, typename K, typename C = sp::greater>
+template <typename T, typename K, typename C = sp::greater>
 const T *
-bin_search(const UinStaticArray<T, c> &, const K &) noexcept;
+bin_search(const UinArray<T> &, const K &) noexcept;
 
-template <typename T, std::size_t c, typename K, typename Comparator>
+template <typename T, typename K, typename Comparator>
 T *
-bin_search(UinStaticArray<T, c> &, const K &, Comparator &) noexcept;
+bin_search(UinArray<T> &, const K &, Comparator &) noexcept;
 
-template <typename T, std::size_t c, typename K, typename C = sp::greater>
+template <typename T, typename K, typename C = sp::greater>
 T *
-bin_search(UinStaticArray<T, c> &, const K &) noexcept;
+bin_search(UinArray<T> &, const K &) noexcept;
 
 //=====================================
-template <typename T, std::size_t c, typename K, typename Comparator>
+template <typename T, typename K, typename Comparator>
 bool
-bin_remove(UinStaticArray<T, c> &, const K &, Comparator &) noexcept;
+bin_remove(UinArray<T> &, const K &, Comparator &) noexcept;
 
-template <typename T, std::size_t c, typename K, typename C = sp::greater>
+template <typename T, typename K, typename C = sp::greater>
 bool
-bin_remove(UinStaticArray<T, c> &, const K &) noexcept;
+bin_remove(UinArray<T> &, const K &) noexcept;
 
 template <typename T, typename K, typename Comparator>
 bool
@@ -241,17 +279,17 @@ bin_remove(Array<T> &, const K &) noexcept;
 // T *
 // get(Array<T> &, std::size_t) noexcept;
 //
-// template <typename T, std::size_t c>
+// template <typename T>
 // T *
-// get(UinStaticArray<T, c> &, std::size_t) noexcept;
+// get(UinArray<T> &, std::size_t) noexcept;
 //
 // template <typename T>
 // const T *
 // get(const Array<T> &, std::size_t) noexcept;
 //
-// template <typename T, std::size_t c>
+// template <typename T>
 // const T *
-// get(const UinStaticArray<T, c> &, std::size_t) noexcept;
+// get(const UinArray<T> &, std::size_t) noexcept;
 
 //=====================================
 /*
@@ -262,35 +300,35 @@ template <typename T, typename V>
 T *
 insert(Array<T> &, V &&) noexcept;
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-insert(UinStaticArray<T, c> &, V &&) noexcept;
+insert(UinArray<T> &, V &&) noexcept;
 
 //=====================================
 template <typename T, typename From>
 bool
 insert_all(Array<T> &, const From &) noexcept;
 
-template <typename T, std::size_t c, typename From>
+template <typename T, typename From>
 bool
-insert_all(UinStaticArray<T, c> &, const From &) noexcept;
+insert_all(UinArray<T> &, const From &) noexcept;
 
 template <typename T, typename V>
 bool
 insert_all(Array<T> &, const V *, std::size_t) noexcept;
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 bool
-insert_all(UinStaticArray<T, c> &, const V *, std::size_t) noexcept;
+insert_all(UinArray<T> &, const V *, std::size_t) noexcept;
 
 //=====================================
-template <typename T, std::size_t c>
+template <typename T>
 bool
-move_all(UinStaticArray<T, c> &, Array<T> &) noexcept;
+move_all(UinArray<T> &, Array<T> &) noexcept;
 
-template <typename T, std::size_t c1, std::size_t c2>
+template <typename T>
 bool
-move_all(UinStaticArray<T, c1> &, UinStaticArray<T, c2> &) noexcept;
+move_all(UinArray<T> &, UinArray<T> &) noexcept;
 
 //=====================================
 /* The same as insert()
@@ -299,18 +337,18 @@ template <typename T, typename V>
 T *
 push(Array<T> &, V &&) noexcept;
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-push(UinStaticArray<T, c> &, V &&) noexcept;
+push(UinArray<T> &, V &&) noexcept;
 
 //=====================================
 template <typename T>
 bool
 pop(Array<T> &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-pop(UinStaticArray<T, c> &) noexcept;
+pop(UinArray<T> &) noexcept;
 
 //=====================================
 /*
@@ -322,9 +360,9 @@ template <typename T, typename V>
 T *
 insert_at(Array<T> &, std::size_t, V &&) noexcept;
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-insert_at(UinStaticArray<T, c> &, std::size_t, V &&) noexcept;
+insert_at(UinArray<T> &, std::size_t, V &&) noexcept;
 
 //=====================================
 /*
@@ -336,9 +374,9 @@ template <typename T, typename V>
 T *
 set(Array<T> &, std::size_t, V &&) noexcept;
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-set(UinStaticArray<T, c> &, std::size_t, V &&) noexcept;
+set(UinArray<T> &, std::size_t, V &&) noexcept;
 
 //=====================================
 /*
@@ -351,9 +389,9 @@ template <typename T, typename V>
 T *
 exchange(Array<T> &, std::size_t, /*IN/OUT*/ V &) noexcept;
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-exchange(UinStaticArray<T, c> &, std::size_t, /*IN/OUT*/ V &) noexcept;
+exchange(UinArray<T> &, std::size_t, /*IN/OUT*/ V &) noexcept;
 
 //=====================================
 /*
@@ -365,36 +403,36 @@ template <typename T>
 std::size_t
 index_of(const Array<T> &, const T *) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 std::size_t
-index_of(const UinStaticArray<T, c> &, const T *) noexcept;
+index_of(const UinArray<T> &, const T *) noexcept;
 
 //=====================================
 template <typename T>
 bool
 remove(Array<T> &, std::size_t idx) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-remove(UinStaticArray<T, c> &, std::size_t idx) noexcept;
+remove(UinArray<T> &, std::size_t idx) noexcept;
 
 //=====================================
 template <typename T, typename Predicate>
 void
 remove_if(Array<T> &, Predicate) noexcept;
 
-template <typename T, std::size_t c, typename Predicate>
+template <typename T, typename Predicate>
 void
-remove_if(UinStaticArray<T, c> &, Predicate) noexcept;
+remove_if(UinArray<T> &, Predicate) noexcept;
 
 //=====================================
 template <typename T>
 bool
 stable_remove(Array<T> &, std::size_t idx) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-stable_remove(UinStaticArray<T, c> &, std::size_t idx) noexcept;
+stable_remove(UinArray<T> &, std::size_t idx) noexcept;
 
 //=====================================
 /*
@@ -405,9 +443,9 @@ template <typename T>
 bool
 take(Array<T> &, std::size_t, /*OUT*/ T &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-take(UinStaticArray<T, c> &, std::size_t, /*OUT*/ T &) noexcept;
+take(UinArray<T> &, std::size_t, /*OUT*/ T &) noexcept;
 
 //=====================================
 /*
@@ -418,9 +456,9 @@ template <typename T, typename Dest>
 bool
 stable_take(Array<T> &, std::size_t, /*OUT*/ Dest &) noexcept;
 
-template <typename T, std::size_t c, typename Dest>
+template <typename T, typename Dest>
 bool
-stable_take(UinStaticArray<T, c> &, std::size_t, /*OUT*/ Dest &) noexcept;
+stable_take(UinArray<T> &, std::size_t, /*OUT*/ Dest &) noexcept;
 
 //=====================================
 template <typename T>
@@ -431,113 +469,117 @@ template <typename T>
 T *
 last(Array<T> &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 const T *
-last(const UinStaticArray<T, c> &) noexcept;
+last(const UinArray<T> &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 T *
-last(UinStaticArray<T, c> &) noexcept;
+last(UinArray<T> &) noexcept;
 
 //=====================================
 template <typename Random, typename T>
 void
 shuffle(Random &, Array<T> &) noexcept;
 
-template <typename Random, typename T, std::size_t c>
+template <typename Random, typename T>
 void
-shuffle(Random &, UinStaticArray<T, c> &) noexcept;
+shuffle(Random &, UinArray<T> &) noexcept;
 
 //=====================================
 template <typename T>
 void
 clear(Array<T> &) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 void
-clear(UinStaticArray<T, c> &) noexcept;
+clear(UinArray<T> &) noexcept;
 
 //=====================================
 template <typename T>
 void
 drop_back(Array<T> &, std::size_t) noexcept;
 
-template <typename T, std::size_t c>
+template <typename T>
 void
-drop_back(UinStaticArray<T, c> &, std::size_t) noexcept;
+drop_back(UinArray<T> &, std::size_t) noexcept;
 
 //=====================================
 template <typename T>
 void
 swap(Array<T> &, Array<T> &) noexcept;
 
+template <typename T>
+void
+swap(UinArray<T> &, UinArray<T> &) noexcept;
+
 //=====================================
 template <typename T, typename F>
 void
 for_each(Array<T> &, F) noexcept;
 
-template <typename T, std::size_t c, typename F>
+template <typename T, typename F>
 void
-for_each(UinStaticArray<T, c> &, F) noexcept;
+for_each(UinArray<T> &, F) noexcept;
 
 template <typename T, typename F>
 void
 for_each(const Array<T> &, F) noexcept;
 
-template <typename T, std::size_t c, typename F>
+template <typename T, typename F>
 void
-for_each(const UinStaticArray<T, c> &, F) noexcept;
+for_each(const UinArray<T> &, F) noexcept;
 
 //=====================================
 template <typename T, typename F>
 bool
 for_all(Array<T> &, F) noexcept;
 
-template <typename T, std::size_t c, typename F>
+template <typename T, typename F>
 bool
-for_all(UinStaticArray<T, c> &, F) noexcept;
+for_all(UinArray<T> &, F) noexcept;
 
 template <typename T, typename F>
 bool
 for_all(const Array<T> &, F) noexcept;
 
-template <typename T, std::size_t c, typename F>
+template <typename T, typename F>
 bool
-for_all(const UinStaticArray<T, c> &, F) noexcept;
+for_all(const UinArray<T> &, F) noexcept;
 
 //=====================================
 template <typename T, typename Predicate>
 T *
 find(Array<T> &, Predicate) noexcept;
 
-template <typename T, std::size_t c, typename Predicate>
+template <typename T, typename Predicate>
 T *
-find(UinStaticArray<T, c> &, Predicate) noexcept;
+find(UinArray<T> &, Predicate) noexcept;
 
 template <typename T, typename Predicate>
 const T *
 find(const Array<T> &, Predicate) noexcept;
 
-template <typename T, std::size_t c, typename Predicate>
+template <typename T, typename Predicate>
 T *
-find(const UinStaticArray<T, c> &, Predicate) noexcept;
+find(const UinArray<T> &, Predicate) noexcept;
 
 //=====================================
 template <typename T, typename K, typename F>
 K *
 reduce(const Array<T> &, K *, F) noexcept;
 
-template <typename T, std::size_t c, typename K, typename F>
+template <typename T, typename K, typename F>
 K *
-reduce(const UinStaticArray<T, c> &, K *, F) noexcept;
+reduce(const UinArray<T> &, K *, F) noexcept;
 
 template <typename T, typename K, typename F>
 K &
 reduce(const Array<T> &, K &, F) noexcept;
 
-template <typename T, std::size_t c, typename K, typename F>
+template <typename T, typename K, typename F>
 K &
-reduce(const UinStaticArray<T, c> &, K &, F) noexcept;
+reduce(const UinArray<T> &, K &, F) noexcept;
 
 //=====================================
 //====Implementation===================
@@ -575,25 +617,37 @@ Array<T>::Array(T *b, std::size_t l, std::size_t size) noexcept
 
 template <typename T>
 T &Array<T>::operator[](std::size_t idx) noexcept {
+  assertxs(buffer, idx, length, capacity);
   assertxs(idx < length, idx, length, capacity);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
   return buffer[idx];
 }
 
 template <typename T>
 const T &Array<T>::operator[](std::size_t idx) const noexcept {
+  assertxs(buffer, idx, length, capacity);
   assertxs(idx < length, idx, length, capacity);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
   return buffer[idx];
 }
 
 template <typename T>
 T *
 Array<T>::data() noexcept {
+  assertxs(buffer, length, capacity);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
   return buffer;
 }
 
 template <typename T>
 const T *
 Array<T>::data() const noexcept {
+  assertxs(buffer, length, capacity);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
   return buffer;
 }
 
@@ -619,8 +673,7 @@ DynamicArray<T>::DynamicArray(std::size_t cap) noexcept
 template <typename T>
 DynamicArray<T>::DynamicArray(std::initializer_list<T> l) noexcept
     : DynamicArray(l.size()) {
-  bool result = insert_all(*this, l.begin(), l.size());
-  assertx(result);
+  assertx_n(insert_all(*this, l.begin(), l.size()));
 }
 
 template <typename T>
@@ -645,24 +698,102 @@ StaticArray<T, c>::StaticArray(std::initializer_list<T> l) noexcept
     : StaticArray() {
   // init_list is compile time so all instances of init_list has a fixed size
   assertx(l.size() <= capacity(*this));
-  bool result = insert_all(*this, l.begin(), l.size());
-  assertx(result);
+  assertx_n(insert_all(*this, l.begin(), l.size()));
+}
+
+//=====================================
+template <typename T>
+UinArray<T>::UinArray(storage_type *b, std::size_t c) noexcept
+    : buffer{b}
+    , capacity{c}
+    , length{0} {
+
+  if (!buffer) {
+    assertxs(capacity == 0, capacity);
+  }
+
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+}
+
+template <typename T>
+UinArray<T>::UinArray() noexcept
+    : UinArray(nullptr, 0) {
+}
+
+template <typename T>
+T *
+UinArray<T>::data() noexcept {
+  assertxs(buffer, length, capacity);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
+  return reinterpret_cast<T *>(buffer);
+}
+
+template <typename T>
+const T *
+UinArray<T>::data() const noexcept {
+  assertxs(buffer, length, capacity);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
+  return reinterpret_cast<const T *>(buffer);
+}
+
+template <typename T>
+T *
+UinArray<T>::end() noexcept {
+  return data() + length;
+}
+
+template <typename T>
+const T *
+UinArray<T>::end() const noexcept {
+  return data() + length;
+}
+
+template <typename T>
+T &UinArray<T>::operator[](std::size_t idx) noexcept {
+  assertxs(buffer, idx, length, capacity);
+  assertxs(idx < length, idx, length);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
+  return data()[idx];
+}
+
+template <typename T>
+const T &UinArray<T>::operator[](std::size_t idx) const noexcept {
+  assertxs(buffer, idx, length, capacity);
+  assertxs(idx < length, idx, length);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
+  return data()[idx];
+}
+
+template <typename T>
+UinArray<T>::~UinArray() noexcept {
+  if (this->buffer) {
+    for (std::size_t i = 0; i < length; ++i) {
+      this->operator[](i).~T();
+    }
+  }
+  this->buffer = nullptr;
+  this->length = 0;
 }
 
 //=====================================
 template <typename T, std::size_t c>
 UinStaticArray<T, c>::UinStaticArray() noexcept
-    : buffer{}
-    , length{0} {
+    : UinArray<T>(raw, c)
+/*TODO , raw{}*/ {
 }
 
 template <typename T, std::size_t c>
-UinStaticArray<T, c>::UinStaticArray(UinStaticArray &&o) noexcept
+UinStaticArray<T, c>::UinStaticArray(UinStaticArray<T, c> &&o) noexcept
     : UinStaticArray() {
+
   for (std::size_t i = 0; i < sp::length(o); ++i) {
-    auto res = insert(*this, std::move(o[i]));
-    assertx(res);
-    o[i].~T();
+    auto &current = o[i];
+    assertx_n(insert(*this, std::move(current)));
+    current.~T();
   }
   o.length = 0;
 }
@@ -671,52 +802,42 @@ template <typename T, std::size_t c>
 UinStaticArray<T, c>::UinStaticArray(std::initializer_list<T> l) noexcept
     : UinStaticArray() {
   assertx(l.size() <= sp::capacity(*this));
-  bool result = insert_all(*this, l.begin(), l.size());
-  assertx(result);
+  assertx_n(insert_all(*this, l.begin(), l.size()));
 }
 
-template <typename T, std::size_t c>
-T *
-UinStaticArray<T, c>::data() noexcept {
-  return reinterpret_cast<T *>(&buffer);
-}
+//=====================================
+template <typename T>
+UinDynamicArray<T>::UinDynamicArray(std::size_t cap) noexcept
+    : UinArray<T>() {
+  if (cap > 0) {
+    using st = typename UinArray<T>::storage_type;
 
-template <typename T, std::size_t c>
-const T *
-UinStaticArray<T, c>::data() const noexcept {
-  return reinterpret_cast<const T *>(&buffer);
-}
-
-template <typename T, std::size_t c>
-T *
-UinStaticArray<T, c>::end() noexcept {
-  return data() + length;
-}
-
-template <typename T, std::size_t c>
-const T *
-UinStaticArray<T, c>::end() const noexcept {
-  return data() + length;
-}
-
-template <typename T, std::size_t c>
-T &UinStaticArray<T, c>::operator[](std::size_t idx) noexcept {
-  assertxs(idx < length, idx, length);
-  return data()[idx];
-}
-
-template <typename T, std::size_t c>
-const T &UinStaticArray<T, c>::operator[](std::size_t idx) const noexcept {
-  assertxs(idx < length, idx, length);
-  return data()[idx];
-}
-
-template <typename T, std::size_t c>
-UinStaticArray<T, c>::~UinStaticArray() noexcept {
-  for (std::size_t i = 0; i < length; ++i) {
-    this->operator[](i).~T();
+    this->buffer = new st[cap]{};
+    if (this->buffer) {
+      this->capacity = cap;
+    }
   }
-  length = 0;
+}
+
+template <typename T>
+UinDynamicArray<T>::UinDynamicArray(UinDynamicArray<T> &&l) noexcept
+    : UinArray<T>() {
+  swap(*this, l);
+}
+
+template <typename T>
+UinDynamicArray<T>::UinDynamicArray(std::initializer_list<T> l) noexcept
+    : UinDynamicArray(l.size()) {
+  assertx_n(insert_all(*this, l.begin(), l.size()));
+}
+
+template <typename T>
+UinDynamicArray<T>::~UinDynamicArray() noexcept {
+  if (this->buffer) {
+    delete[] this->buffer;
+  }
+  this->buffer = nullptr;
+  this->capacity = 0;
 }
 
 //=====================================
@@ -727,29 +848,31 @@ length(const Array<T> &self) noexcept {
   return self.length;
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 std::size_t
-length(const UinStaticArray<T, c> &self) noexcept {
-  assertxs(self.length <= self.capacity, self.length,
-           std::size_t(self.capacity));
+length(const UinArray<T> &self) noexcept {
+  assertxs(self.length <= self.capacity, self.length, self.capacity);
+
   return self.length;
 }
 
-/* ===================================== */
+//=====================================
 template <typename T>
 std::size_t
 capacity(const Array<T> &self) noexcept {
   assertxs(self.length <= self.capacity, self.length, self.capacity);
+
   return self.capacity;
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 std::size_t
-capacity(const UinStaticArray<T, c> &self) noexcept {
-  assertxs(self.length <= self.capacity, self.length,
-           std::size_t(self.capacity));
+capacity(const UinArray<T> &self) noexcept {
+  assertxs(self.length <= self.capacity, self.length, self.capacity);
+
   return self.capacity;
 }
+
 //=====================================
 template <typename T>
 std::size_t
@@ -757,11 +880,12 @@ remaining_write(const Array<T> &self) noexcept {
   return capacity(self) - length(self);
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 std::size_t
-remaining_write(const UinStaticArray<T, c> &self) noexcept {
+remaining_write(const UinArray<T> &self) noexcept {
   return capacity(self) - length(self);
 }
+
 //=====================================
 template <typename T>
 bool
@@ -769,9 +893,9 @@ is_empty(const Array<T> &self) noexcept {
   return length(self) == 0;
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-is_empty(const UinStaticArray<T, c> &self) noexcept {
+is_empty(const UinArray<T> &self) noexcept {
   return length(self) == 0;
 }
 
@@ -782,11 +906,12 @@ is_full(const Array<T> &self) noexcept {
   return length(self) == capacity(self);
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-is_full(const UinStaticArray<T, c> &self) noexcept {
+is_full(const UinArray<T> &self) noexcept {
   return length(self) == capacity(self);
 }
+
 //=====================================
 template <typename T, typename V, typename Comparator>
 T *
@@ -803,9 +928,9 @@ bin_insert(Array<T> &self, V &&val) noexcept {
   return bin_insert(self, std::forward<V>(val), cmp);
 }
 
-template <typename T, std::size_t c, typename K, typename Comparator>
+template <typename T, typename K, typename Comparator>
 static const T *
-bin_find_gte(const UinStaticArray<T, c> &self, const K &needle,
+bin_find_gte(const UinArray<T> &self, const K &needle,
              Comparator &cmp) noexcept {
   if (is_empty(self)) {
     return nullptr;
@@ -816,7 +941,7 @@ bin_find_gte(const UinStaticArray<T, c> &self, const K &needle,
     return len / 2;
   };
 
-  std::size_t length = self.length;
+  std::size_t length = sp::length(self);
   const T *it = self.data();
   const T *const end = it + length;
 Lit : {
@@ -851,16 +976,16 @@ Lit : {
   return nullptr;
 }
 
-template <typename T, std::size_t c, typename K, typename Cmp>
+template <typename T, typename K, typename Cmp>
 static T *
-bin_find_gte(UinStaticArray<T, c> &self, const K &needle, Cmp &cmp) noexcept {
+bin_find_gte(UinArray<T> &self, const K &needle, Cmp &cmp) noexcept {
   const auto &c_self = self;
   return (T *)bin_find_gte(c_self, needle, cmp);
 }
 
-template <typename T, std::size_t c, typename V, typename Comparator>
+template <typename T, typename V, typename Comparator>
 T *
-bin_insert(UinStaticArray<T, c> &self, V &&val, Comparator &cmp) noexcept {
+bin_insert(UinArray<T> &self, V &&val, Comparator &cmp) noexcept {
   if (!is_full(self)) {
     T *const first = bin_find_gte(/*>=*/self, val, cmp);
     // printf("------\n");
@@ -884,9 +1009,9 @@ bin_insert(UinStaticArray<T, c> &self, V &&val, Comparator &cmp) noexcept {
   return nullptr;
 }
 
-template <typename T, std::size_t c, typename V, typename Comparator>
+template <typename T, typename V, typename Comparator>
 T *
-bin_insert(UinStaticArray<T, c> &self, V &&val) noexcept {
+bin_insert(UinArray<T> &self, V &&val) noexcept {
   Comparator cmp;
   return bin_insert(self, val, cmp);
 }
@@ -905,9 +1030,9 @@ bin_insert_unique(Array<T> &self, V &&val) noexcept {
   return bin_insert_unique(self, std::forward<V>(val), cmp);
 }
 
-template <typename T, std::size_t c, typename V, typename C>
+template <typename T, typename V, typename C>
 T *
-bin_insert_unique(UinStaticArray<T, c> &self, V &&val, C &cmp) noexcept {
+bin_insert_unique(UinArray<T> &self, V &&val, C &cmp) noexcept {
   if (is_full(self)) {
     return nullptr;
   }
@@ -938,9 +1063,9 @@ bin_insert_unique(UinStaticArray<T, c> &self, V &&val, C &cmp) noexcept {
   return it;
 }
 
-template <typename T, std::size_t c, typename V, typename Comparator>
+template <typename T, typename V, typename Comparator>
 T *
-bin_insert_unique(UinStaticArray<T, c> &self, V &&val) noexcept {
+bin_insert_unique(UinArray<T> &self, V &&val) noexcept {
   Comparator cmp;
   return bin_insert_unique(self, std::forward<V>(val), cmp);
 }
@@ -954,9 +1079,9 @@ bin_search(const Array<T> &self, const K &needle, Comparator &cmp) noexcept {
     return len / 2;
   };
 
-  if (self.length > 0) {
+  if (length(self) > 0) {
 
-    std::size_t length = self.length;
+    std::size_t length = sp::length(self);
     const T *p = self.buffer;
   Lit:
     /* think recursively:
@@ -1015,43 +1140,42 @@ bin_search(Array<T> &self, const K &needle) noexcept {
   return bin_search(self, needle, cmp);
 }
 
-template <typename T, std::size_t c, typename K, typename C>
+template <typename T, typename K, typename C>
 const T *
-bin_search(const UinStaticArray<T, c> &self, const K &needle, C &cmp) noexcept {
-  constexpr std::size_t cap = UinStaticArray<T, c>::capacity;
-  const Array<T> c_self((T *)self.data(), self.length, cap);
+bin_search(const UinArray<T> &self, const K &needle, C &cmp) noexcept {
+  const Array<T> c_self((T *)self.data(), length(self), capacity(self));
   return bin_search(c_self, needle, cmp);
 }
 
-template <typename T, std::size_t c, typename K, typename Comparator>
+template <typename T, typename K, typename Comparator>
 const T *
-bin_search(const UinStaticArray<T, c> &self, const K &needle) noexcept {
+bin_search(const UinArray<T> &self, const K &needle) noexcept {
   Comparator cmp;
   return bin_search(self, needle, cmp);
 }
 
-template <typename T, std::size_t c, typename K, typename Cmp>
+template <typename T, typename K, typename Cmp>
 T *
-bin_search(UinStaticArray<T, c> &self, const K &needle, Cmp &cmp) noexcept {
+bin_search(UinArray<T> &self, const K &needle, Cmp &cmp) noexcept {
   const auto &c_self = self;
   return (T *)bin_search(c_self, needle, cmp);
 }
 
-template <typename T, std::size_t c, typename K, typename Comparator>
+template <typename T, typename K, typename Comparator>
 T *
-bin_search(UinStaticArray<T, c> &self, const K &needle) noexcept {
+bin_search(UinArray<T> &self, const K &needle) noexcept {
   Comparator cmp;
   return (T *)bin_search(self, needle, cmp);
 }
 
 //=====================================
-template <typename T, std::size_t c, typename K, typename Cmp>
+template <typename T, typename K, typename Cmp>
 bool
-bin_remove(UinStaticArray<T, c> &self, const K &needle, Cmp &cmp) noexcept {
+bin_remove(UinArray<T> &self, const K &needle, Cmp &cmp) noexcept {
   T *const res = bin_search(self, needle, cmp);
   if (res) { // TODO maybe stable_remove?
     std::size_t rem_idx = index_of(self, res);
-    for (; (rem_idx + 1) < self.length;) {
+    for (; (rem_idx + 1) < length(self);) {
       using std::swap;
       T &first = self.data()[rem_idx];
       T &second = self.data()[++rem_idx];
@@ -1066,9 +1190,9 @@ bin_remove(UinStaticArray<T, c> &self, const K &needle, Cmp &cmp) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c, typename K, typename Comparator>
+template <typename T, typename K, typename Comparator>
 bool
-bin_remove(UinStaticArray<T, c> &self, const K &needle) noexcept {
+bin_remove(UinArray<T> &self, const K &needle) noexcept {
   Comparator cmp;
   return bin_remove(self, needle, cmp);
 }
@@ -1095,11 +1219,11 @@ get(Array<T> &self, std::size_t idx) noexcept {
   return (T *)get(c_self, idx);
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 T *
-get(UinStaticArray<T, c> &self, std::size_t idx) noexcept {
+get(UinArray<T> &self, std::size_t idx) noexcept {
   const auto &c_self = self;
-  return get(c_self, idx);
+  return (T *)get(c_self, idx);
 }
 
 template <typename T>
@@ -1108,13 +1232,14 @@ get(const Array<T> &self, std::size_t idx) noexcept {
   if (idx < length(self)) {
     return self.buffer + idx;
   }
+
   return nullptr;
 }
 
-template <typename T, std::size_t c>
-T *
-get(const UinStaticArray<T, c> &self, std::size_t idx) noexcept {
-  Array<T> c_self((T *)self.data(), self.length, c);
+template <typename T>
+const T *
+get(const UinArray<T> &self, std::size_t idx) noexcept {
+  const Array<T> c_self((T *)self.data(), length(self), capacity(self));
   return get(c_self, idx);
 }
 //=====================================
@@ -1134,9 +1259,9 @@ insert(Array<T> &self, V &&val) noexcept {
   return nullptr;
 }
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-insert(UinStaticArray<T, c> &self, V &&val) noexcept {
+insert(UinArray<T> &self, V &&val) noexcept {
   if (!is_full(self)) {
     std::size_t idx = self.length++;
     T *const raw = self.data() + idx;
@@ -1154,8 +1279,7 @@ insert_all(Array<T> &self, const From &src) noexcept {
   std::size_t len = length(src);
   if (remaining_write(self) >= len) {
     for (std::size_t i = 0; i < len; ++i) {
-      T *res = insert(self, src[i]);
-      assertx(res);
+      assertx_n(insert(self, src[i]));
     }
 
     return true;
@@ -1164,9 +1288,9 @@ insert_all(Array<T> &self, const From &src) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c, typename From>
+template <typename T, typename From>
 bool
-insert_all(UinStaticArray<T, c> &self, const From &src) noexcept {
+insert_all(UinArray<T> &self, const From &src) noexcept {
   std::size_t len = length(src);
   if (remaining_write(self) >= len) {
     for (std::size_t i = 0; i < len; ++i) {
@@ -1195,10 +1319,9 @@ insert_all(Array<T> &self, const V *values, std::size_t length) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 bool
-insert_all(UinStaticArray<T, c> &self, const V *values,
-           std::size_t length) noexcept {
+insert_all(UinArray<T> &self, const V *values, std::size_t length) noexcept {
   if (remaining_write(self) >= length) {
     for (std::size_t i = 0; i < length; ++i) {
       T *res = insert(self, values[i]);
@@ -1212,9 +1335,9 @@ insert_all(UinStaticArray<T, c> &self, const V *values,
 }
 
 //=====================================
-template <typename T, std::size_t c>
+template <typename T>
 bool
-move_all(UinStaticArray<T, c> &self, Array<T> &other) noexcept {
+move_all(UinArray<T> &self, Array<T> &other) noexcept {
   if (remaining_write(self) >= length(other)) {
     for (std::size_t i = 0; i < length(other); ++i) {
       T *res = insert(self, std::move(other[i]));
@@ -1228,13 +1351,12 @@ move_all(UinStaticArray<T, c> &self, Array<T> &other) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c1, std::size_t c2>
+template <typename T>
 bool
-move_all(UinStaticArray<T, c1> &self, UinStaticArray<T, c2> &other) noexcept {
+move_all(UinArray<T> &self, UinArray<T> &other) noexcept {
   if (remaining_write(self) >= length(other)) {
     for (std::size_t i = 0; i < length(other); ++i) {
-      T *res = insert(self, std::move(other[i]));
-      assertx(res);
+      assertx_n(insert(self, std::move(other[i])));
     }
 
     clear(other);
@@ -1251,9 +1373,9 @@ push(Array<T> &self, V &&value) noexcept {
   return insert(self, std::forward<V>(value));
 }
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-push(UinStaticArray<T, c> &self, V &&value) noexcept {
+push(UinArray<T> &self, V &&value) noexcept {
   return insert(self, std::forward<V>(value));
 }
 
@@ -1268,9 +1390,9 @@ pop(Array<T> &self) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-pop(UinStaticArray<T, c> &self) noexcept {
+pop(UinArray<T> &self) noexcept {
   if (!is_empty(self)) {
     drop_back(self, 1);
     return true;
@@ -1287,14 +1409,14 @@ insert_at(Array<T> &, std::size_t, V &&) noexcept {
   return nullptr;
 }
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-insert_at(UinStaticArray<T, c> &self, std::size_t idx, V &&v) noexcept {
+insert_at(UinArray<T> &self, std::size_t idx, V &&v) noexcept {
   if (is_full(self)) {
     return nullptr;
   }
 
-  if (idx <= self.length) {
+  if (idx <= length(self)) {
     auto ins = insert(self, std::forward<V>(v));
     assertx(ins);
     std::size_t ins_idx = index_of(self, ins);
@@ -1331,9 +1453,9 @@ set(Array<T> &self, std::size_t idx, V &&val) noexcept {
   return nullptr;
 }
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-set(UinStaticArray<T, c> &self, std::size_t idx, V &&val) noexcept {
+set(UinArray<T> &self, std::size_t idx, V &&val) noexcept {
   if (idx <= length(self) && idx < capacity(self)) {
     T *const p = self.buffer + idx;
 
@@ -1359,12 +1481,11 @@ exchange(Array<T> &self, std::size_t idx, /*IN/OUT*/ V &out) noexcept {
   return nullptr;
 }
 
-template <typename T, std::size_t c, typename V>
+template <typename T, typename V>
 T *
-exchange(UinStaticArray<T, c> &self, std::size_t idx,
+exchange(UinArray<T> &self, std::size_t idx,
          /*IN/OUT*/ V &out) noexcept {
-  constexpr std::size_t cap = UinStaticArray<T, c>::capacity;
-  Array<T> c_self(self.data(), self.length, cap);
+  Array<T> c_self(self.data(), length(self), capacity(self));
   return exchange(c_self, idx, out);
 }
 
@@ -1373,13 +1494,13 @@ template <typename T>
 std::size_t
 index_of(const Array<T> &self, const T *ptr) noexcept {
   // util/array.h
-  return sp::index_of(self.buffer, self.length, self.capacity, ptr);
+  return sp::index_of(self.buffer, length(self), capacity(self), ptr);
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 std::size_t
-index_of(const UinStaticArray<T, c> &self, const T *ptr) noexcept {
-  const Array<T> c_self((T *)self.data(), self.length, self.capacity);
+index_of(const UinArray<T> &self, const T *ptr) noexcept {
+  const Array<T> c_self((T *)self.data(), length(self), capacity(self));
   return index_of(c_self, ptr);
 }
 
@@ -1405,9 +1526,9 @@ remove(Array<T> &self, std::size_t idx) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-remove(UinStaticArray<T, c> &self, std::size_t idx) noexcept {
+remove(UinArray<T> &self, std::size_t idx) noexcept {
   assertxs(idx < length(self), idx, length(self));
   /*
    * Differing only in that we do not defalt construct the empty element
@@ -1435,9 +1556,9 @@ remove_if(Array<T> &, Predicate) noexcept {
   assertx(false);
 }
 
-template <typename T, std::size_t c, typename Predicate>
+template <typename T, typename Predicate>
 void
-remove_if(UinStaticArray<T, c> &self, Predicate p) noexcept {
+remove_if(UinArray<T> &self, Predicate p) noexcept {
   T *it = self.data();
   while (it != self.end()) {
     const bool del = p(*it);
@@ -1461,9 +1582,9 @@ stable_remove(Array<T> &, std::size_t idx) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-stable_remove(UinStaticArray<T, c> &self, std::size_t idx) noexcept {
+stable_remove(UinArray<T> &self, std::size_t idx) noexcept {
   if (idx < length(self)) {
 
     T *it = self.data() + idx;
@@ -1501,9 +1622,9 @@ take(Array<T> &self, std::size_t idx, /*OUT*/ T &out) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 bool
-take(UinStaticArray<T, c> &self, std::size_t idx, /*OUT*/ T &out) noexcept {
+take(UinArray<T> &self, std::size_t idx, /*OUT*/ T &out) noexcept {
   if (idx < length(self)) {
     using std::swap;
     swap(out, self.data()[idx]);
@@ -1532,9 +1653,9 @@ stable_take(Array<T> &self, std::size_t idx, /*OUT*/ Dest &out) noexcept {
   return false;
 }
 
-template <typename T, std::size_t c, typename Dest>
+template <typename T, typename Dest>
 bool
-stable_take(UinStaticArray<T, c> &self, std::size_t idx, Dest &out) noexcept {
+stable_take(UinArray<T> &self, std::size_t idx, Dest &out) noexcept {
   if (idx < length(self)) {
     out = std::move(self.data()[idx]);
 
@@ -1568,21 +1689,23 @@ last(Array<T> &self) noexcept {
   return get(self, idx);
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 const T *
-last(const UinStaticArray<T, c> &self) noexcept {
-  if (is_empty(self))
+last(const UinArray<T> &self) noexcept {
+  if (is_empty(self)) {
     return nullptr;
+  }
 
   std::size_t idx = length(self) - 1;
   return get(self, idx);
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 T *
-last(UinStaticArray<T, c> &self) noexcept {
-  if (is_empty(self))
+last(UinArray<T> &self) noexcept {
+  if (is_empty(self)) {
     return nullptr;
+  }
 
   std::size_t idx = length(self) - 1;
   return get(self, idx);
@@ -1602,11 +1725,10 @@ shuffle(Random &r, Array<T> &self) noexcept {
   }
 }
 
-template <typename Random, typename T, std::size_t c>
+template <typename Random, typename T>
 void
-shuffle(Random &r, UinStaticArray<T, c> &self) noexcept {
-  constexpr std::size_t cap = UinStaticArray<T, c>::capacity;
-  Array<T> c_self(self.data(), self.length, cap);
+shuffle(Random &r, UinArray<T> &self) noexcept {
+  Array<T> c_self(self.data(), length(self), capacity(self));
   return shuffle(r, c_self);
 }
 
@@ -1617,9 +1739,9 @@ clear(Array<T> &self) noexcept {
   drop_back(self, length(self));
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 void
-clear(UinStaticArray<T, c> &self) noexcept {
+clear(UinArray<T> &self) noexcept {
   drop_back(self, length(self));
 }
 
@@ -1637,9 +1759,9 @@ drop_back(Array<T> &self, std::size_t len) noexcept {
   self.length -= len;
 }
 
-template <typename T, std::size_t c>
+template <typename T>
 void
-drop_back(UinStaticArray<T, c> &self, std::size_t len) noexcept {
+drop_back(UinArray<T> &self, std::size_t len) noexcept {
   assertxs(len <= length(self), len, length(self));
 
   len = std::min(length(self), len);
@@ -1660,6 +1782,14 @@ swap(Array<T> &f, Array<T> &s) noexcept {
   swap(f.capacity, s.capacity);
 }
 
+template <typename T>
+void
+swap(UinArray<T> &f, UinArray<T> &s) noexcept {
+  swap(f.buffer, s.buffer);
+  swap(f.length, s.length);
+  swap(f.capacity, s.capacity);
+}
+
 //=====================================
 template <typename T, typename F>
 void
@@ -1669,9 +1799,9 @@ for_each(Array<T> &self, F f) noexcept {
   }
 }
 
-template <typename T, std::size_t c, typename F>
+template <typename T, typename F>
 void
-for_each(UinStaticArray<T, c> &self, F f) noexcept {
+for_each(UinArray<T> &self, F f) noexcept {
   for (std::size_t i = 0; i < length(self); ++i) {
     f(self.data()[i]);
   }
@@ -1686,9 +1816,9 @@ for_each(const Array<T> &self, F f) noexcept {
   }
 }
 
-template <typename T, std::size_t c, typename F>
+template <typename T, typename F>
 void
-for_each(const UinStaticArray<T, c> &self, F f) noexcept {
+for_each(const UinArray<T> &self, F f) noexcept {
   for (std::size_t i = 0; i < length(self); ++i) {
     const T &current = self.data()[i];
     f(current);
@@ -1705,9 +1835,9 @@ for_all(Array<T> &self, F f) noexcept {
   }
   return result;
 }
-template <typename T, std::size_t c, typename F>
+template <typename T, typename F>
 bool
-for_all(UinStaticArray<T, c> &self, F f) noexcept {
+for_all(UinArray<T> &self, F f) noexcept {
   bool result = true;
   for (std::size_t i = 0; i < length(self) && result; ++i) {
     result = f(self.data()[i]);
@@ -1726,9 +1856,9 @@ for_all(const Array<T> &self, F f) noexcept {
   return result;
 }
 
-template <typename T, std::size_t c, typename F>
+template <typename T, typename F>
 bool
-for_all(const UinStaticArray<T, c> &self, F f) noexcept {
+for_all(const UinArray<T> &self, F f) noexcept {
   bool result = true;
   for (std::size_t i = 0; i < length(self) && result; ++i) {
     const T &current = self.data()[i];
@@ -1750,10 +1880,10 @@ find(Array<T> &self, Predicate f) noexcept {
   return nullptr;
 }
 
-template <typename T, std::size_t c, typename Predicate>
+template <typename T, typename Predicate>
 T *
-find(UinStaticArray<T, c> &self, Predicate f) noexcept {
-  Array<T> ar(self.data(), length(self), c);
+find(UinArray<T> &self, Predicate f) noexcept {
+  Array<T> ar(self.data(), length(self), self.capacity);
   return find(ar, f);
 }
 
@@ -1769,10 +1899,10 @@ find(const Array<T> &self, Predicate f) noexcept {
   return nullptr;
 }
 
-template <typename T, std::size_t c, typename Predicate>
+template <typename T, typename Predicate>
 T *
-find(const UinStaticArray<T, c> &self, Predicate f) noexcept {
-  const Array<T> ar(self.data(), length(self), c);
+find(const UinArray<T> &self, Predicate f) noexcept {
+  const Array<T> ar(self.data(), length(self), self.capacity);
   return find(ar, f);
 }
 
@@ -1788,10 +1918,10 @@ reduce(const Array<T> &self, K *k, F f) noexcept {
   return k;
 }
 
-template <typename T, std::size_t c, typename K, typename F>
+template <typename T, typename K, typename F>
 K *
-reduce(const UinStaticArray<T, c> &self, K *k, F f) noexcept {
-  const Array<T> ar((T *)self.data(), length(self), c);
+reduce(const UinArray<T> &self, K *k, F f) noexcept {
+  const Array<T> ar((T *)self.data(), length(self), self.capacity);
   return reduce(ar, k, f);
 }
 
@@ -1806,10 +1936,10 @@ reduce(const Array<T> &self, K &k, F f) noexcept {
   return k;
 }
 
-template <typename T, std::size_t c, typename K, typename F>
+template <typename T, typename K, typename F>
 K &
-reduce(const UinStaticArray<T, c> &self, K &k, F f) noexcept {
-  const Array<T> ar((T *)self.data(), length(self), c);
+reduce(const UinArray<T> &self, K &k, F f) noexcept {
+  const Array<T> ar((T *)self.data(), length(self), self.capacity);
   return reduce(ar, k, f);
 }
 

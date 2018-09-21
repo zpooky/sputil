@@ -78,8 +78,9 @@ TEST(btree_recTest, test_median_2_lt) {
   using cmp = sp::less;
   constexpr std::size_t max = 2;
   sp::UinStaticArray<int, max> elements;
-  sp::bin_insert<int, max, int, cmp>(elements, 3);
-  sp::bin_insert<int, max, int, cmp>(elements, 2);
+  cmp c;
+  sp::bin_insert(elements, 3, c);
+  sp::bin_insert(elements, 2, c);
   // dump(elements);
 
   int extra = 1;
@@ -92,8 +93,9 @@ TEST(btree_recTest, test_median_2_gt) {
   using cmp = sp::greater;
   constexpr std::size_t max = 2;
   sp::UinStaticArray<int, max> elements;
-  sp::bin_insert<int, max, int, cmp>(elements, 3);
-  sp::bin_insert<int, max, int, cmp>(elements, 2);
+  cmp c;
+  sp::bin_insert(elements, 3, c);
+  sp::bin_insert(elements, 2, c);
   // dump(elements);
 
   int extra = 1;
@@ -106,9 +108,10 @@ TEST(btree_recTest, test_median_3_gt) {
   using cmp = sp::greater;
   constexpr std::size_t max = 3;
   sp::UinStaticArray<int, max> elements;
-  sp::bin_insert<int, max, int, cmp>(elements, 0);
-  sp::bin_insert<int, max, int, cmp>(elements, 1);
-  sp::bin_insert<int, max, int, cmp>(elements, 2);
+  cmp c;
+  sp::bin_insert(elements, 0, c);
+  sp::bin_insert(elements, 1, c);
+  sp::bin_insert(elements, 2, c);
   // dump(elements);
 
   int extra = 3;
@@ -123,8 +126,9 @@ TEST(btree_recTest, test_fixup_2_gt) {
   constexpr std::size_t keys = 2;
 
   sp::rec::BTNode<int, keys, cmp> tree;
-  sp::bin_insert<int, keys, int, cmp>(tree.elements, 0);
-  sp::bin_insert<int, keys, int, cmp>(tree.elements, 1);
+  cmp c;
+  sp::bin_insert(tree.elements, 0, c);
+  sp::bin_insert(tree.elements, 1, c);
   ASSERT_TRUE(is_full(tree.elements));
   for (std::size_t i = 0; i < capacity(tree.children); ++i) {
     ASSERT_TRUE(insert(tree.children, nullptr));
@@ -157,9 +161,10 @@ TEST(btree_recTest, test_fixup_3_gt) {
   constexpr std::size_t keys = 3;
 
   sp::rec::BTNode<int, keys, cmp> tree;
-  sp::bin_insert<int, keys, int, cmp>(tree.elements, 0);
-  sp::bin_insert<int, keys, int, cmp>(tree.elements, 1);
-  sp::bin_insert<int, keys, int, cmp>(tree.elements, 2);
+  cmp c;
+  sp::bin_insert(tree.elements, 0, c);
+  sp::bin_insert(tree.elements, 1, c);
+  sp::bin_insert(tree.elements, 2, c);
   ASSERT_TRUE(is_full(tree.elements));
   for (std::size_t i = 0; i < capacity(tree.children); ++i) {
     ASSERT_TRUE(insert(tree.children, nullptr));
@@ -193,10 +198,11 @@ TEST(btree_recTest, test_fixup_4_gt) {
   constexpr std::size_t keys = 4;
 
   sp::rec::BTNode<int, keys, cmp> tree;
-  sp::bin_insert<int, keys, int, cmp>(tree.elements, 0);
-  sp::bin_insert<int, keys, int, cmp>(tree.elements, 1);
-  sp::bin_insert<int, keys, int, cmp>(tree.elements, 2);
-  sp::bin_insert<int, keys, int, cmp>(tree.elements, 3);
+  cmp c;
+  sp::bin_insert(tree.elements, 0, c);
+  sp::bin_insert(tree.elements, 1, c);
+  sp::bin_insert(tree.elements, 2, c);
+  sp::bin_insert(tree.elements, 3, c);
   ASSERT_TRUE(is_full(tree.elements));
   for (std::size_t i = 0; i < capacity(tree.children); ++i) {
     ASSERT_TRUE(insert(tree.children, nullptr));

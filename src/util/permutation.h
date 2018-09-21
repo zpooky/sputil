@@ -72,6 +72,7 @@ permutations(const sp::Array<const T> &pool, sp::Array<const T *> &result,
   if (current < result_length) {
     for (std::size_t i = 0; i < length(pool); ++i) {
       result[current] = &pool[i];
+
       if (!permutations(pool, result, result_length, current + 1, out)) {
         return false;
       }

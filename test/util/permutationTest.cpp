@@ -90,17 +90,30 @@ TEST(permutationTest, subsets_rwx) {
 TEST(permutationTest, rwx) {
   sp::UinStaticArray<std::string, 128> access;
 
+  // printf("access[len[%zu],cap[%zu],raw[%p]]\n", access.length,
+  // access.capacity,
+  //        access.buffer);
+  // printf("--\n");
   const char *in = "rwx";
   ASSERT_TRUE(sp::rec::subsets(in, strlen(in), [&access](const auto &str) {
+
     std::string msg;
     for_each(str, [&msg](const char *c) {
       /**/
       msg.push_back(*c);
     });
 
-    insert(access, std::move(msg));
+    // printf("access[len[%zu],cap[%zu],raw[%p]], %s\n", access.length,
+    //        access.capacity, access.buffer, msg.c_str());
+    assertx_n(insert(access, std::move(msg)));
+
+    // printf("after.access[len[%zu],cap[%zu],raw[%p]], %s\n", access.length,
+    //        access.capacity, access.buffer, msg.c_str());
+
     return true;
   }));
+
+  printf("--\n");
 
   std::size_t combs = 0;
   std::size_t res_length = 3;
@@ -124,6 +137,7 @@ TEST(permutationTest, rwx) {
 
                           return true;
                         });
+  printf("--\n");
   // printf("%zu combinations\n", combs);
   ASSERT_EQ(combs, sp::rec::permutations_of(length(access), res_length));
   // ASSERT_EQ(std::size_t(2), res);
