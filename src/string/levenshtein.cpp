@@ -1,4 +1,6 @@
 #include "levenshtein.h"
+#include <cstdio>
+#include <cstring>
 #include <util/Matrix.h>
 #include <util/assert.h>
 
@@ -162,5 +164,5 @@ levenshtein(const char *first, const char *second) noexcept {
   }
   return table[table.height - 1][table.width - 1];
 }
-}
-}
+} // namespace dp
+} // namespace ascii

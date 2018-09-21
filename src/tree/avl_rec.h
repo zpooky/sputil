@@ -9,7 +9,8 @@
 /*
  * TODO
  * https://en.wikipedia.org/wiki/AVL_tree#Set_operations_and_bulk_operations
- * - union [http://www.cs.toronto.edu/~trebla/CSCB63-2018-Summer/03-avlunion-p1.pdf]
+ * - union
+ * [http://www.cs.toronto.edu/~trebla/CSCB63-2018-Summer/03-avlunion-p1.pdf]
  * - intersection
  * - set difference.
  */
@@ -514,12 +515,14 @@ verify(const Node<T> *tree, int &result) noexcept {
     }
 
     if (balance(tree) != bl) {
-      std::cout << "right: " << right << "|";
-      std::cout << "left: " << left << "|";
-      // std::cout << "bl: " << bl << "|";
-      std::cout << "bl: " << int(bl) << "|";
-      // std::cout << "tree: " << std::string(*tree) << "|";
-      std::cout << "\n";
+      /*
+       * std::cout << "right: " << right << "|";
+       * std::cout << "left: " << left << "|";
+       * // std::cout << "bl: " << bl << "|";
+       * std::cout << "bl: " << int(bl) << "|";
+       * // std::cout << "tree: " << std::string(*tree) << "|";
+       * std::cout << "\n";
+       */
       return false;
     }
 

@@ -21,8 +21,8 @@ namespace dp {
 // TODO document and understand
 std::size_t
 knapsack(std::size_t capacity, const struct item *) noexcept;
-}
+} // namespace dp
 
-}
+} // namespace np
 
 #endif

@@ -639,12 +639,14 @@ verify(const Node<T> *parent, const Node<T> *tree, int &result) noexcept {
     }
 
     if (balance(tree) != bl) {
-      std::cout << "right: " << right << "|";
-      std::cout << "left: " << left << "|";
-      // std::cout << "bl: " << bl << "|";
-      std::cout << "bl: " << int(bl) << "|";
-      std::cout << "tree: " << std::string(*tree) << "|";
-      std::cout << "\n";
+      /*
+       * std::cout << "right: " << right << "|";
+       * std::cout << "left: " << left << "|";
+       * // std::cout << "bl: " << bl << "|";
+       * std::cout << "bl: " << int(bl) << "|";
+       * std::cout << "tree: " << std::string(*tree) << "|";
+       * std::cout << "\n";
+       */
       return false;
     }
 

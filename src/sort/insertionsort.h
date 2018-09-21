@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <util/assert.h>
 #include <util/comparator.h>
+#include <utility>
 
 namespace sp {
 //=====================================
@@ -35,6 +36,6 @@ insertionsort(T *const arr, std::size_t length) noexcept {
 }
 
 //=====================================
-}
+} // namespace sp
 
 #endif

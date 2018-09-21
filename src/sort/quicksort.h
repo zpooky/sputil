@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <util/assert.h>
 #include <util/comparator.h>
+#include <utility>
 
 namespace sp {
 namespace rec {

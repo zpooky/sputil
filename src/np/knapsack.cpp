@@ -1,4 +1,5 @@
 #include "knapsack.h"
+#include <sys/types.h>
 #include <util/Matrix.h>
 
 namespace np {
@@ -95,5 +96,5 @@ knapsack(const std::size_t capacity, const struct item *const items) noexcept {
 
   return table[itm_cnt][capacity];
 }
-}
-}
+} // namespace dp
+} // namespace np

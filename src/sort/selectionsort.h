@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <util/assert.h>
 #include <util/comparator.h>
+#include <utility>
 
 namespace sp {
 
@@ -42,6 +43,6 @@ selectionsort(T *const in, std::size_t length) noexcept {
     }
   } // for
 }
-}
+} // namespace sp
 
 #endif

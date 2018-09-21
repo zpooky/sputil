@@ -1,6 +1,7 @@
 #include "QuadSet.h"
 #include <type_traits>
 #include <util/assert.h>
+#include <utility>
 
 namespace sp {
 static std::size_t
@@ -107,6 +108,7 @@ Quadset_number_of_buffer(std::size_t x) noexcept {
 void
 swap(Quadset &f, Quadset &s) noexcept {
   using std::swap;
+
   swap(f.buffer, s.buffer);
   swap(f.capacity, s.capacity);
 }

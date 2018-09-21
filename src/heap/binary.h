@@ -5,6 +5,7 @@
 #include <util/array.h>
 #include <util/assert.h>
 #include <util/comparator.h>
+#include <string>
 
 namespace heap {
 
@@ -405,8 +406,8 @@ Lit:
     }
   }
 }
-}
-}
+} // namespace heap
+} // namespace impl
 
 template <typename T, typename Comparator, typename K>
 bool
@@ -528,7 +529,7 @@ find_stack(Binary<T, Comparator> &self, const K &needle,
 
   return nullptr; // TODO
 }
-}
+} // namespace impl
 
 template <typename T, typename Comparator, typename K>
 T *
@@ -571,7 +572,7 @@ std::size_t
 index_of(Binary<T, Comparator> &self, T *subject) noexcept {
   return sp::index_of(self.buffer, self.length, self.capacity, subject);
 }
-}
+} // namespace impl_heap
 
 template <typename T, typename Comparator>
 T *
