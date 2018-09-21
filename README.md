@@ -14,7 +14,6 @@ u16
 utf8
 Boyer–Moore string search algorithm
 Knuth-Morris-Pratt
-Levenshtein distance
 suffix tree https://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-algorithm-in-plain-english/9513423#9513423
 
 #file path
@@ -60,27 +59,6 @@ lz77 - https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/sou
 ##
 Markov chains
 
-Minimum spanning tree
-
-# Graph
-## prim
-"https://en.wikipedia.org/wiki/Prim%27s_algorithm"
-greedy algorithm that finds a minimum spanning tree for a weighted undirected
-graph
-
-## Dijkstra
-The process that underlies Dijkstra's algorithm is similar to the greedy process
-used in Prim's algorithm. Prim's purpose is to find a minimum spanning tree that
-connects all nodes in the graph; Dijkstra is concerned with only two nodes.
-Prim's does not evaluate the total weight of the path from the starting node,
-only the individual edges.
-
-
-## Bellman–Ford algorithm
-"https://en.wikipedia.org/wiki/Bellman–Ford_algorithm"
-computes shortest paths from a single source vertex to all of the other vertices
-in a weighted digraph
-
 # Consensus
 - paxos
 - raft
@@ -88,70 +66,29 @@ in a weighted digraph
 # Heap
 - Fibonacci
 
-# HashMap
-## ProbingHM
-```
-static const int TOMB_STONE;
-
-//start from index 
-def insert(value):
-  index = hash(value) % length;
-  store_index = index
-  while(items[index]!=NULL && items[index] != &TOMB_STONE){
-    ++index;
-    if(items[index] == NULL)
-      TODO ...
-  }
-  items[index] =value;
-
-//start from index continue until not NULL, if found remove
-def remove(value):
-  index = hash(value) % length;
-  while(items[index] != value){
-    if(items[index] == NULL){
-      // Not found
-      return;
-    }
-    ++index;
-  }
-  if(items[index+1]==NULL) {
-    items[index] = NULL;
-  } else {
-    items[index] = &TOMB_STONE;
-  }
-
-//start from index and continue until NULL
-def lookup(value):
-  index = hash(value) % length;
-  do {
-    if(items[index] != &TOMB_STONE){
-      if(items[index] == value){
-        return items[index];
-      }
-    }
-  } while(items[index] != NULL);
-  return NULL;
-
-
-```
-Try out Bitset for present set, instead of fucking up the alignment of buckets
-by adding boolean flags.
-
 # TODO
-- https://www.geeksforgeeks.org/c-program-for-tower-of-hanoi/ |
 - https://www.geeksforgeeks.org/rat-in-a-maze-backtracking-2/ | maze
 - https://www.geeksforgeeks.org/longest-palindromic-subsequence-dp-12/
-- https://www.redblobgames.com/pathfinding/a-star/introduction.html |A* search algorithm
-  http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html
-
-Given an unsorted array, find the nth smallest element in the array
-
-- https://bradfieldcs.com/algos/graphs/prims-spanning-tree-algorithm/ |prim
-- |Bellman–Ford algorithm
-- |Floyd–Warshall_algorithm
 - |Boyer–Moore string-search algorithm
 - |Knuth–Morris–Pratt string-search algorithm
 - https://www.michaelfogleman.com/rush/ | rush hour
 - https://en.wikipedia.org/wiki/Luhn_algorithm
-- Soduku solver
+- Soduku solver(graph)
 - knapsack
+
+## Graph
+- https://bradfieldcs.com/algos/graphs/prims-spanning-tree-algorithm/ |prim
+- |Bellman–Ford algorithm
+- |Floyd–Warshall_algorithm
+- https://www.redblobgames.com/pathfinding/a-star/introduction.html |A* search algorithm
+  http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html
+
+## Bellman–Ford algorithm
+"https://en.wikipedia.org/wiki/Bellman–Ford_algorithm"
+Computes shortest paths from a single source vertex to all of the other vertices
+in a weighted digraph
+
+## prim Minimum spanning tree
+"https://en.wikipedia.org/wiki/Prim%27s_algorithm"
+greedy algorithm that finds a minimum spanning tree for a weighted undirected
+graph
