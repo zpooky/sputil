@@ -113,11 +113,22 @@ template <typename T, typename H, typename Eq, typename F>
 void
 for_each(HashSetProbing<T, H, Eq> &, F) noexcept;
 
+template <typename T, typename H, typename Eq, typename F>
+void
+for_each(const HashSetProbing<T, H, Eq> &, F) noexcept;
+
 //=====================================
 namespace rec {
 template <typename T, typename H, typename Eq>
 bool
 verify(const HashSetProbing<T, H, Eq> &) noexcept;
+}
+
+//=====================================
+namespace n {
+template <typename T, typename H, typename Eq>
+std::size_t
+length(const HashSetProbing<T, H, Eq> &) noexcept;
 }
 
 //=====================================
@@ -143,15 +154,21 @@ HashSetProbing<T, H, Eq>::HashSetProbing(std::size_t cap) noexcept
 
 template <typename T, typename H, typename Eq>
 HashSetProbing<T, H, Eq>::~HashSetProbing() noexcept {
+  // printf("~HashSetProbing(%p, tag(%p, cap[%zu]), cap[%zu])\n", this->table,
+  //        this->tags.buffer, this->tags.capacity, this->capacity);
+  std::size_t gced = 0;
   if (this->table) {
-    for (std::size_t idx = 0; idx < this->capacity; ++idx) {
-      auto &current = this->table[idx];
-      const auto tag = test(this->tags, idx);
+    if (!std::is_trivially_destructible<T>::value) {
+      for (std::size_t idx = 0; idx < this->capacity; ++idx) {
+        auto &current = this->table[idx];
+        const auto tag = test(this->tags, idx);
 
-      if (tag == HSPTag_PRESENT) {
-        T *v = (T *)&current.value;
-        v->~T();
-      }
+        if (tag == HSPTag_PRESENT) {
+          ++gced;
+          T *const v = (T *)&current.value;
+          v->~T();
+        }
+      } // for
     }
 
     delete[] this->table;
@@ -159,6 +176,7 @@ HashSetProbing<T, H, Eq>::~HashSetProbing() noexcept {
 
   this->table = nullptr;
   this->capacity = 0;
+  // printf("============================gced[%zu]\n", gced);
 }
 
 //=====================================
@@ -189,11 +207,12 @@ rehash(HashSetProbing<T, H, Eq> &self) noexcept {
     if (tag == HSPTag_PRESENT) {
       // printf("cnt[%zu]\n", cnt);
       ++cnt;
-      sp::set(self.tags, idx, HSPTag_TOMBSTONE);
+      // sp::set(self.tags, idx, HSPTag_TOMBSTONE);
       T *const current = (T *)&bucket.value;
 
       assertx_n(insert(tmp, std::move(*current)));
-      current->~T();
+
+      // current->~T();
     } else {
       // only rehash when full, for now...
       assertx(false);
@@ -221,6 +240,11 @@ insert(HashSetProbing<T, H, Eq> &self, V &&value) noexcept {
     self.tags.capacity = Quadset_number_of_buffer(self.capacity);
     assertxs(self.tags.capacity > 0, self.tags.capacity, self.capacity);
     self.tags.buffer = new std::uint64_t[self.tags.capacity]{0};
+    assertx_f({
+      for (std::size_t i = 0; i < self.tags.capacity; ++i) {
+        assertxs(self.tags.buffer[i] == std::uint64_t(0), self.tags.buffer[i]);
+      }
+    });
   }
 
 Lretry:
@@ -266,7 +290,9 @@ Lretry:
       return new (res) T(std::forward<V>(value));
     }
 
+    // printf("\nT::active_rehash_bef[%zu]\n", T::active);
     if (rehash(self)) {
+      // printf("T::active_rehash_aft[%zu]\n", T::active);
       goto Lretry;
     }
   }
@@ -362,7 +388,8 @@ cleanup(HashSetProbing<T, H, Eq> &self,
   std::size_t idx = dest;
   do {
     const auto tag = sp::test(self.tags, idx);
-    if (tag == HSPTag_PRESENT) {
+    if (tag != HSPTag_TOMBSTONE) {
+      // if (tag == HSPTag_PRESENT) {
       return;
     }
 
@@ -413,8 +440,24 @@ for_each(HashSetProbing<T, H, Eq> &self, F f) noexcept {
   if (self.table) {
     for (std::size_t i = 0; i < capacity(self); ++i) {
       auto &bucket = self.table[i];
-      if (bucket.tag == HSPTag_PRESENT) {
+      auto tag = sp::test(self.tags, i);
+      if (tag == HSPTag_PRESENT) {
         T *const current = (T *)&bucket.value;
+        f(*current);
+      }
+    }
+  }
+}
+
+template <typename T, typename H, typename Eq, typename F>
+void
+for_each(const HashSetProbing<T, H, Eq> &self, F f) noexcept {
+  if (self.table) {
+    for (std::size_t i = 0; i < capacity(self); ++i) {
+      auto &bucket = self.table[i];
+      auto tag = sp::test(self.tags, i);
+      if (tag == HSPTag_PRESENT) {
+        const T *const current = (T *)&bucket.value;
         f(*current);
       }
     }
@@ -439,6 +482,20 @@ verify(const HashSetProbing<T, H, Eq> &) noexcept {
   return true;
 }
 } // namespace rec
+
+//=====================================
+namespace n {
+template <typename T, typename H, typename Eq>
+std::size_t
+length(const HashSetProbing<T, H, Eq> &self) noexcept {
+  std::size_t result = 0;
+  for_each(self, [&result](const auto &) {
+    /**/
+    ++result;
+  });
+  return result;
+}
+}
 
 //=====================================
 } // namespace sp

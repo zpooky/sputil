@@ -97,7 +97,8 @@ public:
   UinArray(const UinArray &) = delete;
   UinArray(const UinArray &&) = delete;
 
-  virtual ~UinArray() noexcept;
+  virtual ~UinArray() noexcept {
+  }
 
   T *
   data() noexcept;
@@ -131,6 +132,8 @@ struct UinStaticArray : public UinArray<T> {
 
   UinStaticArray(UinStaticArray<T, cap> &&) noexcept;
   UinStaticArray(std::initializer_list<T>) noexcept;
+
+  virtual ~UinStaticArray() noexcept;
 };
 
 //=====================================
@@ -768,17 +771,6 @@ const T &UinArray<T>::operator[](std::size_t idx) const noexcept {
   return data()[idx];
 }
 
-template <typename T>
-UinArray<T>::~UinArray() noexcept {
-  if (this->buffer) {
-    for (std::size_t i = 0; i < length; ++i) {
-      this->operator[](i).~T();
-    }
-  }
-  this->buffer = nullptr;
-  this->length = 0;
-}
-
 //=====================================
 template <typename T, std::size_t c>
 UinStaticArray<T, c>::UinStaticArray() noexcept
@@ -803,6 +795,20 @@ UinStaticArray<T, c>::UinStaticArray(std::initializer_list<T> l) noexcept
     : UinStaticArray() {
   assertx(l.size() <= sp::capacity(*this));
   assertx_n(insert_all(*this, l.begin(), l.size()));
+}
+
+template <typename T, std::size_t c>
+UinStaticArray<T, c>::~UinStaticArray() noexcept {
+  if (this->buffer) {
+    if (!std::is_trivially_destructible<T>::value) {
+      for (std::size_t i = 0; i < length(*this); ++i) {
+        auto &current = this->operator[](i);
+        current.~T();
+      }
+    }
+  }
+
+  this->length = 0;
 }
 
 //=====================================
@@ -834,9 +840,18 @@ UinDynamicArray<T>::UinDynamicArray(std::initializer_list<T> l) noexcept
 template <typename T>
 UinDynamicArray<T>::~UinDynamicArray() noexcept {
   if (this->buffer) {
+    if (!std::is_trivially_destructible<T>::value) {
+      for (std::size_t i = 0; i < length(*this); ++i) {
+        auto &current = this->operator[](i);
+        current.~T();
+      } // for
+    }
+
     delete[] this->buffer;
   }
+
   this->buffer = nullptr;
+  this->length = 0;
   this->capacity = 0;
 }
 
@@ -1247,7 +1262,7 @@ template <typename T, typename V>
 T *
 insert(Array<T> &self, V &&val) noexcept {
   if (!is_full(self)) {
-    std::size_t idx = self.length++;
+    const std::size_t idx = self.length++;
     T *const raw = self.buffer + idx;
 
     // dtor of default init T
@@ -1263,7 +1278,7 @@ template <typename T, typename V>
 T *
 insert(UinArray<T> &self, V &&val) noexcept {
   if (!is_full(self)) {
-    std::size_t idx = self.length++;
+    const std::size_t idx = self.length++;
     T *const raw = self.data() + idx;
 
     return new (raw) T(std::forward<V>(val));
@@ -1276,7 +1291,7 @@ insert(UinArray<T> &self, V &&val) noexcept {
 template <typename T, typename From>
 bool
 insert_all(Array<T> &self, const From &src) noexcept {
-  std::size_t len = length(src);
+  const std::size_t len = length(src);
   if (remaining_write(self) >= len) {
     for (std::size_t i = 0; i < len; ++i) {
       assertx_n(insert(self, src[i]));
@@ -1291,7 +1306,7 @@ insert_all(Array<T> &self, const From &src) noexcept {
 template <typename T, typename From>
 bool
 insert_all(UinArray<T> &self, const From &src) noexcept {
-  std::size_t len = length(src);
+  const std::size_t len = length(src);
   if (remaining_write(self) >= len) {
     for (std::size_t i = 0; i < len; ++i) {
       T *res = insert(self, src[i]);

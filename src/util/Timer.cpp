@@ -45,11 +45,17 @@ print(const TimerContex &ctx) noexcept {
   for_each(ctx.measurement, [](clock_t msec) {
     clock_t sec = msec / 1000;
     clock_t rem_msec = msec % 1000;
+    bool any_thing = false;
     if (sec > 0) {
       printf("%ld sec", sec);
+      any_thing = true;
     }
     if (rem_msec > 0) {
       printf("%ld msec", rem_msec);
+      any_thing = true;
+    }
+    if (!any_thing) {
+      printf("0 msec");
     }
     printf("\n");
   });

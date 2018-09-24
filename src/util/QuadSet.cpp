@@ -4,6 +4,9 @@
 #include <utility>
 
 namespace sp {
+/*
+ * 2: is the number of bits per index
+ */
 static std::size_t
 word_index(std::size_t abs_idx) noexcept {
   constexpr std::size_t bits = (sizeof(Quadset::Type) * 8) / 2;

@@ -8,37 +8,116 @@
 #include <util/Bitset.h>
 #include <util/Timer.h>
 
+namespace sp {
+struct HSPTDummy {
+  static std::int64_t active;
+  const int key;
+  long alignment0;
+  long alignment1;
+  long alignment2;
+
+  explicit HSPTDummy(int k)
+      : key(k)
+      , alignment0(active)
+      , alignment1(active)
+      , alignment2(active) {
+    // printf("ctor[%u]\n", active);
+    ++active;
+  }
+
+  HSPTDummy(HSPTDummy &&o)
+      : HSPTDummy(o.key) {
+  }
+
+  HSPTDummy(const HSPTDummy &) = delete;
+
+  HSPTDummy &
+  operator=(const HSPTDummy &) = delete;
+  HSPTDummy &
+  operator=(const HSPTDummy &&) = delete;
+
+  bool
+  operator==(int o) const noexcept {
+    return key == o;
+  }
+  bool
+  operator==(const HSPTDummy &o) const noexcept {
+    return operator==(o.key);
+  }
+
+  ~HSPTDummy() {
+    // printf("dtor %p, active[%u]\n", this, active);
+    // printf("dtor[%u]\n", active);
+    assertxs(active > 0, active);
+    --active;
+    assertxs(active >= 0, active);
+  }
+};
+
+template <>
+struct Hasher<HSPTDummy> {
+  std::size_t
+  operator()(int o) const noexcept {
+    Hasher<int> h;
+    return h(o);
+  }
+
+  std::size_t
+  operator()(const HSPTDummy &o) const noexcept {
+    return operator()(o.key);
+  }
+};
+
+std::int64_t HSPTDummy::active = 0;
+
+static void
+swap(HSPTDummy &f, HSPTDummy &s) noexcept {
+  HSPTDummy tmp(std::move(f));
+  f.~HSPTDummy();
+  new (&f) HSPTDummy(std::move(s));
+  s.~HSPTDummy();
+  new (&s) HSPTDummy(std::move(tmp));
+}
+}
+
 template <typename SET>
 static void
 run_bench(SET &set) noexcept {
   using TT = typename SET::value_type;
-  // constexpr int range = (1024 * 4) + 1;
+  // constexpr int range = (1024 * 10) + 1;
+  constexpr int range = (1024 * 4) + 1;
   // constexpr int range = 350;
-  constexpr int range = (1024 * 1) + 1;
+  // constexpr int range = (16 * 1) + 1;
+  // constexpr int range = (1024 * 1) + 1;
   prng::xorshift32 r(1);
-  // for (std::size_t range = 471; range < 1024 * 4; ++range) //
-  // {
   sp::TimerContex ctx;
   // printf("range(%zu)\n", range);
-  for (std::size_t a = 0; a < 3; ++a) //
+  for (std::size_t a = 0; a < 10; ++a) //
   {
     sp::timer(ctx, [&]() {
       sp::UinDynamicArray<TT> ref(range);
 
       for (int i = 0; i < range; ++i) {
-        const TT cmp(i);
+        const int cmp(i);
         ASSERT_FALSE(lookup(set, i));
         ASSERT_EQ(cmp, i);
 
         // printf("insert(%d){", i);
-        TT *maybe = insert(set, i);
+        // ASSERT_EQ(i * 2, TT::active);
+        TT *const maybe = insert(set, i);
         ASSERT_EQ(cmp, i);
+
+        // ASSERT_EQ(((i * 2) + 1), TT::active);
         // printf("}\n");
 
-        TT *l = lookup(set, i);
+        TT *const l = lookup(set, i);
         ASSERT_EQ(cmp, i);
+
         if (maybe) {
-          ASSERT_TRUE(push(ref, i));
+          {
+            ASSERT_TRUE(push(ref, i));
+            // ASSERT_EQ(((i * 2) + 2), TT::active);
+          }
           ASSERT_EQ(cmp, i);
           // printf("%d\n", *maybe);
 
@@ -59,23 +138,27 @@ run_bench(SET &set) noexcept {
           ASSERT_EQ(cmp, in);
 
           if (!l) {
-            printf("length(%zu)\n", length(ref));
+            // printf("length(%zu)\n", length(ref));
             printf("lookup(%d): null\n", in);
           }
 
           ASSERT_TRUE(l);
           ASSERT_EQ(*l, in);
         }
-      }
+#if 0
+#endif
+      } // for
 
-      // ASSERT_EQ(length(ref), sp::rec::length(set));
+      // #if 0
+      // ASSERT_EQ(length(ref), sp::n::length(set));
 
       sp::rec::verify(set);
       shuffle(r, ref);
+      // #endif
 
       for_each(ref, [&set](TT &in) {
         // const TT cmp(in);
-        TT *l = lookup(set, in);
+        TT *const l = lookup(set, in);
         // ASSERT_EQ(cmp, in);
 
         if (!l) {
@@ -97,13 +180,15 @@ run_bench(SET &set) noexcept {
 
       sp::rec::verify(set);
 
-      // ASSERT_EQ(std::size_t(0), sp::rec::length(set));
+      // ASSERT_EQ(std::size_t(0), sp::n::length(set));
+      // #if 0
+      // #endif
 
       // printf("----\n");
       // avl::dump(set.tree);
     });
   }
-  // }
+
   print(ctx);
 
   printf("Average: ");
@@ -115,52 +200,7 @@ run_bench(SET &set) noexcept {
   // printf("length:%zu\n", length);
 }
 
-namespace sp {
-struct HSPTDummy {
-  static std::int64_t active;
-  int key;
-  long alignment0;
-  long alignment1;
-  long alignment2;
-
-  explicit HSPTDummy(int k)
-      : key(k)
-      , alignment0(active)
-      , alignment1(active)
-      , alignment2(active) {
-    ++active;
-  }
-
-  HSPTDummy(HSPTDummy &&o)
-      : HSPTDummy(o.key) {
-    ++active;
-  }
-
-  bool
-  operator==(const HSPTDummy &o) const noexcept {
-    return key == o.key;
-  }
-
-  ~HSPTDummy() {
-    // printf("dtor %p\n", this);
-    assertxs(active > 0, active);
-    --active;
-    assertxs(active >= 0, active);
-  }
-};
-
-template <>
-struct Hasher<HSPTDummy> {
-  std::size_t
-  operator()(const HSPTDummy &o) const noexcept {
-    Hasher<int> h;
-    return h(o.key);
-  }
-};
-
-std::int64_t HSPTDummy::active = 0;
-}
-
+// #if 0
 TEST(HashSetProbingTest, test_HashSetProbing) {
   sp::HashSetProbing<int> set;
   run_bench(set);
@@ -173,27 +213,32 @@ TEST(HashSetProbingTest, test_HashSetProbing) {
   }
   ASSERT_EQ(std::size_t(0), cnt);
 }
+// #endif
 
 TEST(HashSetProbingTest, test_HashSetProbing_dtor) {
-  // {
-  //   sp::HashSetProbing<sp::HSPTDummy> set;
-  //   run_bench(set);
-  //   std::size_t cnt = 0;
-  //   for (std::size_t i = 0; i < set.capacity; ++i) {
-  //     if (sp::test(set.tags, i) != HSPTag_EMPTY) {
-  //       ++cnt;
-  //       // ASSERT_EQ(set.table[i].tag, HSPTag_EMPTY);
-  //     }
-  //   }
-  //   ASSERT_EQ(std::size_t(0), cnt);
-  // }
+  ASSERT_EQ(std::int64_t(0), sp::HSPTDummy::active);
+  {
+    sp::HashSetProbing<sp::HSPTDummy> set;
+    run_bench(set);
+    std::size_t cnt = 0;
+    for (std::size_t i = 0; i < set.capacity; ++i) {
+      if (sp::test(set.tags, i) != HSPTag_EMPTY) {
+        ++cnt;
+        // ASSERT_EQ(set.table[i].tag, HSPTag_EMPTY);
+      }
+    }
+    ASSERT_EQ(std::size_t(0), cnt);
+    printf("length: %zu\n", sp::n::length(set));
+  }
   ASSERT_EQ(std::int64_t(0), sp::HSPTDummy::active);
 }
 
+// #if 0
 TEST(HashSetProbingTest, test_HashSetTree) {
   sp::HashSet<int> set;
   run_bench(set);
 }
+// #endif
 
 static void
 test_dump(sp::HashSetProbing<std::uint32_t> &set) {
@@ -217,17 +262,19 @@ test_dump(sp::HashSetProbing<std::uint32_t> &set) {
   (void)set;
 }
 
+// #if 0
+
 TEST(HashSetProbingTest, test_rand) {
   prng::xorshift32 r(1459312133);
 
-  constexpr std::size_t range = 1024 * 4;
+  constexpr std::size_t range = (1024 * 4) + 1;
   constexpr std::size_t bits(sizeof(std::uint64_t) * 8);
   // ASSERT_TRUE(range % bits == 0);
 
   // const std::uint32_t r_max = range * 9;
   const std::uint32_t r_max = range;
 
-  const std::size_t length = std::max(std::size_t(1), r_max / bits);
+  const std::size_t length = sp::bitset_number_of_buffer(range);
   auto raw = new uint64_t[length];
   ASSERT_TRUE(raw);
 
@@ -313,9 +360,34 @@ TEST(HashSetProbingTest, test_rand) {
       }
     } // for
 
-    ASSERT_TRUE(sp::rec::verify(set));
+    for_each(present, [&set](std::size_t idx, bool v) {
+      const std::uint32_t in(idx);
+      auto res = lookup(set, in);
+      if (v) {
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, in);
+        ASSERT_TRUE(remove(set, in));
+      } else {
+        ASSERT_FALSE(res);
+        ASSERT_FALSE(remove(set, in));
+      }
+      ASSERT_FALSE(lookup(set, in));
+    });
 
-  } while (false);
+    {
+      std::size_t cnt = 0;
+      for (std::size_t i = 0; i < set.capacity; ++i) {
+        if (sp::test(set.tags, i) != HSPTag_EMPTY) {
+          ++cnt;
+          // ASSERT_EQ(set.table[i].tag, HSPTag_EMPTY);
+        }
+      }
+      ASSERT_EQ(std::size_t(0), cnt);
+    }
+
+  } while (true);
 
   delete[] raw;
 }
+
+// #endif
