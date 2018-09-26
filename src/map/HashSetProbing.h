@@ -13,28 +13,17 @@
 #define HSPTag_PRESENT char(1)
 #define HSPTag_TOMBSTONE char(2)
 
+/*
+ * Linear probing
+ */
 namespace sp {
-namespace impl {
-//=====================================
-template <typename T>
-struct HashSetProbingBucket {
-  using st = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
-
-  st value;
-  // HSPTag tag;
-
-  HashSetProbingBucket() noexcept;
-
-  ~HashSetProbingBucket() noexcept;
-};
-} // namespace impl
-
 //=====================================
 template <typename T, typename Hash = sp::Hasher<T>, typename Eq = sp::Equality>
 struct HashSetProbing {
+  using Bucket = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
   using value_type = T;
 
-  impl::HashSetProbingBucket<T> *table;
+  Bucket *table;
   sp::Quadset tags;
 
   std::size_t length;
@@ -53,11 +42,9 @@ T *
 insert(HashSetProbing<T, H, Eq> &, V &&) noexcept;
 
 //=====================================
-/*
- * template <typename T, typename H, typename Eq, typename V>
- * T *
- * upsert(HashSetProbing<T, H, Eq> &, V &&) noexcept;
- */
+template <typename T, typename H, typename Eq, typename V>
+T *
+upsert(HashSetProbing<T, H, Eq> &, V &&) noexcept;
 
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
@@ -68,33 +55,30 @@ template <typename T, typename H, typename Eq, typename V>
 T *
 lookup(HashSetProbing<T, H, Eq> &, const V &) noexcept;
 
-/*
- * //=====================================
- * template <typename T, typename H, typename Eq>
- * const T *
- * lookup_default(const HashSetProbing<T, H, Eq> &, const T &needle,
- *                const T &def) noexcept;
- *
- * template <typename T, typename H, typename Eq>
- * T *
- * lookup_default(HashSetProbing<T, H, Eq> &, const T &needle, T &def) noexcept;
- *
- * //=====================================
- * template <typename T, typename H, typename Eq, typename V>
- * T *
- * lookup_insert(HashSetProbing<T, H, Eq> &, V &&) noexcept;
- *
- * //=====================================
- * template <typename T, typename H, typename Eq, typename V, typename Compute>
- * T *
- * lookup_compute(HashSetProbing<T, H, Eq> &, const V &needle, Compute)
- * noexcept;
- *
- * //=====================================
- * template <typename T, typename H, typename Eq, typename V>
- * bool
- * contains(const HashSetProbing<T, H, Eq> &, const V &) noexcept;
- */
+//=====================================
+template <typename T, typename H, typename Eq>
+const T *
+lookup_default(const HashSetProbing<T, H, Eq> &, const T &needle,
+               const T &def) noexcept;
+
+template <typename T, typename H, typename Eq>
+T *
+lookup_default(HashSetProbing<T, H, Eq> &, const T &needle, T &def) noexcept;
+
+//=====================================
+template <typename T, typename H, typename Eq, typename V>
+T *
+lookup_insert(HashSetProbing<T, H, Eq> &, V &&) noexcept;
+
+//=====================================
+template <typename T, typename H, typename Eq, typename V, typename Compute>
+T *
+lookup_compute(HashSetProbing<T, H, Eq> &, const V &needle, Compute) noexcept;
+
+//=====================================
+template <typename T, typename H, typename Eq, typename V>
+bool
+contains(const HashSetProbing<T, H, Eq> &, const V &) noexcept;
 
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
@@ -141,17 +125,6 @@ length(const HashSetProbing<T, H, Eq> &) noexcept;
 //=====================================
 //====Implementation===================
 //=====================================
-namespace impl {
-template <typename T>
-HashSetProbingBucket<T>::HashSetProbingBucket() noexcept
-    : value{} {
-}
-
-template <typename T>
-HashSetProbingBucket<T>::~HashSetProbingBucket() noexcept {
-}
-} // namespace impl
-
 template <typename T, typename H, typename Eq>
 HashSetProbing<T, H, Eq>::HashSetProbing(std::size_t cap) noexcept
     : table{nullptr}
@@ -162,18 +135,16 @@ HashSetProbing<T, H, Eq>::HashSetProbing(std::size_t cap) noexcept
 
 template <typename T, typename H, typename Eq>
 HashSetProbing<T, H, Eq>::~HashSetProbing() noexcept {
-  // printf("~HashSetProbing(%p, tag(%p, cap[%zu]), cap[%zu])\n", this->table,
-  //        this->tags.buffer, this->tags.capacity, this->capacity);
   if (this->table) {
     if (!std::is_trivially_destructible<T>::value) {
       std::size_t gced = 0;
       for (std::size_t idx = 0; idx < capacity && gced < length; ++idx) {
-        auto &current = this->table[idx];
         const auto tag = test(this->tags, idx);
 
         if (tag == HSPTag_PRESENT) {
+          auto &current = this->table[idx];
           ++gced;
-          T *const v = (T *)&current.value;
+          T *const v = (T *)&current;
           v->~T();
         }
       } // for
@@ -185,7 +156,6 @@ HashSetProbing<T, H, Eq>::~HashSetProbing() noexcept {
   this->table = nullptr;
   this->length = 0;
   this->capacity = 0;
-  // printf("============================gced[%zu]\n", gced);
 }
 
 //=====================================
@@ -193,9 +163,11 @@ namespace impl {
 static inline std::size_t
 index_of(std::size_t hash, std::size_t length) noexcept {
   const std::size_t res = hash & (length - 1);
-  const std::size_t cmp = hash % length;
-  assertxs(res < length, res, length);
-  assertxs(cmp == res, hash, length, cmp, res);
+  assertx_f({
+    const std::size_t cmp = hash % length;
+    assertxs(res < length, res, length);
+    assertxs(cmp == res, hash, length, cmp, res);
+  });
   return res;
 }
 
@@ -212,14 +184,14 @@ rehash(HashSetProbing<T, H, Eq> &self, const T *const needle) noexcept {
 
   std::size_t cnt = 0;
   for (std::size_t idx = 0; idx < capacity(self) && cnt < length(self); ++idx) {
-    auto &bucket = self.table[idx];
     const auto tag = sp::test(self.tags, idx);
 
     if (tag == HSPTag_PRESENT) {
+      auto &bucket = self.table[idx];
       // printf("cnt[%zu]\n", cnt);
       ++cnt;
       sp::set(self.tags, idx, HSPTag_EMPTY);
-      T *const current = (T *)&bucket.value;
+      T *const current = (T *)&bucket;
 
       T *const ins = insert(tmp, std::move(*current));
       if (current == needle) {
@@ -268,9 +240,10 @@ insert(HashSetProbing<T, H, Eq> &self, V &&value) noexcept {
   using namespace impl;
 
   if (!self.table) {
+    using Bucket = typename HashSetProbing<T, H, Eq>::Bucket;
     // XXX check null
     assertxs(self.capacity > 0, self.capacity);
-    self.table = new impl::HashSetProbingBucket<T>[self.capacity];
+    self.table = new Bucket[self.capacity];
 
     self.tags.capacity = Quadset_number_of_buffer(self.capacity);
     assertxs(self.tags.capacity > 0, self.tags.capacity, self.capacity);
@@ -303,7 +276,7 @@ Lretry:
       if (tag == HSPTag_EMPTY) {
         break;
       } else if (tag == HSPTag_PRESENT) {
-        const T *const res = (T *)&bucket.value;
+        const T *const res = (T *)&bucket;
         const V &needle = value;
 
         Eq equality;
@@ -322,7 +295,7 @@ Lretry:
 
       ++self.length;
 
-      T *const result = (T *)&self.table[empty].value;
+      T *const result = (T *)self.table + empty;
       new (result) T(std::forward<V>(value));
 
       if (eager_resize(self)) {
@@ -337,14 +310,34 @@ Lretry:
 }
 
 //=====================================
-/*
- * template <typename T, typename H, typename Eq, typename V>
- * T *
- * upsert(HashSetProbing<T, H, Eq> &, V &&) noexcept {
- *   assertx(false);
- *   return nullptr;
- * }
- */
+namespace impl {
+template <typename T, typename H, typename Eq, typename V>
+T *
+lookup_insert(HashSetProbing<T, H, Eq> &self, V &&needle,
+              bool &inserted) noexcept {
+  // TODO
+  return nullptr;
+}
+}
+
+template <typename T, typename H, typename Eq, typename V>
+T *
+upsert(HashSetProbing<T, H, Eq> &self, V &&needle) noexcept {
+  using namespace impl;
+
+  bool inserted = false;
+  T *const result = lookup_insert(self, std::forward<V>(needle), inserted);
+
+  if (result) {
+    if (!inserted) {
+
+      result->~T();
+      new (result) T(std::forward<V>(needle));
+    }
+  }
+
+  return result;
+}
 
 //=====================================
 namespace impl {
@@ -360,7 +353,7 @@ lookup_bucket(const HashSetProbing<T, H, Eq> &self, const V &needle) noexcept {
     do {
       auto &bucket = self.table[idx];
       const auto tag = sp::test(self.tags, idx);
-      const T *const res = (T *)&bucket.value;
+      const T *const res = (T *)&bucket;
 
       if (tag == HSPTag_PRESENT) {
 
@@ -390,7 +383,7 @@ lookup(const HashSetProbing<T, H, Eq> &self, const V &needle) noexcept {
   const std::size_t index = lookup_bucket(self, needle);
   if (index != self.capacity) {
     const auto &bucket = self.table[index];
-    return (const T *)&bucket.value;
+    return (const T *)&bucket;
   }
 
   return nullptr;
@@ -404,11 +397,51 @@ lookup(HashSetProbing<T, H, Eq> &self, const V &needle) noexcept {
 }
 
 //=====================================
+template <typename T, typename H, typename Eq>
+const T *
+lookup_default(const HashSetProbing<T, H, Eq> &self, const T &needle,
+               const T &def) noexcept {
+  const T *result = lookup(self, needle, def);
+  if (!result) {
+    result = &def;
+  }
+
+  return result;
+}
+
+template <typename T, typename H, typename Eq>
+T *
+lookup_default(HashSetProbing<T, H, Eq> &self, const T &needle,
+               T &def) noexcept {
+  const auto &c_self = self;
+  const auto &c_def = def;
+  return (T *)lookup_default(c_self, needle, c_def);
+}
+
+//=====================================
+template <typename T, typename H, typename Eq, typename V>
+T *
+lookup_insert(HashSetProbing<T, H, Eq> &self, V &&needle) noexcept {
+  using namespace impl;
+
+  bool inserted = false;
+  return lookup_insert(self, std::forward<V>(needle), inserted);
+}
+
+//=====================================
+template <typename T, typename H, typename Eq, typename V, typename Compute>
+T *
+lookup_compute(HashSetProbing<T, H, Eq> &, const V &needle, Compute) noexcept {
+  // TODO
+  return nullptr;
+}
+
+//=====================================
 namespace impl {
 template <typename T, typename H, typename Eq>
 static void
 cleanup(HashSetProbing<T, H, Eq> &self,
-        HashSetProbingBucket<T> *needle) noexcept {
+        typename HashSetProbing<T, H, Eq>::Bucket *needle) noexcept {
   assertx(needle);
 
   const std::size_t capacity = self.capacity;
@@ -450,7 +483,7 @@ remove(HashSetProbing<T, H, Eq> &self, const V &needle) noexcept {
     auto &bucket = self.table[index];
     sp::set(self.tags, index, HSPTag_TOMBSTONE);
 
-    T *const value = (T *)&bucket.value;
+    T *const value = (T *)&bucket;
     value->~T();
 
     --self.length;
@@ -483,7 +516,7 @@ for_each(HashSetProbing<T, H, Eq> &self, F f) noexcept {
       auto tag = sp::test(self.tags, i);
 
       if (tag == HSPTag_PRESENT) {
-        T *const current = (T *)&bucket.value;
+        T *const current = (T *)&bucket;
         f(*current);
       }
     }
@@ -499,7 +532,7 @@ for_each(const HashSetProbing<T, H, Eq> &self, F f) noexcept {
       auto tag = sp::test(self.tags, i);
 
       if (tag == HSPTag_PRESENT) {
-        const T *const current = (T *)&bucket.value;
+        const T *const current = (T *)&bucket;
         f(*current);
       }
     }

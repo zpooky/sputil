@@ -483,9 +483,11 @@ bucket_lookup_compute(HSBucket<T> &node, const V &needle, Factory f,
 static inline std::size_t
 index_of(const HashKey &code, std::size_t length) noexcept {
   const std::size_t res = code.hash & (length - 1);
-  const std::size_t cmp = code.hash % length;
-  assertxs(res < length, res, length);
-  assertxs(cmp == res, code.hash, length, cmp, res);
+  assertx_f({
+    const std::size_t cmp = code.hash % length;
+    assertxs(res < length, res, length);
+    assertxs(cmp == res, code.hash, length, cmp, res);
+  });
   return res;
 }
 

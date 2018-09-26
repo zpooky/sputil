@@ -52,6 +52,16 @@ T *
 lookup(HashSetOpen<T, H, Eq> &, const V &) noexcept;
 
 //=====================================
+template <typename T, typename H, typename Eq>
+std::size_t
+length(const HashSetOpen<T, H, Eq> &) noexcept;
+
+//=====================================
+template <typename T, typename H, typename Eq>
+std::size_t
+capacity(const HashSetOpen<T, H, Eq> &) noexcept;
+
+//=====================================
 //====Implementation===================
 //=====================================
 namespace impl {
@@ -124,7 +134,7 @@ find_dd(HashSetOpen<T, H, Eq> &self, const V &value) noexcept {
     current = self.items + index;
 
     if (current->present) {
-      const T *current_val = (T *)&current->value;
+      const T *current_val = (const T *)&current->value;
       Eq equal;
 
       if (equal(*current_val, value)) {
@@ -202,6 +212,24 @@ T *
 lookup(HashSetOpen<T, H, Eq> &self, const V &needle) noexcept {
   const auto &c_self = self;
   return (T *)lookup(c_self, needle);
+}
+
+//=====================================
+template <typename T, typename H, typename Eq>
+std::size_t
+length(const HashSetOpen<T, H, Eq> &self) noexcept {
+  return self.length;
+}
+
+//=====================================
+template <typename T, typename H, typename Eq>
+std::size_t
+capacity(const HashSetOpen<T, H, Eq> &self) noexcept {
+  if (!self.items) {
+    return 0;
+  }
+
+  return self.capacity;
 }
 
 } // namespace sp
