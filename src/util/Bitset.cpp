@@ -370,7 +370,7 @@ bits(const SparseBitset &self) noexcept {
 
 //=====================================
 std::size_t
-bitset_number_of_buffer(std::size_t x) noexcept {
+Bitset_number_of_buffer(std::size_t x) noexcept {
   if (x == 0) {
     return 0;
   }

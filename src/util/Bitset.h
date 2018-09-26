@@ -96,7 +96,7 @@ bits(const SparseBitset &) noexcept;
  * returns number of uint64_t required to fit $x distinct values
  */
 std::size_t
-bitset_number_of_buffer(std::size_t x) noexcept;
+Bitset_number_of_buffer(std::size_t x) noexcept;
 
 //=====================================
 template <typename F>

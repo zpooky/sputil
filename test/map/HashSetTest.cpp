@@ -486,7 +486,7 @@ TEST(HashSetTest, test_afew) {
     constexpr std::size_t limit_i = 3100000;
     constexpr std::size_t max_dist = 3233123;
 
-    sp::DynamicBitset b((max_dist / 64) + 64);
+    sp::DynamicBitset b(sp::Bitset_number_of_buffer(max_dist));
     printf("bits(): %zu\n", bits(b));
     for (std::size_t i = 0; i < bits(b); ++i) {
       ASSERT_FALSE(sp::set(b, i, true));

@@ -154,7 +154,7 @@ permutations(std::uint32_t from, std::uint32_t to, void *closure,
   assertxs(from <= to, from, to);
   DynamicArray<std::uint32_t> memo(to - from);
 
-  DynamicBitset visited(bitset_number_of_buffer(capacity(memo)));
+  DynamicBitset visited(Bitset_number_of_buffer(capacity(memo)));
   impl::permutations(memo, visited, from, to, cb, closure);
 
   assertxs(is_empty(memo), length(memo));
