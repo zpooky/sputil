@@ -56,6 +56,12 @@ lz77 - https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/sou
 1hour
 
 
+[(0,30),(5,10),(15,20)]:false
+[(7,10),(2,4)]: true
+- array is a calender day
+- tuple consist of start and end time
+= Can attend all meetings?
+
 ##
 Markov chains
 
@@ -73,7 +79,9 @@ Markov chains
 - |Knuth–Morris–Pratt string-search algorithm
 - https://www.michaelfogleman.com/rush/ | rush hour
 - https://en.wikipedia.org/wiki/Luhn_algorithm
-- Soduku solver(graph)
+- Soduku solver(graph colouring)
+    - DSATUR (perfetct colouring?)
+    - lmXRLF [http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.59.2645&rep=rep1&type=pdf]
 - knapsack
 
 ## Graph

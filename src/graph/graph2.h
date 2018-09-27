@@ -134,6 +134,7 @@ template <typename T, typename W, typename WK>
 bool
 add_edge(Vertex<T, W> &self, WK &&weight, Vertex<T, W> *edge) noexcept {
   assertx(edge);
+
   auto &edges = self.edges;
   return bin_insert_unique(edges, Edge<T, W>(edge, std::forward<WK>(weight)));
 }

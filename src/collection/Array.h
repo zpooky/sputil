@@ -1030,6 +1030,7 @@ bin_insert(UinArray<T> &self, V &&val) noexcept {
   Comparator cmp;
   return bin_insert(self, val, cmp);
 }
+
 //=====================================
 template <typename T, typename V, typename Comparator>
 T *
@@ -1248,6 +1249,7 @@ get(const Array<T> &self, std::size_t idx) noexcept {
     return self.buffer + idx;
   }
 
+  assertxs(false, idx, length(self), capacity(self));
   return nullptr;
 }
 
@@ -1267,7 +1269,6 @@ insert(Array<T> &self, V &&val) noexcept {
 
     // dtor of default init T
     raw->~T();
-
     return new (raw) T(std::forward<V>(val));
   }
 
