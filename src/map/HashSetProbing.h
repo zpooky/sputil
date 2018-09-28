@@ -458,7 +458,7 @@ cleanup(HashSetProbing<T, H, Eq> &self,
 
   std::size_t idx = dest;
   do {
-    const auto tag = sp::test(self.tags, idx);
+    tag = sp::test(self.tags, idx);
     if (tag != HSPTag_TOMBSTONE) {
       // if (tag == HSPTag_PRESENT) {
       return;

@@ -5,9 +5,11 @@
 #include <type_traits>
 
 namespace sp {
+//=====================================
 template <typename>
 struct Hasher;
 
+//=====================================
 struct Equality {
   template <typename F, typename S>
   bool
@@ -17,6 +19,7 @@ struct Equality {
   }
 };
 
+//=====================================
 struct PointerEquality {
   template <typename F, typename S>
   bool

@@ -1,0 +1,164 @@
+#ifndef SP_UTIL_MAP_HASH_MAP_H
+#define SP_UTIL_MAP_HASH_MAP_H
+
+#include <map/HashSet.h>
+
+namespace sp {
+//=====================================
+namespace impl {
+template <typename Key, typename Value>
+struct HashMapTreeEntry {
+  Key key;
+  Value value;
+
+  template <typename K, typename V>
+  HashMapTreeEntry(K &&k, V &&v) noexcept
+      : key(std::forward<K>(k))
+      , value(std::forward<V>(v)) {
+  }
+
+  ~HashMapTreeEntry() noexcept {
+  }
+};
+
+//=====================================
+template <typename K, typename V, typename H>
+struct Hasher_HashMapTree {
+  using Entry = HashMapTreeEntry<K, V>;
+
+  std::size_t
+  operator()(const K &in) noexcept {
+    H hash;
+    return hash(in);
+  }
+
+  std::size_t
+  operator()(const Entry &in) noexcept {
+    return operator()(in.key);
+  }
+};
+
+template <typename K, typename V, typename Eq>
+struct Equality_HashMapTree {
+  using Entry = HashMapTreeEntry<K, V>;
+
+  bool
+  operator()(const K &f, const K &s) const noexcept {
+    Eq equality;
+    return equality(f, s);
+  }
+
+  bool
+  operator()(const Entry &f, const K &s) const noexcept {
+    return operator()(f.key, s);
+  }
+
+  bool
+  operator()(const Entry &f, const Entry &s) const noexcept {
+    return operator()(f.key, s.key);
+  }
+};
+}
+
+//=====================================
+template <typename Key, typename Value, typename H = sp::Hasher<Key>,
+          typename Eq = sp::Equality>
+struct HashMapTree {
+  using Entry = impl::HashMapTreeEntry<Key, Value>;
+  using Hash = impl::Hasher_HashMapTree<Key, Value, H>;
+  using Equality = impl::Equality_HashMapTree<Key, Value, Eq>;
+
+  HashSet<Entry, Hash, Equality> set;
+
+  HashMapTree() noexcept;
+  HashMapTree(const HashMapTree &) = delete;
+  HashMapTree(const HashMapTree &&) = delete;
+
+  ~HashMapTree() noexcept;
+};
+
+//=====================================
+template <typename K, typename V, typename H, typename Eq, typename Key,
+          typename Value>
+V *
+insert(HashMapTree<K, V, H, Eq> &, Key &&, Value &&) noexcept;
+
+//=====================================
+template <typename Key, typename V, typename H, typename Eq, typename K>
+const V *
+lookup(const HashMapTree<Key, V, H, Eq> &, const K &) noexcept;
+
+template <typename Key, typename V, typename H, typename Eq, typename K>
+V *
+lookup(HashMapTree<Key, V, H, Eq> &, const K &) noexcept;
+
+//=====================================
+//====Implementation===================
+//=====================================
+template <typename Key, typename Value, typename H, typename Eq>
+HashMapTree<Key, Value, H, Eq>::HashMapTree() noexcept
+    : set{} {
+}
+
+template <typename Key, typename Value, typename H, typename Eq>
+HashMapTree<Key, Value, H, Eq>::~HashMapTree() noexcept {
+}
+
+//=====================================
+template <typename K, typename V, typename H, typename Eq, typename Key,
+          typename Value>
+V *
+insert(HashMapTree<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
+  using Entry = impl::HashMapTreeEntry<K, V>;
+
+  bool ins = false;
+  auto compute = [
+    key = std::forward<decltype(key)>(key),
+    value = std::forward<decltype(value)>(value), &ins
+  ](auto &bucket, const auto &) {
+    ins = true;
+
+    new (&bucket.value) Entry(std::forward<decltype(key)>(key),
+                              std::forward<decltype(value)>(value));
+  };
+
+  Entry *const res = lookup_compute(self.set, key, compute);
+  if (res) {
+    V *const result = &res->value;
+
+    if (!ins) {
+      result->~V();
+      new (result) V{std::forward<Value>(value)};
+    }
+
+    return result;
+  }
+
+  return nullptr;
+}
+
+//=====================================
+template <typename Key, typename V, typename H, typename Eq, typename K>
+const V *
+lookup(const HashMapTree<Key, V, H, Eq> &self, const K &needle) noexcept {
+  H hash;
+  const impl::HashKey code(hash(needle));
+  auto *res = sp::impl::set_lookup(self.set, code, needle);
+  if (res) {
+    return &res->value;
+  }
+
+  return nullptr;
+}
+
+template <typename Key, typename V, typename H, typename Eq, typename K>
+V *
+lookup(HashMapTree<Key, V, H, Eq> &self, const K &needle) noexcept {
+  const auto &c_self = self;
+  return (V *)lookup(c_self, needle);
+}
+
+//=====================================
+}
+
+#endif

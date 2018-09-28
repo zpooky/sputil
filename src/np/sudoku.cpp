@@ -1,6 +1,7 @@
 #include "sudoku.h"
 #include <collection/Array.h>
 #include <cstddef>
+#include <graph/ColoringGreedy.h>
 #include <graph/graph2.h>
 #include <util/assert.h>
 
@@ -158,8 +159,10 @@ build_graph(sp::UinDynamicArray<CVtx> &board, Sudoku &puzzle) noexcept {
 }
 
 static bool
-colour_graph(sp::UinDynamicArray<CVtx> &cells) noexcept {
-  return false;
+colour_graph(CVtx *root) noexcept {
+  assertx(root);
+
+  return ::graph::color_greedy(*root);
 }
 
 bool
@@ -170,7 +173,8 @@ solve(Sudoku &puzzle) noexcept {
     return false;
   }
 
-  if (!colour_graph(cells)) {
+  CVtx *const root = get(cells, 0);
+  if (!colour_graph(root)) {
     return false;
   }
 
@@ -192,7 +196,6 @@ is_solved(const Sudoku &game) noexcept {
   /* Horizontal */
   for (std::size_t x = 0; x < dimensions; ++x) {
     bool line[dimensions] = {false};
-
     for (std::size_t y = 0; y < dimensions; ++y) {
 
       const std::uint8_t current = board[x][y];
@@ -210,8 +213,19 @@ is_solved(const Sudoku &game) noexcept {
 
   /* Vertical */
   for (std::size_t y = 0; y < dimensions; ++y) {
+    bool line[dimensions] = {false};
     for (std::size_t x = 0; x < dimensions; ++x) {
-      // TODO
+
+      const std::uint8_t current = board[x][y];
+      if (!in_range(current, 1, 10)) {
+        return false;
+      }
+      const std::size_t idx = current - 1;
+      if (line[idx]) {
+        return false;
+      }
+
+      line[idx] = true;
     }
   }
 

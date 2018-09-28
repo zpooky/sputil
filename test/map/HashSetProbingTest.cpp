@@ -1,4 +1,5 @@
 // #define NDEBUG
+#include <test/gcstruct.h>
 
 #include <collection/Array.h>
 #include <gtest/gtest.h>
@@ -7,78 +8,6 @@
 #include <prng/xorshift.h>
 #include <util/Bitset.h>
 #include <util/Timer.h>
-
-namespace sp {
-struct HSPTDummy {
-  static std::int64_t active;
-  const int key;
-  long alignment0;
-  long alignment1;
-  long alignment2;
-
-  explicit HSPTDummy(int k)
-      : key(k)
-      , alignment0(active)
-      , alignment1(active)
-      , alignment2(active) {
-    // printf("ctor[%u]\n", active);
-    ++active;
-  }
-
-  HSPTDummy(HSPTDummy &&o)
-      : HSPTDummy(o.key) {
-  }
-
-  HSPTDummy(const HSPTDummy &) = delete;
-
-  HSPTDummy &
-  operator=(const HSPTDummy &) = delete;
-  HSPTDummy &
-  operator=(const HSPTDummy &&) = delete;
-
-  bool
-  operator==(int o) const noexcept {
-    return key == o;
-  }
-  bool
-  operator==(const HSPTDummy &o) const noexcept {
-    return operator==(o.key);
-  }
-
-  ~HSPTDummy() {
-    // printf("dtor %p, active[%u]\n", this, active);
-    // printf("dtor[%u]\n", active);
-    assertxs(active > 0, active);
-    --active;
-    assertxs(active >= 0, active);
-  }
-};
-
-template <>
-struct Hasher<HSPTDummy> {
-  std::size_t
-  operator()(int o) const noexcept {
-    Hasher<int> h;
-    return h(o);
-  }
-
-  std::size_t
-  operator()(const HSPTDummy &o) const noexcept {
-    return operator()(o.key);
-  }
-};
-
-std::int64_t HSPTDummy::active = 0;
-
-static void
-swap(HSPTDummy &f, HSPTDummy &s) noexcept {
-  HSPTDummy tmp(std::move(f));
-  f.~HSPTDummy();
-  new (&f) HSPTDummy(std::move(s));
-  s.~HSPTDummy();
-  new (&s) HSPTDummy(std::move(tmp));
-}
-}
 
 template <typename SET>
 static void
@@ -133,10 +62,10 @@ run_bench(prng::xorshift32 &r, sp::TimerContex &ctx, SET &set) noexcept {
       sp::rec::verify(set);
 
       for (int in = 0; in < i; ++in) {
-        const TT cmp(in);
+        // const TT cmp(in);
 
         TT *l = lookup(set, in);
-        ASSERT_EQ(cmp, in);
+        // ASSERT_EQ(cmp, in);
 
         if (!l) {
           // printf("length(%zu)\n", length(ref));
@@ -229,12 +158,12 @@ TEST(HashSetProbingTest, test_HashSetProbing) {
 // #endif
 
 TEST(HashSetProbingTest, test_HashSetProbing_dtor) {
-  ASSERT_EQ(std::int64_t(0), sp::HSPTDummy::active);
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
   {
     prng::xorshift32 r(1);
     sp::TimerContex ctx;
     for (std::size_t a = 0; a < 10; ++a) {
-      sp::HashSetProbing<sp::HSPTDummy> set;
+      sp::HashSetProbing<sp::GcStruct> set;
 
       run_bench(r, ctx, set);
       ASSERT_EQ(std::size_t(0), length(set));
@@ -259,7 +188,7 @@ TEST(HashSetProbingTest, test_HashSetProbing_dtor) {
     printf("Median: ");
     print(median(ctx));
   }
-  ASSERT_EQ(std::int64_t(0), sp::HSPTDummy::active);
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
 // #if 0
@@ -291,24 +220,24 @@ TEST(HashSetProbingTest, insert) {
   for (std::size_t i = 0; i < 10; ++i) {
     sp::timer(ctx, []() {
       constexpr int range = (1024 * 10);
-      ASSERT_EQ(std::int64_t(0), sp::HSPTDummy::active);
+      ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
       bool repeat = true;
       {
-        sp::HashSetProbing<sp::HSPTDummy> set;
+        sp::HashSetProbing<sp::GcStruct> set;
         {
         Lrepeat:
           for (int i = 0; i < range; ++i) {
             // printf("insert(%d){\n", i);
-            sp::HSPTDummy *i_res = insert(set, i);
+            sp::GcStruct *const i_res = insert(set, std::size_t(i));
             // printf("}\n");
             ASSERT_TRUE(i_res);
-            ASSERT_EQ(i_res->key, i);
+            ASSERT_EQ(i_res->data, i);
           }
 
           for (int i = 0; i < range; ++i) {
-            sp::HSPTDummy *l_res = lookup(set, i);
+            sp::GcStruct *l_res = lookup(set, i);
             ASSERT_TRUE(l_res);
-            ASSERT_EQ(l_res->key, i);
+            ASSERT_EQ(l_res->data, i);
           }
 
           for (int i = 0; i < range; ++i) {
@@ -316,7 +245,7 @@ TEST(HashSetProbingTest, insert) {
           }
 
           for (int i = 0; i < range; ++i) {
-            sp::HSPTDummy *l_res = lookup(set, i);
+            sp::GcStruct *l_res = lookup(set, i);
             ASSERT_FALSE(l_res);
           }
           if (repeat) {
@@ -325,7 +254,7 @@ TEST(HashSetProbingTest, insert) {
           }
         }
       }
-      ASSERT_EQ(std::int64_t(0), sp::HSPTDummy::active);
+      ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
     });
   }
 
@@ -365,7 +294,8 @@ test_dump(sp::HashSetProbing<std::uint32_t> &set) {
 TEST(HashSetProbingTest, test_rand) {
   // prng::xorshift32 r(1459312133);
   // prng::xorshift32 r(1940300157);
-  prng::xorshift32 r(3497049056);
+  // prng::xorshift32 r(3497049056);
+  prng::xorshift32 r(1581117242);
 
   constexpr std::size_t range = (1024 * 4);
   const std::uint32_t r_max = range;

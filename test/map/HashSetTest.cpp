@@ -1,6 +1,7 @@
+#include <test/gcstruct.h>
+
 #include <gtest/gtest.h>
 #include <hash/fnv.h>
-#include <hash/standard.h>
 #include <list/SkipList.h>
 #include <map/HashSet.h>
 #include <prng/util.h>
@@ -9,69 +10,11 @@
 #include <util/Bitset.h>
 #include <util/assert.h>
 
-struct StrictHashSetTest {
-  static std::int64_t active;
-  const std::size_t data;
-
-  explicit StrictHashSetTest(std::size_t d, int)
-      : data(d) {
-    // printf("\nctor %p\n", this);
-    ++active;
-  }
-
-  StrictHashSetTest(const StrictHashSetTest &) = delete;
-  StrictHashSetTest(StrictHashSetTest &&o)
-      : data(o.data) {
-    // printf("\nmove ctor %p <- %p\n", this, &o);
-    ++active;
-  }
-
-  StrictHashSetTest &
-  operator=(const StrictHashSetTest &&) = delete;
-  StrictHashSetTest &
-  operator=(const StrictHashSetTest &) = delete;
-
-  bool
-  operator==(std::size_t o) const noexcept {
-    return data == o;
-  }
-
-  bool
-  operator==(const StrictHashSetTest &o) const noexcept {
-    return this->operator==(o.data);
-  }
-
-  explicit operator std::size_t() const noexcept {
-    return data;
-  }
-
-  ~StrictHashSetTest() {
-    // printf("dtor %p\n", this);
-    assertxs(active > 0, active);
-    --active;
-    assertxs(active >= 0, active);
-  }
-};
-
-struct vanilla_hash_shst {
-  std::size_t
-  operator()(std::size_t in) const {
-    sp::Hasher<std::size_t> h;
-    return h(in);
-  }
-  std::size_t
-  operator()(const StrictHashSetTest &in) const {
-    return operator()(in.data);
-  }
-};
-
-std::int64_t StrictHashSetTest::active = 0;
-
 TEST(HashSetTest, test_insert_dtor) {
-  using TType = StrictHashSetTest;
+  using TType = sp::GcStruct;
 
   {
-    sp::HashSet<TType, vanilla_hash_shst> set;
+    sp::HashSet<TType> set;
     for (std::size_t i = 0; i < 1024; ++i) {
       for (std::size_t a = 0; a < i; ++a) {
         {
@@ -106,13 +49,13 @@ TEST(HashSetTest, test_insert_dtor) {
       }
     }
   }
-  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
 TEST(HashSetTest, test_insert_remove) {
-  using TType = StrictHashSetTest;
+  using TType = sp::GcStruct;
 
-  sp::HashSet<TType, vanilla_hash_shst> set;
+  sp::HashSet<TType> set;
   for (std::size_t i = 0; i < 1024; ++i) {
     for (std::size_t a = 0; a < i; ++a) {
       {
@@ -154,14 +97,14 @@ TEST(HashSetTest, test_insert_remove) {
     ASSERT_FALSE(lookup(set, i));
   }
   ASSERT_EQ(std::size_t(0), sp::rec::length(set));
-  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
 TEST(HashSetTest, test_upsert_dtor) {
-  using TType = StrictHashSetTest;
+  using TType = sp::GcStruct;
 
   {
-    sp::HashSet<TType, vanilla_hash_shst> set;
+    sp::HashSet<TType> set;
     for (std::size_t i = 0; i < 1024; ++i) {
       for (std::size_t a = 0; a < i; ++a) {
         {
@@ -196,14 +139,14 @@ TEST(HashSetTest, test_upsert_dtor) {
       }
     }
   }
-  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
 TEST(HashSetTest, test_lookup_insert_dtor) {
-  using TType = StrictHashSetTest;
+  using TType = sp::GcStruct;
 
   {
-    sp::HashSet<TType, vanilla_hash_shst> set;
+    sp::HashSet<TType> set;
     for (std::size_t i = 0; i < 1024; ++i) {
       for (std::size_t a = 0; a < i; ++a) {
         {
@@ -243,11 +186,11 @@ TEST(HashSetTest, test_lookup_insert_dtor) {
       }
     }
   }
-  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
 TEST(HashSetTest, test_lookup_compute_dtor) {
-  using TType = StrictHashSetTest;
+  using TType = sp::GcStruct;
 
   auto not_comp = [](auto &, const TType &) {
     /**/
@@ -255,7 +198,7 @@ TEST(HashSetTest, test_lookup_compute_dtor) {
   };
 
   {
-    sp::HashSet<TType, vanilla_hash_shst> set;
+    sp::HashSet<TType> set;
     for (std::size_t i = 0; i < 1024; ++i) {
 
       auto comp = [&i](auto &current, const TType &xarx) {
@@ -306,14 +249,14 @@ TEST(HashSetTest, test_lookup_compute_dtor) {
       }
     }
   }
-  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
 TEST(HashSetTest, test_vanilla) {
-  using TType = StrictHashSetTest;
+  using TType = sp::GcStruct;
 
   {
-    std::unordered_set<TType, vanilla_hash_shst> set;
+    std::unordered_set<TType, sp::Hasher<TType>> set;
     for (std::size_t i = 0; i < 1024; ++i) {
       for (std::size_t a = 0; a < i; ++a) {
         auto res = set.insert(TType(a, 0));
@@ -333,7 +276,7 @@ TEST(HashSetTest, test_vanilla) {
       }
     }
   }
-  ASSERT_EQ(std::int64_t(0), StrictHashSetTest::active);
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
 TEST(HashSetTest, test_rand) {
@@ -689,104 +632,70 @@ TEST(HashSetTest, test_lookup_compute2) {
 
 #endif
 
-struct HSTDummy {
-  const int id;
-  explicit HSTDummy(int i)
-      : id(i) {
-  }
-
-  ~HSTDummy() {
-  }
-};
-
-struct HSTHasher {
-  std::size_t
-  operator()(int id) const {
-    return id;
-  }
-
-  std::size_t
-  operator()(const HSTDummy *in) const {
-    assertx(in);
-    return this->operator()(in->id);
-  }
-};
-
-struct HSTDummyEq {
-  bool
-  operator()(const HSTDummy *f, int id) const noexcept {
-    return f->id == id;
-  }
-
-  bool
-  operator()(const HSTDummy *f, const HSTDummy *s) const noexcept {
-    return operator()(f, s->id);
-  }
-};
-
 TEST(HashSetTest, test_lookup_compute3) {
-  HSTDummy one_storage{1};
+  sp::GcStruct one_storage{1};
 
   std::size_t insxx = 0;
   auto factory2 = [&insxx, &one_storage](auto &state, int id) {
     printf("--\n");
     assertx(id == 1);
     insxx++;
-    new (&state.value) HSTDummy *(&one_storage);
+    new (&state.value) sp::GcStruct *(&one_storage);
 
-    HSTHasher hash;
-    std::size_t stor_hash = hash(&one_storage);
+    sp::Hasher<sp::GcStruct> hash;
+    std::size_t stor_hash = hash(one_storage);
     std::size_t id_hash = hash(id);
-    std::size_t st_hash = hash(*((HSTDummy **)&state.value));
+
+    std::size_t st_hash = hash(**((sp::GcStruct **)&state.value));
 
     assertxs(stor_hash == id_hash, stor_hash, id_hash);
     assertxs(st_hash == id_hash, stor_hash, st_hash, id_hash);
   };
 
-  auto factory = [factory2](auto &state, HSTDummy *id) {
+  auto factory = [factory2](auto &state, sp::GcStruct *id) {
     assertx(id);
 
-    factory2(state, id->id);
+    factory2(state, id->data);
   };
 
-  sp::HashSet<HSTDummy *, HSTHasher, HSTDummyEq> set;
+  sp::HashSet<sp::GcStruct *, sp::Hasher<sp::GcStruct *>, sp::GcStructEq> set;
   for (int i = 0; i < 100; ++i) {
-    HSTDummy one_in{1};
-    HSTDummy **one = lookup_compute(set, &one_in, factory);
+    sp::GcStruct one_in{1};
+    sp::GcStruct **one = lookup_compute(set, &one_in, factory);
     ASSERT_TRUE(one);
     ASSERT_TRUE(*one);
-    ASSERT_EQ((*one)->id, 1);
+    ASSERT_EQ((*one)->data, 1);
     ASSERT_EQ(1, insxx);
     ASSERT_EQ(1, sp::rec::length(set));
 
     {
-      HSTDummy **one_x = lookup_compute(set, &one_in, factory);
+      sp::GcStruct **one_x = lookup_compute(set, &one_in, factory);
       ASSERT_TRUE(one_x);
       ASSERT_TRUE(*one_x);
       ASSERT_EQ(one, one_x);
       ASSERT_EQ(*one, *one_x);
-      ASSERT_EQ((*one_x)->id, 1);
+      ASSERT_EQ((*one_x)->data, 1);
       ASSERT_EQ(1, insxx);
       ASSERT_EQ(1, sp::rec::length(set));
     }
 
     {
-      HSTDummy **l_one = lookup(set, 1);
+      sp::GcStruct **l_one = lookup(set, 1);
       ASSERT_TRUE(l_one);
       ASSERT_TRUE(*l_one);
-      ASSERT_EQ((*l_one)->id, 1);
+      ASSERT_EQ((*l_one)->data, 1);
       ASSERT_EQ(one, l_one);
       ASSERT_EQ(*one, *l_one);
       ASSERT_EQ(1, sp::rec::length(set));
     }
 
     {
-      HSTDummy **one_x = lookup_compute(set, 1, factory2);
+      sp::GcStruct **one_x = lookup_compute(set, 1, factory2);
       ASSERT_TRUE(one_x);
       ASSERT_TRUE(*one_x);
       ASSERT_EQ(one, one_x);
       ASSERT_EQ(*one, *one_x);
-      ASSERT_EQ((*one_x)->id, 1);
+      ASSERT_EQ((*one_x)->data, 1);
       ASSERT_EQ(1, insxx);
       ASSERT_EQ(1, sp::rec::length(set));
     }

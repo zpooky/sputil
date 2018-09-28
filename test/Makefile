@@ -9,7 +9,7 @@ SOURCE_DIR=.
 
 GTEST_ROOT = $(PROJECT_ROOT)/external/googletest/googletest
 
-HEADER_DIRS = -I$(GTEST_ROOT)/include -I$(PROJECT_ROOT)/include
+HEADER_DIRS = -I$(GTEST_ROOT)/include -I$(PROJECT_ROOT)/include -I.
 override CXXFLAGS += $(HEADER_DIRS) -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST
 CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
 

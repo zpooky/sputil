@@ -90,6 +90,7 @@ Markov chains
 - |Floyd–Warshall_algorithm
 - https://www.redblobgames.com/pathfinding/a-star/introduction.html |A* search algorithm
   http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html
+- https://github.com/boostorg/graph/blob/develop/include/boost/graph/isomorphism.hpp
 
 ## Bellman–Ford algorithm
 "https://en.wikipedia.org/wiki/Bellman–Ford_algorithm"
