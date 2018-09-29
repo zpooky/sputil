@@ -11,10 +11,10 @@ namespace sp {
 namespace impl {
 
 static void
-print_header(FILE *os, unsigned thread_id) {
+print_header(FILE *os, std::size_t thread_id) {
   fprintf(os, "Stack trace (most recent call last)");
   if (thread_id) {
-    fprintf(os, " in thread %u:\n", thread_id);
+    fprintf(os, " in thread %zu:\n", thread_id);
   } else {
     fprintf(os, ":\n");
   }
@@ -43,10 +43,11 @@ print_source_loc(FILE *os, const char *indent,
   //         ln.function.c_str());
 
   // make function name higlight
-  fprintf(os, "%s"
-              "%s"
-              " \033[91m%s\033[0m"
-              ":\033[92m%u\033[0m",
+  fprintf(os,
+          "%s"
+          "%s"
+          " \033[91m%s\033[0m"
+          ":\033[92m%u\033[0m",
           indent,                                              //
           ln.function.c_str(),                                 //
           filename(ln.filename.c_str(), ln.filename.length()), //
@@ -60,8 +61,8 @@ print_source_loc(FILE *os, const char *indent,
 }
 
 static void
-print_trace(FILE *os, const ResolvedTrace &trace, Colorize &colorize) noexcept {
-  fprintf(os, "#%-2u", trace.idx);
+print_trace(FILE *os, const ResolvedTrace &trace) noexcept {
+  fprintf(os, "#%-2zu", trace.idx);
   bool already_indented = true;
 
   if (!trace.source.filename.size()) {
@@ -100,10 +101,6 @@ print_trace(FILE *os, const ResolvedTrace &trace, Colorize &colorize) noexcept {
 
 static void
 print(FILE *os, StackTrace &st) noexcept {
-  Colorize colorize(os);
-  if (true) {
-    colorize.init();
-  }
   print_header(os, st.thread_id());
 
   TraceResolver _resolver;
@@ -111,7 +108,7 @@ print(FILE *os, StackTrace &st) noexcept {
 
   for (std::size_t trace_idx = 0; trace_idx < st.size(); ++trace_idx) {
     auto trace = _resolver.resolve(st[trace_idx]);
-    print_trace(os, trace, colorize);
+    print_trace(os, trace);
   }
 }
 
@@ -124,9 +121,10 @@ assert_func(const char *file, int line, const char * /*function prototype*/,
 
   { // assert dump
     fprintf(dest, "assertion failed: (%s)\n", cond);
-    fprintf(dest, "%s"
-                  ": \033[92m%d\033[0m"
-                  "\n\n",
+    fprintf(dest,
+            "%s"
+            ": \033[92m%d\033[0m"
+            "\n\n",
             file, line);
   }
 
