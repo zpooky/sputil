@@ -69,7 +69,6 @@ TEST(HashMapProbingTest, test_probing_dtor) {
   ASSERT_EQ(0, sp::GcStruct::active);
 }
 
-#if 0
 TEST(HashMapProbingTest, test_probing_dtor2) {
   ASSERT_EQ(0, sp::GcStruct::active);
   {
@@ -87,9 +86,35 @@ TEST(HashMapProbingTest, test_probing_dtor3) {
   }
   ASSERT_EQ(0, sp::GcStruct::active);
 }
-#endif
 
 TEST(HashMapProbingTest, test_tree) {
   sp::HashMapTree<int, int> map;
   test_simple(map);
+}
+
+TEST(HashMapProbingTest, test_tree_dtor) {
+  ASSERT_EQ(0, sp::GcStruct::active);
+  {
+    sp::HashMapTree<int, sp::GcStruct> map;
+    test_simple(map);
+  }
+  ASSERT_EQ(0, sp::GcStruct::active);
+}
+
+TEST(HashMapProbingTest, test_tree_dtor2) {
+  ASSERT_EQ(0, sp::GcStruct::active);
+  {
+    sp::HashMapTree<sp::GcStruct, int> map;
+    test_simple(map);
+  }
+  ASSERT_EQ(0, sp::GcStruct::active);
+}
+
+TEST(HashMapProbingTest, test_tree_dtor3) {
+  ASSERT_EQ(0, sp::GcStruct::active);
+  {
+    sp::HashMapTree<sp::GcStruct, sp::GcStruct> map;
+    test_simple(map);
+  }
+  ASSERT_EQ(0, sp::GcStruct::active);
 }

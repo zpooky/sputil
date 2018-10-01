@@ -3,6 +3,7 @@
 
 #include <map/HashSetProbing.h>
 
+// TODO make Tree & Probing have the same implementation
 namespace sp {
 //=====================================
 namespace impl {
@@ -75,10 +76,10 @@ struct Equality_HashMapProbing {
   bool
   operator()(const Entry &f, const N &s) const noexcept {
     Eq equality;
-    return equality()(f.key, s);
+    return equality(f.key, s);
   }
 };
-}
+} // namespace impl
 
 //=====================================
 template <typename Key, typename Value, typename H = sp::Hasher<Key>,
@@ -135,10 +136,9 @@ insert(HashMapProbing<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
   using Entry = impl::HashMapProbingEntry<K, V>;
 
   bool inserted = false;
-  auto on_compute = [
-    key = std::forward<decltype(key)>(key),
-    value = std::forward<decltype(value)>(value), &inserted
-  ](auto &bucket, const auto &) {
+  auto on_compute = [key = std::forward<decltype(key)>(key),
+                     value = std::forward<decltype(value)>(value),
+                     &inserted](auto &bucket, const auto &) {
     inserted = true;
 
     return new (&bucket) Entry(std::forward<decltype(key)>(key),
@@ -183,6 +183,6 @@ lookup(HashMapProbing<Key, V, H, Eq> &self, const K &needle) noexcept {
 }
 
 //=====================================
-}
+} // namespace sp
 
 #endif
