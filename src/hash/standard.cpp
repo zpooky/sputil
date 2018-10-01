@@ -1,6 +1,7 @@
 #include "standard.h"
 #include <hash/fnv.h>
 
+// TODO ifdef to use 32 bit version in x86 mode
 namespace sp {
 //=====================================
 std::size_t

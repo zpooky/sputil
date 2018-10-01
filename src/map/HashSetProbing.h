@@ -18,7 +18,8 @@
  */
 namespace sp {
 //=====================================
-template <typename T, typename Hash = sp::Hasher<T>, typename Eq = sp::Equality>
+template <typename T, typename Hash = sp::Hasher<T>,
+          typename Eq = sp::Equality<T>>
 struct HashSetProbing {
   using Bucket = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
   using value_type = T;
@@ -248,6 +249,7 @@ insert(HashSetProbing<T, H, Eq> &self, V &&value) noexcept {
     self.tags.capacity = Quadset_number_of_buffer(self.capacity);
     assertxs(self.tags.capacity > 0, self.tags.capacity, self.capacity);
     self.tags.buffer = new std::uint64_t[self.tags.capacity]{0};
+
     assertx_f({
       for (std::size_t i = 0; i < self.tags.capacity; ++i) {
         assertxs(self.tags.buffer[i] == std::uint64_t(0), self.tags.buffer[i]);
@@ -315,6 +317,7 @@ template <typename T, typename H, typename Eq, typename V>
 T *
 lookup_insert(HashSetProbing<T, H, Eq> &self, V &&needle,
               bool &inserted) noexcept {
+  assertx(false);
   // TODO
   return nullptr;
 }
@@ -432,6 +435,7 @@ lookup_insert(HashSetProbing<T, H, Eq> &self, V &&needle) noexcept {
 template <typename T, typename H, typename Eq, typename V, typename Compute>
 T *
 lookup_compute(HashSetProbing<T, H, Eq> &, const V &needle, Compute) noexcept {
+  assertx(false);
   // TODO
   return nullptr;
 }

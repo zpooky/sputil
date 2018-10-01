@@ -40,7 +40,7 @@
 namespace sp {
 namespace impl {
 /*
- * An HashSet implementation using separate chaining collision handling
+ * An HashSetTree implementation using separate chaining collision handling
  * strategy. Meaning on hash collision we place the new entry in a linkedlist
  * pointed to by the bucket.
  *
@@ -118,18 +118,19 @@ struct HashKey {
 } // namespace impl
 
 //=====================================
-template <typename T, typename Hash = sp::Hasher<T>, typename Eq = sp::Equality>
-struct HashSet {
+template <typename T, typename Hash = sp::Hasher<T>,
+          typename Eq = sp::Equality<T>>
+struct HashSetTree {
   using value_type = T;
 
   // binary::Tree<impl::HSNode<T>> tree;
   avl::Tree<impl::HSNode<T>> tree;
 
-  HashSet() noexcept;
-  HashSet(const HashSet<T, Hash, Eq> &) = delete;
-  HashSet(const HashSet<T, Hash, Eq> &&) = delete;
+  HashSetTree() noexcept;
+  HashSetTree(const HashSetTree<T, Hash, Eq> &) = delete;
+  HashSetTree(const HashSetTree<T, Hash, Eq> &&) = delete;
 
-  ~HashSet() noexcept;
+  ~HashSetTree() noexcept;
 };
 
 //=====================================
@@ -137,69 +138,62 @@ struct HashSet {
  */
 template <typename T, typename H, typename Eq, typename V>
 T *
-insert(HashSet<T, H, Eq> &, V &&) noexcept;
+insert(HashSetTree<T, H, Eq> &, V &&) noexcept;
 
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
 T *
-upsert(HashSet<T, H, Eq> &, V &&) noexcept;
+upsert(HashSetTree<T, H, Eq> &, V &&) noexcept;
 
 //=====================================
-namespace impl {
 template <typename T, typename H, typename Eq, typename V>
 const T *
-set_lookup(const HashSet<T, H, Eq> &self, const HashKey &c,
-           const V &n) noexcept;
-}
-
-template <typename T, typename H, typename Eq, typename V>
-const T *
-lookup(const HashSet<T, H, Eq> &, const V &) noexcept;
+lookup(const HashSetTree<T, H, Eq> &, const V &) noexcept;
 
 template <typename T, typename H, typename Eq, typename V>
 T *
-lookup(HashSet<T, H, Eq> &, const V &) noexcept;
+lookup(HashSetTree<T, H, Eq> &, const V &) noexcept;
 
 //=====================================
 template <typename T, typename H, typename Eq>
 const T *
-lookup_default(const HashSet<T, H, Eq> &, const T &needle,
+lookup_default(const HashSetTree<T, H, Eq> &, const T &needle,
                const T &def) noexcept;
 
 template <typename T, typename H, typename Eq>
 T *
-lookup_default(HashSet<T, H, Eq> &, const T &needle, T &def) noexcept;
+lookup_default(HashSetTree<T, H, Eq> &, const T &needle, T &def) noexcept;
 
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
 T *
-lookup_insert(HashSet<T, H, Eq> &, V &&) noexcept;
+lookup_insert(HashSetTree<T, H, Eq> &, V &&) noexcept;
 
 //=====================================
 template <typename T, typename H, typename Eq, typename V, typename Compute>
 T *
-lookup_compute(HashSet<T, H, Eq> &, const V &needle, Compute) noexcept;
+lookup_compute(HashSetTree<T, H, Eq> &, const V &needle, Compute) noexcept;
 
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
 bool
-contains(const HashSet<T, H, Eq> &, const V &) noexcept;
+contains(const HashSetTree<T, H, Eq> &, const V &) noexcept;
 
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
 bool
-remove(HashSet<T, H, Eq> &, const V &) noexcept;
+remove(HashSetTree<T, H, Eq> &, const V &) noexcept;
 
 //=====================================
 namespace rec {
 template <typename T, typename H, typename Eq>
 bool
-verify(const HashSet<T, H, Eq> &) noexcept;
+verify(const HashSetTree<T, H, Eq> &) noexcept;
 
 //=====================================
 template <typename T, typename H, typename Eq>
 std::size_t
-length(const HashSet<T, H, Eq> &) noexcept;
+length(const HashSetTree<T, H, Eq> &) noexcept;
 
 } // namespace rec
 
@@ -317,12 +311,12 @@ HashKey::operator>(const HSNode<T> &o) const noexcept {
 } // namespace impl
 //=====================================
 template <typename T, typename H, typename Eq>
-HashSet<T, H, Eq>::HashSet() noexcept
+HashSetTree<T, H, Eq>::HashSetTree() noexcept
     : tree() {
 }
 
 template <typename T, typename H, typename Eq>
-HashSet<T, H, Eq>::~HashSet() noexcept {
+HashSetTree<T, H, Eq>::~HashSetTree() noexcept {
 }
 
 //=====================================
@@ -526,7 +520,7 @@ in_range(const HSNode<T, cap> &node, const HashKey &h) noexcept {
 
 template <typename T, typename Hash, typename Eq, std::size_t cap>
 static HSNode<T, cap> *
-split(HashSet<T, Hash, Eq> &self, HSNode<T, cap> &subject) noexcept {
+split(HashSetTree<T, Hash, Eq> &self, HSNode<T, cap> &subject) noexcept {
   const std::size_t split(subject.length / std::size_t(2));
 
   if (split >= subject.capacity) {
@@ -655,7 +649,7 @@ migrate(HSNode<T, cap> &src, HSBucket<T> *c, HSNode<T, cap> &dest) noexcept {
 
 template <typename T, typename H, typename Eq, std::size_t cap>
 static void
-verify_node(HashSet<T, H, Eq> &self, const HSNode<T, cap> &source,
+verify_node(HashSetTree<T, H, Eq> &self, const HSNode<T, cap> &source,
             const char *ctx) noexcept {
   std::size_t cnt = 0;
 
@@ -689,7 +683,7 @@ verify_node(HashSet<T, H, Eq> &self, const HSNode<T, cap> &source,
 
 template <typename T, typename H, typename Eq, std::size_t cap>
 static bool
-rehash(HashSet<T, H, Eq> &self, HSNode<T, cap> &source) noexcept {
+rehash(HashSetTree<T, H, Eq> &self, HSNode<T, cap> &source) noexcept {
   HSNode<T, cap> *const other = split(self, source);
   assertx(verify(self.tree));
 
@@ -797,7 +791,7 @@ node_lookup_compute(HSNode<T, c> &node, const HashKey &code, const V &needle,
 
 template <typename T, typename H, typename Eq, typename V, typename Insert>
 T *
-do_insert(HashSet<T, H, Eq> &self, V &&val, Insert insert) noexcept {
+do_insert(HashSetTree<T, H, Eq> &self, V &&val, Insert insert) noexcept {
   auto &tree = self.tree;
   H h;
   const HashKey code(h(val));
@@ -860,7 +854,7 @@ Lretry : {
 
 template <typename T, typename H, typename Eq, typename V>
 T *
-insert(HashSet<T, H, Eq> &self, V &&val) noexcept {
+insert(HashSetTree<T, H, Eq> &self, V &&val) noexcept {
   using namespace impl;
 
   auto f = [](HSNode<T> &node, const HashKey &code, V &&v) {
@@ -874,7 +868,7 @@ insert(HashSet<T, H, Eq> &self, V &&val) noexcept {
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
 T *
-upsert(HashSet<T, H, Eq> &self, V &&val) noexcept {
+upsert(HashSetTree<T, H, Eq> &self, V &&val) noexcept {
   using namespace impl;
 
   auto f = [](HSNode<T> &node, const HashKey &code, V &&v) {
@@ -916,17 +910,22 @@ node_lookup(const HSNode<T, cap> &node, const HashKey &c, const V &needle,
   const HSBucket<T> &bucket = lookup(node, c);
   return lookup(bucket, needle, eq);
 }
+} // namespace impl
 
-template <typename T, typename H, typename Eq, typename V>
+template <typename T, typename Hash, typename Eq, typename V>
 const T *
-set_lookup(const HashSet<T, H, Eq> &self, const HashKey &c,
-           const V &n) noexcept {
-  const HSNode<T> *node = find(self.tree, c);
+lookup(const HashSetTree<T, Hash, Eq> &self, const V &needle) noexcept {
+  using namespace impl;
+
+  Hash h;
+  const HashKey code(h(needle));
+
+  const HSNode<T> *node = find(self.tree, code);
   if (node) {
-    assertx(in_range(*node, c));
+    assertx(in_range(*node, code));
 
     Eq eq;
-    return node_lookup(*node, c, n, eq);
+    return node_lookup(*node, code, needle, eq);
   }
 
   if (self.tree.root) {
@@ -935,28 +934,18 @@ set_lookup(const HashSet<T, H, Eq> &self, const HashKey &c,
 
   return nullptr;
 }
-} // namespace impl
-
-template <typename T, typename Hash, typename Eq, typename V>
-const T *
-lookup(const HashSet<T, Hash, Eq> &self, const V &needle) noexcept {
-  Hash h;
-  const impl::HashKey code(h(needle));
-
-  return impl::set_lookup(self, code, needle);
-}
 
 template <typename T, typename H, typename Eq, typename V>
 T *
-lookup(HashSet<T, H, Eq> &self, const V &needle) noexcept {
-  const HashSet<T, H, Eq> &c_self = self;
+lookup(HashSetTree<T, H, Eq> &self, const V &needle) noexcept {
+  const HashSetTree<T, H, Eq> &c_self = self;
   return (T *)lookup(c_self, needle);
 }
 
 //=====================================
 template <typename T, typename H, typename Eq>
 const T *
-lookup_default(const HashSet<T, H, Eq> &self, const T &n,
+lookup_default(const HashSetTree<T, H, Eq> &self, const T &n,
                const T &def) noexcept {
   const T *result = lookup(self, n);
   if (!result) {
@@ -968,7 +957,7 @@ lookup_default(const HashSet<T, H, Eq> &self, const T &n,
 
 template <typename T, typename H, typename Eq>
 T *
-lookup_default(HashSet<T, H, Eq> &self, const T &needle, T &def) noexcept {
+lookup_default(HashSetTree<T, H, Eq> &self, const T &needle, T &def) noexcept {
   const auto &c_self = self;
   return (T *)lookup_default(c_self, needle, def);
 }
@@ -976,7 +965,7 @@ lookup_default(HashSet<T, H, Eq> &self, const T &needle, T &def) noexcept {
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
 T *
-lookup_insert(HashSet<T, H, Eq> &self, V &&value) noexcept {
+lookup_insert(HashSetTree<T, H, Eq> &self, V &&value) noexcept {
   using namespace impl;
 
   auto f = [](HSNode<T> &node, const HashKey &code, V &&v) {
@@ -990,7 +979,8 @@ lookup_insert(HashSet<T, H, Eq> &self, V &&value) noexcept {
 //=====================================
 template <typename T, typename H, typename Eq, typename V, typename Compute>
 T *
-lookup_compute(HashSet<T, H, Eq> &self, const V &needle, Compute c) noexcept {
+lookup_compute(HashSetTree<T, H, Eq> &self, const V &needle,
+               Compute c) noexcept {
   using namespace impl;
 
   auto f = [c](HSNode<T> &node, const HashKey &code, const V &v) {
@@ -1004,14 +994,14 @@ lookup_compute(HashSet<T, H, Eq> &self, const V &needle, Compute c) noexcept {
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
 bool
-contains(const HashSet<T, H, Eq> &self, const V &needle) noexcept {
+contains(const HashSetTree<T, H, Eq> &self, const V &needle) noexcept {
   return lookup(self, needle) != nullptr;
 }
 
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
 bool
-remove(HashSet<T, H, Eq> &self, const V &needle) noexcept {
+remove(HashSetTree<T, H, Eq> &self, const V &needle) noexcept {
   using namespace impl;
   bool result = false;
 
@@ -1064,7 +1054,7 @@ for_each(const sp::impl::HSBucket<T> &bucket, F f) noexcept {
 
 template <typename T, typename H, typename Eq>
 bool
-verify(const sp::HashSet<T, H, Eq> &self) noexcept {
+verify(const sp::HashSetTree<T, H, Eq> &self) noexcept {
   using namespace impl;
 
   assertx(verify(self.tree));
@@ -1132,7 +1122,7 @@ verify(const sp::HashSet<T, H, Eq> &self) noexcept {
 //=====================================
 template <typename T, typename H, typename Eq>
 std::size_t
-length(const HashSet<T, H, Eq> &self) noexcept {
+length(const HashSetTree<T, H, Eq> &self) noexcept {
   using namespace impl;
 
   std::size_t length = 0;

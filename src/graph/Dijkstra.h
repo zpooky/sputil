@@ -5,7 +5,7 @@
 #include <heap/binary.h>
 #include <list/LinkedList.h>
 #include <map/HashMapTree.h>
-#include <map/HashSet.h>
+#include <map/HashSetTree.h>
 #include <util/assert.h>
 
 // https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm#Pseudocode
@@ -47,7 +47,7 @@ shortest_path(::graph::Vertex<T, int> *from, ::graph::Vertex<T, int> *to)
 noexcept {
   using Vtx = ::graph::Vertex<T, int>;
 
-  sp::HashSet<Vtx *, impl::hash_vtx<T>> visited;
+  sp::HashSetTree<Vtx *, impl::hash_vtx<T>> visited;
   if (!insert(visited, from)) {
     assertx(false);
     return false;
@@ -167,7 +167,7 @@ shortest_path(::graph::Vertex<T, int> *const from,
   bool found_path = false;
   /* $explored keeps track of handled vertex and vertex present in $frontier.
    */
-  sp::HashSet<Vtx *, impl::hash_vtx<T>, sp::PointerEquality> explored;
+  sp::HashSetTree<Vtx *, impl::hash_vtx<T>, sp::PointerEquality<Vtx>> explored;
   /* A min-prio queue where shortest path $from to any vertex is present in
    * order. By always handling the shortest path vertex first we can be sure
    * that when we encounter $to we have found its shortest path.
@@ -177,7 +177,7 @@ shortest_path(::graph::Vertex<T, int> *const from,
    * $path = lookup($fastest, $vertex);
    */
   sp::HashMapTree</*to*/ Vtx *, /*from*/ Vtx *, impl::hash_vtx<T>,
-                  sp::PointerEquality>
+                  sp::PointerEquality<Vtx>>
       fastest;
 
   if (!insert(frontier, impl::SPTmp<T>(from, 0))) {

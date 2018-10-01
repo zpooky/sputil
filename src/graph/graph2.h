@@ -2,7 +2,7 @@
 #define SP_UTIL_GRAPH_GRAPH2_H
 
 #include <collection/Array.h>
-#include <map/HashSet.h>
+#include <map/HashSetTree.h>
 #include <queue/Queue.h>
 #include <utility>
 
@@ -193,7 +193,8 @@ struct VtxHsh {
 template <typename T, typename W, typename F>
 bool
 deapth_first(Vertex<T, W> &root, F f) noexcept {
-  sp::HashSet<Vertex<T, W> *, impl::VtxHsh<T, W>, sp::PointerEquality> visited;
+  using Vtx = Vertex<T, W>;
+  sp::HashSetTree<Vtx *, impl::VtxHsh<T, W>, sp::PointerEquality<Vtx>> visited;
 
   sp::DynamicStack<Vertex<T, W> *> stack;
   if (!push(stack, &root)) {
@@ -230,7 +231,8 @@ deapth_first(Vertex<T, W> &root, F f) noexcept {
 template <typename T, typename W, typename F>
 bool
 breadth_first(Vertex<T, W> &root, F f) noexcept {
-  sp::HashSet<Vertex<T, W> *, impl::VtxHsh<T, W>, sp::PointerEquality> visited;
+  using Vtx = Vertex<T, W>;
+  sp::HashSetTree<Vtx *, impl::VtxHsh<T, W>, sp::PointerEquality<Vtx>> visited;
 
   sp::LinkedListQueue<Vertex<T, W> *> stack;
   if (!enqueue(stack, &root)) {

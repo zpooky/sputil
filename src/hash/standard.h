@@ -10,21 +10,25 @@ template <typename>
 struct Hasher;
 
 //=====================================
+template <typename T>
 struct Equality {
-  template <typename F, typename S>
+
+  template <typename S>
   bool
-  operator()(const F &f, const S &s) const noexcept {
-    static_assert(!std::is_pointer<F>::value, "Can not be pointer");
+  operator()(const T &f, const S &s) const noexcept {
+    static_assert(!std::is_pointer<T>::value, "Can not be pointer");
     return f == s;
   }
 };
 
 //=====================================
+template <typename T>
 struct PointerEquality {
-  template <typename F, typename S>
+
+  template <typename S>
   bool
-  operator()(const F &f, const S &s) const noexcept {
-    static_assert(std::is_pointer<F>::value, "Must be a pointer");
+  operator()(const T *f, const S &s) const noexcept {
+    // static_assert(std::is_pointer<T>::value, "Must be a pointer");
     return f == s;
   }
 };

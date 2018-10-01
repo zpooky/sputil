@@ -107,7 +107,7 @@ Id(int x, int y, int N) noexcept {
 
 static bool
 build_graph(sp::LinkedList<Vtx> &nodes, int N) noexcept {
-  int insxx = 0;
+  std::size_t insxx = 0;
   auto factory = [&insxx, &nodes](auto &state, int id) {
     insxx++;
     Vtx *res = push_back(nodes, id);
@@ -115,7 +115,7 @@ build_graph(sp::LinkedList<Vtx> &nodes, int N) noexcept {
     return new (&state.value) Vtx *(res);
   };
 
-  sp::HashSet<Vtx *, VtxHash, VtxEquality> vtxs;
+  sp::HashSetTree<Vtx *, VtxHash, VtxEquality> vtxs;
 
   for (int x = 0; x < N; ++x) {
     for (int y = 0; y < N; ++y) {
@@ -155,7 +155,7 @@ build_graph(sp::LinkedList<Vtx> &nodes, int N) noexcept {
     }     // for y
   }       // for x
 
-  assertxs(insxx == (N * N), insxx);
+  assertxs(insxx == std::size_t(N * N), insxx);
 
   return true;
 }
@@ -171,6 +171,7 @@ struct WarnsdorffsHeuristic {
   }
 };
 
+#if 0
 static void
 print_board(const sp::DynamicStack<const Vtx *> &path) noexcept {
   const int CORD = 5;
@@ -195,9 +196,11 @@ print_board(const sp::DynamicStack<const Vtx *> &path) noexcept {
   printf("\n");
 }
 
+#endif
+
 template <typename H, typename Eq>
 static std::size_t
-traverse(const Vtx &start, sp::HashSet<const Vtx *, H, Eq> &visited,
+traverse(const Vtx &start, sp::HashSetTree<const Vtx *, H, Eq> &visited,
          sp::DynamicStack<const Vtx *> &path, std::size_t done,
          knights_tour_cb cb, void *closure) noexcept {
   // printf("length(path): %zu\n", length(path));
@@ -267,7 +270,7 @@ knights_tour(std::size_t N, knights_tour_cb cb, void *closure) noexcept {
     assertx(start);
     assertxs(start->value == 0, start->value);
 
-    sp::HashSet<const Vtx *, VtxHash, VtxEquality> visited;
+    sp::HashSetTree<const Vtx *, VtxHash, VtxEquality> visited;
 
     assertx_n(insert(visited, start));
     assertx_n(push(path, start));

@@ -1,7 +1,7 @@
 #ifndef SP_UTIL_MAP_HASH_MAP_H
 #define SP_UTIL_MAP_HASH_MAP_H
 
-#include <map/HashSet.h>
+#include <map/HashSetTree.h>
 
 namespace sp {
 //=====================================
@@ -36,6 +36,13 @@ struct Hasher_HashMapTree {
   operator()(const Entry &in) noexcept {
     return operator()(in.key);
   }
+
+  template <typename N>
+  std::size_t
+  operator()(const N &in) noexcept {
+    H hash;
+    return hash(in);
+  }
 };
 
 template <typename K, typename V, typename Eq>
@@ -57,18 +64,25 @@ struct Equality_HashMapTree {
   operator()(const Entry &f, const Entry &s) const noexcept {
     return operator()(f.key, s.key);
   }
+
+  template <typename N>
+  bool
+  operator()(const Entry &f, const N &s) const noexcept {
+    Eq equality;
+    return equality()(f.key, s);
+  }
 };
 }
 
 //=====================================
 template <typename Key, typename Value, typename H = sp::Hasher<Key>,
-          typename Eq = sp::Equality>
+          typename Eq = sp::Equality<Key>>
 struct HashMapTree {
   using Entry = impl::HashMapTreeEntry<Key, Value>;
   using Hash = impl::Hasher_HashMapTree<Key, Value, H>;
   using Equality = impl::Equality_HashMapTree<Key, Value, Eq>;
 
-  HashSet<Entry, Hash, Equality> set;
+  HashSetTree<Entry, Hash, Equality> set;
 
   HashMapTree() noexcept;
   HashMapTree(const HashMapTree &) = delete;
@@ -122,28 +136,25 @@ insert(HashMapTree<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
                               std::forward<decltype(value)>(value));
   };
 
+  V *result = nullptr;
   Entry *const res = lookup_compute(self.set, key, compute);
   if (res) {
-    V *const result = &res->value;
+    result = &res->value;
 
     if (!ins) {
       result->~V();
       new (result) V{std::forward<Value>(value)};
     }
-
-    return result;
   }
 
-  return nullptr;
+  return result;
 }
 
 //=====================================
 template <typename Key, typename V, typename H, typename Eq, typename K>
 const V *
 lookup(const HashMapTree<Key, V, H, Eq> &self, const K &needle) noexcept {
-  H hash;
-  const impl::HashKey code(hash(needle));
-  auto *res = sp::impl::set_lookup(self.set, code, needle);
+  auto *res = lookup(self.set, needle);
   if (res) {
     return &res->value;
   }

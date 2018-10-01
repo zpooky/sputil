@@ -1,7 +1,7 @@
 #include "concurrent/Barrier.h"
 #include "tree/bst.h"
 #include <collection/Array.h>
-#include <map/HashSet.h>
+#include <map/HashSetTree.h>
 #include <prng/xorshift.h>
 #include <util/Bitset.h>
 
@@ -18,7 +18,7 @@ main() {
 
 static void
 test() {
-  sp::HashSet<std::uint32_t> set;
+  sp::HashSetTree<std::uint32_t> set;
   prng::xorshift32 r(1);
   std::size_t i = 0;
   constexpr std::uint32_t range = 1024;

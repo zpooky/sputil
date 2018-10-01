@@ -22,7 +22,8 @@ struct HashSetOpenBucket {
 } // namespace impl
 
 //=====================================
-template <typename T, typename Hash = sp::Hasher<T>, typename Eq = sp::Equality>
+template <typename T, typename Hash = sp::Hasher<T>,
+          typename Eq = sp::Equality<T>>
 struct HashSetOpen {
   impl::HashSetOpenBucket<T> *items;
   std::size_t capacity;

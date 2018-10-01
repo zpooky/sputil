@@ -88,7 +88,8 @@ struct Hasher<GcStruct *> {
   }
 };
 
-struct GcStructEq {
+template <>
+struct Equality<GcStruct *> {
   bool
   operator()(std::size_t f, std::size_t s) const {
     return f == s;

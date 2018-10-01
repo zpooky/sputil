@@ -1249,7 +1249,7 @@ get(const Array<T> &self, std::size_t idx) noexcept {
     return self.buffer + idx;
   }
 
-  assertxs(false, idx, length(self), capacity(self));
+  // assertxs(idx < length(self), idx, length(self), capacity(self));
   return nullptr;
 }
 

@@ -3,8 +3,8 @@
 
 #include <collection/Array.h>
 #include <gtest/gtest.h>
-#include <map/HashSet.h>
 #include <map/HashSetProbing.h>
+#include <map/HashSetTree.h>
 #include <prng/xorshift.h>
 #include <util/Bitset.h>
 #include <util/Timer.h>
@@ -196,7 +196,7 @@ TEST(HashSetProbingTest, test_HashSetTree) {
   prng::xorshift32 r(1);
   sp::TimerContex ctx;
   for (std::size_t a = 0; a < 10; ++a) {
-    sp::HashSet<int> set;
+    sp::HashSetTree<int> set;
     run_bench(r, ctx, set);
   }
 
@@ -313,7 +313,7 @@ TEST(HashSetProbingTest, test_rand) {
     }
     sp::HashSetProbing<std::uint32_t> set;
     sp::Bitset present(raw, length);
-    // sp::HashSet<std::uint32_t> present2;
+    // sp::HashSetTree<std::uint32_t> present2;
 
     for (std::size_t i = 0; i < range; ++i) {
       ASSERT_EQ(inserted, sp::length(set));
@@ -421,7 +421,7 @@ TEST(HashSetProbingTest, test_rand) {
       ASSERT_EQ(std::size_t(0), cnt);
     }
 
-  } while (true);
+  } while (false);
 
   delete[] raw;
 }

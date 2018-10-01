@@ -4,7 +4,7 @@
 #include <collection/Array.h>
 #include <graph/Graph.h>
 #include <hash/fnv.h>
-#include <map/HashSet.h>
+#include <map/HashSetTree.h>
 #include <memory/StackPooledAllocator.h>
 #include <queue/Queue.h>
 #include <stack/DynamicStack.h>
@@ -210,7 +210,7 @@ template <typename T, std::size_t N, typename F>
 void
 breadth_first(Undirected<T, N> &root, F f) noexcept {
   // using blah = Undirected<T, N> *;
-  // sp::HashSet<blah, fnv_1a::hash<blah>> visited;
+  // sp::HashSetTree<blah, fnv_1a::hash<blah>> visited;
   //
   // sp::LinkedListQueue<Undirected<T, N> *, sp::StackPooledAllocator> toVisit;
   //
@@ -251,7 +251,7 @@ template <typename T, std::size_t N, typename F>
 void
 depth_first(Undirected<T, N> &root, F f) noexcept {
   // using blah = Undirected<T, N> *;
-  // sp::HashSet<blah, fnv_1a::hash<blah>> visited;
+  // sp::HashSetTree<blah, fnv_1a::hash<blah>> visited;
   //
   // sp::DynamicStack<Undirected<T, N> *, sp::StackPooledAllocator> toVisit;
   //
