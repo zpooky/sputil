@@ -43,6 +43,11 @@ struct GcStruct {
   }
 
   bool
+  operator==(int o) const noexcept {
+    return data == o;
+  }
+
+  bool
   operator==(const GcStruct &o) const noexcept {
     return this->operator==(o.data);
   }

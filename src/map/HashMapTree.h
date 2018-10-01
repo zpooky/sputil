@@ -17,6 +17,12 @@ struct HashMapTreeEntry {
       , value(std::forward<V>(v)) {
   }
 
+  HashMapTreeEntry(const HashMapTreeEntry &) = delete;
+  HashMapTreeEntry(HashMapTreeEntry &&o) noexcept
+      : key{std::move(o.key)}
+      , value{std::move(o.value)} {
+  }
+
   ~HashMapTreeEntry() noexcept {
   }
 };
@@ -78,6 +84,9 @@ struct Equality_HashMapTree {
 template <typename Key, typename Value, typename H = sp::Hasher<Key>,
           typename Eq = sp::Equality<Key>>
 struct HashMapTree {
+  using key_type = Key;
+  using value_type = Value;
+
   using Entry = impl::HashMapTreeEntry<Key, Value>;
   using Hash = impl::Hasher_HashMapTree<Key, Value, H>;
   using Equality = impl::Equality_HashMapTree<Key, Value, Eq>;
@@ -125,15 +134,15 @@ V *
 insert(HashMapTree<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
   using Entry = impl::HashMapTreeEntry<K, V>;
 
-  bool ins = false;
+  bool inserted = false;
   auto compute = [
     key = std::forward<decltype(key)>(key),
-    value = std::forward<decltype(value)>(value), &ins
+    value = std::forward<decltype(value)>(value), &inserted
   ](auto &bucket, const auto &) {
-    ins = true;
+    inserted = true;
 
-    new (&bucket.value) Entry(std::forward<decltype(key)>(key),
-                              std::forward<decltype(value)>(value));
+    return new (&bucket.value) Entry(std::forward<decltype(key)>(key),
+                                     std::forward<decltype(value)>(value));
   };
 
   V *result = nullptr;
@@ -141,7 +150,7 @@ insert(HashMapTree<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
   if (res) {
     result = &res->value;
 
-    if (!ins) {
+    if (!inserted) {
       result->~V();
       new (result) V{std::forward<Value>(value)};
     }

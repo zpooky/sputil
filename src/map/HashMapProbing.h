@@ -17,6 +17,12 @@ struct HashMapProbingEntry {
       , value(std::forward<V>(v)) {
   }
 
+  HashMapProbingEntry(const HashMapProbingEntry &) = delete;
+  HashMapProbingEntry(HashMapProbingEntry &&o) noexcept
+      : key{std::move(o.key)}
+      , value{std::move(o.value)} {
+  }
+
   ~HashMapProbingEntry() noexcept {
   }
 };
@@ -24,7 +30,6 @@ struct HashMapProbingEntry {
 //=====================================
 template <typename Key, typename Value, typename H>
 struct Hasher_HashMapProbing {
-
   using Entry = HashMapProbingEntry<Key, Value>;
 
   std::size_t
@@ -79,6 +84,9 @@ struct Equality_HashMapProbing {
 template <typename Key, typename Value, typename H = sp::Hasher<Key>,
           typename Eq = sp::Equality<Key>>
 struct HashMapProbing {
+  using key_type = Key;
+  using value_type = Value;
+
   using Entry = impl::HashMapProbingEntry<Key, Value>;
   using Hash = impl::Hasher_HashMapProbing<Key, Value, H>;
   using Equality = impl::Equality_HashMapProbing<Key, Value, Eq>;
@@ -124,7 +132,32 @@ template <typename K, typename V, typename H, typename Eq, typename Key,
           typename Value>
 V *
 insert(HashMapProbing<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
-  // TODO
+  using Entry = impl::HashMapProbingEntry<K, V>;
+
+  bool inserted = false;
+  auto on_compute = [
+    key = std::forward<decltype(key)>(key),
+    value = std::forward<decltype(value)>(value), &inserted
+  ](auto &bucket, const auto &) {
+    inserted = true;
+
+    return new (&bucket) Entry(std::forward<decltype(key)>(key),
+                               std::forward<decltype(value)>(value));
+  };
+
+  const Key &needle = key;
+  Entry *const res = lookup_compute(self.set, needle, on_compute);
+  if (res) {
+    V *const result = &res->value;
+
+    if (!inserted) {
+      result->~V();
+      new (result) V{std::forward<Value>(value)};
+    }
+
+    return result;
+  }
+
   return nullptr;
 }
 

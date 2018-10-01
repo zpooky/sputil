@@ -189,12 +189,12 @@ rehash(HashSetProbing<T, H, Eq> &self, const T *const needle) noexcept {
 
     if (tag == HSPTag_PRESENT) {
       auto &bucket = self.table[idx];
-      // printf("cnt[%zu]\n", cnt);
+
       ++cnt;
       sp::set(self.tags, idx, HSPTag_EMPTY);
       T *const current = (T *)&bucket;
 
-      T *const ins = insert(tmp, std::move(*current));
+      T *const ins = ::sp::insert(tmp, std::move(*current));
       if (current == needle) {
         result = ins;
       }
@@ -232,14 +232,12 @@ eager_resize(const HashSetProbing<T, H, Eq> &self) noexcept {
 
   return res;
 }
-} // namespace impl
 
-template <typename T, typename H, typename Eq, typename V>
+template <typename T, typename H, typename Eq, typename V, typename D,
+          typename F>
 T *
-insert(HashSetProbing<T, H, Eq> &self, V &&value) noexcept {
-  // printf("insert()\n");
-  using namespace impl;
-
+do_insert(HashSetProbing<T, H, Eq> &self, const V &needle, D dup,
+          F fac) noexcept {
   if (!self.table) {
     using Bucket = typename HashSetProbing<T, H, Eq>::Bucket;
     // XXX check null
@@ -257,10 +255,9 @@ insert(HashSetProbing<T, H, Eq> &self, V &&value) noexcept {
     });
   }
 
-Lretry:
   if (self.table) {
     H hash;
-    const std::size_t h = hash(value);
+    const std::size_t h = hash(needle);
     const std::size_t dest = index_of(h, self.capacity);
     std::size_t idx = dest;
 
@@ -278,13 +275,14 @@ Lretry:
       if (tag == HSPTag_EMPTY) {
         break;
       } else if (tag == HSPTag_PRESENT) {
-        const T *const res = (T *)&bucket;
-        const V &needle = value;
+        T *const b = (T *)&bucket;
+        const T *const res = b;
 
         Eq equality;
         if (equality(*res, needle)) {
+
           /* Duplicate */
-          return nullptr;
+          return dup(*b, needle);
         }
       }
 
@@ -292,13 +290,11 @@ Lretry:
     } while (idx != dest);
 
     if (empty != self.capacity) {
-      assertx(empty < self.capacity);
+      assertxs(empty < self.capacity, empty, self.capacity);
+
       sp::set(self.tags, empty, HSPTag_PRESENT);
-
+      T *const result = fac(empty);
       ++self.length;
-
-      T *const result = (T *)self.table + empty;
-      new (result) T(std::forward<V>(value));
 
       if (eager_resize(self)) {
         return rehash(self, result);
@@ -309,6 +305,25 @@ Lretry:
   }
 
   return nullptr;
+}
+} // namespace impl
+
+template <typename T, typename H, typename Eq, typename V>
+T *
+insert(HashSetProbing<T, H, Eq> &self, V &&value) noexcept {
+  auto on_dup = [](const auto &, const auto &) -> T * {
+    /**/
+    return nullptr;
+  };
+
+  auto on_factory = [&self, &value](std::size_t empty) -> T * {
+    T *const result = (T *)(self.table + empty);
+    return new (result) T(std::forward<V>(value));
+  };
+
+  const V &needle = value;
+  return impl::do_insert(self, needle, on_dup, on_factory);
+  // return nullptr;
 }
 
 //=====================================
@@ -432,12 +447,23 @@ lookup_insert(HashSetProbing<T, H, Eq> &self, V &&needle) noexcept {
 }
 
 //=====================================
-template <typename T, typename H, typename Eq, typename V, typename Compute>
+template <typename T, typename H, typename Eq, typename V, typename C>
 T *
-lookup_compute(HashSetProbing<T, H, Eq> &, const V &needle, Compute) noexcept {
-  assertx(false);
-  // TODO
-  return nullptr;
+lookup_compute(HashSetProbing<T, H, Eq> &self, const V &needle,
+               C compute) noexcept {
+  auto on_dup = [](T &bucket, const V &) -> T * {
+    /**/
+    return &bucket;
+  };
+
+  auto on_factory = [&self, &compute, &needle](std::size_t empty) -> T * {
+    T *const result = (T *)(self.table + empty);
+    compute(*result, needle);
+
+    return result;
+  };
+
+  return impl::do_insert(self, needle, on_dup, on_factory);
 }
 
 //=====================================
@@ -452,7 +478,6 @@ cleanup(HashSetProbing<T, H, Eq> &self,
   const std::size_t dest = sp::index_of(self.table, capacity, capacity, needle);
 
   assertxs(dest != capacity, dest, capacity);
-  auto &table = self.table;
 
   const std::size_t next_idx = (dest + 1) % capacity;
   auto tag = sp::test(self.tags, next_idx);

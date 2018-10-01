@@ -7,6 +7,9 @@
  * https://github.com/boostorg/graph/blob/develop/include/boost/graph/sequential_vertex_coloring.hpp
  *
  * https://github.com/boostorg/graph/tree/develop/include/boost/graph
+ *
+ * # definition
+ * http://www.sci.brooklyn.cuny.edu/~amotz/GC-ALGORITHMS/PRESENTATIONS/coloring.pdf
  */
 namespace graph {
 //=====================================
