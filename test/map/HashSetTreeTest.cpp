@@ -1,68 +1,28 @@
-#include <test/gcstruct.h>
-
 #include <gtest/gtest.h>
-#include <hash/fnv.h>
-#include <list/SkipList.h>
+#include <map/HashSetProbing.h>
 #include <map/HashSetTree.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
+#include <test/gcstruct.h>
 #include <unordered_set>
 #include <util/Bitset.h>
 #include <util/assert.h>
 
-TEST(HashSetTreeTest, test_insert_dtor) {
-  using TType = sp::GcStruct;
+// #include <hash/fnv.h>
+// #include <list/SkipList.h>
 
-  {
-    sp::HashSetTree<TType> set;
-    for (std::size_t i = 0; i < 1024; ++i) {
-      for (std::size_t a = 0; a < i; ++a) {
-        {
-          TType *res = insert(set, TType(a, 0));
-          if (res) {
-            printf("i[%zu] a[%zu] = res[%zu]\n", i, a, std::size_t(*res));
-            dump(set.tree);
-          }
-          ASSERT_FALSE(res);
-        }
-        {
-          const TType *res = lookup(set, TType(a, 0));
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-        {
-          const TType *res = lookup(set, a);
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-      }
+template <typename SET>
+static void
+test_insert_dtor(SET &set) {
+  using TType = typename SET::value_type;
 
-      ASSERT_EQ(i, sp::rec::length(set));
-      {
-        ASSERT_FALSE(lookup(set, i));
-        ASSERT_FALSE(lookup(set, TType(i, 0)));
-
-        TType *res = insert(set, TType(i, 0));
-        ASSERT_TRUE(res);
-        ASSERT_EQ(res->data, i);
-        ASSERT_TRUE(sp::rec::verify(set));
-      }
-    }
-  }
-  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
-}
-
-TEST(HashSetTreeTest, test_insert_remove) {
-  using TType = sp::GcStruct;
-
-  sp::HashSetTree<TType> set;
   for (std::size_t i = 0; i < 1024; ++i) {
     for (std::size_t a = 0; a < i; ++a) {
       {
         TType *res = insert(set, TType(a, 0));
         if (res) {
           printf("i[%zu] a[%zu] = res[%zu]\n", i, a, std::size_t(*res));
-          dump(set.tree);
+          // dump(set.tree);
         }
         ASSERT_FALSE(res);
       }
@@ -78,7 +38,8 @@ TEST(HashSetTreeTest, test_insert_remove) {
       }
     }
 
-    ASSERT_EQ(i, sp::rec::length(set));
+    using namespace sp::rec;
+    ASSERT_EQ(i, length(set));
     {
       ASSERT_FALSE(lookup(set, i));
       ASSERT_FALSE(lookup(set, TType(i, 0)));
@@ -86,7 +47,66 @@ TEST(HashSetTreeTest, test_insert_remove) {
       TType *res = insert(set, TType(i, 0));
       ASSERT_TRUE(res);
       ASSERT_EQ(res->data, i);
-      ASSERT_TRUE(sp::rec::verify(set));
+      ASSERT_TRUE(verify(set));
+    }
+  }
+}
+
+TEST(HashSetTreeTest, test_Tree_insert_dtor) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+  {
+    sp::HashSetTree<sp::GcStruct> set;
+    test_insert_dtor(set);
+  }
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+}
+
+TEST(HashSetTreeTest, test_Probing_insert_dtor) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+  {
+    sp::HashSetProbing<sp::GcStruct> set;
+    test_insert_dtor(set);
+  }
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+}
+
+template <typename SET>
+static void
+test_insert_remove(SET &set) {
+  using TType = typename SET::value_type;
+  using namespace sp::rec;
+
+  for (std::size_t i = 0; i < 1024; ++i) {
+    for (std::size_t a = 0; a < i; ++a) {
+      {
+        TType *res = insert(set, TType(a, 0));
+        if (res) {
+          printf("i[%zu] a[%zu] = res[%zu]\n", i, a, std::size_t(*res));
+          // dump(set.tree);
+        }
+        ASSERT_FALSE(res);
+      }
+      {
+        const TType *res = lookup(set, TType(a, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+      {
+        const TType *res = lookup(set, a);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+    }
+
+    ASSERT_EQ(i, length(set));
+    {
+      ASSERT_FALSE(lookup(set, i));
+      ASSERT_FALSE(lookup(set, TType(i, 0)));
+
+      TType *res = insert(set, TType(i, 0));
+      ASSERT_TRUE(res);
+      ASSERT_EQ(res->data, i);
+      ASSERT_TRUE(verify(set));
     }
   }
   for (std::size_t i = 0; i < 1024; ++i) {
@@ -96,165 +116,236 @@ TEST(HashSetTreeTest, test_insert_remove) {
     ASSERT_TRUE(remove(set, i));
     ASSERT_FALSE(lookup(set, i));
   }
-  ASSERT_EQ(std::size_t(0), sp::rec::length(set));
-  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+
+  ASSERT_EQ(std::size_t(0), length(set));
 }
 
-TEST(HashSetTreeTest, test_upsert_dtor) {
-  using TType = sp::GcStruct;
-
+TEST(HashSetTreeTest, test_Tree_insert_remove) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
   {
-    sp::HashSetTree<TType> set;
-    for (std::size_t i = 0; i < 1024; ++i) {
-      for (std::size_t a = 0; a < i; ++a) {
-        {
-          TType *res = insert(set, TType(a, 0));
-          ASSERT_FALSE(res);
-        }
-        {
-          TType *res = upsert(set, TType(a, 0));
-          ASSERT_TRUE(res);
-        }
-        {
-          const TType *res = lookup(set, TType(a, 0));
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-        {
-          const TType *res = lookup(set, a);
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-      }
-
-      ASSERT_EQ(i, sp::rec::length(set));
-      {
-        ASSERT_FALSE(lookup(set, i));
-        ASSERT_FALSE(lookup(set, TType(i, 0)));
-
-        TType *res = upsert(set, TType(i, 0));
-        ASSERT_TRUE(res);
-        ASSERT_EQ(res->data, i);
-        ASSERT_TRUE(sp::rec::verify(set));
-      }
-    }
+    sp::HashSetTree<sp::GcStruct> set;
+    test_insert_remove(set);
   }
   ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
-TEST(HashSetTreeTest, test_lookup_insert_dtor) {
-  using TType = sp::GcStruct;
-
+// #if 0
+TEST(HashSetTreeTest, test_Probing_insert_remove) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
   {
-    sp::HashSetTree<TType> set;
-    for (std::size_t i = 0; i < 1024; ++i) {
-      for (std::size_t a = 0; a < i; ++a) {
-        {
-          TType *res = insert(set, TType(a, 0));
-          ASSERT_FALSE(res);
-        }
-        {
-          TType *res = upsert(set, TType(a, 0));
-          ASSERT_TRUE(res);
-        }
-        {
-          TType *res = lookup_insert(set, TType(a, 0));
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-        {
-          const TType *res = lookup(set, TType(a, 0));
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-        {
-          const TType *res = lookup(set, a);
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-      }
+    sp::HashSetProbing<sp::GcStruct> set;
+    test_insert_remove(set);
+  }
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+}
+// #endif
 
-      ASSERT_EQ(i, sp::rec::length(set));
+template <typename SET>
+static void
+test_upsert_dtor(SET &set) {
+  using TType = typename SET::value_type;
+
+  for (std::size_t i = 0; i < 1024; ++i) {
+    for (std::size_t a = 0; a < i; ++a) {
       {
-        ASSERT_FALSE(lookup(set, i));
-        ASSERT_FALSE(lookup(set, TType(i, 0)));
-
-        TType *res = lookup_insert(set, TType(i, 0));
+        TType *res = insert(set, TType(a, 0));
+        ASSERT_FALSE(res);
+      }
+      {
+        TType *res = upsert(set, TType(a, 0));
         ASSERT_TRUE(res);
-        ASSERT_EQ(res->data, i);
-        ASSERT_TRUE(sp::rec::verify(set));
+      }
+      {
+        const TType *res = lookup(set, TType(a, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+      {
+        const TType *res = lookup(set, a);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
       }
     }
+
+    using namespace sp::rec;
+    ASSERT_EQ(i, length(set));
+    {
+      ASSERT_FALSE(lookup(set, i));
+      ASSERT_FALSE(lookup(set, TType(i, 0)));
+
+      TType *res = upsert(set, TType(i, 0));
+      ASSERT_TRUE(res);
+      ASSERT_EQ(res->data, i);
+      ASSERT_TRUE(verify(set));
+    }
+  }
+}
+
+TEST(HashSetTreeTest, test_Tree_upsert_dtor) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+  {
+    sp::HashSetTree<sp::GcStruct> set;
+    test_upsert_dtor(set);
   }
   ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
-TEST(HashSetTreeTest, test_lookup_compute_dtor) {
-  using TType = sp::GcStruct;
+TEST(HashSetTreeTest, test_Probing_upsert_dtor) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+  {
+    sp::HashSetProbing<sp::GcStruct> set;
+    test_upsert_dtor(set);
+  }
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+}
+
+template <typename SET>
+static void
+test_lookup_insert_dtor(SET &set) {
+  using TType = typename SET::value_type;
+
+  for (std::size_t i = 0; i < 1024; ++i) {
+    for (std::size_t a = 0; a < i; ++a) {
+      {
+        TType *res = insert(set, TType(a, 0));
+        ASSERT_FALSE(res);
+      }
+      {
+        TType *res = upsert(set, TType(a, 0));
+        ASSERT_TRUE(res);
+      }
+      {
+        TType *res = lookup_insert(set, TType(a, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+      {
+        const TType *res = lookup(set, TType(a, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+      {
+        const TType *res = lookup(set, a);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+    }
+
+    using namespace sp::rec;
+
+    ASSERT_EQ(i, length(set));
+    {
+      ASSERT_FALSE(lookup(set, i));
+      ASSERT_FALSE(lookup(set, TType(i, 0)));
+
+      TType *res = lookup_insert(set, TType(i, 0));
+      ASSERT_TRUE(res);
+      ASSERT_EQ(res->data, i);
+      ASSERT_TRUE(verify(set));
+    }
+  }
+}
+
+TEST(HashSetTreeTest, test_Tree_lookup_insert_dtor) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+  {
+    sp::HashSetTree<sp::GcStruct> set;
+    test_lookup_insert_dtor(set);
+  }
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+}
+
+TEST(HashSetTreeTest, test_Probing_lookup_insert_dtor) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+  {
+    sp::HashSetProbing<sp::GcStruct> set;
+    test_lookup_insert_dtor(set);
+  }
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+}
+
+template <typename SET>
+static void
+test_lookup_compute_dtor(SET &set) {
+  using TType = typename SET::value_type;
 
   auto not_comp = [](auto &, const TType &) {
     /**/
     assertx(false);
   };
 
-  {
-    sp::HashSetTree<TType> set;
-    for (std::size_t i = 0; i < 1024; ++i) {
+  for (std::size_t i = 0; i < 1024; ++i) {
 
-      auto comp = [&i](auto &current, const TType &xarx) {
-        assertxs(xarx.data == i, xarx.data, i);
-        new (&current.value) TType(xarx.data, 0);
-      };
+    auto comp = [&i](auto &current, const TType &xarx) {
+      assertxs(xarx.data == i, xarx.data, i);
+      new (&current) TType(xarx.data, 0);
+    };
 
-      for (std::size_t a = 0; a < i; ++a) {
-        {
-          TType *res = insert(set, TType(a, 0));
-          ASSERT_FALSE(res);
-        }
-        {
-          TType *res = lookup_compute(set, TType(a, 0), not_comp);
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-        {
-          TType *res = upsert(set, TType(a, 0));
-          ASSERT_TRUE(res);
-        }
-        {
-          TType *res = lookup_insert(set, TType(a, 0));
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-        {
-          const TType *res = lookup(set, TType(a, 0));
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-        {
-          const TType *res = lookup(set, a);
-          ASSERT_TRUE(res);
-          ASSERT_EQ(res->data, a);
-        }
-      }
-
-      ASSERT_EQ(i, sp::rec::length(set));
+    for (std::size_t a = 0; a < i; ++a) {
       {
-        ASSERT_FALSE(lookup(set, i));
-        ASSERT_FALSE(lookup(set, TType(i, 0)));
-
-        TType *res = lookup_compute(set, TType(i, 0), comp);
+        TType *res = insert(set, TType(a, 0));
+        ASSERT_FALSE(res);
+      }
+      {
+        TType *res = lookup_compute(set, TType(a, 0), not_comp);
         ASSERT_TRUE(res);
-        ASSERT_EQ(res->data, i);
-        ASSERT_TRUE(sp::rec::verify(set));
+        ASSERT_EQ(res->data, a);
+      }
+      {
+        TType *res = upsert(set, TType(a, 0));
+        ASSERT_TRUE(res);
+      }
+      {
+        TType *res = lookup_insert(set, TType(a, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+      {
+        const TType *res = lookup(set, TType(a, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+      {
+        const TType *res = lookup(set, a);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
       }
     }
+
+    using namespace sp::rec;
+    ASSERT_EQ(i, length(set));
+    {
+      ASSERT_FALSE(lookup(set, i));
+      ASSERT_FALSE(lookup(set, TType(i, 0)));
+
+      TType *res = lookup_compute(set, TType(i, 0), comp);
+      ASSERT_TRUE(res);
+      ASSERT_EQ(res->data, i);
+      ASSERT_TRUE(verify(set));
+    }
+  }
+}
+
+TEST(HashSetTreeTest, test_Tree_lookup_compute_dtor) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+  {
+    sp::HashSetTree<sp::GcStruct> set;
+    test_lookup_compute_dtor(set);
+  }
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+}
+
+TEST(HashSetTreeTest, test_Probing_lookup_compute_dtor) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+  {
+    sp::HashSetProbing<sp::GcStruct> set;
+    test_lookup_compute_dtor(set);
   }
   ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
 TEST(HashSetTreeTest, test_vanilla) {
   using TType = sp::GcStruct;
-
   {
     std::unordered_set<TType, sp::Hasher<TType>> set;
     for (std::size_t i = 0; i < 1024; ++i) {
@@ -279,9 +370,9 @@ TEST(HashSetTreeTest, test_vanilla) {
   ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
-TEST(HashSetTreeTest, test_rand) {
-  prng::xorshift32 r(1);
-
+template <typename SET>
+static void
+test_rand(prng::xorshift32 &r) {
   constexpr std::uint32_t range = 1024 * 9;
   constexpr std::size_t bits(sizeof(std::uint64_t) * 8);
   ASSERT_TRUE(range % bits == 0);
@@ -290,7 +381,7 @@ TEST(HashSetTreeTest, test_rand) {
 
   do {
     memset(raw, 0, length);
-    sp::HashSetTree<std::uint32_t> set;
+    SET set;
     sp::Bitset bset(raw, length);
 
     for (std::size_t i = 0; i < range; ++i) {
@@ -327,6 +418,16 @@ TEST(HashSetTreeTest, test_rand) {
   } while (false);
 
   delete[] raw;
+}
+
+TEST(HashSetTreeTest, test_Tree_rand) {
+  prng::xorshift32 r(1);
+  test_rand<sp::HashSetTree<std::uint32_t>>(r);
+}
+
+TEST(HashSetTreeTest, test_Probing_rand) {
+  prng::xorshift32 r(1);
+  test_rand<sp::HashSetProbing<std::uint32_t>>(r);
 }
 
 TEST(HashSetTreeTest, test_dtor) {
@@ -396,12 +497,12 @@ TEST(HashSetTreeTest, test_afew) {
       std::uint32_t *res = insert(set_insert, in);
 
       bool comp = false;
-      ASSERT_TRUE(lookup_compute(
-          set_compute, in, [in, &comp](auto &current, const auto &xarx) {
-            comp = true;
-            assertxs(in == xarx, in, xarx);
-            return new (&current.value) std::uint32_t(xarx);
-          }));
+      ASSERT_TRUE(lookup_compute(set_compute, in,
+                                 [in, &comp](auto &current, const auto &xarx) {
+                                   comp = true;
+                                   assertxs(in == xarx, in, xarx);
+                                   return new (&current) std::uint32_t(xarx);
+                                 }));
 
       if (res) {
         ASSERT_EQ(*res, in);
@@ -483,7 +584,7 @@ TEST(HashSetTreeTest, test_lookup_compute) {
   std::uint32_t *first = lookup_compute(
       set, 1, [&first_cb](auto &current, const std::uint32_t &value) {
         first_cb = true;
-        return new (&current.value) std::uint32_t(value);
+        return new (&current) std::uint32_t(value);
       });
 
   ASSERT_TRUE(first_cb);
@@ -589,7 +690,7 @@ TEST(HashSetTreeTest, test_lookup_compute3) {
     printf("--\n");
     assertx(id == 1);
     insxx++;
-    new (&state.value) sp::GcStruct *(&one_storage);
+    new (&state) sp::GcStruct *(&one_storage);
 
     sp::Hasher<sp::GcStruct> hash;
     std::size_t stor_hash = hash(one_storage);

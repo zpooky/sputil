@@ -7,6 +7,7 @@
 #include <sstream> //debug
 #include <tree/avl.h>
 #include <type_traits>
+#include <typeinfo>
 // #include <tree/bst.h>
 #include <tree/bst_extra.h>
 // #include <tree/red-black.h>
@@ -794,7 +795,9 @@ T *
 do_insert(HashSetTree<T, H, Eq> &self, V &&val, Insert insert) noexcept {
   auto &tree = self.tree;
   H h;
-  const HashKey code(h(val));
+  const auto &needle = val;
+  // printf("%s\n", typeid(*pb).name());
+  const HashKey code(h(needle));
   bool re_hash = false;
 
 Lretry : {
@@ -813,7 +816,6 @@ Lretry : {
     node = std::get<0>(res);
     if (node) {
       assertx(find(tree, code) == node);
-      // assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins_init"); });
 
       const bool created = std::get<1>(res);
       assertxs(created, node, created);
@@ -822,7 +824,6 @@ Lretry : {
 
   if (node) {
     assertx(in_range(*node, code));
-    // assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins"); });
 
     if (!re_hash && node->entries >= node->capacity) {
       re_hash = true;
@@ -835,15 +836,8 @@ Lretry : {
     T *const result = insert(*node, code, std::forward<V>(val));
     if (result) {
       assertxs(code == h(*result), h(*result), code.hash);
-
-      // assertx_f({
-      //   T *dumb = lookup(self, val);
-      //   assertx(dumb);
-      //   assertx(result == dumb);
-      // });
     }
 
-    // assertx_f({ verify_node<T, H, Eq, 256>(self, *node, "do_ins_before"); });
     return result;
   }
 }
@@ -977,18 +971,17 @@ lookup_insert(HashSetTree<T, H, Eq> &self, V &&value) noexcept {
 }
 
 //=====================================
-template <typename T, typename H, typename Eq, typename V, typename Compute>
+template <typename T, typename H, typename Eq, typename V, typename C>
 T *
-lookup_compute(HashSetTree<T, H, Eq> &self, const V &needle,
-               Compute c) noexcept {
+lookup_compute(HashSetTree<T, H, Eq> &self, const V &ndl, C compute) noexcept {
   using namespace impl;
 
-  auto f = [c](HSNode<T> &node, const HashKey &code, const V &v) {
+  auto f = [compute](HSNode<T> &node, const HashKey &code, const V &v) {
     Eq equality;
-    return node_lookup_compute(node, code, v, c, equality);
+    return node_lookup_compute(node, code, v, compute, equality);
   };
 
-  return impl::do_insert(self, needle, f);
+  return impl::do_insert(self, ndl, f);
 }
 
 //=====================================

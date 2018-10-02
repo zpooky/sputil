@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <util/assert.h>
 
 namespace sp {
 //=====================================

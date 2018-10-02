@@ -200,6 +200,7 @@ deapth_first(Vertex<T, W> &root, F f) noexcept {
   if (!push(stack, &root)) {
     return false;
   }
+
   if (!insert(visited, &root)) {
     return false;
   }

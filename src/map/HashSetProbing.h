@@ -336,7 +336,8 @@ lookup_insert(HashSetProbing<T, H, Eq> &self, V &&v, bool &inserted) noexcept {
     return &bucket;
   };
 
-  auto on_factory = [&self, &v](std::size_t empty) -> T * {
+  auto on_factory = [&self, &v, &inserted](std::size_t empty) -> T * {
+    inserted = true;
     T *const result = (T *)(self.table + empty);
     return new (result) T(std::forward<V>(v));
   };
