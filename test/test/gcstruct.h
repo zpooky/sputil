@@ -9,10 +9,13 @@
 namespace sp {
 struct GcStruct {
   static std::int64_t active;
+  static std::int64_t ctor;
+
   const std::size_t data;
   long alignment0;
   long alignment1;
   long alignment2;
+
 
   explicit GcStruct(std::size_t d)
       : data(d)
@@ -21,6 +24,7 @@ struct GcStruct {
       , alignment2(active) {
     // printf("\nctor %p\n", this);
     ++active;
+    ++ctor;
   }
 
   GcStruct(std::size_t d, int)

@@ -129,7 +129,7 @@ length(const HashSetProbing<T, H, Eq> &) noexcept;
 template <typename T, typename H, typename Eq>
 HashSetProbing<T, H, Eq>::HashSetProbing(std::size_t cap) noexcept
     : table{nullptr}
-    , tags{nullptr, 0} // TODO
+    , tags{nullptr, 0}
     , length{0}
     , capacity{cap < 16 ? 16 : cap} {
 }
@@ -330,11 +330,19 @@ insert(HashSetProbing<T, H, Eq> &self, V &&value) noexcept {
 namespace impl {
 template <typename T, typename H, typename Eq, typename V>
 T *
-lookup_insert(HashSetProbing<T, H, Eq> &self, V &&needle,
-              bool &inserted) noexcept {
-  assertx(false);
-  // TODO
-  return nullptr;
+lookup_insert(HashSetProbing<T, H, Eq> &self, V &&v, bool &inserted) noexcept {
+  auto on_dup = [](auto &bucket, const auto &) -> T * {
+    /**/
+    return &bucket;
+  };
+
+  auto on_factory = [&self, &v](std::size_t empty) -> T * {
+    T *const result = (T *)(self.table + empty);
+    return new (result) T(std::forward<V>(v));
+  };
+
+  const auto &needle = v;
+  return impl::do_insert(self, needle, on_dup, on_factory);
 }
 }
 

@@ -1,6 +1,9 @@
-#include "gtest/gtest.h"
 #include <cstdio>
+#include <gtest/gtest.h>
 
+/*
+ * Throw exception on assert fail
+ */
 class ThrowListener : public testing::EmptyTestEventListener {
 public:
   void
@@ -13,10 +16,8 @@ public:
 
 int
 main(int argc, char **argv) {
-  printf("Here we go!\n");
   testing::InitGoogleTest(&argc, argv);
 
   testing::UnitTest::GetInstance()->listeners().Append(new ThrowListener);
   return RUN_ALL_TESTS();
 }
-

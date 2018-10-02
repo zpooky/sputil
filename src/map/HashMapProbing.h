@@ -136,9 +136,10 @@ insert(HashMapProbing<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
   using Entry = impl::HashMapProbingEntry<K, V>;
 
   bool inserted = false;
-  auto on_compute = [key = std::forward<decltype(key)>(key),
-                     value = std::forward<decltype(value)>(value),
-                     &inserted](auto &bucket, const auto &) {
+  auto on_compute = [
+    key = std::forward<decltype(key)>(key),
+    value = std::forward<decltype(value)>(value), &inserted
+  ](auto &bucket, const auto &) {
     inserted = true;
 
     return new (&bucket) Entry(std::forward<decltype(key)>(key),
