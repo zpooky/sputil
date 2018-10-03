@@ -117,6 +117,11 @@ V *
 lookup(HashMapProbing<Key, V, H, Eq> &, const K &) noexcept;
 
 //=====================================
+template <typename Key, typename V, typename H, typename Eq>
+std::size_t
+length(const HashMapProbing<Key, V, H, Eq> &) noexcept;
+
+//=====================================
 //====Implementation===================
 //=====================================
 template <typename Key, typename Value, typename H, typename Eq>
@@ -181,6 +186,13 @@ V *
 lookup(HashMapProbing<Key, V, H, Eq> &self, const K &needle) noexcept {
   const auto &c_self = self;
   return (V *)lookup(c_self, needle);
+}
+
+//=====================================
+template <typename Key, typename V, typename H, typename Eq>
+std::size_t
+length(const HashMapProbing<Key, V, H, Eq> &self) noexcept {
+  return length(self.set);
 }
 
 //=====================================

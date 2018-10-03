@@ -18,6 +18,8 @@ bool
 geneate(Sudoku &) noexcept;
 
 //=====================================
+
+/* Backtracking */
 bool
 solve(Sudoku &) noexcept;
 
@@ -30,6 +32,10 @@ solve(Sudoku &) noexcept;
 //=====================================
 bool
 is_solved(const Sudoku &) noexcept;
+
+//=====================================
+void
+print(const Sudoku &) noexcept;
 }
 
 #endif

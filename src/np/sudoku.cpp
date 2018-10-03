@@ -25,17 +25,8 @@ solve(Sudoku &) noexcept {
 
 //=====================================
 namespace graph {
-struct Cell {
-  const std::size_t id;
-  int value;
 
-  Cell(std::size_t i) noexcept
-      : id{i}
-      , value{0} {
-  }
-};
-
-using CVtx = ::graph::Vertex<Cell>;
+using CVtx = ::graph::Vertex<std::size_t>;
 
 static bool
 link_graph(CVtx *(edges)[Sudoku::dimensions]) noexcept {
@@ -71,14 +62,28 @@ link_horizontal_graph(CVtx *const begin, CVtx *const end) noexcept {
 }
 
 static bool
-build_graph(sp::UinDynamicArray<CVtx> &board, Sudoku &puzzle) noexcept {
+build_graph(sp::UinDynamicArray<CVtx> &board, Sudoku &puzzle,
+            sp::HashMapProbing<CVtx *, int> &result) noexcept {
   constexpr std::size_t dimensions = Sudoku::dimensions;
 
-  /* Set the id of each cell */
-  for (std::size_t i = 0; i < capacity(board); ++i) {
-    if (!insert(board, i)) {
-      assertx(false);
-      return false;
+  {
+    /* Set the id of each cell */
+    std::size_t id = 0;
+    for (std::size_t x = 0; x < Sudoku::dimensions; ++x) {
+      for (std::size_t y = 0; y < Sudoku::dimensions; ++y) {
+
+        CVtx *const res = insert(board, id++);
+        if (!res) {
+          assertx(false);
+          return false;
+        }
+
+        const std::uint8_t value = puzzle.board[x][y];
+        if (value != 0) {
+          /* Setup the initial prefilled values into the colored result */
+          assertx_n(insert(result, res, value));
+        }
+      }
     }
   }
 
@@ -112,7 +117,7 @@ build_graph(sp::UinDynamicArray<CVtx> &board, Sudoku &puzzle) noexcept {
   /* Box */
   std::size_t l = 0;
   std::size_t game[dimensions][dimensions] = {0};
-  std::size_t *g = (std::size_t *)&game;
+  std::size_t *const g = (std::size_t *)&game;
 
   while (l < length(board)) {
     /* A row is 3 cells high */
@@ -158,25 +163,40 @@ build_graph(sp::UinDynamicArray<CVtx> &board, Sudoku &puzzle) noexcept {
   return true;
 }
 
-static bool
-colour_graph(CVtx *root) noexcept {
-  assertx(root);
+static void
+copy_result(Sudoku &game, sp::UinDynamicArray<CVtx> &cells,
+            sp::HashMapProbing<CVtx *, int> &result) noexcept {
 
-  return ::graph::color_greedy(*root);
+  CVtx *it = cells.data();
+  for (std::size_t x = 0; x < Sudoku::dimensions; ++x) {
+    for (std::size_t y = 0; y < Sudoku::dimensions; ++y) {
+      int *const current = lookup(result, it);
+      assertx(current);
+
+      game.board[x][y] = *current;
+      it++;
+    }
+  }
 }
 
 bool
-solve(Sudoku &puzzle) noexcept {
+solve(Sudoku &game) noexcept {
   constexpr std::size_t N = Sudoku::dimensions * Sudoku::dimensions;
   sp::UinDynamicArray<CVtx> cells(N);
-  if (!build_graph(cells, puzzle)) {
+  sp::HashMapProbing<CVtx *, int> result;
+
+  if (!build_graph(cells, game, result)) {
     return false;
   }
 
   CVtx *const root = get(cells, 0);
-  if (!colour_graph(root)) {
+  assertx(root);
+
+  if (!::graph::color_greedy(*root, result)) {
     return false;
   }
+
+  copy_result(game, cells, result);
 
   return true;
 }
@@ -233,4 +253,14 @@ is_solved(const Sudoku &game) noexcept {
 }
 
 //=====================================
+void
+print(const Sudoku &game) noexcept {
+  for (std::size_t x = 0; x < Sudoku::dimensions; ++x) {
+    printf("|");
+    for (std::size_t y = 0; y < Sudoku::dimensions; ++y) {
+      printf("%02d|", game.board[x][y]);
+    }
+    printf("\n");
+  }
+}
 }

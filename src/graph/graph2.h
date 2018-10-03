@@ -2,6 +2,7 @@
 #define SP_UTIL_GRAPH_GRAPH2_H
 
 #include <collection/Array.h>
+#include <hash/standard.h>
 #include <map/HashSetTree.h>
 #include <queue/Queue.h>
 #include <utility>
@@ -55,6 +56,8 @@ struct Vertex {
   template <typename A>
   Vertex(A &&) noexcept;
 
+  Vertex(const Vertex &) = delete;
+
   ~Vertex() noexcept;
 };
 
@@ -102,6 +105,11 @@ deapth_first(Vertex<T, W> &, F) noexcept;
 template <typename T, typename W, typename F>
 bool
 breadth_first(Vertex<T, W> &, F) noexcept;
+
+//=====================================
+template <typename T, typename W, typename F>
+void
+for_each_edge(Vertex<T, W> &, F) noexcept;
 
 //=====================================
 //====Implementation===================
@@ -266,5 +274,36 @@ breadth_first(Vertex<T, W> &root, F f) noexcept {
   return true;
 }
 
+//=====================================
+template <typename T, typename W, typename F>
+void
+for_each_edge(Vertex<T, W> &self, F f) noexcept {
+  for_each(self.edges, f);
+}
+
 } // namespace graph
+
+namespace sp {
+template <>
+template <typename T, typename W>
+struct Equality<graph::Vertex<T, W> *> {
+
+  bool
+  operator()(const graph::Vertex<T, W> *f, const graph::Vertex<T, W> *s) const
+      noexcept {
+    return f == s;
+  }
+};
+
+template <>
+template <typename T, typename W>
+struct Hasher<graph::Vertex<T, W> *> {
+  std::size_t
+  operator()(const graph::Vertex<T, W> *in) const noexcept {
+    const auto id = reinterpret_cast<std::uintptr_t>(in);
+    Hasher<std::uintptr_t> h;
+    return h(id);
+  }
+};
+}
 #endif
