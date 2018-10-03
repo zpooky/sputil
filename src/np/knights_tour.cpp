@@ -108,11 +108,11 @@ Id(int x, int y, int N) noexcept {
 static bool
 build_graph(sp::LinkedList<Vtx> &nodes, int N) noexcept {
   std::size_t insxx = 0;
-  auto factory = [&insxx, &nodes](auto &state, int id) {
+  auto factory = [&insxx, &nodes](Vtx *&state, int id) {
     insxx++;
     Vtx *res = push_back(nodes, id);
     assertx(res);
-    return new (&state.value) Vtx *(res);
+    return new (&state) Vtx *(res);
   };
 
   sp::HashSetTree<Vtx *, VtxHash, VtxEquality> vtxs;

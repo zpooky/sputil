@@ -269,48 +269,55 @@ static void
 test_lookup_compute_dtor(SET &set) {
   using TType = typename SET::value_type;
 
-  auto not_comp = [](auto &, const TType &) {
+  auto not_comp = [](TType &, const TType &) {
     /**/
     assertx(false);
   };
 
   for (std::size_t i = 0; i < 1024; ++i) {
 
-    auto comp = [&i](auto &current, const TType &xarx) {
+    auto comp = [&i](TType &current, const TType &xarx) {
       assertxs(xarx.data == i, xarx.data, i);
       new (&current) TType(xarx.data, 0);
     };
 
     for (std::size_t a = 0; a < i; ++a) {
       {
+        // printf("insert()\n");
         TType *res = insert(set, TType(a, 0));
         ASSERT_FALSE(res);
       }
       {
+        // printf("lookup_compute()\n");
         TType *res = lookup_compute(set, TType(a, 0), not_comp);
         ASSERT_TRUE(res);
         ASSERT_EQ(res->data, a);
       }
       {
+        // printf("upsert()\n");
         TType *res = upsert(set, TType(a, 0));
         ASSERT_TRUE(res);
       }
       {
+        // printf("lookup_insert()\n");
         TType *res = lookup_insert(set, TType(a, 0));
         ASSERT_TRUE(res);
         ASSERT_EQ(res->data, a);
       }
       {
+        // printf("lookup(TType())\n");
         const TType *res = lookup(set, TType(a, 0));
         ASSERT_TRUE(res);
         ASSERT_EQ(res->data, a);
       }
       {
+        // printf("lookup()\n");
         const TType *res = lookup(set, a);
         ASSERT_TRUE(res);
         ASSERT_EQ(res->data, a);
       }
-    }
+    } // for
+    // printf("---\n");
 
     using namespace sp::rec;
     ASSERT_EQ(i, length(set));
@@ -318,12 +325,14 @@ test_lookup_compute_dtor(SET &set) {
       ASSERT_FALSE(lookup(set, i));
       ASSERT_FALSE(lookup(set, TType(i, 0)));
 
+      // printf("__lookup_compute(%zu){", i);
       TType *res = lookup_compute(set, TType(i, 0), comp);
+      // printf("}\n");
       ASSERT_TRUE(res);
       ASSERT_EQ(res->data, i);
       ASSERT_TRUE(verify(set));
     }
-  }
+  } // for
 }
 
 TEST(HashSetTreeTest, test_Tree_lookup_compute_dtor) {
@@ -430,137 +439,166 @@ TEST(HashSetTreeTest, test_Probing_rand) {
   test_rand<sp::HashSetProbing<std::uint32_t>>(r);
 }
 
-TEST(HashSetTreeTest, test_dtor) {
-  {
-    sp::HashSetTree<sp::GcStruct> set;
-
-    for (std::size_t i = 0; i < 1024; ++i) {
-      for (std::size_t a = 0; a < i; ++a) {
-        {
-          auto *res = insert(set, a);
-          ASSERT_FALSE(res);
-        }
-        {
-          auto *res = lookup(set, sp::GcStruct(a));
-          ASSERT_TRUE(res);
-          ASSERT_EQ(*res, a);
-        }
-        {
-          auto *res = lookup(set, a);
-          ASSERT_TRUE(res);
-          ASSERT_EQ(*res, a);
-        }
+template <typename SET>
+static void
+test_dtor(SET &set) {
+  for (std::size_t i = 0; i < 1024; ++i) {
+    for (std::size_t a = 0; a < i; ++a) {
+      {
+        auto *res = insert(set, a);
+        ASSERT_FALSE(res);
       }
       {
-        auto *res = insert(set, i);
-
+        auto *res = lookup(set, sp::GcStruct(a));
         ASSERT_TRUE(res);
-        ASSERT_EQ(*res, i);
+        ASSERT_EQ(*res, a);
+      }
+      {
+        auto *res = lookup(set, a);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(*res, a);
       }
     }
+    {
+      auto *res = insert(set, i);
+
+      ASSERT_TRUE(res);
+      ASSERT_EQ(*res, i);
+    }
+  }
+}
+
+TEST(HashSetTreeTest, test_Tree_dtor) {
+  {
+    sp::HashSetTree<sp::GcStruct> set;
+    test_dtor(set);
   }
   ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
 
-TEST(HashSetTreeTest, test_afew) {
-  std::size_t seed = 1;
+TEST(HashSetTreeTest, test_Probing_dtor) {
+  {
+    sp::HashSetProbing<sp::GcStruct> set;
+    test_dtor(set);
+  }
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+}
+
+template <typename SET>
+static void
+test_afew(prng::xorshift32 &r, SET &set_insert, SET &set_upsert,
+          SET &set_look_insert, SET &set_compute) {
+
+  std::size_t inserted = 0;
+  std::size_t i = 0;
+  constexpr std::size_t limit_i = 31000 /*00*/;
+  constexpr std::size_t max_dist = 3233123;
+
+  sp::DynamicBitset b(sp::Bitset_number_of_buffer(max_dist));
+  for (std::size_t i = 0; i < bits(b); ++i) {
+    ASSERT_FALSE(sp::set(b, i, true));
+    ASSERT_TRUE(sp::set(b, i, false));
+  }
+
+  ASSERT_FALSE(sp::set(b, max_dist, true));
+  ASSERT_TRUE(sp::set(b, max_dist, false));
+
+  while (i++ < limit_i) {
+    if (i % 10000 == 0) {
+      // printf(".%zu\n", i);
+    }
+    const std::size_t in = uniform_dist(r, 0, max_dist);
+    std::uint32_t *res = insert(set_insert, in);
+
+    bool comp = false;
+    auto f = [in, &comp](std::uint32_t &current, const auto &xarx) {
+      comp = true;
+      assertxs(in == xarx, in, xarx);
+      return new (&current) std::uint32_t(xarx);
+    };
+    ASSERT_TRUE(lookup_compute(set_compute, in, f));
+
+    if (res) {
+      ASSERT_EQ(*res, in);
+      ++inserted;
+      ASSERT_FALSE(test(b, in));
+      ASSERT_FALSE(sp::set(b, in, true));
+      ASSERT_TRUE(comp);
+    } else {
+      // already inserted
+      ASSERT_TRUE(test(b, in));
+      ASSERT_FALSE(comp);
+    }
+    ASSERT_TRUE(upsert(set_upsert, in));
+    ASSERT_TRUE(lookup_insert(set_look_insert, in));
+  }
+
+  using namespace sp::rec;
+  ASSERT_EQ(inserted, length(set_insert));
+  ASSERT_EQ(inserted, length(set_upsert));
+  ASSERT_EQ(inserted, length(set_look_insert));
+  ASSERT_EQ(inserted, length(set_compute));
+  printf("inserted:%zu\n", inserted);
+
+  std::size_t fins = 0;
+  for_each(b, [&](std::size_t idx, bool present) {
+    ASSERT_EQ(test(b, idx), present);
+
+    std::uint32_t *l_ins = lookup(set_insert, idx);
+    std::uint32_t *l_ups = lookup(set_upsert, idx);
+    std::uint32_t *l_look_ins = lookup(set_look_insert, idx);
+    std::uint32_t *l_comp = lookup(set_look_insert, idx);
+    if (present) {
+      ++fins;
+      ASSERT_TRUE(l_ins);
+      ASSERT_EQ(idx, *l_ins);
+
+      ASSERT_TRUE(l_ups);
+      ASSERT_EQ(idx, *l_ups);
+
+      ASSERT_TRUE(l_look_ins);
+      ASSERT_EQ(idx, *l_look_ins);
+
+      ASSERT_TRUE(l_comp);
+      ASSERT_EQ(idx, *l_comp);
+    } else {
+      ASSERT_FALSE(l_ins);
+      ASSERT_FALSE(l_ups);
+      ASSERT_FALSE(l_look_ins);
+      ASSERT_FALSE(l_comp);
+    }
+  });
+
+  ASSERT_EQ(inserted, fins);
+  printf("verify\n");
+  verify(set_insert);
+  verify(set_upsert);
+  verify(set_look_insert);
+  verify(set_compute);
+  printf("done\n");
+}
+
+TEST(HashSetTreeTest, test_Tree_afew) {
+  prng::xorshift32 r(20000);
   // for (; seed < 10000000; ++seed) //
   {
-    printf("seed[%zu]\n", seed);
-
-    std::size_t inserted = 0;
-    std::size_t i = 0;
-
-    prng::xorshift32 r(20000 + seed);
     sp::HashSetTree<std::uint32_t> set_insert;
     sp::HashSetTree<std::uint32_t> set_upsert;
     sp::HashSetTree<std::uint32_t> set_look_insert;
     sp::HashSetTree<std::uint32_t> set_compute;
-    constexpr std::size_t limit_i = 3100000;
-    constexpr std::size_t max_dist = 3233123;
+    test_afew(r, set_insert, set_upsert, set_look_insert, set_compute);
+  }
+}
 
-    sp::DynamicBitset b(sp::Bitset_number_of_buffer(max_dist));
-    printf("bits(): %zu\n", bits(b));
-    for (std::size_t i = 0; i < bits(b); ++i) {
-      ASSERT_FALSE(sp::set(b, i, true));
-      ASSERT_TRUE(sp::set(b, i, false));
-    }
-
-    ASSERT_FALSE(sp::set(b, max_dist, true));
-    ASSERT_TRUE(sp::set(b, max_dist, false));
-
-    while (i++ < limit_i) {
-      if (i % 10000 == 0) {
-        printf(".%zu\n", i);
-      }
-      const std::size_t in = uniform_dist(r, 0, max_dist);
-      std::uint32_t *res = insert(set_insert, in);
-
-      bool comp = false;
-      ASSERT_TRUE(lookup_compute(set_compute, in,
-                                 [in, &comp](auto &current, const auto &xarx) {
-                                   comp = true;
-                                   assertxs(in == xarx, in, xarx);
-                                   return new (&current) std::uint32_t(xarx);
-                                 }));
-
-      if (res) {
-        ASSERT_EQ(*res, in);
-        ++inserted;
-        ASSERT_FALSE(test(b, in));
-        ASSERT_FALSE(sp::set(b, in, true));
-        ASSERT_TRUE(comp);
-      } else {
-        // already inserted
-        ASSERT_TRUE(test(b, in));
-        ASSERT_FALSE(comp);
-      }
-      ASSERT_TRUE(upsert(set_upsert, in));
-      ASSERT_TRUE(lookup_insert(set_look_insert, in));
-    }
-
-    ASSERT_EQ(inserted, sp::rec::length(set_insert));
-    ASSERT_EQ(inserted, sp::rec::length(set_upsert));
-    ASSERT_EQ(inserted, sp::rec::length(set_look_insert));
-    ASSERT_EQ(inserted, sp::rec::length(set_compute));
-    printf("inserted:%zu\n", inserted);
-
-    std::size_t fins = 0;
-    for_each(b, [&](std::size_t idx, bool present) {
-      ASSERT_EQ(test(b, idx), present);
-
-      std::uint32_t *l_ins = lookup(set_insert, idx);
-      std::uint32_t *l_ups = lookup(set_upsert, idx);
-      std::uint32_t *l_look_ins = lookup(set_look_insert, idx);
-      std::uint32_t *l_comp = lookup(set_look_insert, idx);
-      if (present) {
-        ++fins;
-        ASSERT_TRUE(l_ins);
-        ASSERT_EQ(idx, *l_ins);
-
-        ASSERT_TRUE(l_ups);
-        ASSERT_EQ(idx, *l_ups);
-
-        ASSERT_TRUE(l_look_ins);
-        ASSERT_EQ(idx, *l_look_ins);
-
-        ASSERT_TRUE(l_comp);
-        ASSERT_EQ(idx, *l_comp);
-      } else {
-        ASSERT_FALSE(l_ins);
-        ASSERT_FALSE(l_ups);
-        ASSERT_FALSE(l_look_ins);
-        ASSERT_FALSE(l_comp);
-      }
-    });
-
-    ASSERT_EQ(inserted, fins);
-    printf("verify\n");
-    sp::rec::verify(set_insert);
-    sp::rec::verify(set_upsert);
-    sp::rec::verify(set_look_insert);
-    sp::rec::verify(set_compute);
-    printf("done\n");
+TEST(HashSetTreeTest, test_Probing_afew) {
+  prng::xorshift32 r(20000);
+  // for (; seed < 10000000; ++seed) //
+  {
+    sp::HashSetProbing<std::uint32_t> set_insert;
+    sp::HashSetProbing<std::uint32_t> set_upsert;
+    sp::HashSetProbing<std::uint32_t> set_look_insert;
+    sp::HashSetProbing<std::uint32_t> set_compute;
+    test_afew(r, set_insert, set_upsert, set_look_insert, set_compute);
   }
 }
 
@@ -581,22 +619,23 @@ TEST(HashSetTreeTest, test_lookup_compute) {
   sp::HashSetTree<std::uint32_t> set;
   ASSERT_EQ(0, sp::rec::length(set));
   bool first_cb = false;
-  std::uint32_t *first = lookup_compute(
-      set, 1, [&first_cb](auto &current, const std::uint32_t &value) {
-        first_cb = true;
-        return new (&current) std::uint32_t(value);
-      });
+
+  auto f = [&first_cb](std::uint32_t &current, const std::uint32_t &value) {
+    first_cb = true;
+    return new (&current) std::uint32_t(value);
+  };
+  std::uint32_t *first = lookup_compute(set, 1, f);
 
   ASSERT_TRUE(first_cb);
   ASSERT_EQ(1, sp::rec::length(set));
   ASSERT_EQ(*first, 1);
 
   bool second_cb = false;
-  std::uint32_t *second =
-      lookup_compute(set, 1, [&second_cb](auto &, const std::uint32_t &) {
-        second_cb = true;
-        return nullptr;
-      });
+  auto f2 = [&second_cb](std::uint32_t &, const std::uint32_t &) {
+    second_cb = true;
+    return nullptr;
+  };
+  std::uint32_t *second = lookup_compute(set, 1, f2);
   ASSERT_FALSE(second_cb);
   ASSERT_EQ(*first, 1);
   ASSERT_EQ(*first, *second);
@@ -616,7 +655,7 @@ TEST(HashSetTreeTest, test_lookup_compute2) {
     // int *res = push_back(nodes, id);
     // assertx(res);
 
-    new (&state.value) int(id);
+    new (&state) int(id);
   };
 
   sp::HashSetTree<int> set;
@@ -682,11 +721,13 @@ TEST(HashSetTreeTest, test_lookup_compute2) {
 
 #endif
 
-TEST(HashSetTreeTest, test_lookup_compute3) {
+template <typename SET>
+static void
+test_lookup_compute3(SET &set) {
   sp::GcStruct one_storage{1};
 
   std::size_t insxx = 0;
-  auto factory2 = [&insxx, &one_storage](auto &state, int id) {
+  auto factory2 = [&insxx, &one_storage](sp::GcStruct *&state, int id) {
     printf("--\n");
     assertx(id == 1);
     insxx++;
@@ -696,19 +737,19 @@ TEST(HashSetTreeTest, test_lookup_compute3) {
     std::size_t stor_hash = hash(one_storage);
     std::size_t id_hash = hash(id);
 
-    std::size_t st_hash = hash(**((sp::GcStruct **)&state.value));
+    std::size_t st_hash = hash(*state);
 
     assertxs(stor_hash == id_hash, stor_hash, id_hash);
     assertxs(st_hash == id_hash, stor_hash, st_hash, id_hash);
   };
 
-  auto factory = [factory2](auto &state, sp::GcStruct *id) {
+  auto factory = [factory2](sp::GcStruct *&state, sp::GcStruct *id) {
     assertx(id);
 
     factory2(state, id->data);
   };
 
-  sp::HashSetTree<sp::GcStruct *> set;
+  using namespace sp::rec;
   for (int i = 0; i < 100; ++i) {
     sp::GcStruct one_in{1};
     sp::GcStruct **one = lookup_compute(set, &one_in, factory);
@@ -716,7 +757,7 @@ TEST(HashSetTreeTest, test_lookup_compute3) {
     ASSERT_TRUE(*one);
     ASSERT_EQ((*one)->data, 1);
     ASSERT_EQ(1, insxx);
-    ASSERT_EQ(1, sp::rec::length(set));
+    ASSERT_EQ(1, length(set));
 
     {
       sp::GcStruct **one_x = lookup_compute(set, &one_in, factory);
@@ -726,7 +767,7 @@ TEST(HashSetTreeTest, test_lookup_compute3) {
       ASSERT_EQ(*one, *one_x);
       ASSERT_EQ((*one_x)->data, 1);
       ASSERT_EQ(1, insxx);
-      ASSERT_EQ(1, sp::rec::length(set));
+      ASSERT_EQ(1, length(set));
     }
 
     {
@@ -736,7 +777,7 @@ TEST(HashSetTreeTest, test_lookup_compute3) {
       ASSERT_EQ((*l_one)->data, 1);
       ASSERT_EQ(one, l_one);
       ASSERT_EQ(*one, *l_one);
-      ASSERT_EQ(1, sp::rec::length(set));
+      ASSERT_EQ(1, length(set));
     }
 
     {
@@ -747,9 +788,19 @@ TEST(HashSetTreeTest, test_lookup_compute3) {
       ASSERT_EQ(*one, *one_x);
       ASSERT_EQ((*one_x)->data, 1);
       ASSERT_EQ(1, insxx);
-      ASSERT_EQ(1, sp::rec::length(set));
+      ASSERT_EQ(1, length(set));
     }
   }
+}
+
+TEST(HashSetTreeTest, test_Tree_lookup_compute3) {
+  sp::HashSetTree<sp::GcStruct *> set;
+  test_lookup_compute3(set);
+}
+
+TEST(HashSetTreeTest, test_Probing_lookup_compute3) {
+  sp::HashSetProbing<sp::GcStruct *> set;
+  test_lookup_compute3(set);
 }
 
 TEST(HashSetTreeTest, hasherxx) {

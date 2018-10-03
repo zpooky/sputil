@@ -360,7 +360,7 @@ Lit:
 
 template <typename T, typename V, typename Fact, typename Dup, typename Eq>
 static T *
-bucket_gen_ins(HSBucket<T> &node, const V &in, Fact f, Dup d, Eq eq) noexcept {
+bucket_factory(HSBucket<T> &node, const V &in, Fact f, Dup d, Eq eq) noexcept {
   HSBucket<T> *current = &node;
 Lit:
   if (current) {
@@ -382,10 +382,11 @@ Lit:
     }
 
     if (current) {
+      T *const current_value = (T *)&current->value;
       assertx(!current->present);
       current->present = true;
-      f(*current, in);
-      return (T *)&current->value;
+      f(*current_value, in);
+      return current_value;
     }
 
   } else {
@@ -398,8 +399,8 @@ Lit:
 template <typename T, typename V, typename Eq>
 static T *
 bucket_insert(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
-  auto factory = [&val](HSBucket<T> &current, const auto &) {
-    return new (&current.value) T(std::forward<V>(val));
+  auto factory = [&val](T &current, const auto &) {
+    return new (&current) T(std::forward<V>(val));
   };
 
   auto on_duplicate = [](HSBucket<T> &) {
@@ -407,7 +408,7 @@ bucket_insert(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
     return nullptr;
   };
 
-  T *const result = bucket_gen_ins(node, val, factory, on_duplicate, eq);
+  T *const result = bucket_factory(node, val, factory, on_duplicate, eq);
   inserted = result != nullptr;
 
   return result;
@@ -416,8 +417,8 @@ bucket_insert(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
 template <typename T, typename V, typename Eq>
 static T *
 bucket_lookup_ins(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
-  auto factory = [&val](HSBucket<T> &current, const auto &) {
-    return new (&current.value) T(std::forward<V>(val));
+  auto factory = [&val](T &current, const auto &) {
+    return new (&current) T(std::forward<V>(val));
   };
 
   bool existing = false;
@@ -427,7 +428,7 @@ bucket_lookup_ins(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
     return (T *)&current.value;
   };
 
-  T *const result = bucket_gen_ins(node, val, factory, on_duplicate, eq);
+  T *const result = bucket_factory(node, val, factory, on_duplicate, eq);
   inserted = !existing && result != nullptr;
 
   return result;
@@ -436,8 +437,8 @@ bucket_lookup_ins(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
 template <typename T, typename V, typename Eq>
 static T *
 bucket_upsert(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
-  auto factory = [&val](HSBucket<T> &current, const auto &) {
-    return new (&current.value) T(std::forward<V>(val));
+  auto factory = [&val](T &current, const auto &) {
+    return new (&current) T(std::forward<V>(val));
   };
 
   bool updated = false;
@@ -452,7 +453,7 @@ bucket_upsert(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
     return new (existing) T(std::forward<V>(val));
   };
 
-  T *const result = bucket_gen_ins(node, val, factory, on_duplicate, eq);
+  T *const result = bucket_factory(node, val, factory, on_duplicate, eq);
   inserted = result != nullptr && !updated;
 
   return result;
@@ -469,7 +470,7 @@ bucket_lookup_compute(HSBucket<T> &node, const V &needle, Factory f,
     return (T *)&current.value;
   };
 
-  T *const result = bucket_gen_ins(node, needle, f, on_duplicate, eq);
+  T *const result = bucket_factory(node, needle, f, on_duplicate, eq);
   inserted = !existing && result != nullptr;
 
   return result;
@@ -780,7 +781,7 @@ node_lookup_compute(HSNode<T, c> &node, const HashKey &code, const V &needle,
 
   HSBucket<T> &bucket = lookup(node, code);
   bool is_inserted = false;
-  T *result = bucket_lookup_compute(bucket, needle, f, is_inserted, eq);
+  T *const result = bucket_lookup_compute(bucket, needle, f, is_inserted, eq);
   if (is_inserted) {
     assertx(result);
     ++node.entries;
