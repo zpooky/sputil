@@ -14,7 +14,7 @@
  */
 
 namespace ascii {
-
+//=====================================
 static std::size_t
 min(std::size_t f, std::size_t s) noexcept {
   return f < s ? f : s;
@@ -25,6 +25,7 @@ min(std::size_t f, std::size_t s, std::size_t t) noexcept {
   return min(f, min(s, t));
 }
 
+//=====================================
 static int xxxx = 0;
 /* - Brute force
  * - divide and conquer
@@ -70,6 +71,7 @@ p() {
   xxxx = 0;
 }
 
+//=====================================
 static std::size_t
 levenshtein2(const char *s, size_t len_s, const char *t,
              size_t len_t) noexcept {
@@ -101,7 +103,7 @@ levenshtein2(const char *s, const char *t) noexcept {
 }
 
 namespace dp {
-
+//=====================================
 /*
  *      S	a	t	u	r	d	a	y
  *    0	1	2	3	4	5	6	7	8
@@ -164,5 +166,7 @@ levenshtein(const char *first, const char *second) noexcept {
   }
   return table[table.height - 1][table.width - 1];
 }
+
+//=====================================
 } // namespace dp
 } // namespace ascii

@@ -2,7 +2,7 @@
 #include <cstring>
 
 namespace sp {
-
+//=====================================
 string_view::string_view(const char *s, std::size_t l) noexcept
     : str(s)
     , length(l) {
@@ -27,6 +27,7 @@ string_view::operator bool() const noexcept {
   return bool(str) && length > 0;
 }
 
+//=====================================
 std::ostream &
 operator<<(std::ostream &out, const string_view &str) noexcept {
   for (std::size_t i = 0; i < str.length; ++i) {
@@ -35,4 +36,5 @@ operator<<(std::ostream &out, const string_view &str) noexcept {
   return out;
 }
 
+//=====================================
 } // namespace sp

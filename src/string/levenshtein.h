@@ -4,9 +4,11 @@
 #include <cstdint>
 
 namespace ascii {
+//=====================================
 std::size_t
 levenshtein(const char *, const char *) noexcept;
 
+//=====================================
 std::size_t
 levenshtein2(const char *, const char *) noexcept;
 
@@ -14,6 +16,10 @@ void
 p();
 
 namespace dp {
+//=====================================
+/*
+ * TODO understand
+ */
 std::size_t
 levenshtein(const char *, const char *) noexcept;
 }

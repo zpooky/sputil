@@ -5,7 +5,7 @@
 #include <iostream>
 
 namespace sp {
-
+//=====================================
 struct string_view {
   const char *str;
   std::size_t length;
@@ -22,6 +22,7 @@ struct string_view {
   explicit operator bool() const noexcept;
 };
 
+//=====================================
 std::ostream &
 operator<<(std::ostream &, const string_view &) noexcept;
 

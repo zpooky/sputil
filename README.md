@@ -62,6 +62,10 @@ lz77 - https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/sou
 - tuple consist of start and end time
 = Can attend all meetings?
 
+# Graph-coloring
+- DSATUR (perfetct colouring?)
+- lmXRLF [http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.59.2645&rep=rep1&type=pdf]
+
 ##
 Markov chains
 
@@ -79,9 +83,6 @@ Markov chains
 - |Knuth–Morris–Pratt string-search algorithm
 - https://www.michaelfogleman.com/rush/ | rush hour
 - https://en.wikipedia.org/wiki/Luhn_algorithm
-- Soduku solver(graph colouring)
-    - DSATUR (perfetct colouring?)
-    - lmXRLF [http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.59.2645&rep=rep1&type=pdf]
 - knapsack
 
 ## Graph
