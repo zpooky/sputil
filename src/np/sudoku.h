@@ -36,6 +36,6 @@ is_solved(const Sudoku &) noexcept;
 //=====================================
 void
 print(const Sudoku &) noexcept;
-}
+} // namespace np
 
 #endif

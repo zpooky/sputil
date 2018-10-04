@@ -284,26 +284,29 @@ for_each_edge(Vertex<T, W> &self, F f) noexcept {
 } // namespace graph
 
 namespace sp {
-template <>
+// template <>
 template <typename T, typename W>
 struct Equality<graph::Vertex<T, W> *> {
+  using Vtx = graph::Vertex<T, W>;
 
   bool
-  operator()(const graph::Vertex<T, W> *f, const graph::Vertex<T, W> *s) const
-      noexcept {
+  operator()(const Vtx *f, const Vtx *s) const noexcept {
     return f == s;
   }
 };
 
-template <>
+// template <>
 template <typename T, typename W>
 struct Hasher<graph::Vertex<T, W> *> {
+  using Vtx = graph::Vertex<T, W>;
+
   std::size_t
-  operator()(const graph::Vertex<T, W> *in) const noexcept {
+  operator()(const Vtx *in) const noexcept {
     const auto id = reinterpret_cast<std::uintptr_t>(in);
     Hasher<std::uintptr_t> h;
     return h(id);
   }
 };
-}
+} // namespace sp
+
 #endif

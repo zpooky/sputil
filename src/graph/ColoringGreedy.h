@@ -78,7 +78,6 @@ color_greedy(Vertex<T, W> &graph,
     k = std::max<Color>(k, c);
     // assertxs(c >= 1 && c <= 9, c); // TODO
     assertx_n(insert(result, &current, c));
-
   });
 
   printf("MAX(%d)\n", k);
@@ -167,9 +166,9 @@ c(sp::HashSetProbing<Vertex<T, W> *> &visited,
 
     if (!res) {
       /* Unvisit current since we fail to find valid solution */
-      for_each(cv, [&visited](Vtx *current) {
+      for_each(cv, [&visited](Vtx *edge) {
         /**/
-        remove(visited, current);
+        remove(visited, edge);
       });
     }
 
@@ -178,7 +177,7 @@ c(sp::HashSetProbing<Vertex<T, W> *> &visited,
 
   return true;
 }
-}
+} // namespace impl
 
 template <typename T, typename W, typename H, typename Eq>
 bool
@@ -198,4 +197,4 @@ color(Vertex<T, W> &root,
 
   return impl::c(visited, stack, result);
 }
-}
+} // namespace graph

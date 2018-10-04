@@ -203,7 +203,7 @@ solve(Sudoku &game) noexcept {
 
   return true;
 }
-}
+} // namespace graph
 
 //=====================================
 static bool
@@ -267,4 +267,4 @@ print(const Sudoku &game) noexcept {
     printf("\n");
   }
 }
-}
+} // namespace np
