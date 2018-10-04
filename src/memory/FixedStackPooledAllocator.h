@@ -6,6 +6,7 @@
 #include <util/assert.h>
 
 namespace sp {
+//=====================================
 template <typename T>
 struct FixedStackPooledAllocator {
   StackPooledAllocator<T> allocator;
@@ -19,6 +20,7 @@ struct FixedStackPooledAllocator {
   }
 };
 
+//=====================================
 template <typename T>
 bool
 ensure(FixedStackPooledAllocator<T> &a, std::size_t cap) noexcept {
@@ -27,6 +29,7 @@ ensure(FixedStackPooledAllocator<T> &a, std::size_t cap) noexcept {
   return true;
 }
 
+//=====================================
 template <typename T>
 T *
 allocate(FixedStackPooledAllocator<T> &a) noexcept {
@@ -44,6 +47,7 @@ allocate(FixedStackPooledAllocator<T> &a) noexcept {
   return nullptr;
 }
 
+//=====================================
 template <typename T>
 void
 deallocate(FixedStackPooledAllocator<T> &a, T *ptr) noexcept {
@@ -53,6 +57,20 @@ deallocate(FixedStackPooledAllocator<T> &a, T *ptr) noexcept {
   // printf("dealloc(%p)\n", ptr);
   return deallocate(a.allocator, ptr);
 }
+
+//=====================================
+template <typename T>
+void
+swap(FixedStackPooledAllocator<T> &f,
+     FixedStackPooledAllocator<T> &s) noexcept {
+  using std::swap;
+
+  swap(f.allocator, s.second);
+  swap(f.capacity, s.capacity);
+  swap(f.length, s.length);
+}
+
+//=====================================
 } // namespace sp
 
 #endif

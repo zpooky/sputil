@@ -5,12 +5,12 @@
 #include <stack/Stack.h>
 
 namespace sp {
-
 //=====================================
 template <typename T, template <typename> class Allocator = sp::Allocator>
 struct DynamicStack {
   using value_type = T;
   using node_type = UinStaticStack<T, 1024>;
+
   node_type *head;
 
   Allocator<node_type> allocator;
@@ -63,6 +63,11 @@ bool
 pop(DynamicStack<T, A> &, T &out) noexcept;
 
 //=====================================
+template <typename T, template <typename> class A, template <typename> class A2>
+bool
+insert(DynamicStack<T, A> &, const DynamicStack<T, A2> &) noexcept;
+
+//=====================================
 template <typename T, template <typename> class A, typename F>
 void
 for_each(DynamicStack<T, A> &, F) noexcept;
@@ -70,6 +75,11 @@ for_each(DynamicStack<T, A> &, F) noexcept;
 template <typename T, template <typename> class A, typename F>
 void
 for_each(const DynamicStack<T, A> &, F) noexcept;
+
+//=====================================
+template <typename T, template <typename> class A>
+void
+swap(DynamicStack<T, A> &, DynamicStack<T, A> &) noexcept;
 
 //=====================================
 //====Implementation===================
@@ -180,6 +190,19 @@ pop(DynamicStack<T, A> &self, T &out) noexcept {
 }
 
 //=====================================
+template <typename T, template <typename> class A, template <typename> class A2>
+bool
+insert(DynamicStack<T, A> &self, const DynamicStack<T, A2> &from) noexcept {
+
+  for_each(from, [&self](const T &current) {
+    /**/
+    push(self, current);
+  });
+
+  return true;
+}
+
+//=====================================
 template <typename T, template <typename> class A, typename F>
 void
 for_each(DynamicStack<T, A> &self, F f) noexcept {
@@ -198,6 +221,15 @@ for_each(const DynamicStack<T, A> &self, F f) noexcept {
     for_each(*head, f);
     head = head->priv;
   }
+}
+
+//=====================================
+template <typename T, template <typename> class A>
+void
+swap(DynamicStack<T, A> &first, DynamicStack<T, A> &second) noexcept {
+  using std::swap;
+  swap(first.head, second.head);
+  swap(first.allocator, second.allocator);
 }
 
 //=====================================

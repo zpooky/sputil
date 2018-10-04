@@ -12,6 +12,7 @@
  */
 
 namespace sp {
+//=====================================
 template <typename T>
 struct StackPooledAllocator {
   using value_type = T;
@@ -32,18 +33,24 @@ struct StackPooledAllocator {
   operator=(const StackPooledAllocator<T> &&) = delete;
 };
 
+//=====================================
 template <typename T>
 T *
 allocate(StackPooledAllocator<T> &) noexcept;
 
+//=====================================
 template <typename T>
 void
 deallocate(StackPooledAllocator<T> &, T *) noexcept;
 
-/*
- * ==========================================================================
- */
+//=====================================
+template <typename T>
+void
+swap(StackPooledAllocator<T> &, StackPooledAllocator<T> &) noexcept;
 
+//=====================================
+//====Implementation===================
+//=====================================
 namespace impl {
 namespace StackPooledAllocator {
 struct SPANode {
@@ -84,6 +91,7 @@ Lit:
   stack = nullptr;
 }
 
+//=====================================
 template <typename T>
 T *
 allocate(StackPooledAllocator<T> &a) noexcept {
@@ -107,6 +115,7 @@ allocate(StackPooledAllocator<T> &a) noexcept {
   return nullptr;
 }
 
+//=====================================
 template <typename T>
 void
 deallocate(StackPooledAllocator<T> &a, T *p) noexcept {
@@ -115,6 +124,16 @@ deallocate(StackPooledAllocator<T> &a, T *p) noexcept {
   std::memset(pah, 0, sizeof(T));
   a.stack = new (p) SPANode(to_node(a.stack));
 }
+
+//=====================================
+template <typename T>
+void
+swap(StackPooledAllocator<T> &first, StackPooledAllocator<T> &second) noexcept {
+  using std::swap;
+  swap(first.stack, second.stack);
+}
+
+//=====================================
 } // namespace sp
 
 #endif
