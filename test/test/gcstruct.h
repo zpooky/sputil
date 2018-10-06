@@ -16,7 +16,6 @@ struct GcStruct {
   long alignment1;
   long alignment2;
 
-
   explicit GcStruct(std::size_t d)
       : data(d)
       , alignment0(active)
@@ -40,6 +39,16 @@ struct GcStruct {
   operator=(const GcStruct &&) = delete;
   GcStruct &
   operator=(const GcStruct &) = delete;
+
+  bool
+  operator>(const GcStruct &o) const noexcept {
+    return data > o.data;
+  }
+
+  bool
+  operator>(std::size_t o) const noexcept {
+    return data > o;
+  }
 
   bool
   operator==(std::size_t o) const noexcept {
@@ -126,6 +135,6 @@ swap(GcStruct &f, GcStruct &s) noexcept {
   s.~GcStruct();
   new (&s) GcStruct(std::move(tmp));
 }
-}
+} // namespace sp
 
 #endif

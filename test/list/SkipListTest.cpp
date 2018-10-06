@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include <test/gcstruct.h>
 // #include <util/numeric.h>
 #include <list/SkipList.h>
 #include <random>
@@ -349,6 +350,7 @@ TEST(SkipListTest, test_unique_insert2) {
   // printf("insert_unique()\n");
   for (std::size_t i = 0; i < length; ++i) {
     for (std::size_t a = 0; a < i; ++a) {
+      ASSERT_FALSE(is_empty(list));
       // printf("# should be found\n");
       const int *res = find(list, in[a]);
       // printf("find(list,a[%d]): %p\n",in[a],res);
@@ -385,6 +387,7 @@ TEST(SkipListTest, test_unique_insert2) {
     auto res = insert(list, 999);
     ASSERT_TRUE(res);
     ASSERT_EQ(*res, 999);
+    ASSERT_FALSE(is_empty(list));
   }
   //===U=insert=same=should=be=false=
   // printf("insert_unique_dup()\n");
@@ -394,6 +397,7 @@ TEST(SkipListTest, test_unique_insert2) {
       const int *res = find(list, in[a]);
       ASSERT_TRUE(res);
       ASSERT_EQ(*res, in[a]);
+      ASSERT_FALSE(is_empty(list));
     }
 
     {
@@ -500,4 +504,54 @@ TEST(SkipListTest, test_unique_insert2) {
   ASSERT_TRUE(remove(list, 999));
   ASSERT_TRUE(is_empty(list));
   // }
+}
+
+template <typename SET>
+static void
+test_insert_dtor(SET &set) {
+  using TType = typename SET::value_type;
+
+  for (std::size_t i = 0; i < 1024; ++i) {
+    for (std::size_t a = 0; a < i; ++a) {
+      {
+        TType *res = insert(set, TType(a, 0));
+        if (res) {
+          printf("i[%zu] a[%zu] = res[%zu]\n", i, a, std::size_t(*res));
+          // dump(set.tree);
+        }
+        ASSERT_FALSE(res);
+      }
+      {
+        const TType *res = find(set, TType(a, 0));
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+      {
+        const TType *res = find(set, a);
+        ASSERT_TRUE(res);
+        ASSERT_EQ(res->data, a);
+      }
+    }
+
+    using namespace sp::n;
+    ASSERT_EQ(i, length(set));
+    {
+      ASSERT_FALSE(find(set, i));
+      ASSERT_FALSE(find(set, TType(i, 0)));
+
+      TType *res = insert(set, TType(i, 0));
+      ASSERT_TRUE(res);
+      ASSERT_EQ(res->data, i);
+    }
+  }
+}
+
+TEST(SkipListTest, test_insert_dtor) {
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
+  {
+    constexpr std::size_t levels = 7;
+    sp::SkipList<sp::GcStruct, levels> set;
+    // test_insert_dtor(set);
+  }
+  ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
 }
