@@ -5,12 +5,18 @@
 
 namespace np {
 namespace rec {
+//=====================================
 sp::string_view
 longest_palindromic_substring(const char *, std::size_t);
 
 sp::string_view
 longest_palindromic_substring(const char *);
 }
+
+//=====================================
+sp::string_view
+longest_palindromic_substring(const char *str, std::size_t);
+
 }
 
 #endif

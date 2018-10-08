@@ -11,6 +11,12 @@ Hasher<bool>::operator()(bool in) const noexcept {
 
 //=====================================
 std::size_t
+Hasher<char>::operator()(char in) const noexcept {
+  return fnv_1a::encode64(&in, sizeof(in));
+}
+
+//=====================================
+std::size_t
 Hasher<signed char>::operator()(signed char in) const noexcept {
   return fnv_1a::encode64(&in, sizeof(in));
 }

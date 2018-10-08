@@ -1,39 +1,42 @@
-#include "gtest/gtest.h"
-
+#include <cstring>
+#include <gtest/gtest.h>
 #include <prng/URandom.h>
 #include <prng/util.h>
 #include <prng/xorshift.h>
 
-#define test(r)                                                                \
-  do {                                                                         \
-    using TTT = typename decltype(r)::Word;                                    \
-    for (TTT inc = 0; inc < 100; ++inc) {                                      \
-      for (TTT ex = inc + 1; ex < 100; ++ex) {                                 \
-        bool first = false;                                                    \
-        bool last = false;                                                     \
-        for (TTT a = 0; a < 1000; ++a) {                                       \
-          auto res = uniform_dist(r, inc, ex);                                 \
-          first |= res == inc;                                                 \
-          last |= res == ex;                                                   \
-          ASSERT_TRUE(res >= inc);                                             \
-          ASSERT_TRUE(res < ex);                                               \
-        }                                                                      \
-        ASSERT_TRUE(first);                                                    \
-        ASSERT_FALSE(last);                                                    \
-      }                                                                        \
-    }                                                                          \
-  } while (0)
+template <typename Rand>
+static void
+test(Rand &r) {
+  using TTT = typename Rand::Word;
+  for (TTT inc = 0; inc < 100; ++inc) {
+    for (TTT ex = inc + 1; ex < 100; ++ex) {
+      bool first = false;
+      bool last = false;
+      for (TTT a = 0; a < 1000; ++a) {
+        auto res = uniform_dist(r, inc, ex);
+        first |= res == inc;
+        last |= res == ex;
+        ASSERT_TRUE(res >= inc);
+        ASSERT_TRUE(res < ex);
+      }
+      ASSERT_TRUE(first);
+      ASSERT_FALSE(last);
+    }
+  }
+}
 
-#define test_uniform_one(r)                                                    \
-  do {                                                                         \
-    for (std::uint32_t i = 0; i < 160; ++i) {                                  \
-      using TTT = typename decltype(r)::Word;                                  \
-      TTT start(0);                                                            \
-      TTT end(1);                                                              \
-      auto res = uniform_dist(r, start, end);                                  \
-      ASSERT_EQ(res, TTT(0));                                                  \
-    }                                                                          \
-  } while (0)
+template <typename Rand>
+static void
+test_uniform_one(Rand &r) {
+  for (std::uint32_t i = 0; i < 160; ++i) {
+    using TTT = typename Rand::Word;
+    TTT start(0);
+    TTT end(1);
+
+    auto res = uniform_dist(r, start, end);
+    ASSERT_EQ(res, TTT(0));
+  }
+}
 
 TEST(randomTest, test_xorshift32) {
   prng::xorshift32 r(1);
@@ -96,6 +99,27 @@ TEST(randomTest, test_seeded) {
     random(r1);
     auto r2 = prng::seed<prng::xorshift128plus>();
     random(r2);
+  }
+}
+
+static char
+dist_xx(prng::xorshift32 &ra) {
+  return prng::uniform_dist(ra, '!', '~' + char(1));
+}
+
+TEST(randomTest, test_spooky) {
+  const char *key = "spooky";
+  char buffer[16];
+
+  const std::uint32_t initial = ~std::uint32_t(0);
+  for (std::size_t i = 1; i < initial; ++i) {
+    prng::xorshift32 r(i);
+    fill(r, buffer, sizeof(buffer), dist_xx);
+    buffer[std::strlen(key)] = '\0';
+    if (std::strcmp(key, buffer) == 0) {
+      printf("seed[%zu]\n", i);
+      return;
+    }
   }
 }
 

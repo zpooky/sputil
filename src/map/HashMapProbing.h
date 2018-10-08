@@ -118,6 +118,16 @@ lookup(HashMapProbing<Key, V, H, Eq> &, const K &) noexcept;
 
 //=====================================
 template <typename Key, typename V, typename H, typename Eq, typename K>
+const V &
+lookup_default(const HashMapProbing<Key, V, H, Eq> &, const K &,
+               const V &) noexcept;
+
+template <typename Key, typename V, typename H, typename Eq, typename K>
+V &
+lookup_default(HashMapProbing<Key, V, H, Eq> &, const K &, const V &) noexcept;
+
+//=====================================
+template <typename Key, typename V, typename H, typename Eq, typename K>
 bool
 remove(HashMapProbing<Key, V, H, Eq> &, const K &) noexcept;
 
@@ -191,6 +201,25 @@ V *
 lookup(HashMapProbing<Key, V, H, Eq> &self, const K &needle) noexcept {
   const auto &c_self = self;
   return (V *)lookup(c_self, needle);
+}
+
+//=====================================
+template <typename Key, typename V, typename H, typename Eq, typename K>
+const V &
+lookup_default(const HashMapProbing<Key, V, H, Eq> &, const K &,
+               const V &def) noexcept {
+  assertx(false);
+  // TODO
+  return def;
+}
+
+template <typename Key, typename V, typename H, typename Eq, typename K>
+V &
+lookup_default(HashMapProbing<Key, V, H, Eq> &, const K &,
+               const V &def) noexcept {
+  assertx(false);
+  // TODO
+  return def;
 }
 
 //=====================================

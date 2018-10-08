@@ -1,3 +1,4 @@
+#include <cstring>
 #include <gtest/gtest.h>
 #include <np/longest_palindromic_substring.h>
 
@@ -57,4 +58,55 @@ TEST(longest_palindromic_substringTest, test) {
   //   ASSERT_EQ(r, "geeksskeeg");
   //   // printf("|%.*s|\n", r.length, r.str);
   // }
+}
+
+TEST(StringUtil, test_longest_palindromic_substring) {
+  {
+    const char *msg = "spooky";
+    auto r = np::longest_palindromic_substring(msg, std::strlen(msg));
+    ASSERT_EQ(r, "oo");
+    // printf("|%.*s|\n", r.length, r.str);
+  }
+  {
+    const char *msg = "anna";
+    auto r = np::longest_palindromic_substring(msg, std::strlen(msg));
+    ASSERT_EQ(r, "anna");
+    // printf("|%.*s|\n", r.length, r.str);
+  }
+  {
+    const char *msg = "racecar";
+    auto r = np::longest_palindromic_substring(msg, std::strlen(msg));
+    ASSERT_EQ(r, "racecar");
+    // printf("|%.*s|\n", r.length, r.str);
+  }
+  {
+    const char *msg = "compilation";
+    auto r = np::longest_palindromic_substring(msg, std::strlen(msg));
+    ASSERT_EQ(r, "c");
+    // printf("|%.*s|\n", r.length, r.str);
+  }
+  {
+    const char *msg = "database";
+    auto r = np::longest_palindromic_substring(msg, std::strlen(msg));
+    ASSERT_EQ(r, "ata");
+    // printf("|%.*s|\n", r.length, r.str);
+  }
+  {
+    const char *msg = "loaded";
+    auto r = np::longest_palindromic_substring(msg, std::strlen(msg));
+    ASSERT_EQ(r, "ded");
+    // printf("|%.*s|\n", r.length, r.str);
+  }
+  {
+    const char *msg = "the quick annabrown fox racecarjumped over the lazy dog";
+    auto r = np::longest_palindromic_substring(msg, std::strlen(msg));
+    ASSERT_EQ(r, "racecar");
+    // printf("|%.*s|\n", r.length, r.str);
+  }
+  {
+    const char *msg = "forgeeksskeegfor";
+    auto r = np::longest_palindromic_substring(msg, std::strlen(msg));
+    ASSERT_EQ(r, "geeksskeeg");
+    // printf("|%.*s|\n", r.length, r.str);
+  }
 }

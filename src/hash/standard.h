@@ -42,6 +42,13 @@ struct Hasher<bool> {
 
 //=====================================
 template <>
+struct Hasher<char> {
+  std::size_t
+  operator()(char) const noexcept;
+};
+
+//=====================================
+template <>
 struct Hasher<signed char> {
   std::size_t
   operator()(signed char) const noexcept;

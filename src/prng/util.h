@@ -7,25 +7,26 @@
 #include <utility>
 
 namespace prng {
-
+//=====================================
 template <typename Random>
 typename Random::Word
 uniform_dist(Random &r, typename Random::Word inc,
-             typename Random::Word ex) noexcept {
+             typename Random::Word ex) noexcept;
 
-  assertx(inc >= 0);
-  assertx(inc < ex);
-  typename Random::Word res{random(r)};
-  return (res % (ex - inc)) + inc;
-}
-
+//=====================================
 template <typename Random>
 bool
-uniform_bool(Random &r) noexcept {
-  auto res = uniform_dist(r, 0, 2);
-  return res == 1 ? true : false;
-}
+uniform_bool(Random &r) noexcept;
 
+//=====================================
+template <typename Random>
+using dist_f = char (*)(Random &);
+
+template <typename Random>
+void
+fill(Random &r, void *buffer, std::size_t size, dist_f<Random>) noexcept;
+
+//=====================================
 template <typename Random>
 void
 fill(Random &r, void *buffer, std::size_t size) noexcept;
@@ -36,9 +37,12 @@ fill(Random &r, unsigned char (&buffer)[SIZE]) noexcept {
   fill(r, buffer, SIZE);
 }
 
+//=====================================
 template <typename Random>
 Random
 seed() noexcept;
 
+//=====================================
 } // namespace prng
+
 #endif

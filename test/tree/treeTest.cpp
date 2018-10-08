@@ -65,7 +65,7 @@ a_insert(rb::Tree<T, C> &tree, A in) {
 
 template <typename T, typename C, std::size_t keys>
 bool
-verify(const sp::rec::BTree<T, keys, C> &tree) {
+verify(const sp::rec::BTree<T, keys, C> &) {
   // dummy
   return true;
 }
@@ -280,7 +280,7 @@ random_insert_random_delete() {
       if (test(bset, std::size_t(in))) {
         auto res = find(tree, in);
         ASSERT_TRUE(res);
-        ASSERT_EQ(*res, in);
+        ASSERT_EQ(*res, std::size_t(in));
       } else {
         {
           auto res = find(tree, in);

@@ -24,6 +24,10 @@ T *
 search(T *arr, std::size_t length, const K *needle) noexcept;
 }
 
+template <typename T>
+std::size_t
+distance(const T *, const T *) noexcept;
+
 //=====================================
 //====Implementation===================
 //=====================================
@@ -79,6 +83,21 @@ search(T *arr, std::size_t length, const K *needle) noexcept {
 }
 
 //=====================================
+template <typename T>
+std::size_t
+distance(const T *f, const T *s) noexcept {
+  assertx(f);
+  assertx(s);
+  auto fl = reinterpret_cast<std::uintptr_t>(f);
+  auto sl = reinterpret_cast<std::uintptr_t>(s);
+  assertxs(fl <= sl, fl, sl);
+
+  if (fl <= sl) {
+    return sl - fl;
+  }
+
+  return 0;
+}
 }
 
 #endif

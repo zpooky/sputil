@@ -12,8 +12,6 @@ u16
 
 #string
 utf8
-Boyer–Moore string search algorithm
-Knuth-Morris-Pratt
 suffix tree https://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-algorithm-in-plain-english/9513423#9513423
 
 #file path
@@ -46,10 +44,6 @@ Right r(value);
 ### bcrypt
 ### cbc,ecb ...
 
-## compress
-Huffman - https://medium.com/@TravCav/huffman-coding-1e914c419912
-lz77 - https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/source/lz77.c
-
 
 ## timeout
 60seconds
@@ -65,9 +59,17 @@ lz77 - https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/sou
 # Graph-coloring
 - DSATUR (perfetct colouring?)
 - lmXRLF [http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.59.2645&rep=rep1&type=pdf]
+- [https://github.com/boostorg/graph/blob/develop/include/boost/graph/sequential_vertex_coloring.hpp]
+  [https://www.boost.org/doc/libs/1_57_0/libs/graph/doc/sequential_vertex_coloring.html]
+- [https://compscicenter.ru/media/course_class_attachments/Thore_Husfeldt_Graph_colouring_algorithms.pdf]
+- [https://www.geeksforgeeks.org/graph-coloring-set-2-greedy-algorithm/]
 
-##
-Markov chains
+#
+- Markov chains
+
+# compress
+- Huffman - https://medium.com/@TravCav/huffman-coding-1e914c419912
+- lz77 - https://github.com/yourtion/LearningMasteringAlgorithms-C/blob/master/source/lz77.c
 
 # Consensus
 - paxos
@@ -76,22 +78,31 @@ Markov chains
 # Heap
 - Fibonacci
 
+# filter
+- Cuckoofilter
+
 # TODO
 - https://www.geeksforgeeks.org/rat-in-a-maze-backtracking-2/ | maze
 - https://www.geeksforgeeks.org/longest-palindromic-subsequence-dp-12/
-- |Boyer–Moore string-search algorithm
-- |Knuth–Morris–Pratt string-search algorithm
 - https://www.michaelfogleman.com/rush/ | rush hour
 - https://en.wikipedia.org/wiki/Luhn_algorithm
 - knapsack
+- traveling salesman problem
 
 ## Graph
 - https://bradfieldcs.com/algos/graphs/prims-spanning-tree-algorithm/ |prim
+- Kruskal
 - |Bellman–Ford algorithm
 - |Floyd–Warshall_algorithm
 - https://www.redblobgames.com/pathfinding/a-star/introduction.html |A* search algorithm
   http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html
+  https://github.com/boostorg/graph/blob/develop/include/boost/graph/astar_search.hpp
+
 - https://github.com/boostorg/graph/blob/develop/include/boost/graph/isomorphism.hpp
+
+### Mark-and-Sweep
+- Mark-and-Sweep  https://www.geeksforgeeks.org/mark-and-sweep-garbage-collection-algorithm/
+                  https://en.wikipedia.org/wiki/Tracing_garbage_collection
 
 ## Bellman–Ford algorithm
 "https://en.wikipedia.org/wiki/Bellman–Ford_algorithm"

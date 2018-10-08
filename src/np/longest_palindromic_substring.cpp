@@ -1,12 +1,13 @@
 #include "longest_palindromic_substring.h"
+#include <cstring>
 #include <problem/string_problem.h>
 #include <util/assert.h>
-#include <cstring>
 
 #include <cstddef>
 
 namespace np {
 namespace rec {
+//=====================================
 sp::string_view
 longest_palindromic_substring(const char *const str, const std::size_t length) {
   if (length == 0) {
@@ -38,5 +39,27 @@ sp::string_view
 longest_palindromic_substring(const char *str) {
   return longest_palindromic_substring(str, std::strlen(str));
 }
+}
+
+//=====================================
+sp::string_view
+longest_palindromic_substring(const char *str, std::size_t str_length) {
+  const char *res = nullptr;
+  std::size_t res_len = 0;
+
+  for (std::size_t strt = 0; strt < str_length; ++strt) {
+    for (std::size_t len = std::strlen(str + strt) + 1; len-- > 0;) {
+
+      if (prob::is_palindrome(str + strt, len)) {
+        if (len > res_len) {
+          res = str + strt;
+          res_len = len;
+        }
+        break;
+      }
+    }
+  }
+
+  return sp::string_view(res, res_len);
 }
 }

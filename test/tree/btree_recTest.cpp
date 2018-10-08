@@ -669,8 +669,8 @@ static void
 btree_rand_remove(prng::xorshift32 &r) {
   // printf("========seed[%d]\n", r.state);
   Tree tree;
-  constexpr std::size_t max = 99;
-  sp::StaticArray<int, max> in;
+  constexpr int max = 99;
+  sp::StaticArray<int, std::size_t(max)> in;
   for (int i = 0; i < max; ++i) {
     int *res = insert(in, i);
     assertx(res);
