@@ -141,6 +141,14 @@ cmp_right_left(const char *txt, const char *pattern, std::size_t len) noexcept {
   return std::memcmp(t, pattern, len) == 0;
 }
 
+/*
+ * text: | 0 | 1 | 2 | a | b | c | d | e | f |
+ *
+ * 1.    |   |   |   |
+ *
+ * 2.                |   |   |   |
+ */
+
 const char *
 search(const char *const txt, const std::size_t tlen, //
        const char *const pattern, const std::size_t plen) noexcept {
@@ -161,10 +169,28 @@ search(const char *const txt, const std::size_t tlen, //
       return txt + (i - (plen - 1));
     }
 
-    std::size_t *l = lookup(last, current);
+    const std::size_t *l = lookup(last, current);
     if (l) {
-      /* if $l is 0 then without +1 we will loop forever */
-      i += (*l + 1);
+      printf("last['%c': %zu]\n", current, *l);
+      /* Here we should place $pattern[last($current)] in the same column as
+       * $text[$i].
+       */
+      const std::size_t advance = plen - *l;
+      assertxs(advance > 0, advance);
+
+      const std::size_t before_i = i;
+      printf("advance[%zu]\n\n", advance - 1);
+      i += (advance - 1);
+
+      assertxs(pattern[plen - advance] == current, pattern[plen - advance],
+               current, plen, advance, plen - advance);
+
+      if (i == before_i) {
+        printf("txt[%.*s]:%zu\n", tlen, txt, tlen);
+        printf("ptn[%.*s]:%zu\n", plen, pattern, plen);
+        // i += plen;
+        assertxs(i != before_i, i, before_i);
+      }
     } else {
       /* current char is not in $last, skip ahead */
       i += plen;

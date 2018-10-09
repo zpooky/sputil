@@ -44,6 +44,16 @@ struct Array {
   data() noexcept;
   const T *
   data() const noexcept;
+
+  T *
+  begin() noexcept;
+  const T *
+  begin() const noexcept;
+
+  T *
+  end() noexcept;
+  const T *
+  end() const noexcept;
 };
 
 //=====================================
@@ -652,6 +662,36 @@ Array<T>::data() const noexcept {
   assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
 
   return buffer;
+}
+
+template <typename T>
+T *
+Array<T>::begin() noexcept {
+  return data();
+}
+
+template <typename T>
+const T *
+Array<T>::begin() const noexcept {
+  return data();
+}
+
+template <typename T>
+T *
+Array<T>::end() noexcept {
+  assertxs(buffer, length, capacity);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
+  return buffer + length;
+}
+
+template <typename T>
+const T *
+Array<T>::end() const noexcept {
+  assertxs(buffer, length, capacity);
+  assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
+
+  return buffer + length;
 }
 
 //=====================================

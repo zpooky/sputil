@@ -12,8 +12,15 @@ Sudoku::Sudoku() noexcept
 }
 
 //=====================================
+// https://dlbeer.co.nz/articles/sudoku.html "Generating difficult Sudoku
+// puzzles quickly"
+// https://github.com/RutledgePaulV/sudoku-generator !!
+// https://github.com/vaithak/Sudoku-Generator
+// https://www.geeksforgeeks.org/program-sudoku-generator/
+// https://medium.com/@rossharrison/generating-sudoku-boards-pt-1-structures-algorithms-a1e62feeb32
 bool
 geneate(Sudoku &) noexcept {
+  // TODO
   return true;
 }
 

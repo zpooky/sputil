@@ -14,6 +14,8 @@ search(const char *text, std::size_t, const char *needle) noexcept;
 
 const char *
 search(const char *text, const char *needle) noexcept;
+
+//=====================================
 }
 }
 #endif

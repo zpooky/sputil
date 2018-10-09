@@ -8,6 +8,8 @@ namespace naive {
 const char *
 search(const char *text, std::size_t tlen, const char *needle,
        std::size_t nlen) noexcept {
+  // printf("text[%zu], needle[%zu]\n", tlen, nlen);
+
   const char *it = text;
   const char *const end = it + tlen;
 
@@ -29,5 +31,7 @@ const char *
 search(const char *text, const char *needle) noexcept {
   return search(text, std::strlen(text), needle);
 }
+
+//=====================================
 }
 }

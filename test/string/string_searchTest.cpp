@@ -6,6 +6,9 @@
 #include <string/naive_search.h>
 #include <util/array.h>
 
+typedef const char *(*test_search_fp)(const char *text, std::size_t,
+                                      const char *needle, std::size_t);
+
 TEST(string_search, test) {
   const char *const text = "spooky";
   {
@@ -13,6 +16,7 @@ TEST(string_search, test) {
     ASSERT_TRUE(it);
     ASSERT_EQ(it, text + 2);
   }
+
   {
     const char *it = sp::bm::search(text, "s");
     ASSERT_TRUE(it);
@@ -30,25 +34,60 @@ TEST(string_search, test) {
   }
 }
 
-TEST(string_search, test_2) {
-  char it = '!';
-  char end = '~' + char(1);
-  std::size_t cap = end - it;
+static void
+test_2(test_search_fp search) {
+  // char it = '!';
+  // const char end = '~' + char(1);
+
+  char it = 'A';
+  const char end = 'Z' + char(1);
+  const std::size_t cap = end - it;
 
   sp::DynamicArray<char> text(cap);
   for (; it != end; ++it) {
-    push(text, it);
+    ASSERT_TRUE(push(text, it));
   }
+  ASSERT_TRUE(is_full(text));
 
-  for (std::size_t i = 0; i < cap; ++i) {
-    for (std::size_t len = i + 1; len < cap; ++len) {
+  const char *const b = text.data();
+  printf("|%.*s|:%zu\n", length(text), b, length(text));
 
-      const char *it =
-          sp::bm::search(text.data(), length(text), text.data() + i, len);
+  for (std::size_t i = 2; i < length(text); ++i) {
+
+    std::size_t k = i;
+    while (true) {
+      const char *const needle = b + k++;
+      const std::size_t nlen = sp::distance(needle, text.end());
+
+      // printf("nlen: %zu\n", nlen);
+      if (nlen == 0) {
+        break;
+      }
+
+      // {
+      //   bool dasd = memcmp(b + 1, needle, 3) == 0;
+      //   printf("[%.*s]:%zu|%s\n", len, needle, len, dasd ? "true" : "false");
+      // }
+
+      const char *it = search(b, length(text), needle, nlen);
+      if (!it) {
+        printf("i:%zu, len:%zu\n", i, nlen);
+        printf("nedl[%.*s]:%zu\n", nlen, needle, nlen);
+        printf("text[%.*s]:%zu\n", length(text), b, length(text));
+      }
       ASSERT_TRUE(it);
-      ASSERT_EQ(it, text.data() + i);
+
+      ASSERT_EQ(it, needle);
     }
   }
+}
+
+TEST(string_search, test_booyer_moore_search2) {
+  test_2(sp::bm::search);
+}
+
+TEST(string_search, test_naive2) {
+  test_2(sp::naive::search);
 }
 
 static char
@@ -56,13 +95,11 @@ dist_xx(prng::xorshift32 &ra) {
   return prng::uniform_dist(ra, '!', '~' + char(1));
 }
 
-typedef const char *(*test_search_fp)(const char *text, std::size_t,
-                                      const char *needle, std::size_t);
-
 static void
 test_large(test_search_fp search) {
   prng::xorshift32 r(1);
-  const std::size_t length = 25 * 1024;
+  // const std::size_t length = 25 * 1024;
+  const std::size_t length = 32;
 
   char *const text = new char[length + 1];
   text[length] = '\0';
@@ -94,7 +131,7 @@ TEST(string_search, test_naive_large) {
 }
 
 TEST(string_search, test_boyer_more_large) {
-  // test_large(sp::bm::search);
+  test_large(sp::bm::search);
 }
 
 static void
@@ -126,4 +163,11 @@ TEST(string_search, test_boyer_more_subset) {
 
 TEST(string_search, test_naive_subset) {
   test_subset(sp::naive::search);
+}
+
+TEST(string_search, tsts) {
+  const char *const text = ":|$2V7%CR'B(km^N5CB&|^Z@5frI@!nE";
+  const char *const needle = "^N5CB&|^Z@5";
+  const char *const it = sp::bm::search(text, needle);
+  ASSERT_TRUE(it);
 }
