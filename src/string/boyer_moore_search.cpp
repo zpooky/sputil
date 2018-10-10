@@ -109,11 +109,12 @@ search(const char *txt, const std::size_t tlen /*n*/, const char *pattern,
   do {
     if (pattern[j] == txt[i]) {
       if (j == 0) {
+        // is equal
         return txt + i;
       }
 
-      i = i - 1;
-      j = j - 1;
+      --i ;
+      --j ;
     } else {
       const std::size_t *const l = lookup(loccurence, txt[i]);
       if (l) {
@@ -121,6 +122,7 @@ search(const char *txt, const std::size_t tlen /*n*/, const char *pattern,
       } else {
         i = (i + plen) - std::min<std::size_t>(j, 1 + -1);
       }
+      //reset
       j = plen - 1;
     }
 
@@ -131,18 +133,29 @@ search(const char *txt, const std::size_t tlen /*n*/, const char *pattern,
 
 #endif
 
-static bool
-cmp_right_left(const char *txt, const char *pattern, std::size_t len) noexcept {
-  /*
-   * $txt points to the last character to compare while $pattern points to the
+static const char *
+compare_reverse(const char *txt, const char *pat, std::size_t &len) noexcept {
+  /* $txt points to the last character to compare while $pattern points to the
    * first.
    */
-  const char *t = txt - (len - 1);
-  return std::memcmp(t, pattern, len) == 0;
+  if (len == 0) {
+    return nullptr;
+  }
+
+  // printf("*txt[%c] == *pat[%c]: ", *txt, *pat);
+  if (*txt != *pat) {
+    // printf("false\n");
+    return txt;
+  }
+  // printf("true\n");
+
+  --len;
+
+  return compare_reverse(txt - 1, pat - 1, len);
 }
 
 /*
- * text: | 0 | 1 | 2 | a | b | c | d | e | f |
+ * txt: | 0 | 1 | 2 | a | b | c | d | e | f |
  *
  * 1.    |   |   |   |
  *
@@ -157,33 +170,55 @@ search(const char *const txt, const std::size_t tlen, //
   }
 
   /* Pre-process */
-  sp::HashMapProbing<char, std::size_t> last;
-  last_occurrences(pattern, plen, last);
+  sp::HashMapProbing<char, std::size_t> lstoc;
+  last_occurrences(pattern, plen, lstoc);
 
   std::size_t i = plen - 1;
   while (i < tlen) {
     char current = txt[i];
 
     /* Compare from right to left */
-    if (cmp_right_left(txt + i, pattern, plen)) {
+    const char *const pat_last = pattern + (plen - 1);
+    std::size_t out_len = plen;
+    const char *const last = compare_reverse(txt + i, pat_last, out_len);
+    if (!last) {
       return txt + (i - (plen - 1));
     }
 
-    const std::size_t *l = lookup(last, current);
+    const std::size_t *l = lookup(lstoc, *last);
     if (l) {
-      printf("last['%c': %zu]\n", current, *l);
-      /* Here we should place $pattern[last($current)] in the same column as
-       * $text[$i].
-       */
-      const std::size_t advance = plen - *l;
+      assertxs(out_len > 0, out_len);
+      out_len--;
+
+// printf("last[%c] = %zu, skip = ", *last, *l);
+/* Here we should place $pattern[last($last)] in the same column as
+ * $txt[$i].
+ */
+
+#if 0
+      if (out_len <= *l) {
+        printf("out_len[%zu], *l[%zu]\n", out_len, *l);
+
+        return nullptr; // TODO
+        printf("txt[%.*s]:%zu\n", tlen, txt, tlen);
+        printf("ptn[%.*s]:%zu\n", plen, pattern, plen);
+        assertxs(out_len > *l, out_len, *l);
+      }
+      const auto advance3 = out_len - *l;
+#endif
+      const auto advance3 = out_len > *l ? out_len - *l : *l - out_len;
+
+      const auto advance = plen - *l;
       assertxs(advance > 0, advance);
 
       const std::size_t before_i = i;
-      printf("advance[%zu]\n\n", advance - 1);
-      i += (advance - 1);
 
-      assertxs(pattern[plen - advance] == current, pattern[plen - advance],
-               current, plen, advance, plen - advance);
+      // printf("%zu\n", advance3);
+      i = (i) + advance3;
+
+      assertxs(plen >= advance3, plen, advance3);
+      assertxs(pattern[plen - advance] == *last, pattern[plen - advance], *last,
+               plen, advance, (plen - advance));
 
       if (i == before_i) {
         printf("txt[%.*s]:%zu\n", tlen, txt, tlen);
@@ -192,8 +227,11 @@ search(const char *const txt, const std::size_t tlen, //
         assertxs(i != before_i, i, before_i);
       }
     } else {
+      // printf("last[%c] = -1, skip = ", *last);
+      assertxs(out_len > 0, i, out_len);
       /* current char is not in $last, skip ahead */
-      i += plen;
+      // printf("%zu\n", out_len);
+      i += out_len;
     }
   }
 
@@ -201,13 +239,13 @@ search(const char *const txt, const std::size_t tlen, //
 }
 
 const char *
-search(const char *text, std::size_t tlen, const char *needle) noexcept {
-  return search(text, tlen, needle, std::strlen(needle));
+search(const char *const txt, std::size_t tlen, const char *pattern) noexcept {
+  return search(txt, tlen, pattern, std::strlen(pattern));
 }
 
 const char *
-search(const char *text, const char *needle) noexcept {
-  return search(text, std::strlen(text), needle);
+search(const char *const txt, const char *const pattern) noexcept {
+  return search(txt, std::strlen(txt), pattern);
 }
 
 //=====================================

@@ -81,6 +81,17 @@ Right r(value);
 # filter
 - Cuckoofilter
 
+#
+xor-swap
+
+# Cellular Automaton
+http://mathworld.wolfram.com/CellularAutomaton.html
+
+# hashmap
+https://rocksdb.org/blog/2018/08/23/data-block-hash-index.html
+https://github.com/stanford-futuredata/index-baselines/blob/master/hashing.cpp
+https://reddit.com/comments/9lw5pu "Advanced techniques to implement fast hash tables"
+
 # TODO
 - https://www.geeksforgeeks.org/rat-in-a-maze-backtracking-2/ | maze
 - https://www.geeksforgeeks.org/longest-palindromic-subsequence-dp-12/
