@@ -7,7 +7,6 @@
 namespace sp {
 namespace bm {
 //=====================================
-// https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string-search_algorithm
 
 // https://www2.cs.duke.edu/courses/fall01/cps130/lectures/lect14/node18.html#SECTION00035000000000000000
 static bool
@@ -20,6 +19,7 @@ last_occurrences(const char *n, std::size_t len,
   return true;
 }
 
+#if 0
 static void
 prefix(const char *n) noexcept {
 }
@@ -31,7 +31,6 @@ good_suffix(const char *n, std::size_t len) noexcept {
   return true;
 }
 
-#if 0
 // https://www2.cs.duke.edu/courses/fall01/cps130/lectures/lect14/node15.html
 const char *
 search(const char *txt, std::size_t tlen /*n*/, const char *pattern,
@@ -133,6 +132,8 @@ search(const char *txt, const std::size_t tlen /*n*/, const char *pattern,
 
 #endif
 
+// my
+#if 0
 static const char *
 compare_reverse(const char *txt, const char *pat, std::size_t &len) noexcept {
   /* $txt points to the last character to compare while $pattern points to the
@@ -161,7 +162,6 @@ compare_reverse(const char *txt, const char *pat, std::size_t &len) noexcept {
  *
  * 2.                |   |   |   |
  */
-
 const char *
 search(const char *const txt, const std::size_t tlen, //
        const char *const pattern, const std::size_t plen) noexcept {
@@ -234,6 +234,149 @@ search(const char *const txt, const std::size_t tlen, //
       i += out_len;
     }
   }
+
+  return nullptr;
+}
+#endif
+
+static void
+print_cmp(const char *const pattern, std::size_t plen, //
+          const char *const text) noexcept {
+  printf("txt: ");
+  for (std::size_t i = 0; i < plen; ++i) {
+    printf("| %c ", text[i]);
+  }
+  printf("| ... |\n");
+  printf("pat: ");
+  for (std::size_t i = 0; i < plen; ++i) {
+    printf("| %c ", pattern[i]);
+  }
+  printf("|\n");
+}
+
+static void
+print_arrow(std::size_t idx) noexcept {
+  printf("      ");
+  for (std::size_t i = 0; i < idx; ++i) {
+    printf("    ");
+  }
+  printf(" ^\n");
+}
+
+static void
+print_miss(std::size_t idx, char current, std::int32_t last,
+           std::size_t skip) noexcept {
+  print_arrow(idx);
+
+  printf("      ");
+  for (std::size_t i = 0; i < idx; ++i) {
+    printf("    ");
+  }
+  printf(" `-last[%c] = %d, skip = %zu\n", current, last, skip);
+}
+
+template <std::size_t N>
+static std::size_t
+reverse_cmp(const char *const pattern, std::size_t plen, //
+            const char *const text, std::int32_t (&last_oc)[N]) noexcept {
+  std::size_t skip = 0;
+
+  print_cmp(pattern, plen, text);
+
+  /* Compare $pattern with $text from right to left */
+  for (std::size_t i = plen; i-- > 0;) {
+
+    const char current = text[i];
+    if (pattern[i] != current) {
+
+      const auto idx = std::size_t(current) & std::size_t(0xff);
+      std::int32_t last = last_oc[idx];
+
+      if (last < 0) {
+        /* example:
+         *       i=0 i=1
+         * txt: | w | e | ... |
+         * pat: | 3 | e |
+         *        ^
+         *        `-last[w] = -1, skip [$i+1]: 1
+         *
+         * $current not found in $pattern.
+         * So we can skip over and restart from $i+1
+         */
+        skip = i + 1;
+      } else if (i > last) {
+        /* example:
+         *       i=0 i=1 i=2
+         * txt: | r | l | h | ... |
+         * pat: | l | g | h |
+         *            ^
+         * $current found in $pattern, but is not eq $pattern[i]
+         * Skip forward so that $current lines up with $last
+         */
+        skip = i - std::size_t(last);
+      } else {
+        /* example:
+         *       i=0 i=1
+         * txt: | e | e | ... |
+         * pat: | 3 | e |
+         *        ^
+         *        `-last[e] = 1
+         *
+         * We get here when $last is greater than $i
+         * TODO is this correct?/why 1
+         */
+        skip = 1;
+      }
+
+      print_miss(i, current, last, skip);
+      break;
+    }
+
+  } // for
+
+  return skip;
+}
+
+const char *
+search(const char *const text, const std::size_t tlen, //
+       const char *const pattern, const std::size_t plen) noexcept {
+  if (plen > tlen) {
+    return nullptr;
+  }
+  if (tlen == 0) {
+    return nullptr;
+  }
+  if (plen == 0) {
+    return nullptr;
+  }
+
+  assertxs(text, tlen, plen);
+  assertxs(pattern, tlen, plen);
+
+  /* pre-process last-occurrences in $pattern */
+  constexpr std::size_t N = 256;
+  std::int32_t last_oc[N] = {-1};
+  {
+    for (std::size_t i = 0; i < N; ++i) {
+      last_oc[i] = -1;
+    }
+
+    for (std::size_t i = 0; i < plen; ++i) {
+      std::size_t idx = std::size_t(pattern[i]) & std::size_t(0xff);
+      assertxs(idx < N, idx, pattern[i]);
+      last_oc[idx] = i;
+    }
+  }
+
+  /* Search */
+  std::size_t skip = 0;
+  for (std::size_t i = 0; i <= (tlen - plen); i += skip) {
+    skip = reverse_cmp(pattern, plen, text + i, last_oc);
+
+    if (skip == 0) {
+      return text + i;
+    }
+  } // for
 
   return nullptr;
 }

@@ -3,6 +3,12 @@
 
 #include <cstddef>
 
+// good:
+// https://people.ok.ubc.ca/ylucet/DS/BoyerMoore.html
+//
+// ref:
+// https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string-search_algorithm
+// https://algs4.cs.princeton.edu/code/edu/princeton/cs/algs4/BoyerMoore.java.html
 namespace sp {
 namespace bm {
 //=====================================

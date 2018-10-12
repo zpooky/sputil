@@ -93,10 +93,13 @@ TEST(string_search, test_naive2) {
 static char
 dist_xx(prng::xorshift32 &ra) {
 Lit:
-  auto res = prng::uniform_dist(ra, '!', '~' + char(1));
-  if (res == '"' || res == '\\') {
-    goto Lit;
-  }
+  auto res = uniform_dist(ra, 0, int(~char(0)) & int(0xff));
+  assertxs(res >= 0, res);
+  assertxs(res < 256, res);
+  // auto res = prng::uniform_dist(ra, '!', '~' + char(1));
+  // if (res == '"' || res == '\\') {
+  //   goto Lit;
+  // }
   return res;
 }
 
@@ -196,8 +199,14 @@ TEST(string_search, tsts_1) {
 }
 
 TEST(string_search, tsts_2) {
-  const char *const text = "This is a test of the Boyer Moore algorithm.";
-  const char *const needle = "algorithm";
+  /*
+   * last[a] =  0 shift = 8
+   * last[f] = -1 shift = 9
+   * last[e] = -1 shift = 9
+   * last[a] =  0 shift = 8
+   */
+  const char *const text = "rlhlgh";
+  const char *const needle = "lgh";
   const char *const it = sp::bm::search(text, needle);
   ASSERT_TRUE(it);
   ASSERT_EQ(0, std::memcmp(needle, it, std::strlen(needle)));
@@ -240,40 +249,25 @@ TEST(string_search, tsts_6) {
   ASSERT_EQ(it, text);
 }
 
+TEST(string_search, tsts_7) {
+  const char *const text = "wasddfghjklasd";
+  const char *const needle = "lasd";
+  const char *const it = sp::bm::search(text, needle);
+  ASSERT_TRUE(it);
+  ASSERT_EQ(0, std::memcmp(it, needle, std::strlen(needle)));
+}
+
 TEST(string_search, tsts_min) {
-#if 0
-  const char *const text =
-      "7,v=(m39jaa0g+S*-/]:[oBU=b5a/"
-      "R&}=+2tO{-7Q@9U#+@r%8Z1@){Y`1G)_6Aupu}7(^tI]!WiD+k(E|YNk5A64D@T8.."
-      "HDmpiWYN6KcKL,e@:d^60j$(.Z7YckKaXc|SrGb>:yi#q._+VmyL*$=OsHPL$K<j@hM/"
-      "D-)GtWP8bc|Fo;)!(/"
-      "'h2>(zJAMEuiqanRiNXA|rJA7D<S63vjxGJ-v;cfoL_{qS;Gkwo.Hm{dIN3)qGvXC?'#"
-      "Yskvpd[9hxbjliwC'G5gBt]Q3iKL0Ts`xub0Y(KUf#(f.mXj@6hmATR;:+j,'(!NF:NDFqK/"
-      "&]=SZ/"
-      ",:NDH}NTQg*pX@gwv|Schj2a(j]9Lz=kISO?ICvD}}-,eEsUS=|.2w,NN-r-=6bN7[dJ|N.{"
-      "yQj9ptqab}#JLZtqY8OTtl}_C9Ex,P'PrZ&=%b[C/,4x>!%K<yhp_gNx4`#hLQj/"
-      "2Ekb]xKY4>i~O[$?'EKho:+mog7pUF'W$%Ate/"
-      "MO3njrq&eexE>Hl*iJ6*;N72!PL2;ny0570uf4~p)AE{j4N<$-C.YD/"
-      "L}6>lU7V#bB6-+}Z:p6?jZ{HAv0S;%;)Dx;dP&Tmnl',QDoQ1f_,^&kZN|_r@T(RUy3^"
-      "0zyHJB=Cv[mgEi'LTa,[:c]e0Txe+993;i''qz:MDbVflaSjR9_Ul==FwN:FtSJ;e_z;l9!"
-      "rWtg;AGiqp7frF>qO^XuU0M?[<Ct`iweqGc>E<]0X96y%pXYXfrtsWT:F[a*H@UWGK3-"
-      "V1LB_Sh<F~O|LiefnPY)Txw.KGJ3l@j;X.oR-;6<Yf=}F{,:93hEJ3<Wmtf0Z*HBFm/"
-      "atz{fM3=I7;TAI'U7$q@=B;`Xb^X9KxaEZ5yeG;xj$tB5au*VsJuN47E)@=/"
-      "Y1Q96r8=onJ_mxdoC(iXt'*xV/"
-      "`(jQ]uC%Xg@{'s8MzeCWTTJTX?qJ<]AE]hX#WyX?IMy<z4&-jHc3v]F&v=W:HcpjHECQ>WE{"
-      "y(cfD*aelVkOy=]0S!~Gs9#6<qANV*)=7]69m=jK,v&vYu0nNQ0*l,P~(U2PA{ak*Xgv%"
-      "zGe@ey{r}y,ro@UlGpb<us(z~m:EkPV9rwx+p7[nVta0S#l5U&,#{q87FY@dE<BHF}}s~zG^"
-      "n^lf<R]n|ojAiL0IM~y-+1Ck$*.dRsGIprBfTZo>4gbdmi=?M6OOGG^8B[Pa=N*zc)YZ`?"
-      "DM-8|aEBe2Jde),Mn~',ZiMYtd*|g{XWwuD*l?0VI$z(0voIT07-bFxhbnr+$!ho{iJV?~"
-      "e0;MYj_OAXTM3ZcG&H+[7yS#<lW^M6LL9rejuDP6[j}rl9Xv,.@?Qj':[3>)TPzad0>Vh:'+"
-      "0$(@IDOpn+#{zL|es27`InPJ,,v`-*b%.F*`4i@aV'}-7!T&2;8T%6BDMW[[Ubkf2&n!"
-      "Kgv05elIA}v#B.x&w$@PXf[Q14s;*S2+wGn3y!Ss";
+  /* last[e] =  4 shift = 1
+   * last[f] = -1 shift = 5
+   * last[t] = -1 shift = 5
+   * last[3] =  3 shift = 1
+   */
+  // const char *const text = "ceefqwerty0123easd";
+  // const char *const nedl = "0123e";
 
-  const char *const needle = "@gwv|Schj2a";
-#endif
-
-  const char *const text = "abceefqwerty0123easd";
-  const char *const nedl = "0123e";
+  const char *const text = "eefqwerty0123easd";
+  const char *const nedl = "3e";
 
   const char *const it = sp::bm::search(text, nedl);
   ASSERT_TRUE(it);
@@ -342,6 +336,7 @@ TEST(string_search, tsts_min_min) {
 
 TEST(string_search, tsts_success_min_min) {
   prng::xorshift32 r(1);
+  // prng::xorshift32 r(3284282817);
   const std::size_t length = 25 * 1024 * 1;
   // const std::size_t length = 32;
 
