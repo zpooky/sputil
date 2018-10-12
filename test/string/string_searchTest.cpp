@@ -3,6 +3,7 @@
 #include <prng/util.h>
 #include <prng/xorshift.h>
 #include <string/boyer_moore_search.h>
+#include <string/knuth_morris_pratt_search.h>
 #include <string/naive_search.h>
 #include <util/array.h>
 
@@ -12,23 +13,23 @@ typedef const char *(*test_search_fp)(const char *text, std::size_t,
 TEST(string_search, test) {
   const char *const text = "spooky";
   {
-    const char *it = sp::bm::search(text, "oo");
+    const char *it = sp::kmp::search(text, "oo");
     ASSERT_TRUE(it);
     ASSERT_EQ(it, text + 2);
   }
 
   {
-    const char *it = sp::bm::search(text, "s");
+    const char *it = sp::kmp::search(text, "s");
     ASSERT_TRUE(it);
     ASSERT_EQ(it, text);
   }
   {
-    const char *it = sp::bm::search(text, text);
+    const char *it = sp::kmp::search(text, text);
     ASSERT_TRUE(it);
     ASSERT_EQ(it, text);
   }
   {
-    const char *it = sp::bm::search(text, "ok");
+    const char *it = sp::kmp::search(text, "ok");
     ASSERT_TRUE(it);
     ASSERT_EQ(it, text + 3);
   }
@@ -88,6 +89,10 @@ TEST(string_search, test_booyer_moore_search2) {
 
 TEST(string_search, test_naive2) {
   test_2(sp::naive::search);
+}
+
+TEST(string_search, test_knuth_morris_pratt2) {
+  test_2(sp::kmp::search);
 }
 
 static char
@@ -156,6 +161,10 @@ TEST(string_search, test_boyer_moore_large) {
   test_large(sp::bm::search);
 }
 
+TEST(string_search, test_knuth_morris_pratt_large) {
+  test_large(sp::kmp::search);
+}
+
 static void
 test_subset(test_search_fp search) {
   prng::xorshift32 r(1);
@@ -189,6 +198,10 @@ TEST(string_search, test_boyer_moore_subset) {
 
 TEST(string_search, test_naive_subset) {
   test_subset(sp::naive::search);
+}
+
+TEST(string_search, test_knuth_morris_pratt_subset) {
+  test_subset(sp::kmp::search);
 }
 
 TEST(string_search, tsts_1) {

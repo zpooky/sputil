@@ -281,7 +281,9 @@ reverse_cmp(const char *const pattern, std::size_t plen, //
             const char *const text, std::int32_t (&last_oc)[N]) noexcept {
   std::size_t skip = 0;
 
+#if 0
   print_cmp(pattern, plen, text);
+#endif
 
   /* Compare $pattern with $text from right to left */
   for (std::size_t i = plen; i-- > 0;) {
@@ -328,7 +330,9 @@ reverse_cmp(const char *const pattern, std::size_t plen, //
         skip = 1;
       }
 
+#if 0
       print_miss(i, current, last, skip);
+#endif
       break;
     }
 

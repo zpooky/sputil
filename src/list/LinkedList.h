@@ -17,27 +17,15 @@
 namespace sp {
 //=====================================
 namespace impl {
-namespace LinkedList {
 template <typename T>
-struct LLNode { //
-  LLNode<T> *next;
-  T value;
-
-  template <typename K>
-  explicit LLNode(K &&k) noexcept
-      : next{nullptr}
-      , value(std::forward<K>(k)) {
-  }
-};
-
-} // namespace LinkedList
+struct LinkedListNode;
 } // namespace impl
 
 //=====================================
 template <typename T, template <typename> class Allocator = sp::Allocator>
 struct LinkedList {
   using value_type = T;
-  using node_type = impl::LinkedList::LLNode<T>;
+  using node_type = impl::LinkedListNode<T>;
   using SelfType = LinkedList<T, Allocator>;
 
   node_type *root;
@@ -144,46 +132,53 @@ reverse(LinkedList<T, A> &) noexcept;
 }
 
 //=====================================
-
 // template <typename Random, typename T>
 // void
 // shuffle(Random &, sp::LinkedList<T> &) noexcept;
-/*
- * =======================================================
- */
 
+//=====================================
+//====Implementation===================
+//=====================================
 namespace impl {
-namespace LinkedList {
+template <typename T>
+struct LinkedListNode {
+  LinkedListNode<T> *next;
+  T value;
+
+  template <typename K>
+  explicit LinkedListNode(K &&k) noexcept
+      : next{nullptr}
+      , value(std::forward<K>(k)) {
+  }
+};
 
 template <typename T, template <typename> class A>
-const LLNode<T> *
+const LinkedListNode<T> *
 node_for(const sp::LinkedList<T, A> &l, std::size_t index) noexcept {
   const auto *current = l.root;
-Lit:
-  if (current) {
+  while (current) {
     if (index == 0) {
       return current;
     }
 
     --index;
     current = current->next;
-    goto Lit;
   }
 
   return current;
 } // impl::LinkedList::node_for()
 
 template <typename T, template <typename> class A>
-LLNode<T> *
+LinkedListNode<T> *
 node_for(sp::LinkedList<T, A> &l, std::size_t index) noexcept {
   const sp::LinkedList<T, A> &c_l = l;
-  return (LLNode<T> *)node_for(c_l, index);
+  return (LinkedListNode<T> *)node_for(c_l, index);
 } // impl::LinkedList::node_for()
 
 template <typename T, template <typename> class A, typename Predicate>
 bool
-int_remove(sp::LinkedList<T, A> &list, LLNode<T> *priv, LLNode<T> *it,
-           Predicate p) noexcept {
+int_remove(sp::LinkedList<T, A> &list, LinkedListNode<T> *priv,
+           LinkedListNode<T> *it, Predicate p) noexcept {
   assertx(it);
 
   T &value = it->value;
@@ -203,18 +198,16 @@ int_remove(sp::LinkedList<T, A> &list, LLNode<T> *priv, LLNode<T> *it,
       list.last = priv;
     }
 
-    it->~LLNode<T>();
+    it->~LinkedListNode<T>();
     deallocate(allocator, it);
     return true;
   }
 
   return false;
 }
-} // namespace LinkedList
 } // namespace impl
-/*
- * ==========================================================================
- */
+//=====================================
+
 // template<typename T,typename Allocator>
 // LinkedList<T,Allocator>::LinkedList( Allocator& alloc ) noexcept
 //   : root {nullptr}
@@ -236,7 +229,7 @@ Lit:
   if (root) {
     auto *next = root->next;
 
-    root->~LLNode();
+    root->~LinkedListNode();
     deallocate(allocator, root);
 
     root = next;
@@ -260,7 +253,7 @@ swap(LinkedList<T, A> &first, LinkedList<T, A> &second) noexcept {
 template <typename T, template <typename> class A>
 void
 clear(LinkedList<T, A> &l) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
   auto *current = l.root;
   auto &allocator = l.allocator;
@@ -268,7 +261,7 @@ Lit:
   if (current) {
     auto *next = current->next;
 
-    current->~LLNode<T>();
+    current->~Node();
     deallocate(allocator, current);
 
     current = next;
@@ -291,9 +284,9 @@ get(LinkedList<T, A> &l, std::size_t index) noexcept {
 template <typename T, template <typename> class A>
 const T *
 get(const LinkedList<T, A> &l, std::size_t index) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
-  const LLNode<T> *node = node_for(l, index);
+  const Node *const node = impl::node_for(l, index);
   if (node) {
     return &node->value;
   }
@@ -311,12 +304,12 @@ insert(LinkedList<T, A> &list, V &&val) noexcept {
 template <typename T, template <typename> class A, typename V>
 T *
 push_back(LinkedList<T, A> &list, V &&val) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
   auto &allocator = list.allocator;
-  LLNode<T> *node = allocate(allocator);
+  Node *const node = allocate(allocator);
   if (node) {
-    ::new (node) LLNode<T>{std::forward<V>(val)};
+    ::new (node) Node{std::forward<V>(val)};
     if (!list.root) {
       list.root = node;
     }
@@ -357,9 +350,9 @@ push_back(LinkedList<T, A> &list, V &&val) noexcept {
 template <typename T, template <typename> class A, typename F>
 void
 for_each(const LinkedList<T, A> &list, F f) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
-  const LLNode<T> *it = list.root;
+  const Node *it = list.root;
 Lit:
   if (it) {
     const T &value = it->value;
@@ -373,9 +366,9 @@ Lit:
 template <typename T, template <typename> class A, typename F>
 void
 for_each(LinkedList<T, A> &list, F f) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
-  LLNode<T> *it = list.root;
+  Node *it = list.root;
 Lit:
   if (it) {
     T &value = it->value;
@@ -390,9 +383,9 @@ Lit:
 template <typename T, template <typename> class A, typename F>
 bool
 for_all(const LinkedList<T, A> &list, F f) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
-  const LLNode<T> *it = list.root;
+  const Node *it = list.root;
 Lit:
   if (it) {
     const T &value = it->value;
@@ -411,9 +404,9 @@ Lit:
 template <typename T, template <typename> class A, typename F>
 bool
 for_all(LinkedList<T, A> &list, F f) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
-  LLNode<T> *it = list.root;
+  Node *it = list.root;
 Lit:
   if (it) {
     T &value = it->value;
@@ -433,9 +426,9 @@ Lit:
 template <typename T, template <typename> class A, typename F>
 T *
 find_first(LinkedList<T, A> &list, F f) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
-  LLNode<T> *it = list.root;
+  Node *it = list.root;
 Lit:
   if (it) {
     T &value = it->value;
@@ -453,9 +446,9 @@ Lit:
 template <typename T, template <typename> class A, typename F>
 const T *
 find_first(const LinkedList<T, A> &list, F f) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
-  const LLNode<T> *it = list.root;
+  const Node *it = list.root;
 Lit:
   if (it) {
     const T &value = it->value;
@@ -474,10 +467,10 @@ Lit:
 template <typename T, template <typename> class A, typename P>
 bool
 remove_first(LinkedList<T, A> &list, P p) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
-  LLNode<T> *it = list.root;
-  LLNode<T> *priv = nullptr;
+  Node *it = list.root;
+  Node *priv = nullptr;
 
 Lit:
   if (it) {
@@ -504,15 +497,15 @@ is_empty(const LinkedList<T, A> &l) noexcept {
 template <typename T, template <typename> class A, typename Predicate>
 std::size_t
 remove_if(LinkedList<T, A> &list, Predicate p) noexcept {
-  using namespace impl::LinkedList;
+  using Node = impl::LinkedListNode<T>;
 
   std::size_t result = 0;
-  LLNode<T> *it = list.root;
-  LLNode<T> *priv = nullptr;
+  Node *it = list.root;
+  Node *priv = nullptr;
 
 Lit:
   if (it) {
-    LLNode<T> *next = it->next;
+    Node *next = it->next;
 
     if (int_remove(list, priv, it, p)) {
       ++result;
@@ -538,13 +531,14 @@ reduce(LinkedList<T, A> &l, Acum &result, F f) noexcept {
 
   return result;
 }
-//=====================================
+
 namespace rec {
 namespace impl {
+//=====================================
 template <typename T, template <typename> class A>
 void
-reverse(sp::LinkedList<T, A> &self, sp::impl::LinkedList::LLNode<T> *priv,
-        sp::impl::LinkedList::LLNode<T> *current) noexcept {
+reverse(sp::LinkedList<T, A> &self, sp::impl::LinkedListNode<T> *priv,
+        sp::impl::LinkedListNode<T> *current) noexcept {
   if (current) {
     auto next = current->next;
     current->next = priv;
@@ -558,11 +552,12 @@ reverse(sp::LinkedList<T, A> &self, sp::impl::LinkedList::LLNode<T> *priv,
 template <typename T, template <typename> class A>
 void
 reverse(LinkedList<T, A> &self) noexcept {
+  using Node = sp::impl::LinkedListNode<T>;
+
   if (self.root) {
     auto root = self.root;
 
-    using namespace sp::impl::LinkedList;
-    LLNode<T> *none = nullptr;
+    Node *none = nullptr;
     impl::reverse(self, none, self.root);
 
     self.last = root;
@@ -570,6 +565,7 @@ reverse(LinkedList<T, A> &self) noexcept {
 }
 } // namespace rec
 
+//=====================================
 } // namespace sp
 
 #endif

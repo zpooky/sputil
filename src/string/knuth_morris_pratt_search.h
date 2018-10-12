@@ -2,6 +2,7 @@
 #define SP_UTIL_STRING_KNUTH_MORRIS_PRATT_SEARCH_H
 
 #include <cstddef>
+// https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
 
 namespace sp {
 namespace kmp {
