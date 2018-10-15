@@ -9,8 +9,6 @@
 #include <utility>
 
 namespace avl {
-/*avl*/
-
 //=====================================
 template <typename T>
 struct Node {

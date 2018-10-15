@@ -107,6 +107,7 @@ dist_xx(prng::xorshift32 &ra) {
   return prng::uniform_dist(ra, '!', '~' + char(1));
 }
 
+#if 0
 TEST(randomTest, test_spooky) {
   const char *key = "spooky";
   char buffer[16];
@@ -122,6 +123,7 @@ TEST(randomTest, test_spooky) {
     }
   }
 }
+#endif
 
 /*
  * TEST(randomTest, ll) {

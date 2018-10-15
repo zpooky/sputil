@@ -255,7 +255,9 @@ find_level_predecessor(SkipListNode<T, levels> *start, std::size_t level,
 Lit:
   if (start) {
     constexpr C cmp;
-    if (cmp(start->value, needle)) { // it > needle = return priv
+
+    /* it > needle = return $priv */
+    if (cmp(start->value, needle)) {
       return previous;
     } else if (cmp(needle, start->value)) { // it < needle = continue
       previous = start;
@@ -330,7 +332,7 @@ insert_node(SkipList<T, L, C> &self, SkipListNode<T, L> *node) noexcept {
     auto *pred = find_level_predecessor<T, L, C>(start, level, node->value);
     if (pred) {
       /* We update chain on this level by inserting $node:
-       * pred->self->next
+       * $pred->self->next
        */
       auto next = pred->next[level];
       pred->next[level] = node;
@@ -347,7 +349,7 @@ insert_node(SkipList<T, L, C> &self, SkipListNode<T, L> *node) noexcept {
       node->next[level] = next;
       self.header[level] = node;
 
-      /* Since we could not find a pred on this level we have to start
+      /* Since we could not find a $pred on this level we have to start
        * from the beginning on the next level
        */
       start = nullptr;
