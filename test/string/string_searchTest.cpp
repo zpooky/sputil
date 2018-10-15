@@ -5,6 +5,7 @@
 #include <string/boyer_moore_search.h>
 #include <string/knuth_morris_pratt_search.h>
 #include <string/naive_search.h>
+#include <util/Timer.h>
 #include <util/array.h>
 
 typedef const char *(*test_search_fp)(const char *text, std::size_t,
@@ -96,28 +97,36 @@ TEST(string_search, test_knuth_morris_pratt2) {
 }
 
 static char
-dist_xx(prng::xorshift32 &ra) {
-Lit:
-  auto res = uniform_dist(ra, 0, int(~char(0)) & int(0xff));
-  assertxs(res >= 0, res);
+dist_rand_char(prng::xorshift32 &ra) {
+  std::uint32_t max = (int(~char(0)) & int(0xff));
+  assertx(max == 255);
+  auto res = uniform_dist(ra, 0, max);
   assertxs(res < 256, res);
-  // auto res = prng::uniform_dist(ra, '!', '~' + char(1));
-  // if (res == '"' || res == '\\') {
-  //   goto Lit;
-  // }
+  return res;
+}
+
+static char
+dist_rand_readable_char(prng::xorshift32 &ra) {
+Lit:
+  auto res = prng::uniform_dist(ra, '!', '~' + char(1));
+  if (res == '"' || res == '\\') {
+    goto Lit;
+  }
   return res;
 }
 
 static void
-test_large(test_search_fp search) {
+test_large(sp::TimerContext &ctx, test_search_fp search) {
   prng::xorshift32 r(1);
-  const std::size_t length = 25 * 1024 * 1;
-  // const std::size_t length = 32;
 
-  printf("length[%zu]\n", length);
+  const std::size_t length = 25 * 1024 * 1;
+
+  // printf("length[%zu]\n", length);
   char *const text = new char[length + 1];
   text[length] = '\0';
-  fill(r, text, length, dist_xx);
+  fill(r, text, length, dist_rand_readable_char);
+
+  // timer(ctx, [length, &r, text, search]() {
   const char *const end = text + length;
 
   std::size_t cnt = 0;
@@ -129,9 +138,9 @@ test_large(test_search_fp search) {
     if (n_cap > wasd) {
       ++cnt;
 
-      if (cnt % 10000 == 0) {
-        printf("cnt[%zu]\n", cnt);
-      }
+      // if (cnt % 10000 == 0) {
+      //   printf("cnt[%zu]\n", cnt);
+      // }
 
       const auto n_len =
           uniform_dist(r, wasd, std::min(std::size_t(20), n_cap));
@@ -143,26 +152,46 @@ test_large(test_search_fp search) {
 
       const char *it = search(text, length, needle, n_len);
       ASSERT_TRUE(it);
+      if (std::memcmp(it, needle, n_len) != 0) {
+        printf("needle[%.*s]: %zu\n", n_len, needle, n_len);
+        printf("found[%.*s]: %zu\n", n_len, it, n_len);
+      }
       ASSERT_EQ(0, std::memcmp(it, needle, n_len));
       ASSERT_EQ(it, needle);
     }
     // printf("%s\n", it);
   }
+  // });
 
   // printf("%s\n", text);
 
   delete[] text;
 }
+
 TEST(string_search, test_naive_large) {
-  test_large(sp::naive::search);
+  sp::TimerContext ctx;
+  test_large(ctx, sp::naive::search);
 }
 
 TEST(string_search, test_boyer_moore_large) {
-  test_large(sp::bm::search);
+  // Array:
+  // Average: 324 msec
+  // Median: 327 msec
+  sp::TimerContext ctx;
+  // for (std::size_t i = 0; i < 100; ++i) {
+  test_large(ctx, sp::bm::search);
+  // }
+
+  // print(ctx);
+  // printf("Average: \n");
+  // print(average(ctx));
+  // printf("Median: \n");
+  // print(median(ctx));
 }
 
 TEST(string_search, test_knuth_morris_pratt_large) {
-  test_large(sp::kmp::search);
+  sp::TimerContext ctx;
+  test_large(ctx, sp::kmp::search);
 }
 
 static void
@@ -172,7 +201,7 @@ test_subset(test_search_fp search) {
 
   char *const text = new char[length + 1];
   text[length] = '\0';
-  fill(r, text, length, dist_xx);
+  fill(r, text, length, dist_rand_char);
 
   const char *needle = text;
   const char *const end = text + length;
@@ -302,7 +331,7 @@ TEST(string_search, tsts_min_min) {
   while (true) {
     const auto prng_state = r.state;
     text[length] = '\0';
-    fill(r, text, length, dist_xx);
+    fill(r, text, length, dist_rand_char);
 
     const char *text_it = text;
 
@@ -362,7 +391,7 @@ TEST(string_search, tsts_success_min_min) {
   while (true) {
     const auto prng_state = r.state;
     text[length] = '\0';
-    fill(r, text, length, dist_xx);
+    fill(r, text, length, dist_rand_char);
 
     const char *text_it = text;
 

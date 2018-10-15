@@ -104,7 +104,13 @@ levenshtein2(const char *s, const char *t) noexcept {
 
 namespace dp {
 //=====================================
-/*
+/* # Wagner–Fischer algorithm version of Levenshtein distance algh
+ * - dynamic programming using tabulation
+ *
+ * ## ref
+ * https://people.cs.pitt.edu/~kirk/cs1501/Pruhs/Spring2006/assignments/editdistance/Levenshtein%20Distance.htm
+ * https://en.wikipedia.org/wiki/Wagner%E2%80%93Fischer_algorithm
+ *
  *      S	a	t	u	r	d	a	y
  *    0	1	2	3	4	5	6	7	8
  * S	1	0	1	2	3	4	5	6	7
@@ -123,9 +129,6 @@ namespace dp {
  */
 std::size_t
 levenshtein(const char *first, const char *second) noexcept {
-  // Implementation of Wagner–Fischer algorithm version of Levenshtein distance
-  // https://en.wikipedia.org/wiki/Wagner%E2%80%93Fischer_algorithm
-  // - dynamic programming
   assertx(first);
   assertx(second);
 

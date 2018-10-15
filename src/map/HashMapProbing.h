@@ -124,7 +124,7 @@ lookup_default(const HashMapProbing<Key, V, H, Eq> &, const K &,
 
 template <typename Key, typename V, typename H, typename Eq, typename K>
 V &
-lookup_default(HashMapProbing<Key, V, H, Eq> &, const K &, const V &) noexcept;
+lookup_default(HashMapProbing<Key, V, H, Eq> &, const K &, V &) noexcept;
 
 //=====================================
 template <typename Key, typename V, typename H, typename Eq, typename K>
@@ -206,19 +206,29 @@ lookup(HashMapProbing<Key, V, H, Eq> &self, const K &needle) noexcept {
 //=====================================
 template <typename Key, typename V, typename H, typename Eq, typename K>
 const V &
-lookup_default(const HashMapProbing<Key, V, H, Eq> &, const K &,
+lookup_default(const HashMapProbing<Key, V, H, Eq> &self, const K &needle,
                const V &def) noexcept {
-  assertx(false);
-  // TODO
+  using Entry = impl::HashMapProbingEntry<Key, V>;
+
+  const Entry *const result = lookup(self.set, needle);
+  if (result) {
+    return result->value;
+  }
+
   return def;
 }
 
 template <typename Key, typename V, typename H, typename Eq, typename K>
 V &
-lookup_default(HashMapProbing<Key, V, H, Eq> &, const K &,
-               const V &def) noexcept {
-  assertx(false);
-  // TODO
+lookup_default(HashMapProbing<Key, V, H, Eq> &self, const K &needle,
+               V &def) noexcept {
+  using Entry = impl::HashMapProbingEntry<Key, V>;
+
+  Entry *const result = lookup(self.set, needle);
+  if (result) {
+    return result->value;
+  }
+
   return def;
 }
 

@@ -3,13 +3,13 @@
 
 namespace sp {
 //=====================================
-TimerContex::TimerContex() noexcept
+TimerContext::TimerContext() noexcept
     : measurement(1024) {
 }
 
 //=====================================
-TimerContex
-average(const TimerContex &ctx) noexcept {
+TimerContext
+average(const TimerContext &ctx) noexcept {
   clock_t avg = 0;
   for_each(ctx.measurement, [&avg](clock_t cur) {
     /**/
@@ -18,22 +18,22 @@ average(const TimerContex &ctx) noexcept {
 
   avg /= length(ctx.measurement);
 
-  TimerContex result;
+  TimerContext result;
   assertx_n(push(result.measurement, avg));
 
   return result;
 }
 
 //=====================================
-TimerContex
-median(TimerContex &ctx) noexcept {
+TimerContext
+median(TimerContext &ctx) noexcept {
   auto &m = ctx.measurement;
 
   sp::rec::introsort(m.data(), length(m));
 
   std::size_t idx = length(m) / 2;
 
-  TimerContex result;
+  TimerContext result;
   assertx_n(push(result.measurement, m[idx]));
 
   return result;
@@ -41,7 +41,7 @@ median(TimerContex &ctx) noexcept {
 
 //=====================================
 void
-print(const TimerContex &ctx) noexcept {
+print(const TimerContext &ctx) noexcept {
   for_each(ctx.measurement, [](clock_t msec) {
     clock_t sec = msec / 1000;
     clock_t rem_msec = msec % 1000;

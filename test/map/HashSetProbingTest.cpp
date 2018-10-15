@@ -11,7 +11,7 @@
 
 template <typename SET>
 static void
-run_bench(prng::xorshift32 &r, sp::TimerContex &ctx, SET &set) noexcept {
+run_bench(prng::xorshift32 &r, sp::TimerContext &ctx, SET &set) noexcept {
   using TT = typename SET::value_type;
   using namespace sp::rec;
 
@@ -129,7 +129,7 @@ run_bench(prng::xorshift32 &r, sp::TimerContex &ctx, SET &set) noexcept {
 // #if 0
 TEST(HashSetProbingTest, test_HashSetProbing) {
   prng::xorshift32 r(1);
-  sp::TimerContex ctx;
+  sp::TimerContext ctx;
   for (std::size_t a = 0; a < 10; ++a) {
     sp::HashSetProbing<int> set;
 
@@ -161,7 +161,7 @@ TEST(HashSetProbingTest, test_HashSetProbing_dtor) {
   ASSERT_EQ(std::int64_t(0), sp::GcStruct::active);
   {
     prng::xorshift32 r(1);
-    sp::TimerContex ctx;
+    sp::TimerContext ctx;
     for (std::size_t a = 0; a < 10; ++a) {
       sp::HashSetProbing<sp::GcStruct> set;
 
@@ -194,7 +194,7 @@ TEST(HashSetProbingTest, test_HashSetProbing_dtor) {
 // #if 0
 TEST(HashSetProbingTest, test_HashSetTree) {
   prng::xorshift32 r(1);
-  sp::TimerContex ctx;
+  sp::TimerContext ctx;
   for (std::size_t a = 0; a < 10; ++a) {
     sp::HashSetTree<int> set;
     run_bench(r, ctx, set);
@@ -212,7 +212,7 @@ TEST(HashSetProbingTest, test_HashSetTree) {
 
 TEST(HashSetProbingTest, insert) {
   // HashSetProbingTest.insert (557 ms): 1024 * 256
-  sp::TimerContex ctx;
+  sp::TimerContext ctx;
   /* eager: 1024 * 100
    * Average: 171 msec
    * Median: 172 msec

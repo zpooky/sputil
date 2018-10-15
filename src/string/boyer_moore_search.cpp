@@ -275,10 +275,10 @@ print_miss(std::size_t idx, char current, std::int32_t last,
   printf(" `-last[%c] = %d, skip = %zu\n", current, last, skip);
 }
 
-template <std::size_t N>
+template <typename Map>
 static std::size_t
 reverse_cmp(const char *const pattern, std::size_t plen, //
-            const char *const text, std::int32_t (&last_oc)[N]) noexcept {
+            const char *const text, Map &last_oc) noexcept {
   std::size_t skip = 0;
 
 #if 0
@@ -291,8 +291,13 @@ reverse_cmp(const char *const pattern, std::size_t plen, //
     const char current = text[i];
     if (pattern[i] != current) {
 
+#if 1
       const auto idx = std::size_t(current) & std::size_t(0xff);
       std::int32_t last = last_oc[idx];
+#elif 0
+      std::int32_t def = -1;
+      std::int32_t last = lookup_default(last_oc, current, def);
+#endif
 
       if (last < 0) {
         /* example:
@@ -357,20 +362,30 @@ search(const char *const text, const std::size_t tlen, //
   assertxs(text, tlen, plen);
   assertxs(pattern, tlen, plen);
 
-  /* pre-process last-occurrences in $pattern */
+/* Pre-process last-occurrences of each characters in $pattern */
+#if 1
   constexpr std::size_t N = 256;
   std::int32_t last_oc[N] = {-1};
   {
+    /* Default is not present */
     for (std::size_t i = 0; i < N; ++i) {
       last_oc[i] = -1;
     }
 
-    for (std::size_t i = 0; i < plen; ++i) {
+    for (std::int32_t i = 0; i < plen; ++i) {
       std::size_t idx = std::size_t(pattern[i]) & std::size_t(0xff);
       assertxs(idx < N, idx, pattern[i]);
       last_oc[idx] = i;
     }
   }
+#elif 0
+  sp::HashMapProbing<char, std::int32_t> last_oc;
+  {
+    for (std::size_t i = 0; i < plen; ++i) {
+      assertx_n(insert(last_oc, pattern[i], i));
+    }
+  }
+#endif
 
   /* Search */
   std::size_t skip = 0;

@@ -8,36 +8,36 @@
 
 namespace sp {
 //=====================================
-struct TimerContex {
+struct TimerContext {
   /**/
   sp::DynamicArray<clock_t> measurement;
 
-  TimerContex() noexcept;
+  TimerContext() noexcept;
 };
 
 //=====================================
 template <typename time_cb>
 void
-timer(TimerContex &ctx, time_cb cb) noexcept;
+timer(TimerContext &ctx, time_cb cb) noexcept;
 
 //=====================================
-TimerContex
-average(const TimerContex &) noexcept;
+TimerContext
+average(const TimerContext &) noexcept;
 
 //=====================================
-TimerContex
-median(TimerContex &) noexcept;
+TimerContext
+median(TimerContext &) noexcept;
 
 //=====================================
 void
-print(const TimerContex &) noexcept;
+print(const TimerContext &) noexcept;
 
 //=====================================
 //====Implementation===================
 //=====================================
 template <typename time_cb>
 void
-timer(TimerContex &ctx, time_cb cb) noexcept {
+timer(TimerContext &ctx, time_cb cb) noexcept {
   clock_t before = clock();
   cb();
   clock_t after = clock();

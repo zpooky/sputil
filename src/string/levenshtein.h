@@ -18,7 +18,7 @@ p();
 namespace dp {
 //=====================================
 /*
- * TODO understand
+ * TODO document
  */
 std::size_t
 levenshtein(const char *, const char *) noexcept;

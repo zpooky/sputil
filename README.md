@@ -1,3 +1,12 @@
+#ref
+https://www.nayuki.io/page/
+https://github.com/NikitaSkripchenko/Algorithms-and-DS-in-C
+http://btechsmartclass.com/DS/U1_T1.html "data structures"
+https://github.com/trekhleb/javascript-algorithms
+
+#demo
+https://people.ok.ubc.ca/ylucet/DS/Algorithms.html
+
 # sputil
 
 # TODO
@@ -77,12 +86,23 @@ Right r(value);
 
 # Heap
 - Fibonacci
+- Binomial heap
+
+# tree
+https://www.nayuki.io/page/aa-tree-set
+Splay Trees - http://btechsmartclass.com/DS/U5_T5.html
+
+# shuffle
+https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 
 # filter
 - Cuckoofilter
 
 #
 xor-swap
+
+# regex
+# calculator
 
 # Cellular Automaton
 http://mathworld.wolfram.com/CellularAutomaton.html
@@ -108,6 +128,7 @@ https://reddit.com/comments/9lw5pu "Advanced techniques to implement fast hash t
 - https://www.redblobgames.com/pathfinding/a-star/introduction.html |A* search algorithm
   http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html
   https://github.com/boostorg/graph/blob/develop/include/boost/graph/astar_search.hpp
+- page rank
 
 - https://github.com/boostorg/graph/blob/develop/include/boost/graph/isomorphism.hpp
 
