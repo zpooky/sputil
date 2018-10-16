@@ -36,8 +36,7 @@ struct DynamicBitset : public Bitset {
 };
 
 //=====================================
-/*
- * capacity: block_size * blocks;
+/* capacity: block_size * blocks;
  * Block are lazy allocated when required.
  * Blocks are placed in a BST.
  */
@@ -52,8 +51,7 @@ struct SparseBitset {
 };
 
 //=====================================
-/*
- * returns the value
+/* returns the current state
  */
 bool
 test(const Bitset &, std::size_t) noexcept;
@@ -62,8 +60,7 @@ bool
 test(const SparseBitset &, std::size_t) noexcept;
 
 //=====================================
-/*
- * returns the old value
+/* returns the old state
  */
 bool
 set(Bitset &, std::size_t, bool) noexcept;
@@ -72,8 +69,7 @@ bool
 set(SparseBitset &, std::size_t, bool) noexcept;
 
 //=====================================
-/*
- * returns the new value
+/* returns the new state
  */
 bool
 toggle(Bitset &, std::size_t) noexcept;
@@ -82,8 +78,7 @@ bool
 toggle(SparseBitset &, std::size_t) noexcept;
 
 //=====================================
-/*
- * return the bit capacity of the Bitset
+/* return the bit capacity of the Bitset
  */
 std::size_t
 bits(const Bitset &) noexcept;
@@ -92,8 +87,7 @@ std::size_t
 bits(const SparseBitset &) noexcept;
 
 //=====================================
-/*
- * returns number of uint64_t required to fit $x distinct values
+/* returns number of uint64_t required to fit $x distinct values
  */
 std::size_t
 Bitset_number_of_buffer(std::size_t x) noexcept;

@@ -5,12 +5,8 @@
 #include <hash/util.h>
 #include <util/Bitset.h>
 
-namespace sp {
 // XXX merge two Bloomfilters
-
-// template <typename T, std::size_t N>
-// using HasherArray = StaticArray<hasher<T>, N>;
-
+namespace sp {
 //=====================================
 template <typename T, std::size_t size>
 struct BloomFilter {

@@ -5,6 +5,7 @@
 #include <string/boyer_moore_search.h>
 #include <string/knuth_morris_pratt_search.h>
 #include <string/naive_search.h>
+#include <string/rabin_karp_search.h>
 #include <util/Timer.h>
 #include <util/array.h>
 
@@ -14,23 +15,29 @@ typedef const char *(*test_search_fp)(const char *text, std::size_t,
 TEST(string_search, test) {
   const char *const text = "spooky";
   {
-    const char *it = sp::kmp::search(text, "oo");
+    const char *it = sp::rk::search(text, "oo");
     ASSERT_TRUE(it);
     ASSERT_EQ(it, text + 2);
   }
 
   {
-    const char *it = sp::kmp::search(text, "s");
+    const char *it = sp::rk::search(text, "spooky");
+    ASSERT_TRUE(it);
+    ASSERT_EQ(it, text);
+  }
+
+  {
+    const char *it = sp::rk::search(text, "s");
     ASSERT_TRUE(it);
     ASSERT_EQ(it, text);
   }
   {
-    const char *it = sp::kmp::search(text, text);
+    const char *it = sp::rk::search(text, text);
     ASSERT_TRUE(it);
     ASSERT_EQ(it, text);
   }
   {
-    const char *it = sp::kmp::search(text, "ok");
+    const char *it = sp::rk::search(text, "ok");
     ASSERT_TRUE(it);
     ASSERT_EQ(it, text + 3);
   }
@@ -415,13 +422,16 @@ TEST(string_search, tsts_success_min_min) {
       if ((cmpers % 1000000) == 0) {
         printf("cmpers[%zu], seed[%u]\n", cmpers, prng_state);
       }
-      const char *const it = sp::bm::search(text_it, needle);
+      const char *const bm_it = sp::bm::search(text_it, needle);
+      const char *const kmp_it = sp::kmp::search(text_it, needle);
 
-      if (!it) {
-        printf("seed[%u]\n", prng_state);
+      if (!bm_it || !kmp_it) {
+        printf("seed[%u], bm[%p], kmp_it[%p]\n", prng_state, bm_it, kmp_it);
       }
-      ASSERT_TRUE(it);
-      ASSERT_EQ(0, std::memcmp(it, needle, needle_len));
+      ASSERT_TRUE(bm_it);
+      ASSERT_TRUE(kmp_it);
+      ASSERT_EQ(0, std::memcmp(bm_it, needle, needle_len));
+      ASSERT_EQ(kmp_it, bm_it);
     } // for
 
   } // while
