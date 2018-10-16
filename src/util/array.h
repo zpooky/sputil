@@ -88,6 +88,7 @@ std::size_t
 distance(const T *f, const T *s) noexcept {
   assertx(f);
   assertx(s);
+
   auto fl = reinterpret_cast<std::uintptr_t>(f);
   auto sl = reinterpret_cast<std::uintptr_t>(s);
   assertxs(fl <= sl, fl, sl);

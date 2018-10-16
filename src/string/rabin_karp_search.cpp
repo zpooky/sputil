@@ -1,6 +1,8 @@
 #include "rabin_karp_search.h"
-
+#include <cstdint>
 #include <cstring>
+#include <hash/RabinKarpHash.h>
+#include <util/assert.h>
 
 namespace sp {
 namespace rk {
@@ -17,38 +19,6 @@ function RabinKarp(string s[1..n], string pattern[1..m])
   return not found
 #endif
 //=====================================
-struct RabinKarpHash {
-  std::size_t length;
-  const std::size_t capacity;
-  std::uint32_t hash;
-  char *const buffer;
-
-  explicit RabinKarpHash(std::size_t c) noexcept;
-};
-
-static std::size_t
-update(RabinKarpHash &, const char *begin, const char *end) noexcept {
-  assertx(begin != end);
-  std::size_t result = 0;
-
-  while (begin != end) {
-    // TODO
-    ++result;
-
-    if (length == capacity) {
-      break;
-    }
-    ++length;
-  }
-
-  return result;
-}
-
-static std::uint32_t
-hash(const RabinKarpHash &) noexcept {
-  assertxs(length == capacity, length, capacity);
-  return hash;
-}
 
 const char *
 search(const char *const text, std::size_t tlen, //
@@ -64,23 +34,22 @@ search(const char *const text, std::size_t tlen, //
   }
 
   assertxs(text, tlen, nlen);
-  assertxs(pattern, tlen, nlen);
+  assertxs(needle, tlen, nlen);
 
   const char *t_it = text;
   const char *const t_end = text + tlen;
 
   RabinKarpHash t_hash(nlen);
-  RabinKarpHash p_hash(nlen);
+  RabinKarpHash n_hash(nlen);
   {
-    std::size_t u = update(p_hash, needle);
+    std::size_t u = update(n_hash, needle, nlen);
     assertxs(u == nlen, u, nlen);
   }
 
   while (t_it != t_end) {
-    std::size_t u = update(t_hash, t_it, t_end);
-    t_it += u;
+    t_it = update(t_hash, t_it, t_end);
 
-    if (hash(t_hash) == hash(p_hash)) {
+    if (hash(t_hash) == hash(n_hash)) {
 
       const char *const res = t_it - nlen;
       if (std::memcmp(res, needle, nlen) == 0) {
@@ -103,5 +72,5 @@ search(const char *text, const char *needle) noexcept {
 }
 
 //=====================================
-}
-}
+} // namespace rk
+} // namespace sp
