@@ -57,4 +57,33 @@ reflect(char needle, char *str, std::size_t len) noexcept {
   rec::reflect(needle, 0, str, len);
 }
 
+//=====================================
+bool
+is_alpha(const char *str, std::size_t len) noexcept {
+  for (std::size_t i = 0; i < len; ++i) {
+    if (!isalpha(str[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+//=====================================
+bool
+is_printable(char c) noexcept {
+  return c >= ' ' && c <= '~';
+}
+
+bool
+is_printable(const char *str, std::size_t len) noexcept {
+  for (std::size_t i = 0; i < len; ++i) {
+    if (!is_printable(str[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+//=====================================
 } // namespace ascii

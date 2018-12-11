@@ -8,7 +8,8 @@
 #include <exception>
 #include <fcntl.h>
 #include <sys/errno.h> //errno
-#include <sys/uio.h>   //writev
+#include <sys/stat.h>
+#include <sys/uio.h> //writev
 #include <unistd.h>
 
 namespace fs {
@@ -249,10 +250,27 @@ read<sp::CircularByteBuffer>(sp::fd &, sp::CircularByteBuffer &) noexcept;
 //
 // bool
 // is_symlink(const url::Path &) noexcept;
-//
-// bool
-// is_file(const url::Path &) noexcept;
-//
+
+bool
+is_file(const char *const path) noexcept {
+  sp::fd handle{open(path, O_RDONLY | O_CLOEXEC)};
+  if (!handle) {
+    return false;
+  }
+
+  struct ::stat out;
+  memset(&out, 0, sizeof(out));
+  if (fstat(int(handle), &out) < 0) {
+    return false;
+  }
+
+  if (S_ISREG(out.st_mode)) {
+    return true;
+  }
+
+  return false;
+}
+
 // bool
 // is_socket(const url::Path &) noexcept;
 

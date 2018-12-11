@@ -2,6 +2,7 @@
 #include <util/assert.h>
 
 namespace hex {
+//=====================================
 bool
 decode(const char *it, /*OUT*/ std::uint8_t *dest,
        /*IN/OUT*/ std::size_t &i) noexcept {
@@ -76,50 +77,82 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
   return true;
 } // namespace hex
 
+//=====================================
+static const char enc_lookup[0xf + 1] = {
+    '0', '1', '2', '3', '4', '5', '6', '7',
+    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+
+};
+
+static void
+encode_byte(std::uint8_t in, char &first, char &second) noexcept {
+  std::size_t f = (in >> 4) & 0xf;
+  assertxs(f < sizeof(enc_lookup), f);
+
+  std::size_t s = in & 0xf;
+  assertxs(s < sizeof(enc_lookup), s);
+
+  first = enc_lookup[f];
+  second = enc_lookup[s];
+}
+
 bool
-encode(const std::uint8_t *in, std::size_t in_length, /*OUT*/ char *out,
-       /*IN/OUT*/ std::size_t &len) noexcept {
-  const std::size_t size = len;
+encode(const std::uint8_t *in, std::size_t in_length, //
+       /*OUT*/ char *out, /*IN/OUT*/ std::size_t &len) noexcept {
+  const std::size_t out_size = len;
   len = 0;
 
-  char lookup[16] = {0};
-  {
-    std::size_t i = 0;
-    lookup[i++] = '0';
-    lookup[i++] = '1';
-    lookup[i++] = '2';
-    lookup[i++] = '3';
-    lookup[i++] = '4';
-    lookup[i++] = '5';
-    lookup[i++] = '6';
-    lookup[i++] = '7';
-    lookup[i++] = '8';
-    lookup[i++] = '9';
-    lookup[i++] = 'A';
-    lookup[i++] = 'B';
-    lookup[i++] = 'C';
-    lookup[i++] = 'D';
-    lookup[i++] = 'E';
-    lookup[i++] = 'F';
-  }
   for (std::size_t i = 0; i < in_length; ++i) {
-    std::size_t f = (in[i] >> 4) & 0xf;
-    assertx(f < sizeof(lookup));
 
-    std::size_t s = in[i] & 0xf;
-    assertx(s < sizeof(lookup));
+    char first = '\0';
+    char second = '\0';
+    encode_byte(in[i], /*OUT*/ first, /*OUT*/ second);
 
-    if (len >= size) {
+    if (len >= out_size) {
       return false;
     }
-    out[len++] = lookup[f];
+    out[len++] = first;
 
-    if (len >= size) {
+    if (len >= out_size) {
       return false;
     }
-    out[len++] = lookup[s];
-  }
+    out[len++] = second;
+  } // for
 
   return true;
 }
+
+const std::uint8_t *
+encode_inc(const std::uint8_t *const beg, const std::uint8_t *const end,
+           /*OUT*/ char *out, /*IN/OUT*/ std::size_t &out_len) noexcept {
+  const std::size_t out_size = out_len;
+  const std::uint8_t *it = beg;
+
+  out_len = 0;
+
+  while (it != end) {
+    std::size_t tmp_len = out_len;
+
+    char first = '\0';
+    char second = '\0';
+    encode_byte(*it, /*OUT*/ first, /*OUT*/ second);
+
+    if (tmp_len >= out_size) {
+      break;
+    }
+    out[tmp_len++] = first;
+
+    if (tmp_len >= out_size) {
+      break;
+    }
+    out[tmp_len++] = second;
+
+    out_len = tmp_len;
+    ++it;
+  }
+
+  return it;
+}
+
+//=====================================
 } // namespace hex

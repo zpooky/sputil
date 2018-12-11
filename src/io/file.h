@@ -85,10 +85,10 @@ read(sp::fd &, Buffer &) noexcept;
 //
 // bool
 // is_symlink(const Path &) noexcept;
-//
-// bool
-// is_file(const Path &) noexcept;
-//
+
+bool
+is_file(const char *) noexcept;
+
 // bool
 // is_socket(const Path &) noexcept;
 } // namespace fs
