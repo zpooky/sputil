@@ -2,10 +2,10 @@
 #define SP_UTIL_HEAP_BINARY_H
 
 #include <stack/DynamicStack.h>
+#include <string>
 #include <util/array.h>
 #include <util/assert.h>
 #include <util/comparator.h>
-#include <string>
 
 namespace heap {
 
@@ -126,7 +126,11 @@ find(Binary<T, Comparator> &, const K &) noexcept;
 template <typename T, typename Comparator>
 void
 swap(Binary<T, Comparator> &, Binary<T, Comparator> &) noexcept;
-// TODO this should not work a static heap
+
+template <typename T, std::size_t N, typename Comparator>
+void
+swap(StaticBinary<T, N, Comparator> &,
+     StaticBinary<T, N, Comparator> &) = delete;
 
 //=====================================
 /*
@@ -160,13 +164,35 @@ concat(Binary<T, Comparator> &dest,
 //=====================================
 template <typename T, typename Comparator>
 T *
-decrease_key(Binary<T, Comparator> &self, T *) noexcept;
+update_key(Binary<T, Comparator> &self, T *) noexcept;
+
+// //=====================================
+// std::size_t count_key(Binary<T, Comparator>, const )
 
 //=====================================
+namespace debug {
 template <typename Comparator>
 void
 dump(Binary<int, Comparator> &, std::size_t idx = 0, std::string prefix = "",
      bool isTail = true, const char *ctx = "") noexcept;
+
+template <typename T, typename Comparator>
+void
+dump(Binary<T, Comparator> &, std::size_t idx = 0, std::string prefix = "",
+     bool isTail = true, const char *ctx = "") noexcept;
+
+template <typename T, typename Comparator>
+bool
+verify(const Binary<T, Comparator> &, std::size_t) noexcept;
+} // namespace debug
+
+template <typename T, typename Comparator, typename F>
+void
+for_each(const Binary<T, Comparator> &, F) noexcept;
+
+template <typename T, typename Comparator, typename F>
+bool
+for_all(const Binary<T, Comparator> &, F) noexcept;
 
 //=====================================
 //====Implementation===================
@@ -226,12 +252,14 @@ insert_at(Binary<T, Comp> &self, std::size_t idx, V &&val) noexcept {
 
 template <typename T, typename Comp>
 std::size_t
-extreme(Binary<T, Comp> &self, std::size_t first, std::size_t second) noexcept {
+extreme(const Binary<T, Comp> &self, std::size_t first,
+        std::size_t second) noexcept {
+  auto &buffer = self.buffer;
   assertxs(first < self.length, first, self.length);
   assertxs(second < self.length, first, self.length);
 
   constexpr Comp c;
-  if (c(self.buffer[first], /*>*/ self.buffer[second])) {
+  if (c(buffer[first], /*>*/ buffer[second])) {
     return first;
   }
 
@@ -380,8 +408,9 @@ last(Binary<T, Comparator> &self) noexcept {
 namespace impl {
 namespace heap {
 template <typename T, typename Comp>
-static void
+static std::size_t
 shift_down(Binary<T, Comp> &self, std::size_t idx) noexcept {
+  auto &buffer = self.buffer;
 Lit:
   std::size_t extreme_idx = self.length;
 
@@ -398,13 +427,16 @@ Lit:
   if (extreme_idx < self.length) {
 
     constexpr Comp c;
-    if (c(self.buffer[extreme_idx], self.buffer[idx])) {
+    if (c(buffer[extreme_idx], buffer[idx])) {
       using std::swap;
-      swap(self.buffer[idx], self.buffer[extreme_idx]);
+      swap(buffer[idx], buffer[extreme_idx]);
+
       idx = extreme_idx;
       goto Lit;
     }
   }
+
+  return idx;
 }
 } // namespace heap
 } // namespace impl
@@ -574,6 +606,7 @@ index_of(Binary<T, Comparator> &self, T *subject) noexcept {
 }
 } // namespace impl_heap
 
+namespace impl {
 template <typename T, typename Comparator>
 T *
 decrease_key(Binary<T, Comparator> &self, T *subject) noexcept {
@@ -585,6 +618,31 @@ decrease_key(Binary<T, Comparator> &self, T *subject) noexcept {
   return self.buffer + idx;
 }
 
+template <typename T, typename Comparator>
+T *
+increase_key(Binary<T, Comparator> &self, T *subject) noexcept {
+  assertx(subject);
+  std::size_t idx = impl_heap::index_of(self, subject);
+  assertxs(idx != capacity(self), idx, capacity(self));
+
+  idx = impl::heap::shift_down(self, idx);
+  return self.buffer + idx;
+}
+} // namespace impl
+
+template <typename T, typename Comparator>
+T *
+update_key(Binary<T, Comparator> &self, T *subject) noexcept {
+  const auto len = self.length;
+  subject = impl::decrease_key(self, subject);
+  assertxs(len == self.length, len, self.length);
+  subject = impl::increase_key(self, subject);
+  assertxs(len == self.length, len, self.length);
+  assertx(debug::verify(self, 0));
+  return subject;
+}
+
+namespace debug {
 //=====================================
 template <typename Comparator>
 void
@@ -613,9 +671,97 @@ dump(Binary<int, Comparator> &self, std::size_t idx, std::string prefix,
       }
     }
   }
-} // heap::dump()
+}
+
+template <typename T, typename Comparator>
+void
+dump(Binary<T, Comparator> &self, std::size_t idx, std::string prefix,
+     bool isTail, const char *ctx) noexcept {
+  using namespace impl::heap;
+  if (idx < self.length) {
+    char name[256] = {0};
+    sprintf(name, "%s[%p,depth: %zd]", //
+            ctx, (void *)self.buffer[idx], self.buffer[idx]->depth);
+
+    printf("%s%s%s\n", prefix.c_str(), (isTail ? "└── " : "├── "), name);
+
+    const char *ls = (isTail ? "    " : "│   ");
+
+    bool has_left = left_child(idx) < self.length;
+    bool has_right = right_child(idx) < self.length;
+
+    if (has_left && has_right) {
+      dump(self, right_child(idx), prefix + ls, false);
+      dump(self, left_child(idx), prefix + ls, true);
+    } else {
+      if (has_left) {
+        dump(self, left_child(idx), prefix + ls, true);
+      } else if (has_right) {
+        dump(self, right_child(idx), prefix + ls, true);
+      }
+    }
+  }
+}
 
 //=====================================
+template <typename T, typename Comparator>
+bool
+verify(const Binary<T, Comparator> &self, std::size_t idx) noexcept {
+  auto buffer = self.buffer;
+  {
+    std::size_t ridx = impl::heap::right_child(idx);
+    if (ridx < self.length) {
+      constexpr Comparator cmp;
+      bool greater = cmp(buffer[idx], buffer[ridx]);
+      bool lesser = cmp(buffer[ridx], buffer[idx]);
+      bool eq = !greater && !lesser;
+
+      // assertxs(greater || eq, buffer[idx]->depth, buffer[ridx]->depth);
+      assertx(greater || eq);
+
+      verify(self, ridx);
+    }
+  }
+
+  {
+    std::size_t lidx = impl::heap::left_child(idx);
+    if (lidx < self.length) {
+      constexpr Comparator cmp;
+      bool greater = cmp(buffer[idx], buffer[lidx]);
+      bool lesser = cmp(buffer[lidx], buffer[idx]);
+      bool eq = !greater && !lesser;
+
+      // assertxs(greater || eq, buffer[idx]->depth, buffer[lidx]->depth);
+      assertx(greater || eq);
+
+      verify(self, lidx);
+    }
+  }
+  return true;
+}
+} // namespace debug
+
+template <typename T, typename Comparator, typename F>
+void
+for_each(const Binary<T, Comparator> &self, F f) noexcept {
+  for (std::size_t i = 0; i < self.length; ++i) {
+    const T &current = self.buffer[i];
+    f(current);
+  }
+}
+
+template <typename T, typename Comparator, typename F>
+bool
+for_all(const Binary<T, Comparator> &self, F f) noexcept {
+  for (std::size_t i = 0; i < self.length; ++i) {
+    const T &current = self.buffer[i];
+    if (!f(current)) {
+      return false;
+    }
+  }
+
+  return true;
+}
 } // namespace heap
 
 #endif

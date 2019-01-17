@@ -6,6 +6,7 @@
 #include <type_traits>
 
 namespace djb2 {
+//=====================================
 std::uint32_t
 encode(const void *buf, std::size_t length, std::uint32_t hash) noexcept;
 
@@ -13,14 +14,16 @@ std::uint32_t
 encode32(const void *buf, std::size_t length) noexcept;
 
 } // namespace djb2
-namespace djb2a {
 
+namespace djb2a {
+//=====================================
 std::uint32_t
 encode(const void *buf, std::size_t length, std::uint32_t hash) noexcept;
 
 std::uint32_t
 encode32(const void *buf, std::size_t length) noexcept;
 
+//=====================================
 template <typename T>
 std::enable_if_t< //
     std::is_trivially_copyable<T>::value && !std::is_pointer<T>::value,
@@ -29,6 +32,7 @@ hash(const T &in) noexcept {
   return encode32(&in, sizeof(in));
 }
 
+//=====================================
 } // namespace djb2a
 
 #endif

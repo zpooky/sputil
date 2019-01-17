@@ -5,9 +5,9 @@ namespace hex {
 //=====================================
 bool
 decode(const char *it, /*OUT*/ std::uint8_t *dest,
-       /*IN/OUT*/ std::size_t &i) noexcept {
-  const std::size_t size = i;
-  i = 0;
+       /*IN/OUT*/ std::size_t &len) noexcept {
+  const std::size_t size = len;
+  len = 0;
 
   std::uint8_t lookup[('f' + 1) - '0'] = {0xff};
   lookup['0' - '0'] = 0x0;
@@ -36,7 +36,7 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
   lookup['f' - '0'] = 0xF;
 
   while (*it != '\0') {
-    if (i > size) {
+    if (len > size) {
       return false;
     }
 
@@ -55,6 +55,8 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
     }
 
     if (*it == '\0') {
+      /* $it is not dividiable by two */
+      assertx(false);
       return false;
     }
 
@@ -71,7 +73,7 @@ decode(const char *it, /*OUT*/ std::uint8_t *dest,
       }
     }
 
-    dest[i++] = f | s;
+    dest[len++] = f | s;
   }
 
   return true;

@@ -6,8 +6,7 @@
 #include <cstddef>
 
 namespace sp {
-
-//-------------------+---------------
+//=====================================
 struct Thing {
   using FillType = bool (*)(CircularByteBuffer &, void *);
 
@@ -31,6 +30,7 @@ struct Thing {
   Thing(const Thing &&) = delete;
 };
 
+//=====================================
 struct ThingMark {
   const std::size_t before;
   Thing *marked;
@@ -45,7 +45,7 @@ struct ThingMark {
   ~ThingMark() noexcept;
 };
 
-//-------------------+---------------
+//=====================================
 // TODO mark should be on CBBuffer level instead....
 /* Mark current position */
 ThingMark
@@ -57,18 +57,12 @@ marks(const Thing &) noexcept;
 bool
 is_marked(const Thing &) noexcept;
 
-//-------------------+---------------
+//=====================================
 // ConstBytesView
 // peek() noexcept;
 
 std::size_t
 pop_front(Thing &, unsigned char *, std::size_t) noexcept;
-
-std::size_t
-pop_front(Thing &, BytesView &) noexcept;
-
-std::size_t
-pop_front(Thing &, unsigned char &) noexcept;
 
 template <std::size_t SIZE>
 std::size_t
@@ -76,15 +70,26 @@ pop_front(Thing &self, unsigned char (&buffer)[SIZE]) noexcept {
   return pop_front(self, buffer, SIZE);
 }
 
-//-------------------+---------------
+#if 0
+std::size_t
+pop_front(Thing &, char *, std::size_t) noexcept;
+
+template <std::size_t SIZE>
+std::size_t
+pop_front(Thing &self, char (&buffer)[SIZE]) noexcept {
+  return pop_front(self, buffer, SIZE);
+}
+#endif
+
+std::size_t
+pop_front(Thing &, BytesView &) noexcept;
+
+std::size_t
+pop_front(Thing &, unsigned char &) noexcept;
+
+//=====================================
 std::size_t
 peek_front(Thing &, /*copy DEST*/ unsigned char *, std::size_t) noexcept;
-
-std::size_t
-peek_front(Thing &, /*copy DEST*/ BytesView &) noexcept;
-
-std::size_t
-peek_front(Thing &self, unsigned char &c) noexcept;
 
 template <std::size_t SIZE>
 std::size_t
@@ -92,7 +97,24 @@ peek_front(Thing &self, unsigned char (&buffer)[SIZE]) noexcept {
   return peek_front(self, buffer, SIZE);
 }
 
-//-------------------+---------------
+#if 0
+std::size_t
+peek_front(Thing &, /*copy DEST*/ char *, std::size_t) noexcept;
+
+template <std::size_t SIZE>
+std::size_t
+peek_front(Thing &self, char (&buffer)[SIZE]) noexcept {
+  return peek_front(self, buffer, SIZE);
+}
+#endif
+
+std::size_t
+peek_front(Thing &, /*copy DEST*/ BytesView &) noexcept;
+
+std::size_t
+peek_front(Thing &self, unsigned char &c) noexcept;
+
+//=====================================
 bool
 read(Thing &, void *, std::size_t) noexcept;
 
@@ -114,8 +136,7 @@ read(Thing &self, char (&buffer)[SIZE]) noexcept {
   return read(self, buffer, SIZE);
 }
 
-//-------------------+---------------
-
+//=====================================
 } // namespace sp
 
 #endif

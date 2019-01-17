@@ -119,7 +119,8 @@ get_hash(const T &key, const std::size_t buckets, const std::size_t attempt) {
 
 template <typename T, typename H, typename Eq, typename V>
 static const HashSetOpenBucket<T> *
-find_lookup(const HashSetOpen<T, H, Eq> &self, const V &value) noexcept {
+find_lookup(const HashSetOpen<T, H, Eq> &, const V &) noexcept {
+  assertx(false);
   return nullptr;
 }
 

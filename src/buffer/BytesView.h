@@ -4,7 +4,7 @@
 #include <cstddef>
 
 namespace sp {
-
+//=====================================
 template <typename T>
 struct IBytesView {
   T *raw;
@@ -37,6 +37,7 @@ struct IBytesView {
 using BytesView = IBytesView<unsigned char>;
 using ConstBytesView = IBytesView<const unsigned char>;
 
+//=====================================
 template <std::size_t SIZE>
 struct StaticBytesView : public BytesView {
 
@@ -46,33 +47,71 @@ struct StaticBytesView : public BytesView {
   StaticBytesView();
 };
 
+//=====================================
+struct BytesViewMark {
+  const std::size_t before;
+  BytesView *marked;
+  bool rollback;
+
+  // RAII
+  BytesViewMark(std::size_t, BytesView *) noexcept;
+
+  BytesViewMark(const BytesViewMark &) = delete;
+  BytesViewMark(BytesViewMark &&) noexcept;
+
+  ~BytesViewMark() noexcept;
+};
+
+//=====================================
 // BytesView
 // copy(BytesView &) noexcept;
 
+//=====================================
 void
 flip(BytesView &) noexcept;
 
+//=====================================
 void
 reset(BytesView &) noexcept;
 
+//=====================================
 unsigned char *
 offset(BytesView &) noexcept;
 
+//=====================================
 std::size_t
 remaining_read(const BytesView &) noexcept;
 
 std::size_t
 remaining_write(const BytesView &) noexcept;
-/*
- * ==========================================================================
- */
 
+//=====================================
+std::size_t
+pop_front(BytesView &, unsigned char &) noexcept;
+
+std::size_t
+pop_front(BytesView &, char &) noexcept;
+
+std::size_t
+pop_front(BytesView &, unsigned char *, std::size_t) noexcept;
+
+std::size_t
+pop_front(BytesView &, char *, std::size_t) noexcept;
+
+//=====================================
+BytesViewMark
+mark(BytesView &) noexcept;
+
+//=====================================
+//====Implementation===================
+//=====================================
 template <std::size_t c>
 StaticBytesView<c>::StaticBytesView()
     : BytesView(r, c)
     , r{} {
 }
 
+//=====================================
 } // namespace sp
 
 #endif
