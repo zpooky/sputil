@@ -34,9 +34,8 @@ Milliseconds::operator int() const noexcept {
   return int(value);
 }
 
-Milliseconds::operator time_t() const noexcept {
-  assertx(value < std::numeric_limits<time_t>::max());
-  return time_t(value);
+Milliseconds::operator std::uint64_t() const noexcept {
+  return value;
 }
 
 /* ===================================== */

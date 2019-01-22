@@ -33,7 +33,7 @@ public:
   /* ===================================== */
 
   explicit operator int() const noexcept;
-  explicit operator time_t() const noexcept;
+  explicit operator std::uint64_t() const noexcept;
 
   /* ===================================== */
   Milliseconds
