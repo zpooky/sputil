@@ -2,7 +2,7 @@
 #include <cstdio>
 
 namespace sp {
-
+//=====================================
 static std::size_t
 max(std::size_t f, std::size_t s) noexcept {
   return f > s ? f : s;
@@ -70,10 +70,12 @@ do_print(unsigned char value) noexcept {
   printf("%u", value);
 }
 
+#ifdef __x86_64
 static void
 do_print(int value) noexcept {
   printf("%02d", value);
 }
+#endif
 
 template <typename T>
 static void
@@ -85,6 +87,7 @@ print(T value, std::size_t pad) noexcept {
   do_print(value);
 }
 
+//=====================================
 template <typename T>
 void
 print(const Matrix<T> &m) noexcept {
@@ -115,4 +118,6 @@ print<char>(const Matrix<char> &) noexcept;
 
 template void
 print<unsigned char>(const Matrix<unsigned char> &) noexcept;
-}
+
+//=====================================
+} // namespace sp

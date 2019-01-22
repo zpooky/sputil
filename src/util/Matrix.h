@@ -5,7 +5,7 @@
 #include <util/assert.h>
 
 namespace sp {
-
+//=====================================
 template <typename T>
 struct Matrix {
   T *buffer;
@@ -38,6 +38,7 @@ struct Matrix {
   }
 };
 
+//=====================================
 template <typename T, typename F>
 void
 for_each(Matrix<T> &mtx, F f) noexcept {
@@ -49,6 +50,7 @@ for_each(Matrix<T> &mtx, F f) noexcept {
   }
 }
 
+//=====================================
 template <typename T>
 void
 init(Matrix<T> &mtx, const T &val) noexcept {
@@ -58,9 +60,12 @@ init(Matrix<T> &mtx, const T &val) noexcept {
   });
 }
 
+//=====================================
 template <typename T>
 void
 print(const Matrix<T> &) noexcept;
-}
+
+//=====================================
+} // namespace sp
 
 #endif
