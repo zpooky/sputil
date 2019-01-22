@@ -110,8 +110,10 @@ print<std::size_t>(const Matrix<std::size_t> &) noexcept;
 template void
 print<ssize_t>(const Matrix<ssize_t> &) noexcept;
 
+#ifdef __x86_64
 template void
 print<int>(const Matrix<int> &) noexcept;
+#endif
 
 template void
 print<char>(const Matrix<char> &) noexcept;
