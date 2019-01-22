@@ -1,7 +1,7 @@
 #include "timeout.h"
-#include <util/assert.h>
 #include <ctime>
 #include <limits>
+#include <util/assert.h>
 
 namespace sp {
 
@@ -28,14 +28,15 @@ Milliseconds::Milliseconds(const Hours &v) noexcept
     : Milliseconds(Minutes(v)) {
 }
 
-Milliseconds::operator std::uint64_t() const noexcept {
-  return value;
-}
-
 Milliseconds::operator int() const noexcept {
-  assertx(std::numeric_limits<int>::max() > value);
+  assertx(value < std::numeric_limits<int>::max());
   // TODO maybe max < value ? max : value
   return int(value);
+}
+
+Milliseconds::operator time_t() const noexcept {
+  assertx(value < std::numeric_limits<time_t>::max());
+  return time_t(value);
 }
 
 /* ===================================== */

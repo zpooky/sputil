@@ -2,6 +2,7 @@
 #define SP_UTIL_TREE_AVL_TREE_H
 
 #include <cstdint>
+#include <limits.h>
 #include <tree/tree.h>
 #include <tuple>
 #include <util/assert.h>
@@ -91,10 +92,16 @@ height(const Node<T> *node) noexcept {
 }
 
 template <typename T>
-static int
+static ssize_t
 balance(const Node<T> *node) noexcept {
   assertx(node);
-  return -height(node->left) + height(node->right);
+  std::size_t left = height(node->left);
+  std::size_t right = height(node->right);
+
+  assertxs(left < SSIZE_MAX, left, SSIZE_MAX);
+  assertxs(right < SSIZE_MAX, right, SSIZE_MAX);
+
+  return -ssize_t(left) + ssize_t(right);
 } // avl::impl::balance()
 } // namespace impl
 
@@ -599,14 +606,14 @@ dump(const Tree<T, C> &tree, std::string prefix) noexcept {
 namespace impl {
 template <typename T>
 static bool
-verify(const Node<T> *parent, const Node<T> *tree, int &result) noexcept {
+verify(const Node<T> *parent, const Node<T> *tree, ssize_t &result) noexcept {
   result = 0;
   if (tree) {
     if (tree->parent != parent) {
       return false;
     }
 
-    int left = 0;
+    ssize_t left = 0;
     if (tree->left) {
       if (!(tree->value > tree->left->value)) {
         return false;
@@ -616,7 +623,7 @@ verify(const Node<T> *parent, const Node<T> *tree, int &result) noexcept {
       }
     }
 
-    int right = 0;
+    ssize_t right = 0;
     if (tree->right) {
       if (!(tree->value < tree->right->value)) {
         return false;
@@ -628,8 +635,8 @@ verify(const Node<T> *parent, const Node<T> *tree, int &result) noexcept {
 
     result++;
 
-    int bl = int(right) - int(left);
-    const int h = std::max(right, left) + 1;
+    ssize_t bl = ssize_t(right) - ssize_t(left);
+    const auto h = std::max(right, left) + 1;
     assertx(h >= 0);
     if (std::size_t(h) != tree->height) {
       // printf("height[%d] != tree->height[%d]\n", h, tree->height);
@@ -664,7 +671,7 @@ verify(const Node<T> *parent, const Node<T> *tree, int &result) noexcept {
 template <typename T, typename C>
 bool
 verify(const Tree<T, C> &self) noexcept {
-  int balance = 0;
+  ssize_t balance = 0;
   return impl::verify<T>((Node<T> *)nullptr, self.root, balance);
 } // avl::verify()
 
