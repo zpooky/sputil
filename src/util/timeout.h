@@ -125,10 +125,9 @@ public:
   explicit Seconds(std::uint64_t v) noexcept;
   explicit Seconds(const Minutes &v) noexcept;
   explicit Seconds(const Hours &v) noexcept;
-  /* ===================================== */
 
-  explicit operator std::uint64_t() const noexcept;
-  explicit operator std::int64_t() const noexcept;
+  /* ===================================== */
+  explicit operator time_t() const noexcept;
 
   /* ===================================== */
 

@@ -246,15 +246,11 @@ Seconds::Seconds(const Minutes &v) noexcept
 Seconds::Seconds(const Hours &v) noexcept
     : Seconds(Minutes(v)) {
 }
+
 /* ===================================== */
-
-Seconds::operator std::uint64_t() const noexcept {
-  return value;
-}
-
-Seconds::operator std::int64_t() const noexcept {
-  assertx(std::numeric_limits<std::int64_t>::max() > value);
-  return std::int64_t(value);
+Seconds::operator time_t() const noexcept {
+  assertx(value < std::numeric_limits<time_t>::max());
+  return time_t(value);
 }
 /* ===================================== */
 
