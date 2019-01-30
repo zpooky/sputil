@@ -40,8 +40,7 @@
  */
 namespace sp {
 namespace impl {
-/*
- * An HashSetTree implementation using separate chaining collision handling
+/* An HashSetTree implementation using separate chaining collision handling
  * strategy. Meaning on hash collision we place the new entry in a linkedlist
  * pointed to by the bucket.
  *
@@ -57,6 +56,7 @@ namespace impl {
  * original or the new nodes hash range, if element is supposed to be in the
  * new node; then move it there. The new node is then inserted the node tree.
  */
+
 //=====================================
 template <typename T>
 struct HSBucket {
@@ -101,10 +101,12 @@ struct HSNode {
 struct HashKey {
   const std::size_t hash;
 
-  HashKey(std::size_t) noexcept;
+  explicit HashKey(std::size_t) noexcept;
 
   bool
   operator==(const HashKey &) const noexcept;
+
+  bool operator==(std::size_t) const noexcept;
 
   template <typename T>
   bool
@@ -196,6 +198,7 @@ template <typename T, typename H, typename Eq>
 std::size_t
 length(const HashSetTree<T, H, Eq> &) noexcept;
 
+//=====================================
 } // namespace rec
 
 //=====================================
@@ -293,6 +296,11 @@ HashKey::operator==(const HashKey &o) const noexcept {
   return this->hash == o.hash;
 }
 
+inline bool
+HashKey::operator==(std::size_t o) const noexcept {
+  return this->hash == o;
+}
+
 template <typename T>
 bool
 HashKey::operator>(const HSNode<T> &o) const noexcept {
@@ -322,7 +330,6 @@ HashSetTree<T, H, Eq>::~HashSetTree() noexcept {
 
 //=====================================
 namespace impl {
-
 // #<{(|*
 //  * Returns a power of two size for the given target capacity.
 //  |)}>#
@@ -398,9 +405,9 @@ Lit:
 
 template <typename T, typename V, typename Eq>
 static T *
-bucket_insert(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
-  auto factory = [&val](T &current, const auto &) {
-    return new (&current) T(std::forward<V>(val));
+bucket_insert(HSBucket<T> &node, V &&in, bool &inserted, Eq eq) noexcept {
+  auto factory = [&in](T &current, const auto &) {
+    return new (&current) T(std::forward<V>(in));
   };
 
   auto on_duplicate = [](HSBucket<T> &) {
@@ -408,7 +415,7 @@ bucket_insert(HSBucket<T> &node, V &&val, bool &inserted, Eq eq) noexcept {
     return nullptr;
   };
 
-  T *const result = bucket_factory(node, val, factory, on_duplicate, eq);
+  T *const result = bucket_factory(node, in, factory, on_duplicate, eq);
   inserted = result != nullptr;
 
   return result;
@@ -549,7 +556,7 @@ split(HashSetTree<T, Hash, Eq> &self, HSNode<T, cap> &subject) noexcept {
     assertxs(!overflow_sum(new_start, new_length), new_start, new_length);
     assertx((new_start + new_length) == subject.start + before_length);
 
-    auto status = emplace(self.tree, new_start, new_length);
+    auto status = avl::insert(self.tree, HSNode<T>(new_start, new_length));
     assertx_f({
       if (!verify(self.tree)) {
         dump(self.tree);
@@ -793,30 +800,28 @@ node_lookup_compute(HSNode<T, c> &node, const HashKey &code, const V &needle,
 
 template <typename T, typename H, typename Eq, typename V, typename Insert>
 T *
-do_insert(HashSetTree<T, H, Eq> &self, V &&val, Insert insert) noexcept {
-  auto &tree = self.tree;
+do_insert(HashSetTree<T, H, Eq> &self, V &&in, Insert insert) noexcept {
   H h;
-  const auto &needle = val;
+  const auto &needle = in;
   // printf("%s\n", typeid(*pb).name());
-  const HashKey code(h(needle));
+  const HashKey key(h(needle));
   bool re_hash = false;
 
 Lretry : {
-  HSNode<T> *node = find(tree, code);
+  HSNode<T> *node = find(self.tree, key);
   if (!node) {
-    // should only get here on first invocation
-    if (!is_empty(tree)) {
-      dump(tree);
+    /* Should only get here on first invocation */
+    if (!is_empty(self.tree)) {
+      dump(self.tree);
+      assertxs(is_empty(self.tree), sp::rec::length(self), key.hash);
     }
-    assertxs(is_empty(tree), sp::rec::length(self), code.hash);
 
-    const std::size_t start = 0;
     const auto length = std::numeric_limits<std::size_t>::max();
-    auto res = emplace(tree, start, length);
+    auto res = avl::insert(self.tree, HSNode<T>{0, length});
 
     node = std::get<0>(res);
     if (node) {
-      assertx(find(tree, code) == node);
+      assertx(find(self.tree, key) == node);
 
       const bool created = std::get<1>(res);
       assertxs(created, node, created);
@@ -824,7 +829,7 @@ Lretry : {
   }
 
   if (node) {
-    assertx(in_range(*node, code));
+    assertx(in_range(*node, key));
 
     if (!re_hash && node->entries >= node->capacity) {
       re_hash = true;
@@ -834,9 +839,9 @@ Lretry : {
       }
     }
 
-    T *const result = insert(*node, code, std::forward<V>(val));
+    T *const result = insert(*node, key, std::forward<V>(in));
     if (result) {
-      assertxs(code == h(*result), h(*result), code.hash);
+      assertxs(key == h(*result), h(*result), key.hash);
     }
 
     return result;
@@ -849,7 +854,7 @@ Lretry : {
 
 template <typename T, typename H, typename Eq, typename V>
 T *
-insert(HashSetTree<T, H, Eq> &self, V &&val) noexcept {
+insert(HashSetTree<T, H, Eq> &self, V &&in) noexcept {
   using namespace impl;
 
   auto f = [](HSNode<T> &node, const HashKey &code, V &&v) {
@@ -857,13 +862,13 @@ insert(HashSetTree<T, H, Eq> &self, V &&val) noexcept {
     return node_insert(node, code, std::forward<V>(v), equality);
   };
 
-  return impl::do_insert(self, std::forward<V>(val), f);
+  return impl::do_insert(self, std::forward<V>(in), f);
 }
 
 //=====================================
 template <typename T, typename H, typename Eq, typename V>
 T *
-upsert(HashSetTree<T, H, Eq> &self, V &&val) noexcept {
+upsert(HashSetTree<T, H, Eq> &self, V &&in) noexcept {
   using namespace impl;
 
   auto f = [](HSNode<T> &node, const HashKey &code, V &&v) {
@@ -871,7 +876,7 @@ upsert(HashSetTree<T, H, Eq> &self, V &&val) noexcept {
     return node_upsert(node, code, std::forward<V>(v), equality);
   };
 
-  return impl::do_insert(self, std::forward<V>(val), f);
+  return impl::do_insert(self, std::forward<V>(in), f);
 }
 
 //=====================================

@@ -6,7 +6,7 @@
 // TODO impl
 
 namespace sp {
-
+//=====================================
 struct Sink {
   using FlushType = bool (*)(CircularByteBuffer &, void *);
 
@@ -14,16 +14,12 @@ struct Sink {
   FlushType sink;
   void *arg;
 
-  Sink(CircularByteBuffer &b, void *a, FlushType s) noexcept
-      : buffer(b)
-      , sink(s)
-      , arg(a) {
-  }
+  Sink(CircularByteBuffer &b, void *a, FlushType s) noexcept;
 
-  ~Sink();
+  ~Sink() noexcept;
 };
 
-//-------------------+---------------
+//=====================================
 bool
 write(Sink &, BytesView &) noexcept;
 
@@ -47,9 +43,9 @@ bool
 write(Sink &s, const char (&buffer)[SIZE]) noexcept {
   return write(s, buffer, SIZE);
 }
-//-------------------+---------------
-/*
- * returns byte written
+
+//=====================================
+/* returns byte written
  */
 std::size_t
 push_back(Sink &, const void *, std::size_t) noexcept;
@@ -69,9 +65,10 @@ push_back(Sink &s, const unsigned char (&buffer)[SIZE]) noexcept {
 std::size_t
 push_back(Sink &, BytesView &) noexcept;
 
-//-------------------+---------------
+//=====================================
 bool
 flush(Sink &) noexcept;
 
+//=====================================
 } // namespace sp
 #endif

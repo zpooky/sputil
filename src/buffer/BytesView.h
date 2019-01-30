@@ -12,7 +12,7 @@ struct IBytesView {
   std::size_t length;
   std::size_t pos;
 
-  IBytesView(T *, std::size_t) noexcept;
+  IBytesView(T *, std::size_t capacity) noexcept;
 
   // IBytesView(const IBytesView &) = delete;
   IBytesView(const IBytesView<T> &) noexcept;

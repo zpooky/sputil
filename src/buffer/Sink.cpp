@@ -2,18 +2,18 @@
 #include <util/assert.h>
 
 namespace sp {
+//=====================================
+Sink::Sink(CircularByteBuffer &b, void *a, FlushType s) noexcept
+    : buffer(b)
+    , sink(s)
+    , arg(a) {
+}
 
-// Sink::Sink(CircularByteBuffer &b, void *a, SinkFlush s) noexcept
-//     : buffer(b)
-//     , sink(s)
-//     , arg(a) {
-// }
-
-Sink::~Sink() {
-  // assertx(flush(*this));
+Sink::~Sink() noexcept {
   flush(*this);
 }
-//-------------------+---------------
+
+//=====================================
 static bool
 write(Sink &sink, const unsigned char *w, std::size_t l) {
   if (l > capacity(sink.buffer)) {
@@ -67,8 +67,7 @@ write(Sink &sink, char c) noexcept {
   return write(sink, &c, 1);
 }
 
-//-------------------+---------------
-
+//=====================================
 static std::size_t
 push_back(Sink &sink, const unsigned char *w, std::size_t len) noexcept {
   std::size_t written = 0;
@@ -107,6 +106,7 @@ push_back(Sink &sink, BytesView &in) noexcept {
   return written;
 }
 
+//=====================================
 bool
 flush(Sink &sink) noexcept {
   if (sink.sink) {
@@ -116,4 +116,5 @@ flush(Sink &sink) noexcept {
   return false;
 }
 
+//=====================================
 } // namespace sp

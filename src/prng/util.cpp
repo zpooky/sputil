@@ -26,6 +26,10 @@ template typename xorshift128plus::Word
 uniform_dist(xorshift128plus &, typename xorshift128plus::Word,
              typename xorshift128plus::Word) noexcept;
 
+template typename URandom::Word
+uniform_dist(URandom &, typename URandom::Word,
+             typename URandom::Word) noexcept;
+
 //=====================================
 template <typename Random>
 bool
@@ -40,6 +44,9 @@ uniform_bool(xorshift32 &r) noexcept;
 
 template bool
 uniform_bool(xorshift128plus &r) noexcept;
+
+template bool
+uniform_bool(URandom &r) noexcept;
 
 //=====================================
 template <typename Random>

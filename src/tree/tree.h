@@ -19,7 +19,7 @@ struct Tree {
 
   T *root;
 
-  Tree(T *) noexcept;
+  explicit Tree(T *) noexcept;
   Tree() noexcept;
 
   Tree(const Tree<T, Comparator> &) = delete;
@@ -80,10 +80,8 @@ Tree<T, C>::~Tree() noexcept {
   }
 }
 
-//=====================================
 namespace impl {
 /*impl*/
-
 //=====================================
 template <typename T>
 static bool
@@ -137,8 +135,7 @@ child_count(T *tree) noexcept {
 }
 
 //=====================================
-/*
- * Recursively search down in the left branch to find the smallest node in the
+/* Recursively search down in the left branch to find the smallest node in the
  * tree.
  */
 template <typename T>
@@ -155,9 +152,7 @@ Lstart:
 } // bst::impl::find_min()
 
 //=====================================
-/*
- * Recursivly search in tree until matching node is found
- */
+/* Recursivly search in tree until matching node is found */
 template <typename N, typename C, typename K>
 const N *
 find_node(const Tree<N, C> &tree, const K &search) noexcept {
@@ -187,46 +182,93 @@ find_node(Tree<N, C> &tree, const K &search) noexcept {
 }
 
 //=====================================
-template <typename N, typename C, typename K>
-static std::tuple<N *, bool>
-insert(Tree<N, C> &tree, K &&ins) noexcept {
-  if (tree.root == nullptr) {
+template <typename N, typename C, typename Key, typename... Arg>
+std::tuple<N *, bool>
+emplace(Tree<N, C> &self, const Key &key, Arg &&... args) noexcept {
+  if (self.root == nullptr) {
     // insert into empty tree
-    tree.root = new (std::nothrow) N(std::forward<K>(ins));
-    if (tree.root) {
-      return std::make_tuple(tree.root, true);
+    self.root = new (std::nothrow) N(std::forward<Arg>(args)...);
+    if (self.root) {
+      return std::make_tuple(self.root, true);
     }
 
     return std::make_tuple(nullptr, false);
   }
 
-  N *it = tree.root;
+  N *it = self.root;
 Lit:
   constexpr C cmp;
-  if (cmp(it->value, /*>*/ ins)) {
+  if (cmp(it->value, /*>*/ key)) {
     if (it->left) {
       it = it->left;
 
       goto Lit;
     }
 
-    it->left = new (std::nothrow) N(std::forward<K>(ins), it);
+    it->left = new (std::nothrow) N(std::forward<Arg>(args)..., it);
     if (it->left) {
       return std::make_tuple(it->left, true);
     }
-  } else if (cmp(ins, /*>*/ it->value)) {
+  } else if (cmp(key, /*>*/ it->value)) {
     if (it->right) {
       it = it->right;
 
       goto Lit;
     }
 
-    it->right = new (std::nothrow) N(std::forward<K>(ins), it);
+    it->right = new (std::nothrow) N(std::forward<Arg>(args)..., it);
     if (it->right) {
       return std::make_tuple(it->right, true);
     }
   } else {
+    /* Found existing matching */
+    return std::make_tuple(it, false);
+  }
 
+  return std::make_tuple(nullptr, false);
+}
+
+//=====================================
+template <typename N, typename C, typename K>
+static std::tuple<N *, bool>
+insert(Tree<N, C> &self, K &&in) noexcept {
+  if (self.root == nullptr) {
+    // insert into empty tree
+    self.root = new (std::nothrow) N(std::forward<K>(in));
+    if (self.root) {
+      return std::make_tuple(self.root, true);
+    }
+
+    return std::make_tuple(nullptr, false);
+  }
+
+  N *it = self.root;
+Lit:
+  constexpr C cmp;
+  if (cmp(it->value, /*>*/ in)) {
+    if (it->left) {
+      it = it->left;
+
+      goto Lit;
+    }
+
+    it->left = new (std::nothrow) N(std::forward<K>(in), it);
+    if (it->left) {
+      return std::make_tuple(it->left, true);
+    }
+  } else if (cmp(in, /*>*/ it->value)) {
+    if (it->right) {
+      it = it->right;
+
+      goto Lit;
+    }
+
+    it->right = new (std::nothrow) N(std::forward<K>(in), it);
+    if (it->right) {
+      return std::make_tuple(it->right, true);
+    }
+  } else {
+    /* Found existing matching */
     return std::make_tuple(it, false);
   }
 
@@ -350,6 +392,7 @@ remove(N *const current) noexcept {
 } // impl::remove()
 
 } // namespace impl
+
 //=====================================
 template <typename N, typename C, typename K>
 typename Tree<N, C>::const_pointer
@@ -377,13 +420,13 @@ swap(Tree<T, C> &first, Tree<T, C> &second) noexcept {
 } // bst::swap()
 
 //=====================================
-
 template <typename T, typename C, typename F>
 void
 for_each(const Tree<T, C> &, F) noexcept {
   assertx(false);
 }
-//=====================================
 
+//=====================================
 } // namespace bst
+
 #endif

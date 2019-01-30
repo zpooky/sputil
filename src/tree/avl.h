@@ -38,9 +38,9 @@ std::tuple<T *, bool>
 insert(Tree<T, C> &, K &&) noexcept;
 
 //=====================================
-template <typename T, typename C, typename... Arg>
+template <typename T, typename C, typename Key, typename... Arg>
 std::tuple<T *, bool>
-emplace(Tree<T, C> &, Arg &&...) noexcept;
+emplace(Tree<T, C> &, const Key &, Arg &&...) noexcept;
 
 //=====================================
 template <typename T, typename C, typename K>
@@ -378,8 +378,7 @@ assert_no_cycle(Node<T> *tree) {
 template <typename T, typename C, typename V>
 std::tuple<T *, bool>
 insert(Tree<T, C> &self, V &&value) noexcept {
-  std::tuple<Node<T> *, bool> result =
-      bst::impl::insert(self, std::forward<V>(value));
+  auto result = bst::impl::insert(self, std::forward<V>(value));
 
   Node<T> *const node = std::get<0>(result);
   const bool inserted{std::get<1>(result)};
@@ -389,17 +388,11 @@ insert(Tree<T, C> &self, V &&value) noexcept {
     Node<T> *root = impl::rebalance(node);
     assertx(root);
 
-    // TODO fix
-    // while (root->parent) {
-    //   root = root->parent;
-    // }
-    // self.root = root;
     if (root->parent == nullptr) {
       self.root = root;
     }
 
-    // assertx(impl::assert_no_cycle(self.root));
-    assertx(self.root->parent == nullptr);
+    assertx(!self.root->parent);
   }
 
   T *insval = nullptr;
@@ -411,11 +404,34 @@ insert(Tree<T, C> &self, V &&value) noexcept {
 }
 
 //=====================================
-template <typename T, typename C, typename... Arg>
+template <typename T, typename C, typename Key, typename... Arg>
 std::tuple<T *, bool>
-emplace(Tree<T, C> &self, Arg &&... args) noexcept {
-  // TODO make correct
-  return insert(self, T(std::forward<Arg>(args)...));
+emplace(Tree<T, C> &self, const Key &key, Arg &&... args) noexcept {
+  auto result = bst::impl::emplace(self, key, std::forward<Arg>(args)...);
+
+  Node<T> *const node = std::get<0>(result);
+  const bool inserted{std::get<1>(result)};
+  if (inserted) {
+    assertx(node);
+    C cmp;
+    assertx(!cmp(key, node->value) && !cmp(node->value, key));
+
+    Node<T> *root = impl::rebalance(node);
+    assertx(root);
+
+    if (root->parent == nullptr) {
+      self.root = root;
+    }
+
+    assertx(!self.root->parent);
+  }
+
+  T *insval = nullptr;
+  if (node) {
+    insval = &node->value;
+  }
+
+  return std::make_tuple(insval, inserted);
 } // avl::emplace()
 
 //=====================================
@@ -559,21 +575,13 @@ take(Tree<T, C> &self, Node<T> *node) noexcept {
       self.root = root;
     }
     assertx(self.root->parent == nullptr);
-    // if (!verify(self)) {
-    //   // printf("\nunlink(%s) before:\n", std::string(*node).c_str());
-    //   printf("take-failed:\n");
-    //   dump(self);
-    //   assertx(verify(self));
-    // }
   } else {
     self.root = nullptr;
   }
 
-  {
-    node->left = nullptr;
-    node->right = nullptr;
-    node->parent = nullptr;
-  }
+  node->left = nullptr;
+  node->right = nullptr;
+  node->parent = nullptr;
 }
 
 } // namespace impl

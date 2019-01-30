@@ -6,9 +6,9 @@ namespace sp {
 //=====================================
 /*BytesView*/
 template <typename T>
-IBytesView<T>::IBytesView(T *s, std::size_t l) noexcept
+IBytesView<T>::IBytesView(T *s, std::size_t cap) noexcept
     : raw{s}
-    , capacity{l}
+    , capacity{cap}
     , length{0}
     , pos{0} {
 }
@@ -96,6 +96,7 @@ offset(BytesView &b) noexcept {
 std::size_t
 remaining_read(const BytesView &b) noexcept {
   assertx(b.length >= b.pos);
+  assertx(b.length <= b.capacity);
 
   if (b.length < b.pos) {
     return 0;

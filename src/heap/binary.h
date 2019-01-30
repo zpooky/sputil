@@ -8,12 +8,9 @@
 #include <util/comparator.h>
 
 namespace heap {
-
-/*
- * TODO emplace
+/* TODO emplace
  * TODO do not require default constructable
- * TODO dynamic binary
- *
+ * TODO dynamic binary 
  */
 //=====================================
 template <typename T, typename Comparator>
@@ -474,7 +471,7 @@ template <typename T, typename Comparator>
 T *
 peek_head(Binary<T, Comparator> &self) noexcept {
   if (!is_empty(self)) {
-    return &self.buffer[0];
+    return self.buffer + 0;
   }
 
   return nullptr;

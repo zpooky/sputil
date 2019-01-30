@@ -8,6 +8,7 @@ namespace prng {
  * TODO URandomBuffered internal buffer to reduce the amount of read syscalls
  */
 struct URandom {
+  using Word = std::uint32_t;
   int mfd;
   /**/
   URandom() noexcept;
