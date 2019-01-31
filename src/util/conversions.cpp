@@ -129,7 +129,11 @@ parse_int(const char *str, const char *str_end, long &val) {
     return false;
   }
 
-  return errno == 0;
+  if (errno == ERANGE) {
+    return false;
+  }
+
+  return true;
 }
 
 bool
@@ -146,7 +150,11 @@ parse_int(const char *str, const char *str_end, unsigned long &val) {
     return false;
   }
 
-  return errno == 0;
+  if (errno == ERANGE) {
+    return false;
+  }
+
+  return true;
 }
 
 //=====================================
@@ -164,7 +172,11 @@ parse_int(const char *str, const char *str_end, long long &val) {
     return false;
   }
 
-  return errno == 0;
+  if (errno == ERANGE) {
+    return false;
+  }
+
+  return true;
 }
 
 bool
@@ -181,7 +193,11 @@ parse_int(const char *str, const char *str_end, unsigned long long &val) {
     return false;
   }
 
-  return errno == 0;
+  if (errno == ERANGE) {
+    return false;
+  }
+
+  return true;
 }
 
 //=====================================

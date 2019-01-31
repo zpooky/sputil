@@ -18,7 +18,7 @@ const char *
 search(const char *text, const char *needle) noexcept;
 
 //=====================================
-}
-}
+} // namespace kmp
+} // namespace sp
 
 #endif

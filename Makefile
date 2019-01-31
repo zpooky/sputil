@@ -19,7 +19,7 @@ LDLIBS = -lbfd -ldl
 PREFIX = /usr/local
 
 SOURCE_DIR = src
-BUILD_DIR = build/debug
+BUILD_DIR = build/build
 
 # File names
 EXEC = sputil
@@ -84,8 +84,8 @@ dumb_clean:
 # }}}
 
 # - {{{
-.PHONY: spooky
-spooky:
+.PHONY: debug
+debug:
 	$(MAKE) CXXFLAGS="$(CXXFLAGS_DEBUG)"
 
 .PHONY: buildO1
