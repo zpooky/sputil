@@ -15,7 +15,13 @@ CXXFLAGS_O2 = $(CXXFLAGS) -O2 -ggdb
 CXXFLAGS_O3 = $(CXXFLAGS) -O3 -ggdb
 
 LDFLAGS = -fno-omit-frame-pointer
-LDLIBS = -lbfd -ldl
+
+LDLIBS =
+ifeq ($(OS),Windows_NT)
+else
+	LDLIBS += -lbfd -ldl
+endif
+
 PREFIX = /usr/local
 
 SOURCE_DIR = src

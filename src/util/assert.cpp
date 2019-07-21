@@ -1,15 +1,21 @@
 #define BACKWARD_HAS_BFD 1
 
 #include "assert.h"
+#ifdef __linux__
 #include <backward.hpp>
+#endif
+
 #include <csignal>
 #include <exception>
 // #include <cassert>
 
-using namespace backward;
 
 namespace sp {
 namespace impl {
+
+#ifdef __linux__
+
+using namespace backward;
 
 static void
 print_header(FILE *os, std::size_t thread_id) {
@@ -112,22 +118,8 @@ print(FILE *os, StackTrace &st) noexcept {
   }
 }
 
-[[noreturn]] void
-assert_func(const char *file, int line, const char * /*function prototype*/,
-            const char *cond) noexcept {
-
-  // assert(false);
-  auto &dest = stdout;
-
-  { // assert dump
-    fprintf(dest, "assertion failed: (%s)\n", cond);
-    fprintf(dest, "%s"
-                  ": \033[92m%d\033[0m"
-                  "\n\n",
-            file, line);
-  }
-
-  { // backtrace
+static void print_backtrace(FILE*dest){
+ // backtrace
     StackTrace st;
     st.load_here(32);
 
@@ -145,7 +137,28 @@ assert_func(const char *file, int line, const char * /*function prototype*/,
     // p.address = false;
     //
     // p.print(st, dest);
+}
+#else
+static void print_backtrace(FILE*){
+}
+#endif
+
+[[noreturn]] void
+assert_func(const char *file, int line, const char * /*function prototype*/,
+            const char *cond) noexcept {
+
+  // assert(false);
+  auto &dest = stdout;
+
+  { // assert dump
+    fprintf(dest, "assertion failed: (%s)\n", cond);
+    fprintf(dest, "%s"
+                  ": \033[92m%d\033[0m"
+                  "\n\n",
+            file, line);
   }
+
+  print_backtrace(dest);
 
   { // gdb breakpoint
     std::raise(SIGINT);
