@@ -160,6 +160,12 @@ assert_func(const char *file, int line, const char * /*function prototype*/,
 
   print_backtrace(dest);
 
+  std::cout << std::flush;
+  std::cerr << std::flush;
+
+  fflush(stdout);
+  fflush(stderr);
+
   { // gdb breakpoint
     std::raise(SIGINT);
     std::raise(SIGABRT);

@@ -28,6 +28,11 @@ bool
 insert(BloomFilter<T, s> &, const T &) noexcept;
 
 //=====================================
+template <typename T, std::size_t s>
+void
+clear(BloomFilter<T, s> &) noexcept;
+
+//=====================================
 //====Implementation===================
 //=====================================
 template <typename T, std::size_t size>
@@ -63,8 +68,18 @@ insert(BloomFilter<T, s> &self, const T &v) noexcept {
     set(self.bitset, idx, true);
   });
 
+  // TODO should actually test as well?
   return true;
 }
+
+//=====================================
+template <typename T, std::size_t s>
+void
+clear(BloomFilter<T, s> &self) noexcept {
+  auto &set = self.bitset;
+  std::memset(set.raw, 0, sizeof(set.raw));
+}
+
 //=====================================
 
 } // namespace sp

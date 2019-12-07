@@ -42,4 +42,9 @@ swap(fd &f, fd &s) noexcept {
   swap(f.m_fd, s.m_fd);
 }
 
+void
+swap(fd &f, fd &&s) noexcept {
+  return swap(f, s);
+}
+
 } // namespace sp

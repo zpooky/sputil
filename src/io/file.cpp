@@ -7,10 +7,17 @@
 #include <cstring>
 #include <exception>
 #include <fcntl.h>
+#include <limits.h>
 #include <sys/errno.h> //errno
 #include <sys/stat.h>
 #include <sys/uio.h> //writev
 #include <unistd.h>
+
+#include <cstring>
+#include <stack>
+#include <string>
+
+#include <dirent.h>
 
 namespace fs {
 
@@ -35,10 +42,18 @@ int_open(const char *p, int flag, mode_t mode = 0) noexcept {
 
 //-------------------+---------------
 sp::fd
+open_trunc(sp::fd &parent, const char *fname) noexcept {
+  int flag = O_TRUNC | O_WRONLY | O_CREAT;
+  int res = ::openat(int(parent), fname, flag);
+  return sp::fd{res};
+}
+
+sp::fd
 open_trunc(const char *p) noexcept {
   int flag = O_TRUNC | O_WRONLY | O_CREAT;
   return int_open(p, flag);
 }
+
 //-------------------+---------------
 
 sp::fd
@@ -52,6 +67,13 @@ sp::fd
 open_read(const char *p) noexcept {
   int flag = O_RDONLY;
   return int_open(p, flag);
+}
+
+sp::fd
+open_read(sp::fd &parent, const char *fname) noexcept {
+  int flag = O_RDONLY;
+  int res = ::openat(int(parent), fname, flag);
+  return sp::fd{res};
 }
 //-------------------+---------------
 
@@ -273,5 +295,116 @@ is_file(const char *const path) noexcept {
 
 // bool
 // is_socket(const url::Path &) noexcept;
+
+//-------------------+---------------
+sp::fd
+open_dir(const char *path) noexcept {
+  int res = ::open(path, O_DIRECTORY);
+
+  return sp::fd{res};
+}
+
+static bool
+drop_child(char *buffer) noexcept {
+  size_t len = strlen(buffer);
+  while (len > 0) {
+    char *last = buffer + len - 1;
+    if (*last == '/') {
+      *last = '\0';
+    } else {
+      break;
+    }
+    len = strlen(buffer);
+  } // while
+
+  if (strlen(buffer) > 0) {
+    char *last = strrchr(buffer, '/');
+    if (last) {
+      *last = '\0';
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool
+mkdirs(const char *path, mode_t mode) noexcept {
+  size_t path_len = strlen(path);
+  char tmp[PATH_MAX];
+
+  if (path_len > sizeof(tmp)) {
+    assertxs(path_len <= sizeof(tmp), path_len, sizeof(tmp));
+    return false;
+  }
+
+  if (!mode) {
+    mode = S_IRUSR | S_IWUSR | S_IXUSR;
+  }
+
+  memcpy(tmp, path, path_len);
+  std::stack<std::string> work;
+
+  while (strlen(tmp) > 0) {
+    struct stat st {};
+    int res = ::stat(tmp, &st);
+    if (res < 0) {
+      if (errno == ENOENT) {
+        work.push(std::string{tmp});
+        if (!drop_child(tmp)) {
+          return false;
+        }
+      }
+    } else {
+      if (!S_ISDIR(st.st_mode)) {
+        return false;
+      }
+      break;
+    }
+  }
+
+  while (!work.empty()) {
+    std::string cur = work.top();
+    work.pop();
+    int res = ::mkdir(cur.c_str(), mode);
+    if (res < 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+//-------------------+---------------
+bool
+for_each_files(sp::fd &parent, void *arg, for_each_files_cb_t cb) {
+  assertx(bool(parent));
+
+  DIR *dir = ::fdopendir(int(parent));
+
+  if (dir) {
+    struct dirent *entry;
+    while ((entry = ::readdir(dir))) {
+      if (!(strcmp(entry->d_name, ".") == 0 ||
+            strcmp(entry->d_name, "..") == 0)) {
+        cb(parent, entry->d_name, arg);
+      }
+    }
+
+    ::closedir(dir);
+    return true;
+  }
+
+  return false;
+}
+
+bool
+for_each_files(const char *path, void *arg, for_each_files_cb_t cb) {
+  sp::fd parent = open_dir(path);
+  if (!parent) {
+    return false;
+  }
+  return for_each_files(parent, arg, cb);
+}
 
 } // namespace fs

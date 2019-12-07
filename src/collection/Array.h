@@ -766,7 +766,6 @@ UinArray<T>::UinArray() noexcept
 template <typename T>
 T *
 UinArray<T>::data() noexcept {
-  assertxs(buffer, length, capacity);
   assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
 
   return reinterpret_cast<T *>(buffer);
@@ -775,7 +774,6 @@ UinArray<T>::data() noexcept {
 template <typename T>
 const T *
 UinArray<T>::data() const noexcept {
-  assertxs(buffer, length, capacity);
   assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
 
   return reinterpret_cast<const T *>(buffer);
@@ -970,10 +968,8 @@ is_full(const UinArray<T> &self) noexcept {
 //=====================================
 template <typename T, typename V, typename Comparator>
 T *
-bin_insert(Array<T> &, V &&, Comparator &) noexcept {
-  assertx(false);
-  // TODO
-  return nullptr;
+bin_insert(Array<T> &self, V &&val, Comparator &cmp) noexcept {
+  return bin_insert(self, std::forward<V>(val), cmp);
 }
 
 template <typename T, typename V, typename Comparator>
@@ -1793,12 +1789,14 @@ template <typename T>
 void
 clear(Array<T> &self) noexcept {
   drop_back(self, length(self));
+  assertx(is_empty(self));
 }
 
 template <typename T>
 void
 clear(UinArray<T> &self) noexcept {
   drop_back(self, length(self));
+  assertx(is_empty(self));
 }
 
 //=====================================

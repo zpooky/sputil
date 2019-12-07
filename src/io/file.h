@@ -4,18 +4,25 @@
 #include <cstdint>
 #include <io/fd.h>
 #include <io/path.h>
+#include <sys/types.h>
 
 namespace fs {
 
 /*============*/
 sp::fd
-open_trunc(const char *) noexcept;
+open_trunc(sp::fd &parent, const char *fname) noexcept;
 
 sp::fd
-open_append(const char *) noexcept;
+open_trunc(const char *path) noexcept;
 
 sp::fd
-open_read(const char *) noexcept;
+open_append(const char *path) noexcept;
+
+sp::fd
+open_read(const char *path) noexcept;
+
+sp::fd
+open_read(sp::fd &parent, const char *fname) noexcept;
 
 //-------------------+---------------
 std::size_t
@@ -91,6 +98,24 @@ is_file(const char *) noexcept;
 
 // bool
 // is_socket(const Path &) noexcept;
+
+//-------------------+---------------
+sp::fd
+open_dir(const char *path) noexcept;
+
+bool
+mkdirs(const char *path, mode_t) noexcept;
+
+//-------------------+---------------
+typedef bool (*for_each_files_cb_t)(sp::fd &, const char *fname, void *);
+
+bool
+for_each_files(sp::fd &dir, void *arg, for_each_files_cb_t);
+
+bool
+for_each_files(const char *path, void *arg, for_each_files_cb_t);
+
+//-------------------+---------------
 } // namespace fs
 
 #endif

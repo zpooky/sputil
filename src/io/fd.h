@@ -29,6 +29,9 @@ struct fd {
 void
 swap(fd &, fd &) noexcept;
 
+void
+swap(fd &, fd &&) noexcept;
+
 } // namespace sp
 
 #endif
