@@ -8,9 +8,30 @@
 
 namespace fs {
 
+//-------------------+---------------
+struct DirectoryFd : public sp::fd {
+  explicit DirectoryFd(int) noexcept;
+  DirectoryFd() noexcept;
+
+  virtual ~DirectoryFd();
+
+  DirectoryFd(const DirectoryFd &) = delete;
+  DirectoryFd(DirectoryFd &&o) noexcept;
+
+  DirectoryFd &
+  operator=(const DirectoryFd &) = delete;
+  DirectoryFd &
+  operator=(const DirectoryFd &&) = delete;
+};
+
+void
+swap(DirectoryFd &, DirectoryFd &) noexcept;
+void
+swap(DirectoryFd &, DirectoryFd &&) noexcept;
+
 /*============*/
 sp::fd
-open_trunc(sp::fd &parent, const char *fname) noexcept;
+open_trunc(DirectoryFd &parent, const char *fname) noexcept;
 
 sp::fd
 open_trunc(const char *path) noexcept;
@@ -22,7 +43,7 @@ sp::fd
 open_read(const char *path) noexcept;
 
 sp::fd
-open_read(sp::fd &parent, const char *fname) noexcept;
+open_read(DirectoryFd &parent, const char *fname) noexcept;
 
 //-------------------+---------------
 std::size_t
@@ -100,17 +121,17 @@ is_file(const char *) noexcept;
 // is_socket(const Path &) noexcept;
 
 //-------------------+---------------
-sp::fd
+DirectoryFd
 open_dir(const char *path) noexcept;
 
 bool
 mkdirs(const char *path, mode_t) noexcept;
 
 //-------------------+---------------
-typedef bool (*for_each_files_cb_t)(sp::fd &, const char *fname, void *);
+typedef bool (*for_each_files_cb_t)(DirectoryFd &, const char *fname, void *);
 
 bool
-for_each_files(sp::fd &dir, void *arg, for_each_files_cb_t);
+for_each_files(DirectoryFd &dir, void *arg, for_each_files_cb_t);
 
 bool
 for_each_files(const char *path, void *arg, for_each_files_cb_t);

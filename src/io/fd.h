@@ -19,7 +19,7 @@ struct fd {
   fd &
   operator=(const fd &&) = delete;
 
-  ~fd() noexcept;
+  virtual ~fd() noexcept;
 
   explicit operator int() noexcept;
 

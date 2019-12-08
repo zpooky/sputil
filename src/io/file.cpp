@@ -42,15 +42,17 @@ int_open(const char *p, int flag, mode_t mode = 0) noexcept {
 
 //-------------------+---------------
 sp::fd
-open_trunc(sp::fd &parent, const char *fname) noexcept {
-  int flag = O_TRUNC | O_WRONLY | O_CREAT;
-  int res = ::openat(int(parent), fname, flag);
+open_trunc(DirectoryFd &parent, const char *fname) noexcept {
+  int flag = O_TRUNC | O_RDWR | O_CREAT;
+  mode_t mode = S_IRUSR | S_IWUSR;
+  int p = int(parent);
+  int res = ::openat(p, fname, flag, mode);
   return sp::fd{res};
 }
 
 sp::fd
 open_trunc(const char *p) noexcept {
-  int flag = O_TRUNC | O_WRONLY | O_CREAT;
+  int flag = O_TRUNC | O_RDWR | O_CREAT;
   return int_open(p, flag);
 }
 
@@ -70,7 +72,7 @@ open_read(const char *p) noexcept {
 }
 
 sp::fd
-open_read(sp::fd &parent, const char *fname) noexcept {
+open_read(DirectoryFd &parent, const char *fname) noexcept {
   int flag = O_RDONLY;
   int res = ::openat(int(parent), fname, flag);
   return sp::fd{res};
@@ -297,11 +299,37 @@ is_file(const char *const path) noexcept {
 // is_socket(const url::Path &) noexcept;
 
 //-------------------+---------------
-sp::fd
+DirectoryFd::DirectoryFd(int d) noexcept
+    : fd{d} {
+}
+DirectoryFd::DirectoryFd() noexcept
+    : fd{} {
+}
+
+DirectoryFd::~DirectoryFd() {
+}
+
+DirectoryFd::DirectoryFd(DirectoryFd &&o) noexcept
+    : fd{std::move(o)} {
+}
+
+void
+swap(DirectoryFd &f, DirectoryFd &s) noexcept {
+  using sp::swap;
+  swap(f.m_fd, s.m_fd);
+}
+
+void
+swap(DirectoryFd &f, DirectoryFd &&s) noexcept {
+  swap(f, s);
+}
+
+//-------------------+---------------
+DirectoryFd
 open_dir(const char *path) noexcept {
   int res = ::open(path, O_DIRECTORY);
 
-  return sp::fd{res};
+  return DirectoryFd{res};
 }
 
 static bool
@@ -377,10 +405,15 @@ mkdirs(const char *path, mode_t mode) noexcept {
 
 //-------------------+---------------
 bool
-for_each_files(sp::fd &parent, void *arg, for_each_files_cb_t cb) {
+for_each_files(DirectoryFd &parent, void *arg, for_each_files_cb_t cb) {
   assertx(bool(parent));
 
-  DIR *dir = ::fdopendir(int(parent));
+  int dp = ::dup(int(parent));
+  if (dp < 0) {
+    return false;
+  }
+
+  DIR *dir = ::fdopendir(dp);
 
   if (dir) {
     struct dirent *entry;
@@ -400,10 +433,11 @@ for_each_files(sp::fd &parent, void *arg, for_each_files_cb_t cb) {
 
 bool
 for_each_files(const char *path, void *arg, for_each_files_cb_t cb) {
-  sp::fd parent = open_dir(path);
+  DirectoryFd parent = open_dir(path);
   if (!parent) {
     return false;
   }
+
   return for_each_files(parent, arg, cb);
 }
 
