@@ -27,18 +27,18 @@ update(RabinKarpHash &self, const char *begin, const char *end) noexcept {
 
   /* https://github.com/lemire/rollinghashcpp/blob/master/rabinkarphash.h
    * constexpr std::uint32_t B = 37;
-   * constexpr std::uint32_t HASHMASK =  
-   * 
+   * constexpr std::uint32_t HASHMASK =
+   *
    * std::uint32_t x = 1;
    * while (begin != end) {
    *   x = (x * B) & HASHMASK;
-   * 
+   *
    *   if (self.length == self.capacity) {
    *     break;
    *   }
    *   ++self.length;
    * }
-   * 
+   *
    * x = (x * hasher.hashvalues[c[k]]) & HASHMASK;
    * self.hash = (self.hash + x) & HASHMASK;
    */

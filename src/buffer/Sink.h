@@ -27,6 +27,7 @@ struct Sink {
 };
 
 //=====================================
+/* write all or nothing */
 bool
 write(Sink &, BytesView &) noexcept;
 
@@ -52,8 +53,7 @@ write(Sink &s, const char (&buffer)[SIZE]) noexcept {
 }
 
 //=====================================
-/* returns byte written
- */
+/* writes as much as possible & returns bytes written */
 std::size_t
 push_back(Sink &, const void *, std::size_t) noexcept;
 

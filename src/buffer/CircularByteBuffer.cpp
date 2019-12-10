@@ -4,6 +4,7 @@
 #include <cstring>
 #include <util/assert.h>
 
+//=====================================
 namespace sp {
 namespace impl {
 std::size_t
@@ -16,13 +17,15 @@ cbb_remaining_read(std::size_t write, std::size_t read) noexcept {
 }
 } // namespace impl
 
-CircularByteBuffer::CircularByteBuffer(unsigned char *b, std::size_t c) noexcept
+//=====================================
+CircularByteBuffer::CircularByteBuffer(uint8_t *b, std::size_t c) noexcept
     : buffer(b)
     , read(0)
     , write(0)
     , capacity(c) {
 }
 
+//=====================================
 static std::size_t
 index(std::size_t in, std::size_t capacity) noexcept {
   return in & (capacity - 1);
@@ -34,8 +37,8 @@ remaining_read(std::size_t write, std::size_t read) noexcept {
 }
 
 std::size_t
-remaining_read(const CircularByteBuffer &b) noexcept {
-  return remaining_read(b.write, b.read);
+remaining_read(const CircularByteBuffer &self) noexcept {
+  return remaining_read(self.write, self.read);
 }
 
 static std::size_t
@@ -45,38 +48,41 @@ remaining_write(std::size_t capacity, std::size_t length) noexcept {
 }
 
 std::size_t
-remaining_write(const CircularByteBuffer &b) noexcept {
-  return remaining_write(b.capacity, length(b));
+remaining_write(const CircularByteBuffer &self) noexcept {
+  return remaining_write(self.capacity, length(self));
+}
+
+//=====================================
+std::size_t
+length(const CircularByteBuffer &self) noexcept {
+  return remaining_read(self);
 }
 
 std::size_t
-length(const CircularByteBuffer &b) noexcept {
-  return remaining_read(b);
+capacity(const CircularByteBuffer &self) noexcept {
+  return self.capacity;
 }
 
-std::size_t
-capacity(const CircularByteBuffer &b) noexcept {
-  return b.capacity;
+//=====================================
+bool
+is_empty(const CircularByteBuffer &self) noexcept {
+  return self.read == self.write;
 }
 
 bool
-is_empty(const CircularByteBuffer &b) noexcept {
-  return b.read == b.write;
+is_full(const CircularByteBuffer &self) noexcept {
+  return length(self) == self.capacity;
 }
 
-bool
-is_full(const CircularByteBuffer &b) noexcept {
-  return length(b) == b.capacity;
-}
-
+//=====================================
 void
-reset(CircularByteBuffer &b) noexcept {
-  b.read = b.write = 0;
+reset(CircularByteBuffer &self) noexcept {
+  self.read = self.write = 0;
 }
 
-//-------------------+---------------
+//=====================================
 static std::size_t
-push_back(CircularByteBuffer &self, const unsigned char *write,
+push_back(CircularByteBuffer &self, const uint8_t *write,
           std::size_t l) noexcept {
   std::size_t result = 0;
   sp::StaticArray<BufferSegment, 4> out;
@@ -86,7 +92,7 @@ push_back(CircularByteBuffer &self, const unsigned char *write,
     for_all(out, [&](auto &segment) {
       if (l > 0) {
         std::size_t a_len = std::min(std::get<1>(segment), l);
-        unsigned char *const arr = std::get<0>(segment);
+        uint8_t *const arr = std::get<0>(segment);
 
         std::memcpy(arr, write + result, a_len);
         result += a_len;
@@ -118,11 +124,11 @@ push_back(CircularByteBuffer &self, BytesView &write) noexcept {
 
 std::size_t
 push_back(CircularByteBuffer &self, const void *write, std::size_t l) noexcept {
-  return push_back(self, (const unsigned char *)write, l);
+  return push_back(self, (const uint8_t *)write, l);
 }
 
 std::size_t
-push_back(CircularByteBuffer &self, unsigned char c) noexcept {
+push_back(CircularByteBuffer &self, uint8_t c) noexcept {
   return push_back(self, &c, 1);
 }
 
@@ -130,12 +136,12 @@ std::size_t
 push_back(CircularByteBuffer &self, char c) noexcept {
   return push_back(self, &c, 1);
 }
-//-------------------+---------------
 
+//=====================================
 bool
 write(CircularByteBuffer &self, const void *w, std::size_t l) noexcept {
   if (remaining_write(self) >= l) {
-    auto out = push_back(self, w, l);
+    std::size_t out = push_back(self, w, l);
     assertx(out == l);
     return true;
   }
@@ -143,7 +149,7 @@ write(CircularByteBuffer &self, const void *w, std::size_t l) noexcept {
 }
 
 bool
-write(CircularByteBuffer &self, unsigned char w) noexcept {
+write(CircularByteBuffer &self, uint8_t w) noexcept {
   return write(self, &w, 1);
 }
 
@@ -151,8 +157,8 @@ bool
 write(CircularByteBuffer &self, char c) noexcept {
   return write(self, &c, 1);
 }
-//-------------------+---------------
 
+//=====================================
 std::size_t
 pop_front(CircularByteBuffer &self, BytesView &read) noexcept {
   auto l = remaining_write(read);
@@ -162,8 +168,7 @@ pop_front(CircularByteBuffer &self, BytesView &read) noexcept {
 }
 
 std::size_t
-pop_front(CircularByteBuffer &self, unsigned char *read,
-          std::size_t l) noexcept {
+pop_front(CircularByteBuffer &self, uint8_t *read, std::size_t l) noexcept {
 
   // std::size_t result = 0;
   // while (remaining_read(self) > 0) {
@@ -182,13 +187,13 @@ pop_front(CircularByteBuffer &self, unsigned char *read,
 }
 
 std::size_t
-pop_front(CircularByteBuffer &self, unsigned char &c) noexcept {
+pop_front(CircularByteBuffer &self, uint8_t &c) noexcept {
   return pop_front(self, &c, 1);
 }
-//-------------------+---------------
 
+//=====================================
 std::size_t
-peek_front(const CircularByteBuffer &self, unsigned char *read,
+peek_front(const CircularByteBuffer &self, uint8_t *read,
            std::size_t l) noexcept {
   // std::size_t result = 0;
   // std::size_t r_idx = self.read;
@@ -208,7 +213,7 @@ peek_front(const CircularByteBuffer &self, unsigned char *read,
     for_all(out, [&](auto &segment) {
       if (l > 0) {
         std::size_t a_len = std::min(std::get<1>(segment), l);
-        const unsigned char *const arr = std::get<0>(segment);
+        const uint8_t *const arr = std::get<0>(segment);
 
         std::memcpy(read + result, arr, a_len);
         result += a_len;
@@ -229,17 +234,18 @@ peek_front(const CircularByteBuffer &self, BytesView &b) noexcept {
 }
 
 std::size_t
-peek_front(const CircularByteBuffer &self, unsigned char &c) noexcept {
+peek_front(const CircularByteBuffer &self, uint8_t &c) noexcept {
   return peek_front(self, &c, 1);
 }
-//-------------------+---------------
+
+//=====================================
 bool
 read(CircularByteBuffer &self, void *dest, std::size_t len) noexcept {
   if (remaining_read(self) < len) {
     return false;
   }
 
-  auto read = (unsigned char *)dest;
+  auto read = (uint8_t *)dest;
   auto res = peek_front(self, read, len);
   assertx(res == len);
   consume_bytes(self, len);
@@ -248,7 +254,7 @@ read(CircularByteBuffer &self, void *dest, std::size_t len) noexcept {
 }
 
 bool
-read(CircularByteBuffer &b, unsigned char &dest) noexcept {
+read(CircularByteBuffer &b, uint8_t &dest) noexcept {
   return read(b, &dest, 1);
 }
 
@@ -257,12 +263,11 @@ read(CircularByteBuffer &b, char &dest) noexcept {
   return read(b, &dest, 1);
 }
 
-//-------------------+---------------
-
 // ConstBytesView
 // peek_front(const CircularByteBuffer &self) noexcept {
 // }
 
+//=====================================
 void
 consume_bytes(CircularByteBuffer &self, std::size_t b) noexcept {
   assertx((self.read + b) <= self.write);
@@ -324,6 +329,7 @@ produce_bytes(CircularByteBuffer &self, std::size_t b) noexcept {
   self.write += b;
 }
 
+//=====================================
 template <typename Buffer, typename Arr>
 static bool
 int_write_buffer(Buffer &self, Arr &result) noexcept {
@@ -368,7 +374,7 @@ write_buffer(const CircularByteBuffer &self,
 }
 
 namespace impl {
-
+//=====================================
 bool
 read_buffer(CircularByteBuffer &self, Array<BufferSegment> &result,
             std::size_t w, std::size_t r) noexcept {
@@ -380,7 +386,7 @@ read_buffer(const CircularByteBuffer &s, Array<ConstBufferSegment> &res,
             std::size_t w, std::size_t r) noexcept {
   return int_read_buffer(s, res, w, r);
 }
-
 } // namespace impl
+//=====================================
 
 } // namespace sp
