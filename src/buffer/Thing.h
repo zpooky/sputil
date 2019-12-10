@@ -28,6 +28,11 @@ struct Thing {
 
   Thing(const Thing &) = delete;
   Thing(const Thing &&) = delete;
+
+  Thing &
+  operator=(const Thing &) = delete;
+  Thing &
+  operator=(const Thing &&) = delete;
 };
 
 //=====================================

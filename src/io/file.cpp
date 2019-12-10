@@ -128,7 +128,7 @@ write(sp::fd &f, sp::BytesView &b) noexcept {
 template <>
 bool
 write(sp::fd &f, sp::CircularByteBuffer &b) noexcept {
-  assertx(bool(f));
+  assertxs(bool(f), int(f));
   using BA = typename sp::CircularByteBuffer::BufferArray;
 
   ssize_t written = 0;

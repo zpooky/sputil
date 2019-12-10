@@ -15,6 +15,13 @@ struct Sink {
   void *arg;
 
   Sink(CircularByteBuffer &b, void *a, FlushType s) noexcept;
+  Sink(const Sink &) = delete;
+  Sink(const Sink &&) = delete;
+
+  Sink &
+  operator=(const Sink &) = delete;
+  Sink &
+  operator=(const Sink &&) = delete;
 
   ~Sink() noexcept;
 };
