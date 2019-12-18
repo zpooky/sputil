@@ -34,8 +34,10 @@ LIB = lib$(EXEC)
 SOURCES = $(shell find $(SOURCE_DIR) -iname "*.cpp" | xargs)
 # Translate cpp file names to there corresponding build location
 OBJECTS = $(patsubst $(SOURCE_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
+EXEC_OBJECTS = $(OBJECTS)
+EXEC_OBJECTS += main.o
 # Translate the object file names to depend file names
-DEPENDS = $(OBJECTS:.o=.d)
+DEPENDS = $(EXEC_OBJECTS:.o=.d)
 
 #TODO dynamic link lib
 #TODO https://kristerw.blogspot.se/2017/09/useful-gcc-warning-options-not-enabled.html
@@ -44,7 +46,7 @@ DEPENDS = $(OBJECTS:.o=.d)
 # all {{{
 # The "all" target. runs by default since it the first target
 .PHONY: all
-all: ${EXEC}
+all: $(EXEC)
 # package
 	$(AR) rcs $(BUILD_DIR)/$(LIB).a $(OBJECTS)
 # }}}
@@ -52,8 +54,8 @@ all: ${EXEC}
 # $(EXEC) {{{
 # the linking stage is dependant on that all object files are compiled
 # .PHONY: $(EXEC)
-$(EXEC): $(OBJECTS)
-	$(CXX) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $(BUILD_DIR)/$(EXEC)
+$(EXEC): $(EXEC_OBJECTS)
+	$(CXX) $(EXEC_OBJECTS) $(LDFLAGS) $(LDLIBS) -o $(BUILD_DIR)/$(EXEC)
 # }}}
 
 # staticlib {{{
