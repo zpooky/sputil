@@ -9,11 +9,11 @@ SOURCE_DIR=.
 
 GTEST_ROOT = $(PROJECT_ROOT)/external/googletest/googletest
 
-HEADER_DIRS = -I$(GTEST_ROOT)/include -I$(PROJECT_ROOT)/include -I.
+HEADER_DIRS = -I$(GTEST_ROOT)/include -I$(PROJECT_ROOT)/include -I. -I$(PROJECT_ROOT)/external/backward-cpp
 override CXXFLAGS += $(HEADER_DIRS) -std=gnu++14 -Wall -Wextra -Wpointer-arith -DSP_TEST
-CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb
+CXXFLAGS_DEBUG = $(CXXFLAGS) -ggdb -fsanitize=address -fno-omit-frame-pointer
 
-LDLIBS = -L$(GTEST_ROOT)/make -lgtest -lpthread -L$(PROJECT_ROOT)/$(SUT_DIR) -lsut
+LDLIBS = -lasan -L$(GTEST_ROOT)/make -lgtest -lpthread -L$(PROJECT_ROOT)/$(SUT_DIR) -latomic
 ifeq ($(OS),Windows_NT)
 else
 	LDLIBS += -lbfd -ldl
@@ -25,7 +25,8 @@ BUILD_DIR = build/debug
 
 # File names
 EXEC = thetest
-SOURCES = $(shell find $(SOURCE_DIR) -iname "*.cpp" | xargs)
+SOURCES = $(shell find $(SOURCE_DIR) -iname "*.cpp" | grep -v '.ccls-cache' | xargs)
+SOURCES += $(shell find $(PROJECT_ROOT)/src -iname "*.cpp" | grep -v '.ccls-cache' | xargs)
 OBJECTS = $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 DEPENDS = $(OBJECTS:.o=.d)
 
@@ -42,7 +43,7 @@ all_o2:
 # }}}
 
 # $(EXEC) linking {{{
-$(EXEC): $(OBJECTS) $(GTEST_ROOT)/make/gtest.a sut
+$(EXEC): $(OBJECTS) $(GTEST_ROOT)/make/gtest.a
 	$(CXX) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $(EXEC)
 # }}}
 
@@ -71,11 +72,11 @@ $(GTEST_ROOT)/make/gtest.a:
 # }}}
 
 # sut {{{
-sut:
+# sut:
 # Build sut binaries and put result in $(SUT_DIR) directory to differentiate the build for test binaries with regular binaries.
 # Define the SP_TEST preprocessor macro
 # The resulting static library will be called libsut
-	$(MAKE) spooky BUILD_DIR=$(SUT_DIR) LIB=libsut CXXFLAGS+=-DSP_TEST -C $(PROJECT_ROOT)
+	# $(MAKE) spooky BUILD_DIR=$(SUT_DIR) LIB=libsut CXXFLAGS+=-DSP_TEST -C $(PROJECT_ROOT)
 # }}}
 
 # bear {{{
