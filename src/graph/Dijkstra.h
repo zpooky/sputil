@@ -223,8 +223,8 @@ shortest_path(::graph::Vertex<T, int> *const from,
          * vertexes of $frontier are sorted by weight(cost) which in this
          * context we do not know.
          */
-        impl::SPTmp<T> *existing =
-            sp::n::search(frontier.buffer, frontier.length, edge.target);
+        impl::SPTmp<T> *existing = sp::n::search(
+            (impl::SPTmp<T> *)frontier.buffer, frontier.length, edge.target);
         if (!existing) {
           /* Current $edge has not been seen before.
            * - $current path is the quickest.
@@ -254,7 +254,7 @@ shortest_path(::graph::Vertex<T, int> *const from,
           }
 
           existing->weight = edge_weight;
-          existing = decrease_key(frontier, existing);
+          existing = heap::impl::decrease_key(frontier, existing);
           assertx(existing);
         }
       }
