@@ -16,7 +16,7 @@ CXXFLAGS_O3 = $(CXXFLAGS) -O3 -ggdb
 
 LDFLAGS = -fno-omit-frame-pointer
 
-LDLIBS =
+LDLIBS = -latomic
 ifeq ($(OS),Windows_NT)
 else
 	LDLIBS += -lbfd -ldl

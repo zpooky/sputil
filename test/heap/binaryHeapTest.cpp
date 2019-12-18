@@ -141,7 +141,7 @@ TEST(BinaryHeapTest, MinHeap_random_insert) {
     ref.pop();
     ASSERT_EQ(ref.size(), heap.length);
   }
-  heap::dump(heap);
+  heap::debug::dump(heap);
 
   ASSERT_EQ(std::size_t(0), heap.length);
 }
@@ -175,7 +175,7 @@ TEST(BinaryHeapTest, MaxHeap_random_insert) {
     ref.pop();
     ASSERT_EQ(ref.size(), heap.length);
   }
-  heap::dump(heap);
+  heap::debug::dump(heap);
 
   ASSERT_EQ(std::size_t(0), heap.length);
 }
@@ -275,8 +275,9 @@ TEST(BinaryHeapTest, MaxHeap) {
 }
 
 TEST(BinaryHeapTest, test_swap) {
-  heap::MinBinary<int> a(nullptr, 0);
-  heap::MinBinary<int> b(nullptr, 0);
+  int *empty = nullptr;
+  heap::MinBinary<int> a(empty, 0);
+  heap::MinBinary<int> b(empty, 0);
   swap(a, b);
 }
 

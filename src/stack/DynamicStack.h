@@ -99,7 +99,13 @@ DynamicStack<T, A>::DynamicStack(DynamicStack<T, A> &&o) noexcept
 
 template <typename T, template <typename> class A>
 DynamicStack<T, A>::~DynamicStack() noexcept {
-  // TODO
+  node_type *it = head;
+  head = nullptr;
+  while (it) {
+    node_type *priv = it->priv;
+    deallocate(allocator, it);
+    it = priv;
+  }
 }
 
 //=====================================
@@ -134,8 +140,7 @@ template <typename T, template <typename> class A, typename V>
 T *
 push(DynamicStack<T, A> &self, V &&value) noexcept {
   if (!self.head || is_full(*self.head)) {
-    auto &allocator = self.allocator;
-    auto *node = allocate(allocator);
+    auto *node = allocate(self.allocator);
     if (!node) {
       return nullptr;
     }
@@ -233,6 +238,6 @@ swap(DynamicStack<T, A> &first, DynamicStack<T, A> &second) noexcept {
 }
 
 //=====================================
-}
+} // namespace sp
 
 #endif

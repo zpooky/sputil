@@ -7,7 +7,6 @@
 #include <util/comparator.h>
 
 namespace sp {
-
 //=====================================
 /*
  * - Inplace sort
@@ -46,5 +45,5 @@ heapsort(T *const in, std::size_t length) noexcept {
 }
 
 //=====================================
-}
+} // namespace sp
 #endif

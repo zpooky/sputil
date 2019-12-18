@@ -2,32 +2,45 @@
 #define SP_UTIL_HEAP_BINARY_H
 
 #include <stack/DynamicStack.h>
-#include <string>
+// #include <string>
 #include <util/array.h>
+// #include <type_traits>
 #include <util/assert.h>
 #include <util/comparator.h>
 
 namespace heap {
 /* TODO emplace
  * TODO do not require default constructable
- * TODO dynamic binary 
+ * TODO dynamic binary
  */
 //=====================================
 template <typename T, typename Comparator>
 struct Binary {
-  T *buffer;
+  using type = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
+
+  type *buffer;
   std::size_t capacity;
   std::size_t length;
 
+  Binary(type *, std::size_t capacity) noexcept;
   Binary(T *, std::size_t capacity) noexcept;
+  Binary(const Binary &) = delete;
+  Binary(Binary &&) noexcept;
+
+  virtual ~Binary() noexcept {
+  }
 };
 
 //=====================================
 template <typename T, std::size_t N, typename Comparator>
 struct StaticBinary : public Binary<T, Comparator> {
-  T raw[N];
+  typename Binary<T, Comparator>::type raw[N];
 
   StaticBinary() noexcept;
+  StaticBinary(const StaticBinary &) = delete;
+  StaticBinary(const StaticBinary &&) = delete;
+
+  ~StaticBinary() noexcept;
 };
 
 //=====================================
@@ -220,11 +233,13 @@ Lit:
     return idx;
   }
 
-  constexpr Comp c;
+  constexpr Comp cmp;
   std::size_t parent_idx = parent(idx);
-  if (c(self.buffer[idx], /*>*/ self.buffer[parent_idx])) {
+  T *cur = (T *)self.buffer + idx;
+  T *parent = (T *)self.buffer + parent_idx;
+  if (cmp(*cur, /*>*/ *parent)) {
     using std::swap;
-    swap(self.buffer[idx], self.buffer[parent_idx]);
+    swap(*cur, *parent);
     idx = parent_idx;
     goto Lit;
   }
@@ -238,12 +253,12 @@ static T *
 insert_at(Binary<T, Comp> &self, std::size_t idx, V &&val) noexcept {
   assertxs(idx < capacity(self), idx, capacity(self));
 
-  T *const dest = self.buffer + idx;
+  T *const dest = (T *)self.buffer + idx;
   dest->~T();
   new (dest) T(std::forward<V>(val));
 
   idx = shift_up(self, idx);
-  return self.buffer + idx;
+  return (T *)self.buffer + idx;
 }
 // }
 
@@ -251,12 +266,14 @@ template <typename T, typename Comp>
 std::size_t
 extreme(const Binary<T, Comp> &self, std::size_t first,
         std::size_t second) noexcept {
-  auto &buffer = self.buffer;
   assertxs(first < self.length, first, self.length);
   assertxs(second < self.length, first, self.length);
 
-  constexpr Comp c;
-  if (c(buffer[first], /*>*/ buffer[second])) {
+  T *f = (T *)self.buffer + first;
+  T *s = (T *)self.buffer + second;
+
+  constexpr Comp cmp;
+  if (cmp(*f, /*>*/ *s)) {
     return first;
   }
 
@@ -269,7 +286,7 @@ index_of(const Binary<T, Comparator> &heap, T *ptr) noexcept {
   assertx(ptr);
 
   if (heap.buffer) {
-    const T *start = heap.buffer;
+    const T *start = (T *)heap.buffer;
     auto s = reinterpret_cast<std::uintptr_t>(start);
     auto e = reinterpret_cast<std::uintptr_t>(ptr);
     if (e >= s) {
@@ -290,16 +307,40 @@ index_of(const Binary<T, Comparator> &heap, T *ptr) noexcept {
 
 //=====================================
 template <typename T, typename Comparator>
-Binary<T, Comparator>::Binary(T *b, std::size_t c) noexcept
+Binary<T, Comparator>::Binary(type *b, std::size_t c) noexcept
     : buffer{b}
     , capacity{c}
     , length(0) {
+}
+
+template <typename T, typename Comparator>
+Binary<T, Comparator>::Binary(T *b, std::size_t c) noexcept
+    : buffer{(type *)b}
+    , capacity{c}
+    , length(0) {
+}
+
+template <typename T, typename Comparator>
+Binary<T, Comparator>::Binary(Binary &&o) noexcept
+    : buffer{nullptr}
+    , capacity{0}
+    , length{0} {
+      swap(*this,o);
 }
 
 template <typename T, std::size_t N, typename Comparator>
 StaticBinary<T, N, Comparator>::StaticBinary() noexcept
     : Binary<T, Comparator>(raw, N)
     , raw() {
+}
+
+template <typename T, std::size_t N, typename Comparator>
+StaticBinary<T, N, Comparator>::~StaticBinary() noexcept {
+  for (size_t i = 0; i < this->length; ++i) {
+    T *cur = (T *)this->buffer + i;
+    cur->~T();
+  }
+  this->length = 0;
 }
 
 //=====================================
@@ -363,12 +404,13 @@ insert_eager(Binary<T, Comparator> &self, V &&val) noexcept {
 
     constexpr Comparator cmp;
     if (cmp(val, *l)) {
+      T *cur = (T *)self.buffer + idx;
 
       using std::swap;
       T copy(std::forward<V>(val));
-      swap(self.buffer[idx], copy);
+      swap(*cur, copy);
       idx = shift_up(self, idx);
-      return self.buffer + idx;
+      return (T *)self.buffer + idx;
     }
 
     return nullptr;
@@ -387,8 +429,9 @@ last(const Binary<T, Comparator> &self) noexcept {
 
     constexpr Comparator cmp;
     // if (c(self.buffer[extreme_idx], self.buffer[idx])) {
-    if (result == nullptr || cmp(*result, self.buffer[i])) {
-      result = self.buffer + i;
+    T *cur = (T *)self.buffer + i;
+    if (result == nullptr || cmp(*result, *cur)) {
+      result = (T *)self.buffer + i;
     }
   }
   return result;
@@ -407,7 +450,6 @@ namespace heap {
 template <typename T, typename Comp>
 static std::size_t
 shift_down(Binary<T, Comp> &self, std::size_t idx) noexcept {
-  auto &buffer = self.buffer;
 Lit:
   std::size_t extreme_idx = self.length;
 
@@ -422,11 +464,13 @@ Lit:
   }
 
   if (extreme_idx < self.length) {
+    T *extreme = (T *)self.buffer + extreme_idx;
+    T *cur = (T *)self.buffer + idx;
 
-    constexpr Comp c;
-    if (c(buffer[extreme_idx], buffer[idx])) {
+    constexpr Comp cmp;
+    if (cmp(*extreme, *cur)) {
       using std::swap;
-      swap(buffer[idx], buffer[extreme_idx]);
+      swap(*extreme, *cur);
 
       idx = extreme_idx;
       goto Lit;
@@ -442,15 +486,21 @@ template <typename T, typename Comparator, typename K>
 bool
 take_head(Binary<T, Comparator> &self, K &out) noexcept {
   if (!is_empty(self)) {
-    const std::size_t head = 0;
-    const std::size_t last = self.length - 1;
+    const size_t first = 0;
+    const size_t last = self.length - 1;
 
     using std::swap;
-    swap(self.buffer[head], out);
-    swap(self.buffer[head], self.buffer[last]);
+    T *head = (T *)self.buffer + first;
+    T *l = (T *)self.buffer + last;
+    swap(*head, out);
+
+    if (length(self) > 1) {
+      swap(*head, *l);
+    }
+    l->~T();
     self.length--;
 
-    impl::heap::shift_down(self, head);
+    impl::heap::shift_down(self, first);
 
     return true;
   }
@@ -471,7 +521,7 @@ template <typename T, typename Comparator>
 T *
 peek_head(Binary<T, Comparator> &self) noexcept {
   if (!is_empty(self)) {
-    return self.buffer + 0;
+    return (T *)self.buffer + 0;
   }
 
   return nullptr;
@@ -496,12 +546,13 @@ find_heap(Binary<T, Comparator> &self, const K &needle) noexcept {
   Lit:
     if (index < self.length) {
       constexpr Comparator cmp;
-      const bool greater = cmp(self.buffer[index], needle);
-      const bool lesser = cmp(needle, self.buffer[index]);
+
+      T *current = (T *)self.buffer + index;
+      const bool greater = cmp(*current, needle);
+      const bool lesser = cmp(needle, *current);
 
       if (!greater && !lesser) {
         /* Equal priority */
-        T *current = self.buffer + index;
 
         if (*current == needle) {
           return current;
@@ -538,9 +589,10 @@ find_stack(Binary<T, Comparator> &self, const K &needle,
 
   /* DFS */
   if (index < self.length) {
+    T *cur = (T *)self.buffer + index;
     constexpr Comparator cmp;
-    const bool greater = cmp(self.buffer[index], needle);
-    const bool lesser = cmp(needle, self.buffer[index]);
+    const bool greater = cmp(*cur, needle);
+    const bool lesser = cmp(needle, *cur);
 
     if /*==*/(!greater && !lesser) {
       return self.buffer + index;
@@ -599,7 +651,7 @@ namespace impl_heap {
 template <typename T, typename Comparator>
 std::size_t
 index_of(Binary<T, Comparator> &self, T *subject) noexcept {
-  return sp::index_of(self.buffer, self.length, self.capacity, subject);
+  return sp::index_of((T *)self.buffer, self.length, self.capacity, subject);
 }
 } // namespace impl_heap
 
@@ -612,7 +664,7 @@ decrease_key(Binary<T, Comparator> &self, T *subject) noexcept {
   assertxs(idx != capacity(self), idx, capacity(self));
 
   idx = impl::heap::shift_up(self, idx);
-  return self.buffer + idx;
+  return (T *)self.buffer + idx;
 }
 
 template <typename T, typename Comparator>
@@ -623,7 +675,7 @@ increase_key(Binary<T, Comparator> &self, T *subject) noexcept {
   assertxs(idx != capacity(self), idx, capacity(self));
 
   idx = impl::heap::shift_down(self, idx);
-  return self.buffer + idx;
+  return (T *)self.buffer + idx;
 }
 } // namespace impl
 
@@ -704,13 +756,14 @@ dump(Binary<T, Comparator> &self, std::size_t idx, std::string prefix,
 template <typename T, typename Comparator>
 bool
 verify(const Binary<T, Comparator> &self, std::size_t idx) noexcept {
-  auto buffer = self.buffer;
+  const T *const cur = (T *)self.buffer + idx;
   {
     std::size_t ridx = impl::heap::right_child(idx);
     if (ridx < self.length) {
+      const T *const right = (T *)self.buffer + ridx;
       constexpr Comparator cmp;
-      bool greater = cmp(buffer[idx], buffer[ridx]);
-      bool lesser = cmp(buffer[ridx], buffer[idx]);
+      bool greater = cmp(*cur, *right);
+      bool lesser = cmp(*right, *cur);
       bool eq = !greater && !lesser;
 
       // assertxs(greater || eq, buffer[idx]->depth, buffer[ridx]->depth);
@@ -723,9 +776,10 @@ verify(const Binary<T, Comparator> &self, std::size_t idx) noexcept {
   {
     std::size_t lidx = impl::heap::left_child(idx);
     if (lidx < self.length) {
+      const T *const left = (T *)self.buffer + lidx;
       constexpr Comparator cmp;
-      bool greater = cmp(buffer[idx], buffer[lidx]);
-      bool lesser = cmp(buffer[lidx], buffer[idx]);
+      bool greater = cmp(*cur, *left);
+      bool lesser = cmp(*left, *cur);
       bool eq = !greater && !lesser;
 
       // assertxs(greater || eq, buffer[idx]->depth, buffer[lidx]->depth);
@@ -742,8 +796,8 @@ template <typename T, typename Comparator, typename F>
 void
 for_each(const Binary<T, Comparator> &self, F f) noexcept {
   for (std::size_t i = 0; i < self.length; ++i) {
-    const T &current = self.buffer[i];
-    f(current);
+    const T *current = (T *)self.buffer + i;
+    f(*current);
   }
 }
 
@@ -751,8 +805,8 @@ template <typename T, typename Comparator, typename F>
 bool
 for_all(const Binary<T, Comparator> &self, F f) noexcept {
   for (std::size_t i = 0; i < self.length; ++i) {
-    const T &current = self.buffer[i];
-    if (!f(current)) {
+    const T *current = (T *)self.buffer + i;
+    if (!f(*current)) {
       return false;
     }
   }

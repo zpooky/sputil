@@ -3,6 +3,7 @@
 #include <prng/xorshift.h>
 #include <sort/heapsort.h>
 #include <sort/util.h>
+#include <test/gcstruct.h>
 
 template <typename T>
 static void
