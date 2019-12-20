@@ -47,7 +47,7 @@ equal(const Node<T> *a, const Node<T> *b) noexcept {
   return true;
 } // binary::rec::impl::binary::equal()
 
-} // namespace binary::rec::impl
+} // namespace impl
 
 template <typename T, typename C>
 bool
@@ -66,7 +66,7 @@ height(const Node<T> *node) noexcept {
     return 0;
   }
 } // binary::impl::binary::height()
-}
+} // namespace impl
 
 template <typename T, typename C>
 std::size_t
@@ -88,7 +88,7 @@ delete_self(Node<T> *tree) noexcept {
   }
   return nullptr;
 }
-}
+} // namespace impl
 
 template <typename T, typename C>
 void
@@ -107,7 +107,7 @@ inorder(const T *tree, F f) noexcept {
     inorder(tree->right, f);
   }
 }
-}
+} // namespace impl
 
 template <typename T, typename C, typename F>
 void
@@ -132,7 +132,7 @@ preorder(const Node<T> *tree, F f) noexcept {
     preorder(tree->right, f);
   }
 }
-}
+} // namespace impl
 
 template <typename T, typename C, typename F>
 void
@@ -151,7 +151,7 @@ postorder(const Node<T> *tree, F f) noexcept {
     f(tree->value);
   }
 }
-}
+} // namespace impl
 
 template <typename T, typename C, typename F>
 void
@@ -176,7 +176,7 @@ levelorder(const Node<T> *tree, F f, std::size_t cnt) noexcept {
   }
   return false;
 }
-}
+} // namespace impl
 
 template <typename T, typename C, typename F>
 void
@@ -199,7 +199,7 @@ reverse_levelorder(const Node<T> *tree, F f,
     reverse_levelorder(tree->right, f, stack);
   }
 }
-}
+} // namespace impl
 
 template <typename T, typename C, typename F>
 void
@@ -296,7 +296,7 @@ is_binary_tree_bst(const Node<T> *tree) noexcept {
 
   return true;
 }
-}
+} // namespace impl
 
 template <typename T, typename C>
 bool
@@ -321,7 +321,7 @@ max_width(const Node<T> *tree, std::size_t n = 0) noexcept {
   }
   return n;
 }
-} // namespace rec::impl
+} // namespace impl
 
 template <typename T, typename C>
 std::size_t
@@ -330,10 +330,10 @@ max_width(const Tree<T, C> &tree) noexcept {
   return impl::max_width(tree.root);
 }
 
-} // namespace binary::rec
+} // namespace rec
 
 //=====================================
-namespace rec {} // namespace binary::rec
+namespace rec {} // namespace rec
 template <typename T, typename C>
 void
 print_cousin_nodes(const Tree<T, C> &) noexcept {
@@ -341,7 +341,7 @@ print_cousin_nodes(const Tree<T, C> &) noexcept {
 }
 
 //=====================================
-namespace rec {} // namespace binary::rec
+namespace rec {} // namespace rec
 template <typename T, typename C>
 void
 mirror(const Tree<T, C> &) noexcept {
@@ -349,7 +349,7 @@ mirror(const Tree<T, C> &) noexcept {
 }
 
 //=====================================
-namespace rec {} // namespace binary::rec
+namespace rec {} // namespace rec
 template <typename T, typename C>
 void
 lowest_common_ancestor(const Tree<T, C> &) noexcept {
@@ -357,7 +357,7 @@ lowest_common_ancestor(const Tree<T, C> &) noexcept {
 }
 
 //=====================================
-namespace rec {} // namespace binary::rec
+namespace rec {} // namespace rec
 template <typename T, typename C, typename F>
 void
 level_first_left(const Tree<T, C> &, F) noexcept {
@@ -365,7 +365,7 @@ level_first_left(const Tree<T, C> &, F) noexcept {
 }
 
 //=====================================
-namespace impl {} // namespace binary::impl
+namespace impl {} // namespace impl
 // Unbalanced Tree -> Balanced Tree
 template <typename T, typename C>
 void
@@ -374,7 +374,7 @@ balance(Tree<T, C> &) noexcept {
 }
 
 //=====================================
-namespace rec {} // namespace binary::rec
+namespace rec {} // namespace rec
 // Unbalanced Tree -> Balanced Tree
 template <typename T, typename C>
 Tree<T, C>
@@ -396,7 +396,7 @@ reverse(Node<T> *tree) noexcept {
   }
 }
 
-} // namespace binary::impl
+} // namespace impl
 template <typename T, typename C>
 void
 reverse(Tree<T, C> &tree) noexcept {
@@ -478,7 +478,7 @@ reverse_levelorder(const Tree<T, C> &tree, F f) noexcept {
     return f(c->value);
   });
 }
-} // namepace binary::it
+} // namespace it
 
 } // namespace binary
 

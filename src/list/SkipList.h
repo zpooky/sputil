@@ -37,6 +37,14 @@ struct SkipList {
   SkipList() noexcept;
   ~SkipList() noexcept;
 
+  SkipList(const SkipList &) = delete;
+  SkipList(const SkipList &&) = delete;
+
+  SkipList &
+  operator=(const SkipList &) = delete;
+  SkipList &
+  operator=(const SkipList &&) = delete;
+
   static_assert(levels > 0, "gt 0");
   static_assert(levels < 32, "lt 32");
 };
