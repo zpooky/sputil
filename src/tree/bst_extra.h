@@ -107,6 +107,16 @@ inorder(const T *tree, F f) noexcept {
     inorder(tree->right, f);
   }
 }
+
+template <typename T, typename F>
+void
+inorder(T *tree, F f) noexcept {
+  if (tree) {
+    inorder(tree->left, f);
+    f(tree->value);
+    inorder(tree->right, f);
+  }
+}
 } // namespace impl
 
 template <typename T, typename C, typename F>
@@ -118,6 +128,12 @@ inorder(const Tree<T, C> &tree, F f) noexcept {
 template <typename T, typename C, typename F>
 void
 inorder(const avl::Tree<T, C> &tree, F f) noexcept {
+  return impl::inorder(tree.root, f);
+}
+
+template <typename T, typename C, typename F>
+void
+inorder(avl::Tree<T, C> &tree, F f) noexcept {
   return impl::inorder(tree.root, f);
 }
 

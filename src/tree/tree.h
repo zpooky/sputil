@@ -48,9 +48,15 @@ void
 swap(Tree<T, C> &, Tree<T, C> &) noexcept;
 
 //=====================================
+#if 0
 template <typename T, typename C, typename F>
 void
 for_each(const Tree<T, C> &, F) noexcept;
+
+template <typename T, typename C, typename F>
+void
+for_each(Tree<T, C> &, F) noexcept;
+#endif
 
 //=====================================
 //====Implementation===================
@@ -401,6 +407,7 @@ find(const Tree<N, C> &tree, const K &search) noexcept {
   if (result) {
     return &result->value;
   }
+
   return nullptr;
 } // bst::find()
 
@@ -420,11 +427,43 @@ swap(Tree<T, C> &first, Tree<T, C> &second) noexcept {
 } // bst::swap()
 
 //=====================================
+#if 0
+namespace impl {
+template <typename T, typename F>
+void
+for_each(const T *self, F f) noexcept {
+  if (self) {
+    for_each(self->left, f);
+    const typename T::value_type &value = self->value;
+    f(value);
+    for_each(self->right, f);
+  }
+}
+
+template <typename T, typename F>
+void
+for_each(T *self, F f) noexcept {
+  if (self) {
+    for_each(self->left, f);
+    typename T::value_type &value = self->value;
+    f(value);
+    for_each(self->right, f);
+  }
+}
+} // namespace impl
+
 template <typename T, typename C, typename F>
 void
-for_each(const Tree<T, C> &, F) noexcept {
-  assertx(false);
+for_each(const Tree<T, C> &self, F f) noexcept {
+  impl::for_each(self.root, f);
 }
+
+template <typename T, typename C, typename F>
+void
+for_each(Tree<T, C> &self, F f) noexcept {
+  impl::for_each(self.root, f);
+}
+#endif
 
 //=====================================
 } // namespace bst
