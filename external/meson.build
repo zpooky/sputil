@@ -1,5 +1,3 @@
-#external
-
 cpp = meson.get_compiler('cpp')
 dl_dep = cpp.find_library('dl')
 bfd_dep = cpp.find_library('bfd')
