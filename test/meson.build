@@ -66,13 +66,17 @@ sputil_test_src = files([
 sputil_test_deps = []
 sputil_test_deps += sputil_dep
 # sputil_test_deps += dependency('thread')
-sputil_test_deps += dependency('gtest_main')
 
-sputil_test = executable('sputiltest',
-                     sputil_test_src,
-                     # include_directories: [],
-                     # cpp_args: _compile_options,
-                     dependencies: sputil_test_deps
-                     )
+gtest_dep = dependency('gtest_main', required: false)
+if gtest_dep.found()
+  sputil_test_deps += gtest_dep
 
-test('sputil test', sputil_test)
+  sputil_test = executable('sputiltest',
+                       sputil_test_src,
+                       # include_directories: [],
+                       # cpp_args: _compile_options,
+                       dependencies: sputil_test_deps
+                       )
+
+  test('sputil test', sputil_test)
+endif
