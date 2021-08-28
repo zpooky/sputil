@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 
 namespace hex {
 //=====================================
@@ -36,6 +37,9 @@ encode(const std::uint8_t *in, std::size_t l, /*OUT*/ char (&out)[S]) noexcept {
 const std::uint8_t *
 encode_inc(const std::uint8_t *beg, const std::uint8_t *end, /*OUT*/ char *,
            /*IN/OUT*/ std::size_t &) noexcept;
+
+void
+encode_print(const std::uint8_t *in, size_t length, FILE *fd) noexcept;
 
 //=====================================
 } // namespace hex

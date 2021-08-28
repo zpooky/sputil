@@ -156,5 +156,18 @@ encode_inc(const std::uint8_t *const beg, const std::uint8_t *const end,
   return it;
 }
 
+void
+encode_print(const std::uint8_t *in, size_t length, FILE *fd) noexcept {
+
+  const std::uint8_t *const end = in + length;
+
+  do {
+    char buffer[128]{0};
+    size_t len_buffer = sizeof(buffer);
+    in = encode_inc(in, end, buffer, len_buffer);
+    fprintf(fd, "%.*s", (int)len_buffer, buffer);
+  } while (in != end);
+}
+
 //=====================================
 } // namespace hex
