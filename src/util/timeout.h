@@ -9,15 +9,247 @@
 
 namespace sp {
 
+class Timestamp;
+// class Timeout;
 class Milliseconds;
 class Seconds;
 class Minutes;
 class Hours;
 
-using Timestamp = Milliseconds;
-
 Timestamp
 now() noexcept;
+
+class Timestamp {
+private:
+public:
+  std::uint64_t value;
+
+  /* ===================================== */
+  explicit Timestamp(std::uint64_t v) noexcept;
+  explicit Timestamp(const Milliseconds &v) noexcept;
+  explicit Timestamp(const Seconds &v) noexcept;
+  explicit Timestamp(const Minutes &v) noexcept;
+  explicit Timestamp(const Hours &v) noexcept;
+
+  /* ===================================== */
+
+  explicit operator int() const noexcept;
+  explicit operator std::uint64_t() const noexcept;
+
+  /* ===================================== */
+  // Timestamp
+  // operator+(const Timeout &) const noexcept;
+  Timestamp
+  operator+(const Milliseconds &) const noexcept;
+  Timestamp
+  operator+(const Seconds &) const noexcept;
+  Timestamp
+  operator+(const Minutes &) const noexcept;
+  Timestamp
+  operator+(const Hours &) const noexcept;
+
+  /* ===================================== */
+  Timestamp
+  operator-(const Timestamp &) const noexcept;
+  // Timestamp
+  // operator-(const Timeout &) const noexcept;
+  Timestamp
+  operator-(const Milliseconds &) const noexcept;
+  Timestamp
+  operator-(const Seconds &) const noexcept;
+  Timestamp
+  operator-(const Minutes &) const noexcept;
+  Timestamp
+  operator-(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator>(const Timestamp &) const noexcept;
+  bool
+  operator>(const Milliseconds &) const noexcept;
+  bool
+  operator>(const Seconds &) const noexcept;
+  bool
+  operator>(const Minutes &) const noexcept;
+  bool
+  operator>(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator>=(const Timestamp &) const noexcept;
+  bool
+  operator>=(const Milliseconds &) const noexcept;
+  bool
+  operator>=(const Seconds &) const noexcept;
+  bool
+  operator>=(const Minutes &) const noexcept;
+  bool
+  operator>=(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator<(const Timestamp &) const noexcept;
+  bool
+  operator<(const Milliseconds &) const noexcept;
+  bool
+  operator<(const Seconds &) const noexcept;
+  bool
+  operator<(const Minutes &) const noexcept;
+  bool
+  operator<(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator<=(const Timestamp &) const noexcept;
+  bool
+  operator<=(const Milliseconds &) const noexcept;
+  bool
+  operator<=(const Seconds &) const noexcept;
+  bool
+  operator<=(const Minutes &) const noexcept;
+  bool
+  operator<=(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator==(const Timestamp &) const noexcept;
+  bool
+  operator==(const Milliseconds &) const noexcept;
+  bool
+  operator==(const Seconds &) const noexcept;
+  bool
+  operator==(const Minutes &) const noexcept;
+  bool
+  operator==(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator!=(const Timestamp &) const noexcept;
+  bool
+  operator!=(const Milliseconds &) const noexcept;
+  bool
+  operator!=(const Seconds &) const noexcept;
+  bool
+  operator!=(const Minutes &) const noexcept;
+  bool
+  operator!=(const Hours &) const noexcept;
+};
+
+#if 0
+class Timeout {
+private:
+  explicit Timeout(std::uint64_t v) noexcept;
+public:
+  std::uint64_t value;
+
+  /* ===================================== */
+  explicit Timeout(const Milliseconds &v) noexcept;
+  explicit Timeout(const Seconds &v) noexcept;
+  explicit Timeout(const Minutes &v) noexcept;
+  explicit Timeout(const Hours &v) noexcept;
+
+  /* ===================================== */
+
+  explicit operator int() const noexcept;
+  explicit operator std::uint64_t() const noexcept;
+
+  /* ===================================== */
+  Timeout
+  operator+(const Timeout &) const noexcept;
+  Timeout
+  operator+(const Milliseconds &) const noexcept;
+  Timeout
+  operator+(const Seconds &) const noexcept;
+  Timeout
+  operator+(const Minutes &) const noexcept;
+  Timeout
+  operator+(const Hours &) const noexcept;
+
+  /* ===================================== */
+  Timeout
+  operator-(const Timeout &) const noexcept;
+  Timeout
+  operator-(const Milliseconds &) const noexcept;
+  Timeout
+  operator-(const Seconds &) const noexcept;
+  Timeout
+  operator-(const Minutes &) const noexcept;
+  Timeout
+  operator-(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator>(const Timeout &) const noexcept;
+  bool
+  operator>(const Milliseconds &) const noexcept;
+  bool
+  operator>(const Seconds &) const noexcept;
+  bool
+  operator>(const Minutes &) const noexcept;
+  bool
+  operator>(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator>=(const Timeout &) const noexcept;
+  bool
+  operator>=(const Milliseconds &) const noexcept;
+  bool
+  operator>=(const Seconds &) const noexcept;
+  bool
+  operator>=(const Minutes &) const noexcept;
+  bool
+  operator>=(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator<(const Timeout &) const noexcept;
+  bool
+  operator<(const Milliseconds &) const noexcept;
+  bool
+  operator<(const Seconds &) const noexcept;
+  bool
+  operator<(const Minutes &) const noexcept;
+  bool
+  operator<(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator<=(const Timeout &) const noexcept;
+  bool
+  operator<=(const Milliseconds &) const noexcept;
+  bool
+  operator<=(const Seconds &) const noexcept;
+  bool
+  operator<=(const Minutes &) const noexcept;
+  bool
+  operator<=(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator==(const Timeout &) const noexcept;
+  bool
+  operator==(const Milliseconds &) const noexcept;
+  bool
+  operator==(const Seconds &) const noexcept;
+  bool
+  operator==(const Minutes &) const noexcept;
+  bool
+  operator==(const Hours &) const noexcept;
+
+  /* ===================================== */
+  bool
+  operator!=(const Timeout &) const noexcept;
+  bool
+  operator!=(const Milliseconds &) const noexcept;
+  bool
+  operator!=(const Seconds &) const noexcept;
+  bool
+  operator!=(const Minutes &) const noexcept;
+  bool
+  operator!=(const Hours &) const noexcept;
+};
+#endif
 
 class Milliseconds {
 private:
@@ -26,6 +258,7 @@ public:
 
   /* ===================================== */
   explicit Milliseconds(std::uint64_t v) noexcept;
+  explicit Milliseconds(const Timestamp &v) noexcept;
   explicit Milliseconds(const Seconds &v) noexcept;
   explicit Milliseconds(const Minutes &v) noexcept;
   explicit Milliseconds(const Hours &v) noexcept;
@@ -123,6 +356,7 @@ public:
 
   /* ===================================== */
   explicit Seconds(std::uint64_t v) noexcept;
+  explicit Seconds(const Timestamp &v) noexcept;
   explicit Seconds(const Minutes &v) noexcept;
   explicit Seconds(const Hours &v) noexcept;
 

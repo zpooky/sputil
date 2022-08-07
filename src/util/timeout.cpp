@@ -11,9 +11,564 @@ now() noexcept {
   return Timestamp(sp::Seconds((std::uint64_t)t));
 }
 
+/* =========================================================================================
+ * =========================================================================================
+ * =========================================================================================
+ */
+/* Timestamp */
+Timestamp::Timestamp(std::uint64_t v) noexcept
+    : value(v) {
+}
+
+Timestamp::Timestamp(const Milliseconds &v) noexcept
+    : value(v.value) {
+}
+
+Timestamp::Timestamp(const Seconds &v) noexcept
+    : value(v.value * 1000) {
+}
+
+Timestamp::Timestamp(const Minutes &v) noexcept
+    : Timestamp(Seconds(v)) {
+}
+
+Timestamp::Timestamp(const Hours &v) noexcept
+    : Timestamp(Minutes(v)) {
+}
+
+Timestamp::operator int() const noexcept {
+  assertx(value < std::numeric_limits<int>::max());
+  // TODO maybe max < value ? max : value
+  return int(value);
+}
+
+Timestamp::operator std::uint64_t() const noexcept {
+  return value;
+}
+
+/* ===================================== */
+// Timestamp
+// Timestamp::operator+(const Timeout &o) const noexcept {
+//   return Timestamp(value + o.value);
+// }
+
+Timestamp
+Timestamp::operator+(const Milliseconds &o) const noexcept {
+  return Timestamp(value + o.value);
+}
+
+Timestamp
+Timestamp::operator+(const Seconds &v) const noexcept {
+  Milliseconds o(v);
+  return this->operator+(o);
+}
+
+Timestamp
+Timestamp::operator+(const Minutes &v) const noexcept {
+  Milliseconds o(v);
+  return this->operator+(o);
+}
+
+Timestamp
+Timestamp::operator+(const Hours &v) const noexcept {
+  Milliseconds o(v);
+  return this->operator+(o);
+}
+/* ===================================== */
+Timestamp
+Timestamp::operator-(const Timestamp &o) const noexcept {
+  assertx(value >= o.value);
+  return Timestamp(value - o.value);
+}
+
+// Timestamp
+// Timestamp::operator-(const Timeout &o) const noexcept {
+//   assertx(value >= o.value);
+//   return Timestamp(value - o.value);
+// }
+
+Timestamp
+Timestamp::operator-(const Milliseconds &o) const noexcept {
+  assertx(value >= o.value);
+  return Timestamp(value - o.value);
+}
+
+Timestamp
+Timestamp::operator-(const Seconds &v) const noexcept {
+  Timestamp o(v);
+  return this->operator-(o);
+}
+
+Timestamp
+Timestamp::operator-(const Minutes &v) const noexcept {
+  Timestamp o(v);
+  return this->operator-(o);
+}
+
+Timestamp
+Timestamp::operator-(const Hours &v) const noexcept {
+  Timestamp o(v);
+  return this->operator-(o);
+}
+
+/* ===================================== */
+bool
+Timestamp::operator>(const Timestamp &o) const noexcept {
+  return value > o.value;
+}
+
+bool
+Timestamp::operator>(const Milliseconds &v) const noexcept {
+  Timestamp o(v);
+  return operator>(o);
+}
+
+bool
+Timestamp::operator>(const Seconds &v) const noexcept {
+  Timestamp o(v);
+  return operator>(o);
+}
+
+bool
+Timestamp::operator>(const Minutes &v) const noexcept {
+  Timestamp o(v);
+  return operator>(o);
+}
+
+bool
+Timestamp::operator>(const Hours &v) const noexcept {
+  Timestamp o(v);
+  return operator>(o);
+}
+
+/* ===================================== */
+bool
+Timestamp::operator>=(const Timestamp &o) const noexcept {
+  return value >= o.value;
+}
+
+bool
+Timestamp::operator>=(const Milliseconds &o) const noexcept {
+  return value >= o.value;
+}
+
+bool
+Timestamp::operator>=(const Seconds &v) const noexcept {
+  Timestamp o(v);
+  return operator>=(o);
+}
+
+bool
+Timestamp::operator>=(const Minutes &v) const noexcept {
+  Timestamp o(v);
+  return operator>=(o);
+}
+
+bool
+Timestamp::operator>=(const Hours &v) const noexcept {
+  Timestamp o(v);
+  return operator>=(o);
+}
+
+/* ===================================== */
+bool
+Timestamp::operator<(const Timestamp &o) const noexcept {
+  return value < o.value;
+}
+
+bool
+Timestamp::operator<(const Milliseconds &o) const noexcept {
+  return value < o.value;
+}
+
+bool
+Timestamp::operator<(const Seconds &v) const noexcept {
+  Timestamp o(v);
+  return operator<(o);
+}
+
+bool
+Timestamp::operator<(const Minutes &v) const noexcept {
+  Timestamp o(v);
+  return operator<(o);
+}
+
+bool
+Timestamp::operator<(const Hours &v) const noexcept {
+  Timestamp o(v);
+  return operator<(o);
+}
+
+/* ===================================== */
+bool
+Timestamp::operator<=(const Timestamp &o) const noexcept {
+  return value <= o.value;
+}
+
+bool
+Timestamp::operator<=(const Milliseconds &o) const noexcept {
+  return value <= o.value;
+}
+
+bool
+Timestamp::operator<=(const Seconds &v) const noexcept {
+  Timestamp o(v);
+  return operator<=(o);
+}
+
+bool
+Timestamp::operator<=(const Minutes &v) const noexcept {
+  Timestamp o(v);
+  return operator<=(o);
+}
+
+bool
+Timestamp::operator<=(const Hours &v) const noexcept {
+  Timestamp o(v);
+  return operator<=(o);
+}
+
+/* ===================================== */
+bool
+Timestamp::operator==(const Timestamp &o) const noexcept {
+  return value == o.value;
+}
+
+bool
+Timestamp::operator==(const Milliseconds &o) const noexcept {
+  return value == o.value;
+}
+
+bool
+Timestamp::operator==(const Seconds &v) const noexcept {
+  Timestamp o(v);
+  return operator==(o);
+}
+
+bool
+Timestamp::operator==(const Minutes &v) const noexcept {
+  Timestamp o(v);
+  return operator==(o);
+}
+
+bool
+Timestamp::operator==(const Hours &v) const noexcept {
+  Timestamp o(v);
+  return operator==(o);
+}
+
+/* ===================================== */
+bool
+Timestamp::operator!=(const Timestamp &o) const noexcept {
+  return value != o.value;
+}
+
+bool
+Timestamp::operator!=(const Milliseconds &o) const noexcept {
+  return value != o.value;
+}
+
+bool
+Timestamp::operator!=(const Seconds &v) const noexcept {
+  Timestamp o(v);
+  return operator!=(o);
+}
+
+bool
+Timestamp::operator!=(const Minutes &v) const noexcept {
+  Timestamp o(v);
+  return operator!=(o);
+}
+
+bool
+Timestamp::operator!=(const Hours &v) const noexcept {
+  Timestamp o(v);
+  return operator!=(o);
+}
+
+/* ===================================== */
+
+/* =========================================================================================
+ * =========================================================================================
+ * =========================================================================================
+ */
+#if 0
+/* Timeout */
+Timeout::Timeout(std::uint64_t v) noexcept
+    : value(v) {
+}
+
+Timeout::Timeout(const Milliseconds &v) noexcept
+    : value(v.value) {
+}
+
+Timeout::Timeout(const Seconds &v) noexcept
+    : value(v.value * 1000) {
+}
+
+Timeout::Timeout(const Minutes &v) noexcept
+    : Timeout(Seconds(v)) {
+}
+
+Timeout::Timeout(const Hours &v) noexcept
+    : Timeout(Minutes(v)) {
+}
+
+Timeout::operator int() const noexcept {
+  assertx(value < std::numeric_limits<int>::max());
+  // TODO maybe max < value ? max : value
+  return int(value);
+}
+
+Timeout::operator std::uint64_t() const noexcept {
+  return value;
+}
+
+/* ===================================== */
+Timeout
+Timeout::operator+(const Timeout &o) const noexcept {
+  return Timeout(value + o.value);
+}
+
+Timeout
+Timeout::operator+(const Milliseconds &o) const noexcept {
+  return Timeout(value + o.value);
+}
+
+Timeout
+Timeout::operator+(const Seconds &v) const noexcept {
+  Timeout o(v);
+  return this->operator+(o);
+}
+
+Timeout
+Timeout::operator+(const Minutes &v) const noexcept {
+  Timeout o(v);
+  return this->operator+(o);
+}
+
+Timeout
+Timeout::operator+(const Hours &v) const noexcept {
+  Timeout o(v);
+  return this->operator+(o);
+}
+/* ===================================== */
+Timeout
+Timeout::operator-(const Timeout &o) const noexcept {
+  assertx(value >= o.value);
+  return Timeout(value - o.value);
+}
+
+Timeout
+Timeout::operator-(const Milliseconds &o) const noexcept {
+  assertx(value >= o.value);
+  return Timeout(value - o.value);
+}
+
+Timeout
+Timeout::operator-(const Seconds &v) const noexcept {
+  Timeout o(v);
+  return this->operator-(o);
+}
+
+Timeout
+Timeout::operator-(const Minutes &v) const noexcept {
+  Timeout o(v);
+  return this->operator-(o);
+}
+
+Timeout
+Timeout::operator-(const Hours &v) const noexcept {
+  Timeout o(v);
+  return this->operator-(o);
+}
+
+/* ===================================== */
+bool
+Timeout::operator>(const Timeout &o) const noexcept {
+  return value > o.value;
+}
+
+bool
+Timeout::operator>(const Milliseconds &v) const noexcept {
+  Timeout o(v);
+  return operator>(o);
+}
+
+bool
+Timeout::operator>(const Seconds &v) const noexcept {
+  Timeout o(v);
+  return operator>(o);
+}
+
+bool
+Timeout::operator>(const Minutes &v) const noexcept {
+  Timeout o(v);
+  return operator>(o);
+}
+
+bool
+Timeout::operator>(const Hours &v) const noexcept {
+  Timeout o(v);
+  return operator>(o);
+}
+
+/* ===================================== */
+bool
+Timeout::operator>=(const Timeout &o) const noexcept {
+  return value >= o.value;
+}
+
+bool
+Timeout::operator>=(const Milliseconds &o) const noexcept {
+  return value >= o.value;
+}
+
+bool
+Timeout::operator>=(const Seconds &v) const noexcept {
+  Timeout o(v);
+  return operator>=(o);
+}
+
+bool
+Timeout::operator>=(const Minutes &v) const noexcept {
+  Timeout o(v);
+  return operator>=(o);
+}
+
+bool
+Timeout::operator>=(const Hours &v) const noexcept {
+  Timeout o(v);
+  return operator>=(o);
+}
+
+/* ===================================== */
+bool
+Timeout::operator<(const Timeout &o) const noexcept {
+  return value < o.value;
+}
+
+bool
+Timeout::operator<(const Milliseconds &o) const noexcept {
+  return value < o.value;
+}
+
+bool
+Timeout::operator<(const Seconds &v) const noexcept {
+  Timeout o(v);
+  return operator<(o);
+}
+
+bool
+Timeout::operator<(const Minutes &v) const noexcept {
+  Timeout o(v);
+  return operator<(o);
+}
+
+bool
+Timeout::operator<(const Hours &v) const noexcept {
+  Timeout o(v);
+  return operator<(o);
+}
+
+/* ===================================== */
+bool
+Timeout::operator<=(const Timeout &o) const noexcept {
+  return value <= o.value;
+}
+
+bool
+Timeout::operator<=(const Milliseconds &o) const noexcept {
+  return value <= o.value;
+}
+
+bool
+Timeout::operator<=(const Seconds &v) const noexcept {
+  Timeout o(v);
+  return operator<=(o);
+}
+
+bool
+Timeout::operator<=(const Minutes &v) const noexcept {
+  Timeout o(v);
+  return operator<=(o);
+}
+
+bool
+Timeout::operator<=(const Hours &v) const noexcept {
+  Timeout o(v);
+  return operator<=(o);
+}
+
+/* ===================================== */
+bool
+Timeout::operator==(const Timeout &o) const noexcept {
+  return value == o.value;
+}
+
+bool
+Timeout::operator==(const Milliseconds &o) const noexcept {
+  return value == o.value;
+}
+
+bool
+Timeout::operator==(const Seconds &v) const noexcept {
+  Timeout o(v);
+  return operator==(o);
+}
+
+bool
+Timeout::operator==(const Minutes &v) const noexcept {
+  Timeout o(v);
+  return operator==(o);
+}
+
+bool
+Timeout::operator==(const Hours &v) const noexcept {
+  Timeout o(v);
+  return operator==(o);
+}
+
+/* ===================================== */
+bool
+Timeout::operator!=(const Timeout &o) const noexcept {
+  return value != o.value;
+}
+
+bool
+Timeout::operator!=(const Milliseconds &o) const noexcept {
+  return value != o.value;
+}
+
+bool
+Timeout::operator!=(const Seconds &v) const noexcept {
+  Timeout o(v);
+  return operator!=(o);
+}
+
+bool
+Timeout::operator!=(const Minutes &v) const noexcept {
+  Timeout o(v);
+  return operator!=(o);
+}
+
+bool
+Timeout::operator!=(const Hours &v) const noexcept {
+  Timeout o(v);
+  return operator!=(o);
+}
+#endif
+/* =========================================================================================
+ * =========================================================================================
+ * =========================================================================================
+ */
 /* Milliseconds */
 Milliseconds::Milliseconds(std::uint64_t v) noexcept
     : value(v) {
+}
+
+Milliseconds::Milliseconds(const Timestamp &v) noexcept
+    : value(v.value) {
 }
 
 Milliseconds::Milliseconds(const Seconds &v) noexcept
@@ -237,6 +792,10 @@ Milliseconds::operator!=(const Hours &v) const noexcept {
 /* Seconds */
 Seconds::Seconds(std::uint64_t v) noexcept
     : value(v) {
+}
+
+Seconds::Seconds(const Timestamp &v) noexcept
+    : value(v.value / 1000) {
 }
 
 Seconds::Seconds(const Minutes &v) noexcept

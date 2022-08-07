@@ -37,8 +37,10 @@ struct Array {
   Array(T *, std::size_t) noexcept;
   Array(T *, std::size_t, std::size_t) noexcept;
 
-  T &operator[](std::size_t idx) noexcept;
-  const T &operator[](std::size_t idx) const noexcept;
+  T &
+  operator[](std::size_t idx) noexcept;
+  const T &
+  operator[](std::size_t idx) const noexcept;
 
   T *
   data() noexcept;
@@ -116,12 +118,23 @@ public:
   data() const noexcept;
 
   T *
+  begin() noexcept {
+    return data();
+  }
+  const T *
+  begin() const noexcept {
+    return data();
+  }
+
+  T *
   end() noexcept;
   const T *
   end() const noexcept;
 
-  T &operator[](std::size_t idx) noexcept;
-  const T &operator[](std::size_t idx) const noexcept;
+  T &
+  operator[](std::size_t idx) noexcept;
+  const T &
+  operator[](std::size_t idx) const noexcept;
 };
 
 //=====================================
@@ -629,7 +642,8 @@ Array<T>::Array(T *b, std::size_t l, std::size_t size) noexcept
 }
 
 template <typename T>
-T &Array<T>::operator[](std::size_t idx) noexcept {
+T &
+Array<T>::operator[](std::size_t idx) noexcept {
   assertxs(buffer, idx, length, capacity);
   assertxs(idx < length, idx, length, capacity);
   assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
@@ -638,7 +652,8 @@ T &Array<T>::operator[](std::size_t idx) noexcept {
 }
 
 template <typename T>
-const T &Array<T>::operator[](std::size_t idx) const noexcept {
+const T &
+Array<T>::operator[](std::size_t idx) const noexcept {
   assertxs(buffer, idx, length, capacity);
   assertxs(idx < length, idx, length, capacity);
   assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
@@ -792,7 +807,8 @@ UinArray<T>::end() const noexcept {
 }
 
 template <typename T>
-T &UinArray<T>::operator[](std::size_t idx) noexcept {
+T &
+UinArray<T>::operator[](std::size_t idx) noexcept {
   assertxs(buffer, idx, length, capacity);
   assertxs(idx < length, idx, length);
   assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);
@@ -801,7 +817,8 @@ T &UinArray<T>::operator[](std::size_t idx) noexcept {
 }
 
 template <typename T>
-const T &UinArray<T>::operator[](std::size_t idx) const noexcept {
+const T &
+UinArray<T>::operator[](std::size_t idx) const noexcept {
   assertxs(buffer, idx, length, capacity);
   assertxs(idx < length, idx, length);
   assertxs(sp::length(*this) <= sp::capacity(*this), length, capacity);

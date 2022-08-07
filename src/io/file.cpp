@@ -359,7 +359,7 @@ drop_child(char *buffer) noexcept {
 bool
 mkdirs(const char *path, mode_t mode) noexcept {
   size_t path_len = strlen(path);
-  char tmp[PATH_MAX];
+  char tmp[PATH_MAX]={0};
 
   if (path_len > sizeof(tmp)) {
     assertxs(path_len <= sizeof(tmp), path_len, sizeof(tmp));
@@ -370,7 +370,7 @@ mkdirs(const char *path, mode_t mode) noexcept {
     mode = S_IRUSR | S_IWUSR | S_IXUSR;
   }
 
-  memcpy(tmp, path, path_len);
+  ::strcpy(tmp, path);
   std::stack<std::string> work;
 
   while (strlen(tmp) > 0) {

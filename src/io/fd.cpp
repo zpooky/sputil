@@ -1,4 +1,5 @@
 #include "file.h"
+#include "util/assert.h"
 #include "util/numeric.h"
 #include <unistd.h> //close
 
@@ -13,7 +14,7 @@ fd::fd() noexcept
 }
 
 fd::operator bool() const noexcept {
-  return m_fd > 0;
+  return m_fd >= 0;
 }
 
 fd::fd(fd &&o) noexcept
@@ -23,7 +24,9 @@ fd::fd(fd &&o) noexcept
 
 fd::~fd() noexcept {
   if (bool(*this)) {
-    ::close(m_fd);
+    if (::close(m_fd) < 0) {
+      assertx(false);
+    }
     m_fd = -1;
   }
 }
