@@ -162,7 +162,8 @@ peek_front_marked(Thing &self, unsigned char *dest, std::size_t len) noexcept {
 
 //-------------------+---------------
 std::size_t
-pop_front(Thing &self, unsigned char *dest, std::size_t l) noexcept {
+pop_front(Thing &self, void *tmp_dest, std::size_t l) noexcept {
+  unsigned char *dest = (unsigned char *)tmp_dest;
   auto result = peek_front(self, dest, l);
   consume_bytes(self, result);
 

@@ -67,7 +67,7 @@ is_marked(const Thing &) noexcept;
 // peek() noexcept;
 
 std::size_t
-pop_front(Thing &, unsigned char *, std::size_t) noexcept;
+pop_front(Thing &, void *, std::size_t) noexcept;
 
 template <std::size_t SIZE>
 std::size_t

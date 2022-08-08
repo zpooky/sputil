@@ -93,10 +93,39 @@ std::size_t
 pop_front(BytesView &, char &) noexcept;
 
 std::size_t
-pop_front(BytesView &, unsigned char *, std::size_t) noexcept;
+pop_front(BytesView &, void *, std::size_t) noexcept;
+
+template <std::size_t SIZE>
+std::size_t
+pop_front(BytesView &self, unsigned char (&buffer)[SIZE]) noexcept {
+  return pop_front(self, buffer, SIZE);
+}
+
+template <std::size_t SIZE>
+std::size_t
+pop_front(BytesView &self, char (&buffer)[SIZE]) noexcept {
+  return pop_front(self, buffer, SIZE);
+}
+
+//=====================================
+std::size_t
+peek_front(const BytesView &, unsigned char &) noexcept;
 
 std::size_t
-pop_front(BytesView &, char *, std::size_t) noexcept;
+peek_front(const BytesView &, char &) noexcept;
+
+std::size_t
+peek_front(const BytesView &, unsigned char *, std::size_t) noexcept;
+
+std::size_t
+peek_front(const BytesView &, char *, std::size_t) noexcept;
+
+//=====================================
+bool
+write(BytesView &, const void *, std::size_t) noexcept;
+
+bool
+write(BytesView &, char) noexcept;
 
 //=====================================
 BytesViewMark

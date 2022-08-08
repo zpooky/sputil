@@ -32,13 +32,15 @@ IBytesView<T>::IBytesView(IBytesView<T> &in, std::size_t strt,
 }
 
 template <typename T>
-T &IBytesView<T>::operator[](std::size_t idx) noexcept {
+T &
+IBytesView<T>::operator[](std::size_t idx) noexcept {
   assertx(idx < capacity);
   return raw[idx];
 }
 
 template <typename T>
-const T &IBytesView<T>::operator[](std::size_t idx) const noexcept {
+const T &
+IBytesView<T>::operator[](std::size_t idx) const noexcept {
   assertx(idx < capacity);
   return raw[idx];
 }
@@ -125,27 +127,72 @@ pop_front(BytesView &self, unsigned char &out) noexcept {
 std::size_t
 pop_front(BytesView &self, char &out) noexcept {
   if (remaining_read(self) > 0) {
-    out = self.raw[self.pos++];
+    out = (char)self.raw[self.pos++];
     return 1;
   }
   return 0;
 }
 
 std::size_t
-pop_front(BytesView &self, unsigned char *out, std::size_t l) noexcept {
+pop_front(BytesView &self, void *tmp_out, std::size_t l) noexcept {
+  unsigned char *out = (unsigned char *)tmp_out;
   std::size_t read = std::min(remaining_read(self), l);
   std::memcpy(out, self.raw + self.pos, read);
   self.pos += read;
   return read;
 }
 
+//=====================================
 std::size_t
-pop_front(BytesView &self, char *out, std::size_t l) noexcept {
+peek_front(const BytesView &self, unsigned char &out) noexcept {
+  if (remaining_read(self) > 0) {
+    out = self.raw[self.pos];
+    return 1;
+  }
+  return 0;
+}
+
+std::size_t
+peek_front(const BytesView &self, char &out) noexcept {
+  if (remaining_read(self) > 0) {
+    out = (char)self.raw[self.pos];
+    return 1;
+  }
+  return 0;
+}
+
+std::size_t
+peek_front(const BytesView &self, unsigned char *out, std::size_t l) noexcept {
   std::size_t read = std::min(remaining_read(self), l);
   std::memcpy(out, self.raw + self.pos, read);
-  self.pos += read;
   return read;
 }
+
+std::size_t
+peek_front(const BytesView &self, char *out, std::size_t l) noexcept {
+  std::size_t read = std::min(remaining_read(self), l);
+  std::memcpy(out, self.raw + self.pos, read);
+  return read;
+}
+
+//=====================================
+bool
+write(BytesView &self, const void *tmp_in, std::size_t l) noexcept {
+  const unsigned char *in = (const unsigned char *)tmp_in;
+  if (remaining_write(self) < l) {
+    return false;
+  }
+  std::memcpy(self.raw + self.pos, in, l);
+  self.pos += l;
+
+  return true;
+}
+
+bool
+write(BytesView &self, char in) noexcept {
+  return write(self, &in, 1);
+}
+
 //=====================================
 BytesViewMark
 mark(BytesView &self) noexcept {
