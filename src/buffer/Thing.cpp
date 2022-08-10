@@ -200,6 +200,11 @@ peek_front(Thing &self, unsigned char &c) noexcept {
   return peek_front(self, &c, 1);
 }
 
+std::size_t
+peek_front(Thing &self, char &c) noexcept {
+  return peek_front(self, (unsigned char *)&c, 1);
+}
+
 //-------------------+---------------
 bool
 read(Thing &self, void *dest, std::size_t len) noexcept {

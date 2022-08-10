@@ -119,6 +119,9 @@ peek_front(Thing &, /*copy DEST*/ BytesView &) noexcept;
 std::size_t
 peek_front(Thing &self, unsigned char &c) noexcept;
 
+std::size_t
+peek_front(Thing &self, char &c) noexcept;
+
 //=====================================
 bool
 read(Thing &, void *, std::size_t) noexcept;
