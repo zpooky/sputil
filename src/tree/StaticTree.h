@@ -294,8 +294,8 @@ void
 in_order_for_each(StaticTree<T, C, P> &tree, F f) {
   using namespace impl::StaticTree;
 
-  enum class Direction : std::uint8_t { LEFT, RIGHT };
-  enum class Traversal : uint8_t { UP, DOWN };
+  enum Direction { LEFT, RIGHT };
+  enum Traversal { UP, DOWN };
 
   Direction d[1024]{Direction::LEFT};
   Traversal t = Traversal::UP;

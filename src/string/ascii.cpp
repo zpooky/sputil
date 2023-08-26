@@ -69,13 +69,25 @@ is_alpha(const char *str, std::size_t len) noexcept {
 }
 
 //=====================================
-bool
-is_printable(char c) noexcept {
+template <typename T>
+static bool
+internal_is_printable(T c) {
   return c >= ' ' && c <= '~';
 }
 
 bool
-is_printable(const char *str, std::size_t len) noexcept {
+is_printable(char c) noexcept {
+  return internal_is_printable(c);
+}
+
+bool
+is_printable(unsigned char c) noexcept {
+  return internal_is_printable(c);
+}
+
+template <typename T>
+static bool
+internal_is_printable(const T *str, std::size_t len) noexcept {
   for (std::size_t i = 0; i < len; ++i) {
     if (!is_printable(str[i])) {
       return false;
@@ -83,6 +95,16 @@ is_printable(const char *str, std::size_t len) noexcept {
   }
 
   return true;
+}
+
+bool
+is_printable(const char *str, std::size_t len) noexcept {
+  return internal_is_printable(str, len);
+}
+
+bool
+is_printable(const unsigned char *str, std::size_t len) noexcept {
+  return internal_is_printable(str, len);
 }
 
 //=====================================

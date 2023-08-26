@@ -15,10 +15,16 @@ is_alpha(const char *, std::size_t) noexcept;
 
 //=====================================
 bool
-is_printable(char ) noexcept;
+is_printable(char) noexcept;
+
+bool
+is_printable(unsigned char) noexcept;
 
 bool
 is_printable(const char *, std::size_t) noexcept;
+
+bool
+is_printable(const unsigned char *, std::size_t) noexcept;
 
 //=====================================
 } // namespace ascii

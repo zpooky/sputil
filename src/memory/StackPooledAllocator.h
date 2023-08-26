@@ -1,6 +1,7 @@
 #ifndef SP_UTIL_MEMORY_STACK_POOLED_ALLOCATOR_H
 #define SP_UTIL_MEMORY_STACK_POOLED_ALLOCATOR_H
 
+#include <cstdint>
 #include <cstring>
 #include <memory/Allocator.h>
 #include <util/assert.h>

@@ -56,6 +56,13 @@ struct Array {
   end() noexcept;
   const T *
   end() const noexcept;
+
+  bool
+  operator==(const Array &o) const noexcept;
+
+  template <typename T2, std::size_t SIZE>
+  bool
+  operator==(const T2 (&)[SIZE]) const noexcept;
 };
 
 //=====================================
@@ -135,6 +142,13 @@ public:
   operator[](std::size_t idx) noexcept;
   const T &
   operator[](std::size_t idx) const noexcept;
+
+  bool
+  operator==(const UinArray &o) const noexcept;
+
+  template <typename T2, std::size_t SIZE>
+  bool
+  operator==(const T2 (&)[SIZE]) const noexcept;
 };
 
 //=====================================
@@ -709,6 +723,39 @@ Array<T>::end() const noexcept {
   return buffer + length;
 }
 
+template <typename T>
+bool
+Array<T>::operator==(const Array &o) const noexcept {
+  if (sp::length(o) != sp::length(*this)) {
+    return false;
+  }
+
+  for (std::size_t i = 0; i < sp::length(o); ++i) {
+    auto &s = this->operator[](i);
+    if (!(s == o[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <typename T>
+template <typename T2, std::size_t SIZE>
+bool
+Array<T>::operator==(const T2 (&other)[SIZE]) const noexcept {
+  if (SIZE != sp::length(*this)) {
+    return false;
+  }
+
+  for (std::size_t i = 0; i < SIZE; ++i) {
+    auto &s = this->operator[](i);
+    if (!(s == other[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 //=====================================
 template <typename T>
 DynamicArray<T>::DynamicArray(std::size_t cap) noexcept
@@ -826,6 +873,41 @@ UinArray<T>::operator[](std::size_t idx) const noexcept {
   return data()[idx];
 }
 
+template <typename T>
+bool
+UinArray<T>::operator==(const UinArray &o) const noexcept {
+  fprintf(stderr, "%s:0\n", __func__);
+  if (sp::length(o) != sp::length(*this)) {
+    return false;
+  }
+
+  for (std::size_t i = 0; i < sp::length(o); ++i) {
+    auto &s = this->operator[](i);
+    if (!(s == o[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <typename T>
+template <typename T2, std::size_t SIZE>
+bool
+UinArray<T>::operator==(const T2 (&other)[SIZE]) const noexcept {
+  fprintf(stderr, "%s:1\n", __func__);
+  if (SIZE != sp::length(*this)) {
+    return false;
+  }
+
+  for (std::size_t i = 0; i < SIZE; ++i) {
+    auto &s = this->operator[](i);
+    if (!(s == other[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 //=====================================
 template <typename T, std::size_t c>
 UinStaticArray<T, c>::UinStaticArray() noexcept
@@ -837,7 +919,7 @@ template <typename T, std::size_t c>
 UinStaticArray<T, c>::UinStaticArray(UinStaticArray<T, c> &&o) noexcept
     : UinStaticArray() {
 
-  for (std::size_t i = 0; i < sp::length(o); ++i) {
+  for (std::size_t i = 0; i < length(o); ++i) {
     auto &current = o[i];
     assertx_n(insert(*this, std::move(current)));
     current.~T();
