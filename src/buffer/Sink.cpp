@@ -26,6 +26,7 @@ write(Sink &self, const unsigned char *w, std::size_t l) {
       return false;
     }
 
+    assertx(false);
     // TODO something like this
     // CircularByteBuffer dummy(w,l)
     // return self.sink(dummy);

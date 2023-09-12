@@ -80,8 +80,9 @@ open_read(DirectoryFd &parent, const char *fname) noexcept {
 //-------------------+---------------
 
 std::size_t
-write(sp::fd &f, const unsigned char *raw, std::size_t raw_len) noexcept {
+write(sp::fd &f, const void *in_raw, std::size_t raw_len) noexcept {
   assertx(bool(f));
+  const unsigned char *raw = (const unsigned char *)in_raw;
 
   std::size_t result = 0;
   ssize_t written = 0;
@@ -359,7 +360,7 @@ drop_child(char *buffer) noexcept {
 bool
 mkdirs(const char *path, mode_t mode) noexcept {
   size_t path_len = strlen(path);
-  char tmp[PATH_MAX]={0};
+  char tmp[PATH_MAX] = {0};
 
   if (path_len > sizeof(tmp)) {
     assertxs(path_len <= sizeof(tmp), path_len, sizeof(tmp));

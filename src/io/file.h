@@ -47,7 +47,7 @@ open_read(DirectoryFd &parent, const char *fname) noexcept;
 
 //-------------------+---------------
 std::size_t
-write(sp::fd &, const unsigned char *, std::size_t) noexcept;
+write(sp::fd &, const void *, std::size_t) noexcept;
 
 template <std::size_t N>
 std::size_t
