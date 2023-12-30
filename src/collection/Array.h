@@ -344,6 +344,10 @@ template <typename T, typename V>
 T *
 insert(UinArray<T> &, V &&) noexcept;
 
+template <typename T, typename... Args>
+T *
+emplace(UinArray<T> &self, Args&&... args) noexcept;
+
 //=====================================
 template <typename T, typename From>
 bool
@@ -1418,6 +1422,19 @@ insert(UinArray<T> &self, V &&val) noexcept {
     T *const raw = self.data() + idx;
 
     return new (raw) T(std::forward<V>(val));
+  }
+
+  return nullptr;
+}
+
+template <typename T, typename... Args>
+T *
+emplace(UinArray<T> &self, Args&&... args) noexcept {
+  if (!is_full(self)) {
+    const std::size_t idx = self.length++;
+    T *const raw = self.data() + idx;
+
+    return new (raw) T(std::forward<Args>(args)...);
   }
 
   return nullptr;

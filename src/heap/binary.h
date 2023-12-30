@@ -21,14 +21,15 @@ struct Binary {
   type *buffer;
   std::size_t capacity;
   std::size_t length;
+  bool dynamic;
 
   Binary(type *, std::size_t capacity) noexcept;
   Binary(T *, std::size_t capacity) noexcept;
+  Binary(std::size_t capacity) noexcept;
   Binary(const Binary &) = delete;
   Binary(Binary &&) noexcept;
 
-  virtual ~Binary() noexcept {
-  }
+  virtual ~Binary() noexcept;
 };
 
 //=====================================
@@ -310,22 +311,47 @@ template <typename T, typename Comparator>
 Binary<T, Comparator>::Binary(type *b, std::size_t c) noexcept
     : buffer{b}
     , capacity{c}
-    , length(0) {
+    , length(0)
+    , dynamic{false} {
 }
 
 template <typename T, typename Comparator>
 Binary<T, Comparator>::Binary(T *b, std::size_t c) noexcept
     : buffer{(type *)b}
     , capacity{c}
-    , length(0) {
+    , length(0)
+    , dynamic{false} {
+}
+
+template <typename T, typename Comparator>
+Binary<T, Comparator>::Binary(std::size_t c) noexcept
+    : buffer{new type[c]}
+    , capacity{c}
+    , length(0)
+    , dynamic{true} {
 }
 
 template <typename T, typename Comparator>
 Binary<T, Comparator>::Binary(Binary &&o) noexcept
     : buffer{nullptr}
     , capacity{0}
-    , length{0} {
-      swap(*this,o);
+    , length{0}
+    , dynamic{false} {
+  swap(*this, o);
+}
+
+template <typename T, typename Comparator>
+Binary<T, Comparator>::~Binary() noexcept {
+  if (dynamic && buffer) {
+    for (size_t i = 0; i < this->length; ++i) {
+      T *cur = (T *)this->buffer + i;
+      cur->~T();
+    }
+    this->length = 0;
+    this->capacity = 0;
+    delete[] this->buffer;
+    this->buffer = nullptr;
+  }
 }
 
 template <typename T, std::size_t N, typename Comparator>

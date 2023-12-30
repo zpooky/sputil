@@ -9,8 +9,6 @@ struct fd {
   explicit fd(int) noexcept;
   fd() noexcept;
 
-  explicit operator bool() const noexcept;
-
   fd(const fd &) = delete;
   fd(fd &&o) noexcept;
 
@@ -21,9 +19,8 @@ struct fd {
 
   virtual ~fd() noexcept;
 
-  explicit operator int() noexcept;
-
-  explicit operator bool() noexcept;
+  explicit operator int() const noexcept;
+  explicit operator bool() const noexcept;
 };
 
 void

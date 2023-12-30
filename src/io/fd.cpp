@@ -13,10 +13,6 @@ fd::fd() noexcept
     : fd(-1) {
 }
 
-fd::operator bool() const noexcept {
-  return m_fd >= 0;
-}
-
 fd::fd(fd &&o) noexcept
     : m_fd(o.m_fd) {
   o.m_fd = -1;
@@ -31,12 +27,12 @@ fd::~fd() noexcept {
   }
 }
 
-fd::operator int() noexcept {
+fd::operator int() const noexcept {
   return m_fd;
 }
 
-fd::operator bool() noexcept {
-  return m_fd > 0;
+fd::operator bool() const noexcept {
+  return m_fd >= 0;
 }
 
 void
