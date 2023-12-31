@@ -53,11 +53,11 @@ BITSET_TEST_RAND(Bits &b, std::size_t bits) {
 template <typename Bits>
 static void
 BITSET_TEST_SEQUENCE(Bits &b) {
-  for (std::size_t i = 0; i < bits(b); ++i) {
+  for (std::size_t i = 0; i < capacity(b); ++i) {
     ASSERT_FALSE(test(b, i));
   }
 
-  for (std::size_t testIdx = 0; testIdx < bits(b); ++testIdx) {
+  for (std::size_t testIdx = 0; testIdx < capacity(b); ++testIdx) {
     {
       ASSERT_FALSE(test(b, testIdx));
       bool old = set(b, testIdx, true);
@@ -76,7 +76,7 @@ BITSET_TEST_SEQUENCE(Bits &b) {
     }
   }
 
-  for (std::size_t i = 0; i < bits(b); ++i) {
+  for (std::size_t i = 0; i < capacity(b); ++i) {
     ASSERT_TRUE(test(b, i));
   }
 }

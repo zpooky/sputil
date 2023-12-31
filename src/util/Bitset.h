@@ -81,10 +81,10 @@ toggle(SparseBitset &, std::size_t) noexcept;
 /* return the bit capacity of the Bitset
  */
 std::size_t
-bits(const Bitset &) noexcept;
+capacity(const Bitset &) noexcept;
 
 std::size_t
-bits(const SparseBitset &) noexcept;
+capacity(const SparseBitset &) noexcept;
 
 //=====================================
 /* returns number of uint64_t required to fit $x distinct values
@@ -124,7 +124,7 @@ StaticBitset<c>::StaticBitset() noexcept
 template <typename F>
 void
 for_each(const Bitset &self, F f) noexcept {
-  for (std::size_t idx = 0; idx < bits(self); ++idx) {
+  for (std::size_t idx = 0; idx < capacity(self); ++idx) {
     bool v = test(self, idx);
     f(idx, v);
   }
@@ -138,7 +138,6 @@ for_each(const SparseBitset &, F) noexcept {
 }
 
 //=====================================
-
 } // namespace sp
 
 #endif

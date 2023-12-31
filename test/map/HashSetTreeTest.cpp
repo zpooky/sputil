@@ -495,7 +495,7 @@ test_afew(prng::xorshift32 &r, SET &set_insert, SET &set_upsert,
   constexpr std::size_t max_dist = 3233123;
 
   sp::DynamicBitset b(sp::Bitset_number_of_buffer(max_dist));
-  for (std::size_t i = 0; i < bits(b); ++i) {
+  for (std::size_t i = 0; i < capacity(b); ++i) {
     ASSERT_FALSE(sp::set(b, i, true));
     ASSERT_TRUE(sp::set(b, i, false));
   }

@@ -11,7 +11,7 @@ struct Bitset_buffer {
 };
 
 static std::size_t
-capacity(const SparseBitset &self) noexcept {
+sparse_capacity(const SparseBitset &self) noexcept {
   return self.blocks * self.block_size;
 }
 
@@ -256,7 +256,7 @@ SparseBitset::~SparseBitset() noexcept {
 bool
 test(const Bitset &self, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertxs(wIdx < self.capacity, wIdx, bits(self), self.capacity, idx);
+  assertxs(wIdx < self.capacity, wIdx, capacity(self), self.capacity, idx);
 
   std::size_t bIdx = bit_index(idx);
   assertx(self.buffer);
@@ -267,14 +267,14 @@ test(const Bitset &self, std::size_t idx) noexcept {
 
 bool
 test(const SparseBitset &self, std::size_t abs_idx) noexcept {
-  assertxs(abs_idx < bits(self), abs_idx, bits(self), abs_idx); // TODO?
+  assertxs(abs_idx < capacity(self), abs_idx, capacity(self), abs_idx); // TODO?
 
   std::size_t block_idx = block_index(self, abs_idx);
   // printf("block_for(self,block_idx[%zu])\n", block_idx);
   const SparseEntry *block = block_for(self, block_idx);
   if (block) {
     Bitset bblock(block->bitset(), self.block_size);
-    std::size_t bits_offset = block->start() * bits(bblock);
+    std::size_t bits_offset = block->start() * capacity(bblock);
     std::size_t idx(abs_idx - bits_offset);
     return test(bblock, idx);
   }
@@ -286,7 +286,7 @@ test(const SparseBitset &self, std::size_t abs_idx) noexcept {
 bool
 set(Bitset &self, std::size_t idx, bool v) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertxs(wIdx < self.capacity, wIdx, bits(self), self.capacity, idx, v);
+  assertxs(wIdx < self.capacity, wIdx, capacity(self), self.capacity, idx, v);
 
   assertx(self.buffer);
   auto &word = self.buffer[wIdx];
@@ -300,7 +300,7 @@ set(Bitset &self, std::size_t idx, bool v) noexcept {
 
 bool
 set(SparseBitset &self, std::size_t abs_idx, bool v) noexcept {
-  assertxs(abs_idx < bits(self), abs_idx, bits(self), abs_idx, v); // TODO?
+  assertxs(abs_idx < capacity(self), abs_idx, capacity(self), abs_idx, v); // TODO?
 
   std::size_t block_idx = block_index(self, abs_idx);
   // printf("block_for_insert(self,block_idx[%zu])\n", block_idx);
@@ -308,7 +308,7 @@ set(SparseBitset &self, std::size_t abs_idx, bool v) noexcept {
   if (block) {
 
     Bitset bblock(block->bitset(), self.block_size);
-    std::size_t bits_offset = block->start() * bits(bblock);
+    std::size_t bits_offset = block->start() * capacity(bblock);
     std::size_t idx(abs_idx - bits_offset);
     return set(bblock, idx, v);
   }
@@ -322,7 +322,7 @@ set(SparseBitset &self, std::size_t abs_idx, bool v) noexcept {
 bool
 toggle(Bitset &self, std::size_t idx) noexcept {
   std::size_t wIdx = word_index(idx);
-  assertxs(wIdx < self.capacity, wIdx, bits(self), idx);
+  assertxs(wIdx < self.capacity, wIdx, capacity(self), idx);
 
   const std::size_t bIdx = bit_index(idx);
   auto &word = self.buffer[wIdx];
@@ -335,13 +335,13 @@ toggle(Bitset &self, std::size_t idx) noexcept {
 
 bool
 toggle(SparseBitset &self, std::size_t abs_idx) noexcept {
-  assertxs(abs_idx < bits(self), abs_idx, bits(self), abs_idx); // TODO?
+  assertxs(abs_idx < capacity(self), abs_idx, capacity(self), abs_idx); // TODO?
 
   std::size_t block_idx = block_index(self, abs_idx);
   SparseEntry *const block = block_for_insert(self, block_idx);
   if (block) {
     Bitset bblock(block->bitset(), self.block_size);
-    std::size_t bits_offset = block->start() * bits(bblock);
+    std::size_t bits_offset = block->start() * capacity(bblock);
     std::size_t idx(abs_idx - bits_offset);
     return toggle(bblock, idx);
   }
@@ -354,18 +354,18 @@ toggle(SparseBitset &self, std::size_t abs_idx) noexcept {
 
 //=====================================
 static std::size_t
-bits(std::size_t capacity) noexcept {
+capacity(std::size_t capacity) noexcept {
   return sizeof(Bitset_buffer::type) * 8 * capacity;
 }
 
 std::size_t
-bits(const Bitset &self) noexcept {
-  return bits(self.capacity);
+capacity(const Bitset &self) noexcept {
+  return capacity(self.capacity);
 }
 
 std::size_t
-bits(const SparseBitset &self) noexcept {
-  return bits(capacity(self));
+capacity(const SparseBitset &self) noexcept {
+  return capacity(sparse_capacity(self));
 }
 
 //=====================================
