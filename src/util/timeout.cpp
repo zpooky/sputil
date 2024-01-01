@@ -7,8 +7,17 @@ namespace sp {
 
 Timestamp
 now() noexcept {
+
+#if 0
   time_t t = std::time(nullptr);
   return Timestamp(sp::Seconds((std::uint64_t)t));
+#else
+  struct timespec tp = {0};
+  clock_gettime(CLOCK_REALTIME, &tp);
+
+  return Timestamp(
+      sp::Milliseconds((tp.tv_sec * 1000) + (tp.tv_nsec / 1000 / 1000)));
+#endif
 }
 
 /* =========================================================================================
@@ -117,6 +126,7 @@ Timestamp::operator>(const Timestamp &o) const noexcept {
   return value > o.value;
 }
 
+#if 0
 bool
 Timestamp::operator>(const Milliseconds &v) const noexcept {
   Timestamp o(v);
@@ -140,6 +150,7 @@ Timestamp::operator>(const Hours &v) const noexcept {
   Timestamp o(v);
   return operator>(o);
 }
+#endif
 
 /* ===================================== */
 bool
@@ -147,6 +158,7 @@ Timestamp::operator>=(const Timestamp &o) const noexcept {
   return value >= o.value;
 }
 
+#if 0
 bool
 Timestamp::operator>=(const Milliseconds &o) const noexcept {
   return value >= o.value;
@@ -169,6 +181,7 @@ Timestamp::operator>=(const Hours &v) const noexcept {
   Timestamp o(v);
   return operator>=(o);
 }
+#endif
 
 /* ===================================== */
 bool
@@ -176,6 +189,7 @@ Timestamp::operator<(const Timestamp &o) const noexcept {
   return value < o.value;
 }
 
+#if 0
 bool
 Timestamp::operator<(const Milliseconds &o) const noexcept {
   return value < o.value;
@@ -198,6 +212,7 @@ Timestamp::operator<(const Hours &v) const noexcept {
   Timestamp o(v);
   return operator<(o);
 }
+#endif
 
 /* ===================================== */
 bool
@@ -205,6 +220,7 @@ Timestamp::operator<=(const Timestamp &o) const noexcept {
   return value <= o.value;
 }
 
+#if 0
 bool
 Timestamp::operator<=(const Milliseconds &o) const noexcept {
   return value <= o.value;
@@ -227,6 +243,7 @@ Timestamp::operator<=(const Hours &v) const noexcept {
   Timestamp o(v);
   return operator<=(o);
 }
+#endif
 
 /* ===================================== */
 bool
@@ -234,6 +251,7 @@ Timestamp::operator==(const Timestamp &o) const noexcept {
   return value == o.value;
 }
 
+#if 0
 bool
 Timestamp::operator==(const Milliseconds &o) const noexcept {
   return value == o.value;
@@ -256,6 +274,7 @@ Timestamp::operator==(const Hours &v) const noexcept {
   Timestamp o(v);
   return operator==(o);
 }
+#endif
 
 /* ===================================== */
 bool
@@ -263,6 +282,7 @@ Timestamp::operator!=(const Timestamp &o) const noexcept {
   return value != o.value;
 }
 
+#if 0
 bool
 Timestamp::operator!=(const Milliseconds &o) const noexcept {
   return value != o.value;
@@ -285,6 +305,7 @@ Timestamp::operator!=(const Hours &v) const noexcept {
   Timestamp o(v);
   return operator!=(o);
 }
+#endif
 
 /* ===================================== */
 

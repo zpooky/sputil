@@ -65,6 +65,7 @@ public:
   /* ===================================== */
   bool
   operator>(const Timestamp &) const noexcept;
+#if 0
   bool
   operator>(const Milliseconds &) const noexcept;
   bool
@@ -73,10 +74,12 @@ public:
   operator>(const Minutes &) const noexcept;
   bool
   operator>(const Hours &) const noexcept;
+#endif
 
   /* ===================================== */
   bool
   operator>=(const Timestamp &) const noexcept;
+#if 0
   bool
   operator>=(const Milliseconds &) const noexcept;
   bool
@@ -85,10 +88,12 @@ public:
   operator>=(const Minutes &) const noexcept;
   bool
   operator>=(const Hours &) const noexcept;
+#endif
 
   /* ===================================== */
   bool
   operator<(const Timestamp &) const noexcept;
+#if 0
   bool
   operator<(const Milliseconds &) const noexcept;
   bool
@@ -97,10 +102,12 @@ public:
   operator<(const Minutes &) const noexcept;
   bool
   operator<(const Hours &) const noexcept;
+#endif
 
   /* ===================================== */
   bool
   operator<=(const Timestamp &) const noexcept;
+#if 0
   bool
   operator<=(const Milliseconds &) const noexcept;
   bool
@@ -109,10 +116,12 @@ public:
   operator<=(const Minutes &) const noexcept;
   bool
   operator<=(const Hours &) const noexcept;
+#endif
 
   /* ===================================== */
   bool
   operator==(const Timestamp &) const noexcept;
+#if 0
   bool
   operator==(const Milliseconds &) const noexcept;
   bool
@@ -121,10 +130,12 @@ public:
   operator==(const Minutes &) const noexcept;
   bool
   operator==(const Hours &) const noexcept;
+#endif
 
   /* ===================================== */
   bool
   operator!=(const Timestamp &) const noexcept;
+#if 0
   bool
   operator!=(const Milliseconds &) const noexcept;
   bool
@@ -133,6 +144,7 @@ public:
   operator!=(const Minutes &) const noexcept;
   bool
   operator!=(const Hours &) const noexcept;
+#endif
 };
 
 #if 0
