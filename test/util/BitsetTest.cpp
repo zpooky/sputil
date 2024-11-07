@@ -1,6 +1,7 @@
 #include <random>
 #include <gtest/gtest.h>
 #include <util/Bitset.h>
+#include <algorithm>
 
 template <typename Bits>
 static void

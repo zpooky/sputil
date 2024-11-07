@@ -3,6 +3,7 @@
 // #include <util/numeric.h>
 #include <list/SkipList.h>
 #include <random>
+#include <algorithm>
 
 // TODO test duplicate insert
 

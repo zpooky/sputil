@@ -3,6 +3,8 @@
 
 #include <map/HashSetTree.h>
 #include <map/impl/entry.h>
+#include <utility>
+#include <cstdint>
 
 namespace sp {
 //=====================================
