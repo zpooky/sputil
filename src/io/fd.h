@@ -7,7 +7,7 @@ struct fd {
   int m_fd;
 
   explicit fd(int) noexcept;
-  fd() noexcept;
+  explicit fd() noexcept;
 
   fd(const fd &) = delete;
   fd(fd &&o) noexcept;

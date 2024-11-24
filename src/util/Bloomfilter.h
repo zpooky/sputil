@@ -16,7 +16,7 @@ struct BloomFilter {
   Array<hasher<T>> &hashers;
   size_t unique_inserts;
 
-  explicit BloomFilter(Array<hasher<T>> &) noexcept;
+  BloomFilter(Array<hasher<T>> &) noexcept;
 };
 
 //=====================================
