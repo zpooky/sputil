@@ -1,7 +1,7 @@
 #define BACKWARD_HAS_BFD 1
 
 #include "assert.h"
-#ifdef __linux__
+#ifdef USE_BACKWARDS
 #include <backward.hpp>
 #endif
 
@@ -13,7 +13,7 @@
 namespace sp {
 namespace impl {
 
-#ifdef __linux__
+#ifdef USE_BACKWARDS
 
 using namespace backward;
 
