@@ -80,6 +80,8 @@ V *
 insert(HashMapProbing<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
   using Entry = impl::HashMapEntry<K, V>;
 
+  assertx(false);
+#if 0
   bool inserted = false;
   auto on_compute = [key = std::forward<decltype(key)>(key),
                      value = std::forward<decltype(value)>(value),
@@ -102,6 +104,7 @@ insert(HashMapProbing<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
 
     return result;
   }
+#endif
 
   return nullptr;
 }

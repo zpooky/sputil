@@ -61,6 +61,9 @@ V *
 insert(HashMapTree<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
   using Entry = impl::HashMapEntry<K, V>;
 
+  assertx(false);
+  V *result = nullptr;
+#if 0
   bool inserted = false;
   auto compute = [key = std::forward<decltype(key)>(key),
                   value = std::forward<decltype(value)>(value),
@@ -71,7 +74,6 @@ insert(HashMapTree<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
                                std::forward<decltype(value)>(value));
   };
 
-  V *result = nullptr;
   Entry *const res = lookup_compute(self.set, key, compute);
   if (res) {
     result = &res->value;
@@ -81,6 +83,7 @@ insert(HashMapTree<K, V, H, Eq> &self, Key &&key, Value &&value) noexcept {
       new (result) V{std::forward<Value>(value)};
     }
   }
+#endif
 
   return result;
 }

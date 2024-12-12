@@ -98,7 +98,7 @@ struct StaticArray : public Array<T> {
  * Does not reuquire a T default ctor
  */
 template <typename T>
-struct UinArray {
+struct UinArray { // TODO should be an Array
 protected:
   using storage_type =
       typename std::aligned_storage<sizeof(T), alignof(T)>::type;
@@ -110,8 +110,8 @@ public:
   std::size_t capacity;
   std::size_t length;
 
-  UinArray(storage_type *buffer, std::size_t c) noexcept;
-  UinArray() noexcept;
+  UinArray(storage_type *buffer, std::size_t c) noexcept; //TODO protected
+  UinArray() noexcept; //TODO protected
 
   UinArray(const UinArray &) = delete;
   UinArray(const UinArray &&) = delete;
@@ -346,7 +346,7 @@ insert(UinArray<T> &, V &&) noexcept;
 
 template <typename T, typename... Args>
 T *
-emplace(UinArray<T> &self, Args&&... args) noexcept;
+emplace(UinArray<T> &self, Args &&...args) noexcept;
 
 //=====================================
 template <typename T, typename From>
@@ -1098,7 +1098,7 @@ bin_find_gte(const UinArray<T> &self, const K &needle,
   std::size_t length = sp::length(self);
   const T *it = self.data();
   const T *const end = it + length;
-Lit : {
+Lit: {
   const std::size_t mid = middle(length);
   if (cmp(it[mid], /*>*/ needle)) {
     if (length == 0) {
@@ -1429,7 +1429,7 @@ insert(UinArray<T> &self, V &&val) noexcept {
 
 template <typename T, typename... Args>
 T *
-emplace(UinArray<T> &self, Args&&... args) noexcept {
+emplace(UinArray<T> &self, Args &&...args) noexcept {
   if (!is_full(self)) {
     const std::size_t idx = self.length++;
     T *const raw = self.data() + idx;

@@ -25,9 +25,10 @@ bool
 test(const BloomFilter<T, s> &, const T &) noexcept;
 
 //=====================================
+// Note: return if $value was present before
 template <typename T, std::size_t s>
 bool
-insert(BloomFilter<T, s> &, const T &) noexcept;
+insert(BloomFilter<T, s> &, const T &value) noexcept;
 
 //=====================================
 template <typename T, std::size_t s>

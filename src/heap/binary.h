@@ -30,6 +30,16 @@ struct Binary {
   Binary(Binary &&) noexcept;
 
   virtual ~Binary() noexcept;
+
+  T *
+  begin() noexcept;
+  const T *
+  begin() const noexcept;
+
+  T *
+  end() noexcept;
+  const T *
+  end() const noexcept;
 };
 
 //=====================================
@@ -352,6 +362,36 @@ Binary<T, Comparator>::~Binary() noexcept {
     delete[] this->buffer;
     this->buffer = nullptr;
   }
+}
+
+template <typename T, typename Comparator>
+T *
+Binary<T, Comparator>::begin() noexcept {
+  return (T *)buffer;
+}
+
+template <typename T, typename Comparator>
+const T *
+Binary<T, Comparator>::begin() const noexcept {
+  return (const T *)buffer;
+}
+
+template <typename T, typename Comparator>
+T *
+Binary<T, Comparator>::end() noexcept {
+  if (!buffer) {
+    return nullptr;
+  }
+  return ((T *)buffer) + length;
+}
+
+template <typename T, typename Comparator>
+const T *
+Binary<T, Comparator>::end() const noexcept {
+  if (!buffer) {
+    return nullptr;
+  }
+  return ((const T *)buffer) + length;
 }
 
 template <typename T, std::size_t N, typename Comparator>
